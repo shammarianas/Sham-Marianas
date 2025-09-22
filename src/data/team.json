@@ -1,0 +1,17 @@
+[
+  {
+    "img": "/assets/imgs/team/1.jpg",
+    "name": "Robert De Niro",
+    "subName": "Web Developer"
+  },
+  {
+    "img": "/assets/imgs/team/02.png",
+    "name": "Ehtasham ul haq",
+    "subName": "CEO - CCO - CFO"
+  },
+  {
+    "img": "/assets/imgs/team/3.jpg",
+    "name": "Ahmed Khaled",
+    "subName": "Web Designer"
+  }
+]

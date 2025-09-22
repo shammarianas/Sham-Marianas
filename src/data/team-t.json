@@ -1,0 +1,32 @@
+[
+  {
+    "img": "/assets/imgs/patterns/about-img.png",
+    "name": "Robert De Niro",
+    "subName": "Web Developer"
+  },
+  {
+    "img": "/assets/imgs/patterns/about-img.png",
+    "name": "Brendan Fraser",
+    "subName": "UI/UX Designer"
+  },
+  {
+    "img": "/assets/imgs/patterns/about-img.png",
+    "name": "Ahmed Khaled",
+    "subName": "Web Designer"
+  },
+  {
+    "img": "/assets/imgs/patterns/about-img.png",
+    "name": "Ahmed Khaled",
+    "subName": "SEO Marckting"
+  },
+  {
+    "img": "/assets/imgs/patterns/about-img.png",
+    "name": "Brendan Fraser",
+    "subName": "UI/UX Designer"
+  },
+  {
+    "img": "/assets/imgs/patterns/about-img.png",
+    "name": "Ahmed Khaled",
+    "subName": "Web Designer"
+  }
+]

@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() { return request.auth != null; }
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email.toLowerCase() in ["admin@shammarianas.com", "shammarianas@gmail.com"] ||
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.token.email.toLowerCase()))
+      );
+    }
+    function isOwnerOrAdmin(userId) {
+      return isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Assets
+    match /Assets/{assetId} {
+      allow get, list: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Profiles and subcollections
+    match /Profiles/{profileId} {
+      allow get, list: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      match /{subCollection}/{docId} {
+        allow create, read, update, delete: if isOwnerOrAdmin(profileId);
+      }
+    }
+
+    // Projects (public read/write for now)
+    match /projects/{projectId} {
+      allow read, write: if true;
+    }
+
+    // Blogs (public read/write for now)
+    match /blogs/{blogId} {
+      allow read, write: if true;
+    }
+
+    // AdminUsers
+    match /adminUsers/{email} {
+      allow get, list: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Optional admin override safety net (disabled)
+    // match /{document=**} { allow read, write: if isAdmin(); }
+  }
+}
