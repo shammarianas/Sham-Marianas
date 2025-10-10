@@ -12,27 +12,27 @@ function Footer() {
               <img src="/assets/imgs/logo.png" alt="" />
             </div>
           </div>
-          <div className="col-lg-4">
+          <div className="col-lg-3">
             <div className="column md-mb50">
               <h6 className="sub-title mb-30">Contact</h6>
-              {/* <h6 className="p-color fw-400">
-                5919 Trussville Crossings <br /> Pkwy, Birmingham
-              </h6> */}
-              <h6 className="mt-30 mb-15">
+              <h6 className="p-color fw-400 mb-15">
+                Multan, Pakistan
+              </h6>
+              <h6 className="p-color fw-400 mb-15">
                 <a
-                  href="mail:info@shammarianas.com
-">
+                  href="mail:info@shammarianas.com">
                   info@shammarianas.com
                 </a>
               </h6>
-              {/* <a href="#0" className="underline">
-                <span className="fz-22 main-color">+2 456 (343) 24 45</span>
-              </a> */}
+              <a href="#0" className="underline mb-15">
+                <span className="fz-22 main-color p-color fw-400 lh-base">+971 52 803 6012 <br></br>
++92 311 678 8423</span>
+              </a>
             </div>
           </div>
-          <div className="col-lg-2">
+          <div className="d-flex col-lg-3 justify-content-between">
             <div className="column md-mb50">
-              <h6 className="sub-title mb-30">Useful Links</h6>
+              <h6 className="sub-title mb-30">Company</h6>
               <ul className="rest fz-14 opacity-7">
                 <li className="mb-15">
                   <a href="/">Home</a>
@@ -54,6 +54,26 @@ function Footer() {
                 </li>
                 <li>
                   <a href="#contact">Contact us</a>
+                </li>
+              </ul>
+            </div>
+             <div className="column md-mb50">
+              <h6 className="sub-title mb-30">Get Started</h6>
+              <ul className="rest fz-14 opacity-7">
+                <li className="mb-15">
+                  <a href="#">Privacy Policy</a>
+                </li>
+                <li className="mb-15">
+                  <a href="#">Terms & Conditions</a>
+                </li>
+                <li className="mb-15">
+                  <a href="#">Community</a>
+                </li>
+                <li className="mb-15">
+                  <a href="#">Help Center</a>
+                </li>
+                <li className="mb-15">
+                  <a href="#">Support</a>
                 </li>
               </ul>
             </div>
@@ -100,6 +120,11 @@ function Footer() {
                     // className="hover-anim"
                   >
                     <i class="fa-brands fa-pinterest"></i>
+                  </a>
+                </li>
+                <li className="hover-this cursor-pointer ml-10">
+                  <a href="https://www.instagram.com/sham_marianas" className="hover-anim">
+                    <i className="fab fa-instagram"></i>
                   </a>
                 </li>
                 <li className="hover-this cursor-pointer ml-10">
