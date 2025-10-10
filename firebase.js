@@ -1,4 +1,3 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore, initializeFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -6,29 +5,26 @@ import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyCC_cEqxB99hMW16aowMs6AJ3-k52VasW0",
+  authDomain: "sham-marianas.firebaseapp.com",
+  projectId: "sham-marianas",
+  storageBucket: "sham-marianas.firebasestorage.app",
+  messagingSenderId: "607689609153",
+  appId: "1:607689609153:web:3d76a1c337979a691a6940",
+  measurementId: "G-Y0VR1HQNCG"
 };
-// Initialize Firebase
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-// Use initializeFirestore with long-polling for restricted environments
+
+// Use initializeFirestore for restricted environments
 const db = initializeFirestore(app, {
   experimentalAutoDetectLongPolling: true,
   useFetchStreams: false,
 });
-export { db };
-
-const functions = getFunctions(app);
-
-export { functions };
 
 const auth = getAuth(app);
-export { auth };
-
 const storage = getStorage(app);
-export { storage };
+const functions = getFunctions(app);
+
+export { db, auth, storage, functions };

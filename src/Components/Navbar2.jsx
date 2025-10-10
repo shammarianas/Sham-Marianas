@@ -312,14 +312,14 @@ const Navbar = () => {
         <Search />
         <div className="right">
           <div className="nav_buttons">
-            <Link to="/Cart">
+            {/* <Link to="/Cart">
               <button>
                 <i className="icon fa-solid fa-shopping-cart"></i>
                 {cartCount > 0 && (
                   <span className="cart_count">{cartCount}</span>
                 )}
               </button>
-            </Link>
+            </Link> */}
             <div className="navbar_dropdown"> 
 
               
