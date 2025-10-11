@@ -1993,7 +1993,7 @@ img.left {
 }
 
 .icon-img-100 {
-  width: 100px;
+  width: 140px;
 }
 
 .icon-img-120 {
@@ -3424,7 +3424,7 @@ body.loaded {
   transform: translate(0) !important;
 }
 
-.navbar.nav-crev.nav-scroll {
+/* .navbar.nav-crev.nav-scroll {
   background: #0f0f0f;
   border-color: rgba(255, 255, 255, 0.05);
   padding: 0;
@@ -3436,7 +3436,7 @@ body.loaded {
   left: 0;
   width: 100%;
   border-radius: 0;
-}
+} */
 
 .navbar.static {
   position: relative;
@@ -3462,7 +3462,7 @@ body.loaded {
   backdrop-filter: blur(10px);
 }
 
-.navbar.nav-scroll {
+/* .navbar.nav-scroll {
   border-color: rgba(255, 255, 255, 0.05);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -3478,7 +3478,7 @@ body.loaded {
   -webkit-transform: translateY(80px);
   -ms-transform: translateY(80px);
   transform: translateY(80px);
-}
+} */
 
 .navbar .icon-bar {
   color: #fff;
@@ -3652,7 +3652,7 @@ body.loaded {
   content: "";
   position: absolute;
   top: -30px;
-  bottom: -30px;
+  bottom: -15px;
   right: -30px;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -4774,7 +4774,7 @@ footer .subscribe-minimal button {
   background: transparent;
   border: 0;
 }
-
+/* footer */
 footer .subscribe-minimal .social-icon a {
   width: 40px;
   height: 40px;

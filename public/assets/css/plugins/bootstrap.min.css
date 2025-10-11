@@ -3764,10 +3764,10 @@ fieldset:disabled .btn {
   background-position: center;
   background-size: 100%;
 }
-.navbar-nav-scroll {
+/* .navbar-nav-scroll {
   max-height: var(--bs-scroll-height, 75vh);
   overflow-y: auto;
-}
+} */
 @media (min-width: 576px) {
   .navbar-expand-sm {
     flex-wrap: nowrap;
@@ -3783,9 +3783,9 @@ fieldset:disabled .btn {
     padding-right: 0.5rem;
     padding-left: 0.5rem;
   }
-  .navbar-expand-sm .navbar-nav-scroll {
+  /* .navbar-expand-sm .navbar-nav-scroll {
     overflow: visible;
-  }
+  } */
   .navbar-expand-sm .navbar-collapse {
     display: flex !important;
     flex-basis: auto;
@@ -3836,9 +3836,9 @@ fieldset:disabled .btn {
     padding-right: 0.5rem;
     padding-left: 0.5rem;
   }
-  .navbar-expand-md .navbar-nav-scroll {
+  /* .navbar-expand-md .navbar-nav-scroll {
     overflow: visible;
-  }
+  } */
   .navbar-expand-md .navbar-collapse {
     display: flex !important;
     flex-basis: auto;
@@ -3889,9 +3889,9 @@ fieldset:disabled .btn {
     padding-right: 0.5rem;
     padding-left: 0.5rem;
   }
-  .navbar-expand-lg .navbar-nav-scroll {
+  /* .navbar-expand-lg .navbar-nav-scroll {
     overflow: visible;
-  }
+  } */
   .navbar-expand-lg .navbar-collapse {
     display: flex !important;
     flex-basis: auto;
@@ -3942,9 +3942,9 @@ fieldset:disabled .btn {
     padding-right: 0.5rem;
     padding-left: 0.5rem;
   }
-  .navbar-expand-xl .navbar-nav-scroll {
+  /* .navbar-expand-xl .navbar-nav-scroll {
     overflow: visible;
-  }
+  } */
   .navbar-expand-xl .navbar-collapse {
     display: flex !important;
     flex-basis: auto;
@@ -3995,9 +3995,9 @@ fieldset:disabled .btn {
     padding-right: 0.5rem;
     padding-left: 0.5rem;
   }
-  .navbar-expand-xxl .navbar-nav-scroll {
+  /* .navbar-expand-xxl .navbar-nav-scroll {
     overflow: visible;
-  }
+  } */
   .navbar-expand-xxl .navbar-collapse {
     display: flex !important;
     flex-basis: auto;
@@ -4047,9 +4047,9 @@ fieldset:disabled .btn {
   padding-right: 0.5rem;
   padding-left: 0.5rem;
 }
-.navbar-expand .navbar-nav-scroll {
+/* .navbar-expand .navbar-nav-scroll {
   overflow: visible;
-}
+} */
 .navbar-expand .navbar-collapse {
   display: flex !important;
   flex-basis: auto;
