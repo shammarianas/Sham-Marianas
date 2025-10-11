@@ -19,7 +19,7 @@
     "axios": "^1.7.7",
     "buffer": "^6.0.3",
     "ethers": "^6.15.0",
-    "firebase": "^10.14.0",
+    "firebase": "^10.14.1",
     "gh-pages": "^6.1.1",
     "lucide-react": "^0.483.0",
     "prop-types": "^15.8.1",
