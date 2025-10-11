@@ -25,7 +25,7 @@ function Footer() {
                 </a>
               </h6>
               <a href="#0" className="underline mb-15">
-                <span className="fz-22 main-color p-color fw-400 lh-base">+971 52 803 6012 <br></br>
+                <span className="fz-20 main-color p-color fw-400 lh-base">+971 52 803 6012 <br></br>
 +92 311 678 8423</span>
               </a>
             </div>
@@ -87,20 +87,21 @@ function Footer() {
                   <span className="ti-location-arrow"></span>
                 </button>
               </div>
+              {/* Social icon */}
               <ul className="rest social-icon d-flex align-items-center">
                 <li className="hover-this cursor-pointer ml-10">
                   <a
                     href="https://www.youtube.com/c/ShamMarianasSM"
                     target="_blank"
-                    // className="hover-anim"
+                   className="hover-anim"
                   >
                     <i class="fa-brands fa-youtube"></i>
                   </a>
                 </li>
-                <li className="hover-this cursor-pointer">
+                <li className="hover-this cursor-pointer  ml-10">
                   <a
                     href="https://www.facebook.com/shammarianas"
-                    // className="hover-anim"
+                    className="hover-anim"
                     target="_blank">
                     <i className="fab fa-facebook-f"></i>
                   </a>
@@ -109,7 +110,7 @@ function Footer() {
                   <a
                     href="https://www.behance.net/shammarianas"
                     target="_blank"
-                    // className="hover-anim"
+                    className="hover-anim"
                   >
                     <i className="fab fa-behance"></i>
                   </a>
@@ -117,7 +118,7 @@ function Footer() {
                 <li className="hover-this cursor-pointer ml-10">
                   <a
                     href="https://www.pinterest.com/shammarianas"
-                    // className="hover-anim"
+                    className="hover-anim"
                   >
                     <i class="fa-brands fa-pinterest"></i>
                   </a>
@@ -127,11 +128,7 @@ function Footer() {
                     <i className="fab fa-instagram"></i>
                   </a>
                 </li>
-                <li className="hover-this cursor-pointer ml-10">
-                  <a href="https://www.instagram.com/sham_marianas" className="hover-anim">
-                    <i className="fab fa-instagram"></i>
-                  </a>
-                </li>
+                
               </ul>
             </div>
           </div>
