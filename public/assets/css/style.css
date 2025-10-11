@@ -4809,8 +4809,10 @@ footer.clean-footer.crev .circle-blur {
   width: 400px;
   z-index: -1;
 }
-.footer-tem-nav{
+@media (max-width:768px) {
+  .footer-tem-nav{
   padding-right: 120px;
+}
 }
 
 
