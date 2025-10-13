@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./Pages/Home";
 import View from "./Pages/View";
 import Footer from "./Components/Footer";
+import TemplateFooter from "./Components/TemplateFooter";
 import Upload from "./Pages/Upload";
 import Cart from "./Pages/Cart";
 import Login from "./Pages/Login/Login";
@@ -126,19 +127,39 @@ export const AppRoutes = () => (
   </Routes>
 );
 
-function App() {
+// Layout with footer control
+const Layout = () => {
+  const location = useLocation();
+
+  // ✅ Only show TemplateFooter on Template Page
+  const renderFooter = () => {
+  const path = location.pathname.toLowerCase(); // 👈 Normalize path
+
+  if (path === "/stock" || path.includes("category")) {
+    return <TemplateFooter />;
+  } else {
+    return <Footer />;
+  }
+};
+
   return (
     <>
-      <BrowserRouter>
-        <ScrollToTop />
-        <FilterProvider>
-          <Navbar2 />
-
-          <AppRoutes />
-        </FilterProvider>
-        <Footer />
-      </BrowserRouter>
+      <Navbar2 />
+      <AppRoutes />
+      {renderFooter()}
     </>
+  );
+};
+
+// Main App
+function App() {
+  return (
+    <BrowserRouter>
+      <ScrollToTop />
+      <FilterProvider>
+        <Layout />
+      </FilterProvider>
+    </BrowserRouter>
   );
 }
 

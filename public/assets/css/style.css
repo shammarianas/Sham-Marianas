@@ -4774,7 +4774,6 @@ footer .subscribe-minimal button {
   background: transparent;
   border: 0;
 }
-/* footer */
 footer .subscribe-minimal .social-icon a {
   width: 40px;
   height: 40px;
@@ -4810,6 +4809,12 @@ footer.clean-footer.crev .circle-blur {
   width: 400px;
   z-index: -1;
 }
+@media (max-width:768px) {
+  .footer-tem-nav{
+  padding-right: 120px;
+}
+}
+
 
 /* Headers
 -----------------------------------------------------------------*/
