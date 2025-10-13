@@ -30,7 +30,7 @@ function Footer() {
               </a>
             </div>
           </div>
-          <div className="d-flex col-lg-3 justify-content-between">
+          <div className="d-flex col-lg-3 justify-content-between footer-tem-nav">
             <div className="column md-mb50">
               <h6 className="sub-title mb-30">Company</h6>
               <ul className="rest fz-14 opacity-7">
