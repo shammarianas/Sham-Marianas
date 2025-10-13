@@ -8,76 +8,74 @@ import Marq2 from "../../Components/marq2";
 
 const AiAutomationPage = () => {
   const sectionOne = {
-    title: "From Concept to ImpactHit Different",
+    title: "Crafting Intelligent Systems That Work Around the Clock",
     paragraphs: [
       <>
-        Every VFX and CGI project we create starts with purpose and ends with
-        performance. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
-        we don’t just make things look amazing — we make them work. Each frame
-        is part of a bigger plan to grab attention, spark engagement, and drive
-        results.
+        True automation is more than replacing manual work. It is about designing smart systems that adapt, learn, and improve over time. At{" "}
+        <span className="text-bold underline main-color">Sham Marianas</span>, we build automation solutions that save hours, reduce errors, and keep your business running 24/7 without missing a beat.
       </>,
-      "From the very first idea to the final pixel, we handle everything — concept creation, scriptwriting, storyboarding, animation, editing, and platform-specific optimization. It’s a full-circle creative process designed to deliver both visual impact and marketing value.",
-      "Launching a new product? Running a bold campaign? Want your brand to shine in a sea of sameness? Our VFX and CGI-powered ads give you an undeniable edge — blending future-forward visuals with storytelling that stops the scroll and moves your audience to act.",
+      "Every algorithm and process is tailored for maximum efficiency and seamless integration with your existing systems. We ensure every solution is user-friendly, scalable, and capable of handling real-world challenges. Whether it is an AI that instantly responds to customers, an automated system that manages your sales pipeline, or a process that analyzes thousands of data points in seconds, we make it happen.",
+      "We merge innovation with intelligence to create automation solutions that do not just perform but excel.",
     ],
     image: "/assets/imgs/VFXandCGIADs/09.png",
   };
 
   const sectionTwo = {
-    title: "From Bold Ideas to Breathtaking Visuals",
+    title: "Automation That Transforms Workflows Into Growth Engines",
     paragraphs: [
       <>
         At <span className="text-bold underline main-color">Sham Marianas</span>
-        , we bring ambitious ideas to life through cinematic visuals that
-        captivate, connect, and convert. Whether it's a surreal animation, a
-        stylized brand story, or a hyper-real visual experience, every project
-        is crafted with sharp strategy, artistic finesse, and storytelling that
-        resonates.
+        , we believe automation should be both powerful and practical. Our goal is to give you tools that boost productivity, cut costs, and increase accuracy while freeing your team to focus on what truly matters, which is growth.
       </>,
-      "We transform animation into art — immersive visual journeys that make people stop, feel, and act. Every frame is designed to speak louder than words and leave a lasting mark.",
+      "From the first consultation to final deployment, we focus on business impact, user experience, and measurable ROI. Every automation solution is built with your industry needs in mind, ensuring that it is not only a fit for today but also a foundation for future growth.",
+       <>
+        With <span className="text-bold underline main-color">Sham Marianas</span>
+       AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
+      </>,
     ],
     image: "/assets/imgs/VFXandCGIADs/009.png",
   };
   const faqs = [
     {
-      question: "What’s the difference between VFX and CGI?",
+      question: "What processes can you automate?",
       answer:
-        "CGI (computer-generated imagery) creates visuals from scratch, like 3D models and animations. VFX (visual effects) adds those visuals into real footage — combining both to build stunning, lifelike results.",
+        "Our area of expertise is automating time-consuming, repetitive, and data-driven tasks. This includes marketing campaigns, customer service, sales tracking, finance operations, and industry-specific workflows that can be enhanced with AI.",
     },
     {
-      question: "Do you help with concept and storyboarding?",
+      question: "Will automation replace my employees?",
       answer:
-        "Yes! We guide you from idea to execution — helping shape concepts, write scripts, storyboard scenes, and plan each effect with your brand in mind.",
+        "We want to strengthen your team, not take its place. Automation takes over repetitive tasks so your employees can focus on creative, strategic, and high-value work that drives your business forward.",
     },
     {
-      question: "Can you create short CGI ads for social media?",
+      question: "How do you ensure automation fits my business needs?",
       answer:
-        "Absolutely. We design optimized short-form VFX/CGI ads tailored for platforms like Instagram, TikTok, YouTube, and Facebook.",
+        "We begin with a deep discovery session to understand your operations. Then, we design custom AI automation systems tailored to your workflow, ensuring they integrate seamlessly with your tools and processes.",
     },
     {
-      question: "Are your CGI ads mobile-friendly and web-optimized?",
+      question: "Do you offer AI chatbot and virtual assistant solutions?",
       answer:
-        "Yes. Every project is rendered in the ideal format and resolution for web, mobile, and social media — ensuring smooth playback and high quality across all devices.",
+        "Yes. We design AI chatbots and virtual assistants that can handle customer inquiries, manage leads, and provide instant support, while improving over time with machine learning.",
     },
     {
       question: "How do I get started?",
       answer:
-        "Just reach out through our website or contact form. We’ll set up a discovery call to understand your vision and start creating visuals that push your brand forward.",
-    },
+      <>
+        Make a consultation appointment by visiting our website at  <span className="text-bold underline main-color">Sham Marianas</span>. We will identify automation opportunities and start building a system that will save time, cut costs, and boost productivity.
+   </>
+      },
   ];
 
   return (
     <>
       <HeaderSection
-        title="VFX & CGI"
+        title="AI Automation"
         highlightedText="Ads"
         backgroundImage="/assets/imgs/background/bg1.jpg"
         overlayDark="8"
       />
       <IntroSection
         title="Creating the Unreal — "
-        highlightedWords={["VFX & CGI Ads That Captivate and Convert"]}
+        highlightedWords={["Shaping Ideas Into AI-Powered Solutions That Work for You"]}
         customClass="intro-webdev-section" // 👈 Custom class added here
         paragraphs={[
           <>
@@ -85,24 +83,21 @@ const AiAutomationPage = () => {
             <span className="text-bold text-left underline main-color">
               Sham Marianas
             </span>{" "}
-            we turn imagination into impact, crafting cinematic visuals that
-            not only dazzle the eye but also drive real results. Our VFX (visual
-            effects) and CGI (computer-generated imagery) services merge
-            storytelling with next-level design to create ads that demand
-            attention and inspire action.
+            we do more than just automate tasks. We build AI-powered systems that think, adapt, and deliver results. Whether it is streamlining your business operations or creating intelligent workflows, we transform your processes into smart, efficient, and scalable solutions that work flawlessly.
+
           </>,
-          "From surreal animations to lifelike 3D worlds, we breathe digital life into your ideas — building visual experiences that break boundaries, stir emotions, and amplify your brand message. Whether it’s a high-energy product ad or a futuristic brand film, we bring creativity and precision to every frame.",
+          "From concept to execution, our automation solutions are crafted with precision, performance, and people in mind. We blend advanced artificial intelligence with practical business logic to create systems that save time and elevate your customer experience.",
+       "With us, your business does not just work. It works smarter."
         ]}
         listItems={[
-          "3D Product Animations & Commercials",
-          "CGI Brand Videos",
-          "Motion Graphics & Visual Effects",
-          "Virtual Environments & Set Extensions",
-          "Animated Explainer Ads",
-          "Logo Animations & Visual Intros",
-          "Cinematic CGI for TVCs & Digital Ads",
-          "Post-Production FX & Compositing",
-          "Custom CGI for Social Media Campaigns",
+          "Business Process Automation (BPA)",
+          "Workflow Automation Solutions",
+          "AI Chatbots and Virtual Assistants",
+          "Data Processing and Predictive Analytics",
+          "Marketing Automation Systems",
+          "CRM and Sales Pipeline Automation",
+          "Finance & Invoice Processing Automation",
+          "Industry-Specific Automation Solutions",
         ]}
         imageSrc="/assets/imgs/VFXandCGIADs/9.png"
         imageAlt="Intro branding"
