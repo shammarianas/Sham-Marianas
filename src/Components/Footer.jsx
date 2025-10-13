@@ -9,7 +9,7 @@ function Footer() {
         <div className="row justify-content-between">
           <div className="col-lg-2">
             <div className="logo icon-img-100 md-mb80">
-              <img src="/assets/imgs/logo.png" alt="" />
+              <img src="public\assets\imgs\logo.png" alt="" />
             </div>
           </div>
           <div className="col-lg-3">
