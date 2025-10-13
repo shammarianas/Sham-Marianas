@@ -58,7 +58,7 @@ main {
 
 .item-box-new {
   width: 100%;
-  height: 60vh;
+  /* height: 60vh; */
   padding: 1rem;
 }
 
@@ -591,12 +591,13 @@ figure {
 }
 
 .butn.butn-bord:hover {
-  background: #fff;
-  color: #000;
+  background: #52b0b4 ;
+  color: #fff;
+  border-color: #52b0b4;
 }
 
 .butn.butn-bord:hover span {
-  color: #000;
+   color: #fff;
 }
 
 .butn.butn-bord-thin {
@@ -3766,7 +3767,11 @@ body.loaded {
 .intro .img-full {
   height: 100%;
 }
-
+@media (max-width:768px) {
+  .intro .img-full {
+  height: auto;
+}
+}
 .intro-crev .sec-head {
   margin-bottom: -50px;
 }
@@ -4500,6 +4505,10 @@ body.loaded {
 
 /* Contact
 -----------------------------------------------------------------*/
+.contact{
+  padding-left: 30px;
+}
+
 .call-marq .main-marq:after {
   display: none;
 }
@@ -4576,7 +4585,7 @@ body.loaded {
 .contact .form2 textarea {
   padding: 15px 30px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 30px;
+  border-radius: 5px;
 }
 
 .google-map {
@@ -4812,6 +4821,11 @@ footer.clean-footer.crev .circle-blur {
 @media (max-width:768px) {
   .footer-tem-nav{
   padding-right: 120px;
+}
+}
+@media (max-width:600px) {
+  .footer-tem-nav{
+  padding-right: 40px;
 }
 }
 

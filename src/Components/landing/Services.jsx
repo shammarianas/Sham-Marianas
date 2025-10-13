@@ -64,6 +64,18 @@ const data = [
     desc: "We craft print media solutions that boost brand visibility, marketing impact, and audience engagement with high-quality designs and materials.",
     link: "#services/printing",
   },
+  {
+    title: "11. AI-Automation",
+    img: "/assets/imgs/serv-icons/3.png",
+    desc: "We empower businesses with AI automation that transforms workflows, boosts productivity, and accelerates growth through intelligent solutions.",
+    link: "#services/ai-automation",
+  },
+  {
+    title: "12. Exhibition Booth Design",
+    img: "/assets/imgs/serv-icons/4.png",
+    desc: "We develop exhibition booth designs that bring your brand to life with stunning visuals, smart layouts, and engaging displays that attract audiences and build memorable connections.",
+    link: "#services/exhibition",
+  },
 ];
 function Services() {
   const swiperOptions = {
@@ -103,8 +115,8 @@ function Services() {
           marginLeft: "auto",
         }}
       >
-        <div className="sec-head mb-80">
-          <div className="d-flex align-items-center">
+        <div className="sec-head mb-60">
+          <div className="d-flex align-items-end">
             <div>
               <span className="sub-title main-color mb-5">Our Specialize</span>
               <h3 className="fw-600 fz-50 text-u d-rotate wow">
