@@ -68,8 +68,8 @@ const AiAutomationPage = () => {
   return (
     <>
       <HeaderSection
-        title="AI Automation"
-        highlightedText="Ads"
+        title="AI "
+        highlightedText="Automation"
         backgroundImage="/assets/imgs/background/bg1.jpg"
         overlayDark="8"
       />

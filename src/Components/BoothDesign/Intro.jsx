@@ -11,8 +11,7 @@ function Intro() {
                 <div>
                   <h6 className="sub-title main-color mb-15">Description</h6>
                   <h3 className="mb-30">
-                    Creating the Unreal — VFX & CGI Ads That Captivate and
-                    Convert
+                    Shaping Ideas Into AI-Powered Solutions That Work for You
                   </h3>
                 </div>
               </div>
