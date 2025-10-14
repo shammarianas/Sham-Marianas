@@ -25,7 +25,7 @@ function Team() {
         <div className="row">
           {data.map((item, i) => (
             <div key={i} className="col-lg-4">
-              <div className="item md-mb50">
+              <div className="item mb-4 lg-mb50">
                 <div className="img">
                   <img src={item.img} alt="" />
                   <div className="info">

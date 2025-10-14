@@ -93,6 +93,24 @@ function Services() {
         "We craft print media solutions that boost brand visibility, marketing impact, and audience engagement with high-quality designs and materials.",
       img: "/assets/imgs/serv-img/10.jpg",
     },
+    {
+      num: "11",
+      slug: "ai-automation",
+      category: "AI & Automation",
+      title: "Smart workflows",
+      description:
+        "We empower businesses with AI automation that transforms workflows, boosts productivity, and accelerates growth through intelligent solutions.",
+      img: "/assets/imgs/serv-img/11.jpg",
+    },
+    {
+      num: "12",
+      slug: "exhibition",
+      category: "Exhibition Booth Design",
+      title: "Design-engaging Spaces",
+      description:
+        "We develop exhibition booth designs that bring your brand to life with stunning visuals, smart layouts, and engaging displays that attract audiences and build memorable connections.",
+      img: "/assets/imgs/serv-img/12.jpg",
+    },
   ];
 
   return (
