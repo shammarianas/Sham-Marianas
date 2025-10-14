@@ -25,7 +25,7 @@ function Footer() {
                 </a>
               </h6>
               <a href="#0" className="underline mb-15">
-                <span className="fz-20 main-color p-color fw-400 lh-base">+971 52 803 6012 <br></br>
+                <span className="fz-18 main-color p-color fw-400 lh-base">+971 52 803 6012 <br></br>
 +92 311 678 8423</span>
               </a>
             </div>

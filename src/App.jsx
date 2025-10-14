@@ -53,6 +53,9 @@ import DigitalMaketerPage from "./Pages/ServicesDetails/Digital-Marketer";
 import VfxAndAds from "./Pages/ServicesDetails/VfxAndAds";
 import VideoProduction from "./Pages/ServicesDetails/Video-Production";
 import PrintMedia from "./Pages/ServicesDetails/PrintMedia";
+import AiAutomation from "./Pages/ServicesDetails/AiAutomation";
+import BoothDesign from "./Pages/ServicesDetails/BoothDesign";
+
 
 import Success from "./Pages/Success";
 
@@ -116,6 +119,8 @@ export const AppRoutes = () => (
     <Route path="/services/video-production" element={<VideoProduction />} />
     <Route path="/services/vfx" element={<VfxAndAds />} />
     <Route path="/services/printing" element={<PrintMedia />} />
+    <Route path="/services/ai-automation" element={<AiAutomation />} />
+    <Route path="/services/exhibition" element={<BoothDesign />} />
 
     {/* Demo Page */}
     <Route path="/services/brandingpage" element={<BrandingPage />} />

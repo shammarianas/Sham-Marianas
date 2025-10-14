@@ -8,6 +8,7 @@ import Team from "../Components/landing/Team";
 import Cursor from "../common/cusor";
 import ProgressScroll from "../common/ProgressScroll";
 import Clients from "../Components/landing/Clients";
+import Contact from "../Components/landing/Contact";
 import Marq2 from "../Components/marq2";
 
 const Home = () => {
@@ -33,6 +34,7 @@ const Home = () => {
           <Services />
           <Team />
           <Clients />
+          <Contact />
           <Marq2 />
         </main>
       </div>
