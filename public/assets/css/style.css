@@ -4563,7 +4563,7 @@ body.loaded {
 .contact .info-box {
   padding: 80px 40px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 30px;
+  border-radius: 10px;
   position: relative;
   overflow: hidden;
 }
@@ -4783,7 +4783,8 @@ footer .subscribe-minimal button {
   background: transparent;
   border: 0;
 }
-footer .subscribe-minimal .social-icon a {
+footer .subscribe-minimal .social-icon a,
+.Contact-socialIcons .social-icon a {
   width: 40px;
   height: 40px;
   line-height: 40px;
