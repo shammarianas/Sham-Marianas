@@ -8,59 +8,58 @@ import Marq2 from "../../Components/marq2";
 
 const BoothDesignPage = () => {
   const sectionOne = {
-    title: "Crafting Intelligent Systems That Work Around the Clock",
+    title: "The Importance of Exhibition Booth Design",
     paragraphs: [
+      "Your exhibition booth isn’t just a display, it’s your first impression. In a busy exhibition hall, hundreds of brands are competing for attention. What makes people stop at your booth is design that connects instantly.",
       <>
-        True automation is more than replacing manual work. It is about designing smart systems that adapt, learn, and improve over time. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>, we build automation solutions that save hours, reduce errors, and keep your business running 24/7 without missing a beat.
+        A well-designed booth doesn’t just attract visitors; it keeps them engaged. It builds trust, sparks curiosity, and gives people a reason to remember your brand. At{" "}
+        <span className="text-bold underline main-color">Sham Marianas</span>, we design booths that balance creativity and clarity, so your space feels open, inviting, and aligned with your brand identity.
       </>,
-      "Every algorithm and process is tailored for maximum efficiency and seamless integration with your existing systems. We ensure every solution is user-friendly, scalable, and capable of handling real-world challenges. Whether it is an AI that instantly responds to customers, an automated system that manages your sales pipeline, or a process that analyzes thousands of data points in seconds, we make it happen.",
-      "We merge innovation with intelligence to create automation solutions that do not just perform but excel.",
+      "When your booth feels well-designed, your audience feels confident about your brand. That’s the power of design done right, it turns curiosity into connection, and visitors into potential clients.",
+      "From sketch to setup, we handle everything so you can focus on your event while we bring your booth to life."
     ],
     image: "/assets/imgs/VFXandCGIADs/09.png",
   };
 
   const sectionTwo = {
-    title: "Automation That Transforms Workflows Into Growth Engines",
+    title: "Designed for the Modern Brand",
     paragraphs: [
-      <>
+      "In today’s fast-moving world of trade shows and expos, standing out is essential. Visitors don’t just look for flashy visuals, they look for experiences. Your booth should feel alive, reflect your brand’s purpose, and create a lasting emotional impact.",
+       "That’s where we come in. Our Exhibition Booth Design Services are made for brands that want to be seen, heard, and remembered. We keep every design modern, clean, and easy to explore. Whether you want a minimalist setup or an interactive digital display, our team tailors each detail to fit your goals.",
+       "We also make sure your booth feels comfortable and functional. The flow of space, lighting, materials, and colors, all are thoughtfully chosen to create a setting where people naturally want to step in and engage.",
+        <>
         At <span className="text-bold underline main-color">Sham Marianas</span>
-        , we believe automation should be both powerful and practical. Our goal is to give you tools that boost productivity, cut costs, and increase accuracy while freeing your team to focus on what truly matters, which is growth.
-      </>,
-      "From the first consultation to final deployment, we focus on business impact, user experience, and measurable ROI. Every automation solution is built with your industry needs in mind, ensuring that it is not only a fit for today but also a foundation for future growth.",
-       <>
-        With <span className="text-bold underline main-color">Sham Marianas</span>
-       AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
-      </>,
+        , we believe design isn’t about decoration, it’s about communication. Every booth we build is designed to tell your story visually, consistently, and effectively.
+      </>
     ],
     image: "/assets/imgs/VFXandCGIADs/009.png",
   };
   const faqs = [
     {
-      question: "What processes can you automate?",
+      question: "How do you design a booth that fits my brand?",
       answer:
-        "Our area of expertise is automating time-consuming, repetitive, and data-driven tasks. This includes marketing campaigns, customer service, sales tracking, finance operations, and industry-specific workflows that can be enhanced with AI.",
+        "We begin with a clear understanding of your brand, audience, and goals. Then we create a design plan that matches your visual identity, theme, and event purpose.",
     },
     {
-      question: "Will automation replace my employees?",
+      question: "Can you handle the full setup and management?",
       answer:
-        "We want to strengthen your team, not take its place. Automation takes over repetitive tasks so your employees can focus on creative, strategic, and high-value work that drives your business forward.",
+        "Yes. We take care of everything from concept, 3D modeling, and fabrication to setup and on-site support, so you can focus on your presentation and audience.",
     },
     {
-      question: "How do you ensure automation fits my business needs?",
+      question: "How long does it take to complete a project?",
       answer:
-        "We begin with a deep discovery session to understand your operations. Then, we design custom AI automation systems tailored to your workflow, ensuring they integrate seamlessly with your tools and processes.",
+        "Most booth designs take around 3 to 6 weeks, depending on the size, theme, and complexity of the setup.",
     },
     {
-      question: "Do you offer AI chatbot and virtual assistant solutions?",
+      question: "What makes your booth designs stand out?",
       answer:
-        "Yes. We design AI chatbots and virtual assistants that can handle customer inquiries, manage leads, and provide instant support, while improving over time with machine learning.",
+        "We design booths that are creative, practical, and purpose-driven. Every booth tells a story, connects emotionally, and reflects your brand’s personality.",
     },
     {
-      question: "How do I get started?",
+      question: "How can I get started?",
       answer:
       <>
-        Make a consultation appointment by visiting our website at  <span className="text-bold underline main-color">Sham Marianas</span>. We will identify automation opportunities and start building a system that will save time, cut costs, and boost productivity.
+        Simply contact  <span className="text-bold underline main-color">Sham Marianas</span> through our website or message our team directly. We’ll schedule a quick consultation to understand your vision and start designing your booth.
    </>
       },
   ];
@@ -68,14 +67,14 @@ const BoothDesignPage = () => {
   return (
     <>
       <HeaderSection
-        title="AI "
-        highlightedText="Automation"
+        title="Exhibition "
+        highlightedText="Booth"
         backgroundImage="/assets/imgs/background/bg1.jpg"
         overlayDark="8"
       />
       <IntroSection
-        title="Creating the Unreal — "
-        highlightedWords={["Shaping Ideas Into AI-Powered Solutions That Work for You"]}
+        title="Exhibition Booth Design"
+        highlightedWords={["That Attracts and Connects"]}
         customClass="intro-webdev-section" // 👈 Custom class added here
         paragraphs={[
           <>
@@ -83,24 +82,21 @@ const BoothDesignPage = () => {
             <span className="text-bold text-left underline main-color">
               Sham Marianas
             </span>{" "}
-            we do more than just automate tasks. We build AI-powered systems that think, adapt, and deliver results. Whether it is streamlining your business operations or creating intelligent workflows, we transform your processes into smart, efficient, and scalable solutions that work flawlessly.
+           we believe your exhibition booth should do more than just look good, it should speak for your brand. Every event is an opportunity to make people stop, notice, and remember who you are. That’s exactly what we help you do.
 
           </>,
-          "From concept to execution, our automation solutions are crafted with precision, performance, and people in mind. We blend advanced artificial intelligence with practical business logic to create systems that save time and elevate your customer experience.",
-       "With us, your business does not just work. It works smarter."
+          "Whether you’re a new brand stepping into the spotlight or an established business preparing for your next big event, we create exhibition booth designs that make your presence unforgettable. From concept and structure to lighting and visuals, every detail is designed to draw attention and tell your brand’s story with confidence and style."
         ]}
         listItems={[
-          "Business Process Automation (BPA)",
-          "Workflow Automation Solutions",
-          "AI Chatbots and Virtual Assistants",
-          "Data Processing and Predictive Analytics",
-          "Marketing Automation Systems",
-          "CRM and Sales Pipeline Automation",
-          "Finance & Invoice Processing Automation",
-          "Industry-Specific Automation Solutions",
+          "Custom Booth Design & Fabrication",
+          "3D Booth Visualization & Layout Planning",
+          "Brand-Themed Booth Concepts",
+          "Digital Displays, Signage & Lighting Setup",
+          "Flooring, Print Collateral & Accessories",
+          "Installation, Management & On-Site Support",
         ]}
         imageSrc="/assets/imgs/VFXandCGIADs/9.png"
-        imageAlt="Intro branding"
+        imageAlt="Intro booth"
       />
       <BrandingContentSection sectionOne={sectionOne} sectionTwo={sectionTwo} />
       <div className="bord-bottom-grd pb-40 pt-40 ontop"></div>
