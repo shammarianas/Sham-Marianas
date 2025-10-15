@@ -167,7 +167,8 @@ function Header() {
                       coverImgUrl={project.featureImgUrl}
                       title={project.title}
                     />
-                    <div className="cont d-flex align-items-end mt-30">
+                    <div className="portfolio-card">
+                      <div className="cont d-flex align-items-end py-3 px-2">
                       <div>
                         <span className="p-color mb-5 sub-title">
                           {project.category.charAt(0).toUpperCase() +
@@ -180,6 +181,7 @@ function Header() {
                           <span className="ti-arrow-top-right"></span>
                         </Link>
                       </div>
+                    </div>
                     </div>
                   </div>
                 </div>

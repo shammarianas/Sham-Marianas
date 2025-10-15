@@ -36,30 +36,30 @@ const BoothDesignPage = () => {
   };
   const faqs = [
     {
-      question: "What processes can you automate?",
+      question: "How do you design a booth that fits my brand?",
       answer:
-        "Our area of expertise is automating time-consuming, repetitive, and data-driven tasks. This includes marketing campaigns, customer service, sales tracking, finance operations, and industry-specific workflows that can be enhanced with AI.",
+        "We begin with a clear understanding of your brand, audience, and goals. Then we create a design plan that matches your visual identity, theme, and event purpose.",
     },
     {
-      question: "Will automation replace my employees?",
+      question: "Can you handle the full setup and management?",
       answer:
-        "We want to strengthen your team, not take its place. Automation takes over repetitive tasks so your employees can focus on creative, strategic, and high-value work that drives your business forward.",
+        "Yes. We take care of everything from concept, 3D modeling, and fabrication to setup and on-site support, so you can focus on your presentation and audience.",
     },
     {
-      question: "How do you ensure automation fits my business needs?",
+      question: "How long does it take to complete a project?",
       answer:
-        "We begin with a deep discovery session to understand your operations. Then, we design custom AI automation systems tailored to your workflow, ensuring they integrate seamlessly with your tools and processes.",
+        "Most booth designs take around 3 to 6 weeks, depending on the size, theme, and complexity of the setup.",
     },
     {
-      question: "Do you offer AI chatbot and virtual assistant solutions?",
+      question: "What makes your booth designs stand out?",
       answer:
-        "Yes. We design AI chatbots and virtual assistants that can handle customer inquiries, manage leads, and provide instant support, while improving over time with machine learning.",
+        "We design booths that are creative, practical, and purpose-driven. Every booth tells a story, connects emotionally, and reflects your brand’s personality.",
     },
     {
-      question: "How do I get started?",
+      question: "How can I get started?",
       answer:
       <>
-        Make a consultation appointment by visiting our website at  <span className="text-bold underline main-color">Sham Marianas</span>. We will identify automation opportunities and start building a system that will save time, cut costs, and boost productivity.
+        Simply contact  <span className="text-bold underline main-color">Sham Marianas</span> through our website or message our team directly. We’ll schedule a quick consultation to understand your vision and start designing your booth.
    </>
       },
   ];
