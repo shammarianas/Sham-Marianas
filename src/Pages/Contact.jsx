@@ -34,7 +34,7 @@ function Contact() {
                 </li>
                 <li className="hover-this cursor-pointer  mr-10">
                   <a
-                    href="https://www.facebook.com/shammarianas"
+                    href=" https://www.facebook.com/shammarianas"
                     className="hover-anim"
                     target="_blank">
                     <i className="fab fa-facebook-f"></i>
@@ -58,7 +58,7 @@ function Contact() {
                   </a>
                 </li>
                 <li className="hover-this cursor-pointer mr-10">
-                  <a href="https://www.instagram.com/sham_marianas" className="hover-anim">
+                  <a href="https://www.instagram.com/sham_marianas/" className="hover-anim">
                     <i className="fab fa-instagram"></i>
                   </a>
                 </li>
