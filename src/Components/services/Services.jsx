@@ -106,7 +106,7 @@ function Services() {
       num: "12",
       slug: "exhibition",
       category: "Exhibition Booth Design",
-      title: "Design-engaging Spaces",
+      title: "Engaging Spaces",
       description:
         "We develop exhibition booth designs that bring your brand to life with stunning visuals, smart layouts, and engaging displays that attract audiences and build memorable connections.",
       img: "/assets/imgs/serv-img/12.jpg",
