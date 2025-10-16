@@ -887,7 +887,7 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
       <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
+        {/* <div className="sidebar-header">
           <div className="sidebar-brand">
             <div className="logo-full">Admin Panel</div>
             <div className="logo-compact">AP</div>
@@ -895,7 +895,21 @@ const AdminDashboard = () => {
           <button className="sidebar-toggle" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} title={isSidebarCollapsed ? 'Expand' : 'Collapse'}>
             <FiChevronLeft className={`toggle-icon ${isSidebarCollapsed ? 'rotated' : ''}`} />
           </button>
-        </div>
+        </div> */}
+
+        <div className="sidebar-header">
+      <button
+        className="sidebar-toggle"
+        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        title={isSidebarCollapsed ? 'Expand' : 'Collapse'}
+      >
+        {isSidebarCollapsed ? (
+          <FiMenu className="toggle-icon" />
+        ) : (
+          <FiX className="toggle-icon" />
+        )}
+      </button>
+    </div>
         <ul className="sidebar-menu">
           <li className={`menu-item ${activeTab === 0 ? 'active' : ''}`} onClick={() => { setActiveTab(0); setIsSidebarOpen(false); }} title="Dashboard">
             <FiHome className="menu-icon" />
@@ -943,7 +957,7 @@ const AdminDashboard = () => {
       </div>
 
       <div className="main-content">
-        <div className="topbar">
+        {/* <div className="topbar">
           <div className="topbar-left">
             <button className="icon-button mobile-only" onClick={() => setIsSidebarOpen(true)} title="Open Menu">
               <FiMenu />
@@ -985,7 +999,7 @@ const AdminDashboard = () => {
               <span className="profile-email">{auth.currentUser?.email || "Admin"}</span>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="header">
           <h1 className="page-title">

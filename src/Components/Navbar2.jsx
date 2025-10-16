@@ -366,7 +366,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {!["/", "/Login", "/Upload", "/reset"].includes(currentPage) && (
+      {!["/", "/Login", "/Upload", "/reset", "/admin"].includes(currentPage) && (
         <div className="bottom-bar">
           <div className="links">
             <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
