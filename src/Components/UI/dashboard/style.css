@@ -87,27 +87,74 @@ ul{
 } */
 
 .sidebar-header {
-  align-items: center;
-  padding-left: 2rem;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--border-color, #2c2d2c); /* Fallback to #2c2d2c */
+  display: flex;
+  justify-content: center; /* Center the dropdown */
 }
 
-.sidebar-toggle {
-  
-  background: none;
-  border: none;
+
+.dashboard-dropdown {
+  background: #0f0f0f; /* Dark background */
+  border: 1px solid #2c2d2c; /* Consistent border color */
+  border-radius: 0.5rem;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #808080; /* Gray text color */
   cursor: pointer;
-  /* display: flex;
+  outline: none;
+  opacity: 0.8;
+  display: flex;
   align-items: center;
-  justify-content: center; */
+  justify-content: space-between;
+  width: 100%;
+  transition: background 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
 }
 
-.toggle-icon {
-  font-size: 1.5rem; /* Adjust size of hamburger/cross icon */
-  color: var(--text-primary); /* Match your theme's text color */
-  transition: all 0.3s ease; /* Smooth transition for icon change */
+.dropdown-icon {
+  font-size: 1rem;
+  color: #808080; /* Match text color */
+  transition: color 0.3s ease;
 }
+
+.dashboard-dropdown:hover .dropdown-icon {
+  color: #a0a0a0; /* Match hover text color */
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #0f0f0f; /* Match sidebar background */
+  border: 1px solid #2c2d2c;
+  border-radius: 0.5rem;
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0.2rem 0 0;
+  min-width: 150px;
+  width: 100%; /* Match button width */
+  z-index: 10;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-menu li {
+  padding: 0.5rem 1rem;
+  color: #808080; /* Gray text */
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-menu li:hover {
+  background: rgba(0, 0, 0, 0.52);
+  color: #a0a0a0; /* Lighter gray on hover */
+}
+
+.dropdown-menu li.selected {
+  background: rgba(255, 255, 255, 0.1); /* Subtle highlight for selected item */
+  color: #a0a0a0;
+}
+
 
 .sidebar-menu {
   list-style: none;

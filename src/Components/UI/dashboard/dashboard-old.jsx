@@ -1,6 +1,6 @@
 import { auth, db, storage } from "../../../../firebase";
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { doc, getDoc, getDocs, collection, collectionGroup, updateDoc, setDoc, deleteDoc, orderBy, query, addDoc } from "firebase/firestore";
 import Upload from "../../../Pages/Upload";
 import BlogEditorModal from "../../../Pages/BlogEditor";
@@ -54,15 +54,9 @@ import { signOut } from "firebase/auth";
 import { seedAll } from "../../../utils/seedFirestore";
 import { wipeCollections, DEFAULT_WIPE_TARGETS } from "../../../utils/wipeFirestore";
 
-const UnauthorizedAccess = ({ error }) => {
-  return (
-    <div className="unauthorized-access">
-      <h3>Access Denied</h3>
-      <p>{error || "You do not have permission to access this page."}</p>
-    </div>
-  );
-};
+// ... (All other imports, constants, and helper functions remain unchanged)
 
+// AdminDashboard Component
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState(0); // 0: Overview
   const [users, setUsers] = useState([]);
@@ -110,6 +104,42 @@ const AdminDashboard = () => {
   const [selectedSupportTicket, setSelectedSupportTicket] = useState(null);
   const [supportResponse, setSupportResponse] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const [selectedDashboard, setSelectedDashboard] = useState('admin'); // Default to Admin Dashboard
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown menu visibility
+
+  // Sync dropdown with current route
+  useEffect(() => {
+    if (location.pathname === '/admin') {
+      setSelectedDashboard('admin');
+    } else if (location.pathname === '/company') {
+      setSelectedDashboard('company');
+    }
+  }, [location.pathname]);
+
+ // Handle dropdown item selection
+  const handleDashboardChange = (value) => {
+    setSelectedDashboard(value);
+    navigate(value === 'admin' ? '/admin' : '/company');
+    setIsDropdownOpen(false); // Close dropdown after selection
+  };
+
+  // Toggle dropdown visibility
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!event.target.closest('.custom-dropdown')) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
+
 
   // Asset categories
   const ASSET_CATEGORIES = [
@@ -192,7 +222,6 @@ const AdminDashboard = () => {
   // Authorized admins list
   const AUTHORIZED_ADMINS = [
     "admin@shammarianas.com",
-    "adebayour66265@gmail.com",
     "shammarianas@gmail.com"
   ];
 
@@ -252,7 +281,7 @@ const AdminDashboard = () => {
 
     // Primary admin (must match Firestore rules)
     const PRIMARY_ADMIN = "admin@shammarianas.com";
-    const ALSO_AUTHORIZED = ["adebayour66265@gmail.com","shammarianas@gmail.com"];
+    const ALSO_AUTHORIZED = ["shammarianas@gmail.com"];
     if (email === PRIMARY_ADMIN) {
       try {
         await setDoc(
@@ -887,29 +916,35 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
       <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isSidebarOpen ? 'open' : ''}`}>
-        {/* <div className="sidebar-header">
-          <div className="sidebar-brand">
-            <div className="logo-full">Admin Panel</div>
-            <div className="logo-compact">AP</div>
-          </div>
-          <button className="sidebar-toggle" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} title={isSidebarCollapsed ? 'Expand' : 'Collapse'}>
-            <FiChevronLeft className={`toggle-icon ${isSidebarCollapsed ? 'rotated' : ''}`} />
-          </button>
-        </div> */}
-
-        <div className="sidebar-header">
-      <button
-        className="sidebar-toggle"
-        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        title={isSidebarCollapsed ? 'Expand' : 'Collapse'}
-      >
-        {isSidebarCollapsed ? (
-          <FiMenu className="toggle-icon" />
-        ) : (
-          <FiX className="toggle-icon" />
+         <div className="sidebar-header">
+      <div className="custom-dropdown">
+        <button
+          className="dashboard-dropdown"
+          onClick={toggleDropdown}
+          title="Select Dashboard"
+        >
+          {selectedDashboard === 'admin' ? 'Admin Dashboard' : 'Company Dashboard'}
+          <FiChevronDown className="dropdown-icon" />
+        </button>
+        {isDropdownOpen && (
+          <ul className="dropdown-menu">
+            <li
+              className={selectedDashboard === 'admin' ? 'selected' : ''}
+              onClick={() => handleDashboardChange('admin')}
+            >
+              Admin Dashboard
+            </li>
+            <li
+              className={selectedDashboard === 'company' ? 'selected' : ''}
+              onClick={() => handleDashboardChange('company')}
+            >
+              Company Dashboard
+            </li>
+          </ul>
         )}
-      </button>
+      </div>
     </div>
+
         <ul className="sidebar-menu">
           <li className={`menu-item ${activeTab === 0 ? 'active' : ''}`} onClick={() => { setActiveTab(0); setIsSidebarOpen(false); }} title="Dashboard">
             <FiHome className="menu-icon" />
@@ -956,6 +991,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      
       <div className="main-content">
         {/* <div className="topbar">
           <div className="topbar-left">
