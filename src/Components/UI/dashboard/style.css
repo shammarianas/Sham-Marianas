@@ -136,7 +136,7 @@ flex-direction: row;
 }
 
 .menu-item {
-  padding: 0.75rem 0rem;
+  /* padding: 0.75rem 0rem; */
   display: flex;
   flex-wrap: wrap;
      align-items: flex-start;
@@ -243,6 +243,9 @@ flex-direction: row;
 .submenu-item.active {
   background: rgba(82, 177, 180, 16%);
   color: white;
+}
+.comp-menu{
+  padding: 0.75rem 1.5rem;
 }
 
 
