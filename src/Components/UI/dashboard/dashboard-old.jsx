@@ -1,6 +1,7 @@
 import { auth, db, storage } from "../../../../firebase";
-import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+// import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { doc, getDoc, getDocs, collection, collectionGroup, updateDoc, setDoc, deleteDoc, orderBy, query, addDoc } from "firebase/firestore";
 import Upload from "../../../Pages/Upload";
 import BlogEditorModal from "../../../Pages/BlogEditor";
@@ -54,9 +55,15 @@ import { signOut } from "firebase/auth";
 import { seedAll } from "../../../utils/seedFirestore";
 import { wipeCollections, DEFAULT_WIPE_TARGETS } from "../../../utils/wipeFirestore";
 
-// ... (All other imports, constants, and helper functions remain unchanged)
+const UnauthorizedAccess = ({ error }) => {
+  return (
+    <div className="unauthorized-access">
+      <h3>Access Denied</h3>
+      <p>{error || "You do not have permission to access this page."}</p>
+    </div>
+  );
+};
 
-// AdminDashboard Component
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState(0); // 0: Overview
   const [users, setUsers] = useState([]);
@@ -104,42 +111,64 @@ const AdminDashboard = () => {
   const [selectedSupportTicket, setSelectedSupportTicket] = useState(null);
   const [supportResponse, setSupportResponse] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
-  const [selectedDashboard, setSelectedDashboard] = useState('admin'); // Default to Admin Dashboard
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown menu visibility
+ const [selectedDashboard, setSelectedDashboard] = useState('admin');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const [usersDropdownOpen, setUsersDropdownOpen] = useState(false);
+const [sellersDropdownOpen, setSellersDropdownOpen] = useState(false);
+const [advancedDropdownOpen, setAdvancedDropdownOpen] = useState(false);
 
-  // Sync dropdown with current route
-  useEffect(() => {
-    if (location.pathname === '/admin') {
-      setSelectedDashboard('admin');
-    } else if (location.pathname === '/company') {
-      setSelectedDashboard('company');
-    }
-  }, [location.pathname]);
+const handleUsersDropdown = () => {
+  setUsersDropdownOpen(!usersDropdownOpen);
+  setSellersDropdownOpen(false);
+  setAdvancedDropdownOpen(false);
+};
 
- // Handle dropdown item selection
-  const handleDashboardChange = (value) => {
-    setSelectedDashboard(value);
-    navigate(value === 'admin' ? '/admin' : '/company');
-    setIsDropdownOpen(false); // Close dropdown after selection
-  };
+const handleSellersDropdown = () => {
+  setSellersDropdownOpen(!sellersDropdownOpen);
+  setUsersDropdownOpen(false);
+  setAdvancedDropdownOpen(false);
+};
 
-  // Toggle dropdown visibility
+const handleAdvancedDropdown = () => {
+  setAdvancedDropdownOpen(!advancedDropdownOpen);
+  setUsersDropdownOpen(false);
+  setSellersDropdownOpen(false);
+};
+const handleDashboardChange = (type) => {
+  setSelectedDashboard(type);
+  setActiveTab(0); // Reset to first tab
+  setIsDropdownOpen(false);
+};
+
   const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  console.log('Dropdown clicked, current state:', isDropdownOpen);
+  setIsDropdownOpen(!isDropdownOpen);
+};
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (!event.target.closest('.custom-dropdown')) {
+  // Close dropdown when clicking outside
+ useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, []);
 
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+// Jab activeTab change ho, automatically parent dropdown open karo
+useEffect(() => {
+  if ([1, 2, 3].includes(activeTab)) {
+    setUsersDropdownOpen(true);
+  } else if ([4, 5, 6, 7, 8, 9].includes(activeTab)) {
+    setSellersDropdownOpen(true);
+  } else if ([10, 11, 12, 13].includes(activeTab)) {
+    setAdvancedDropdownOpen(true);
+  }
+}, [activeTab]);
 
   // Asset categories
   const ASSET_CATEGORIES = [
@@ -147,6 +176,8 @@ const AdminDashboard = () => {
     "Icons", "Fonts", "Scripts", "Mockups", "Audio", "Templates"
   ];
 
+
+  
   // Helper functions
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -222,6 +253,7 @@ const AdminDashboard = () => {
   // Authorized admins list
   const AUTHORIZED_ADMINS = [
     "admin@shammarianas.com",
+    "adebayour66265@gmail.com",
     "shammarianas@gmail.com"
   ];
 
@@ -281,7 +313,7 @@ const AdminDashboard = () => {
 
     // Primary admin (must match Firestore rules)
     const PRIMARY_ADMIN = "admin@shammarianas.com";
-    const ALSO_AUTHORIZED = ["shammarianas@gmail.com"];
+    const ALSO_AUTHORIZED = ["adebayour66265@gmail.com","shammarianas@gmail.com"];
     if (email === PRIMARY_ADMIN) {
       try {
         await setDoc(
@@ -908,135 +940,153 @@ const AdminDashboard = () => {
     }
   };
 
+  
+
   if (error && !isAdmin) {
     return <UnauthorizedAccess error={error} />;
   }
 
+
   return (
     <div className="admin-dashboard">
-      {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
-      <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isSidebarOpen ? 'open' : ''}`}>
-         <div className="sidebar-header">
-      <div className="custom-dropdown">
-        <button
-          className="dashboard-dropdown"
-          onClick={toggleDropdown}
-          title="Select Dashboard"
+      {/* {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />} */}
+     <div className="sidebar">
+  {/* Dropdown with ref added */}
+  <div className="custom-dropdown" ref={dropdownRef}>
+    <button
+      className="dashboard-dropdown"
+      onClick={toggleDropdown}
+      title="Select Dashboard"
+    >
+      {selectedDashboard === 'admin' ? 'Admin Dashboard' : 'Company Dashboard'}
+      <FiChevronDown className="dropdown-icon" />
+    </button>
+    {isDropdownOpen && (
+      <ul className="dropdown-menu">
+        <li
+          className={selectedDashboard === 'admin' ? 'selected' : ''}
+          onClick={() => handleDashboardChange('admin')}
         >
-          {selectedDashboard === 'admin' ? 'Admin Dashboard' : 'Company Dashboard'}
-          <FiChevronDown className="dropdown-icon" />
-        </button>
-        {isDropdownOpen && (
-          <ul className="dropdown-menu">
-            <li
-              className={selectedDashboard === 'admin' ? 'selected' : ''}
-              onClick={() => handleDashboardChange('admin')}
-            >
-              Admin Dashboard
-            </li>
-            <li
-              className={selectedDashboard === 'company' ? 'selected' : ''}
-              onClick={() => handleDashboardChange('company')}
-            >
-              Company Dashboard
-            </li>
-          </ul>
-        )}
-      </div>
+          Admin Dashboard
+        </li>
+        <li
+          className={selectedDashboard === 'company' ? 'selected' : ''}
+          onClick={() => handleDashboardChange('company')}
+        >
+          Company Dashboard
+        </li>
+      </ul>
+    )}
+  </div>
+
+  {/* Conditional Sidebar Menu based on selected dashboard */}
+  {selectedDashboard === 'admin' ? (
+ <ul className="sidebar-menu">
+  {/* Users Dropdown */}
+  <li className={`menu-item dropdown-parent ${usersDropdownOpen || [1,2,3].includes(activeTab) ? 'active' : ''}`}>
+    <div className={`dropdown-header ${usersDropdownOpen || [1,2,3].includes(activeTab) ? 'active' : ''}`} onClick={handleUsersDropdown}>
+      <FiUsers className="menu-icon" /> 
+      <span className="nav-label">Users</span>
+      <FiChevronDown className={`dropdown-arrow ${usersDropdownOpen ? 'open' : ''}`} />
     </div>
+    {usersDropdownOpen && (
+      <ul className="submenu">
+        <li className={`submenu-item ${activeTab === 1 ? 'active' : ''}`} onClick={() => { setActiveTab(1); setIsSidebarOpen(false); }} title="User Information">
+          User Information
+        </li>
+        <li className={`submenu-item ${activeTab === 2 ? 'active' : ''}`} onClick={() => { setActiveTab(2); setIsSidebarOpen(false); }} title="User Report">
+          User Report
+        </li>
+        <li className={`submenu-item ${activeTab === 3 ? 'active' : ''}`} onClick={() => { setActiveTab(3); setIsSidebarOpen(false); }} title="Payment & Plan">
+          Payment & Plan
+        </li>
+      </ul>
+    )}
+  </li>
 
-        <ul className="sidebar-menu">
-          <li className={`menu-item ${activeTab === 0 ? 'active' : ''}`} onClick={() => { setActiveTab(0); setIsSidebarOpen(false); }} title="Dashboard">
-            <FiHome className="menu-icon" />
-            <span className="nav-label">Dashboard</span>
-          </li>
-          <li className={`menu-item ${activeTab === 1 ? 'active' : ''}`} onClick={() => { setActiveTab(1); setIsSidebarOpen(false); }} title="Users">
-            <FiUsers className="menu-icon" />
-            <span className="nav-label">Users</span>
-          </li>
-          <li className={`menu-item ${activeTab === 2 ? 'active' : ''}`} onClick={() => { setActiveTab(2); setIsSidebarOpen(false); }} title="Support">
-            <FiMail className="menu-icon" />
-            <span className="nav-label">Support</span>
-          </li>
-          <li className={`menu-item ${activeTab === 3 ? 'active' : ''}`} onClick={() => { setActiveTab(3); setIsSidebarOpen(false); }} title="Uploads">
-            <FiUpload className="menu-icon" />
-            <span className="nav-label">Uploads</span>
-          </li>
-          <li className={`menu-item ${activeTab === 4 ? 'active' : ''}`} onClick={() => { setActiveTab(4); setIsSidebarOpen(false); }} title="Blog">
-            <FiFileText className="menu-icon" />
-            <span className="nav-label">Blog</span>
-          </li>
-          <li className={`menu-item ${activeTab === 5 ? 'active' : ''}`} onClick={() => { setActiveTab(5); setIsSidebarOpen(false); }} title="Portfolio">
-            <FiFileText className="menu-icon" />
-            <span className="nav-label">Portfolio</span>
-          </li>
-          <li className={`menu-item ${activeTab === 6 ? 'active' : ''}`} onClick={() => { setActiveTab(6); setIsSidebarOpen(false); }} title="Stock Management">
-            <FiBox className="menu-icon" />
-            <span className="nav-label">Stock Management</span>
-          </li>
-          <li className={`menu-item ${activeTab === 7 ? 'active' : ''}`} onClick={() => { setActiveTab(7); setIsSidebarOpen(false); }} title="Admin Manager">
-            <FiShield className="menu-icon" />
-            <span className="nav-label">Admin Manager</span>
-          </li>
-        </ul>
-        <div className="sidebar-footer">
-          <button className="menu-item compact" title="Settings">
-            <FiSettings className="menu-icon" />
-            <span className="nav-label">Settings</span>
-          </button>
-          <button className="menu-item compact" title="Logout" onClick={async () => { try { await signOut(auth); navigate('/'); } catch {} }}>
-            <FiLogOut className="menu-icon" />
-            <span className="nav-label">Logout</span>
-          </button>
-        </div>
-      </div>
+  {/* Sellers Dropdown */}
+  <li className={`menu-item dropdown-parent ${sellersDropdownOpen || [4,5,6,7,8,9].includes(activeTab) ? 'active' : ''}`}>
+    <div className={`dropdown-header ${sellersDropdownOpen || [4,5,6,7,8,9].includes(activeTab) ? 'active' : ''}`} onClick={handleSellersDropdown}>
+      <FiUser className="menu-icon" />
+      <span className="nav-label">Sellers</span>
+      <FiChevronDown className={`dropdown-arrow ${sellersDropdownOpen ? 'open' : ''}`} />
+    </div>
+    {sellersDropdownOpen && (
+      <ul className="submenu">
+        <li className={`submenu-item ${activeTab === 4 ? 'active' : ''}`} onClick={() => { setActiveTab(4); setIsSidebarOpen(false); }} title="Seller Account Verify">
+          Seller Account Verify
+        </li>
+        <li className={`submenu-item ${activeTab === 5 ? 'active' : ''}`} onClick={() => { setActiveTab(5); setIsSidebarOpen(false); }} title="Asset Request">
+          Asset Request
+        </li>
+        <li className={`submenu-item ${activeTab === 6 ? 'active' : ''}`} onClick={() => { setActiveTab(6); setIsSidebarOpen(false); }} title="Seller Earning">
+          Seller Earning
+        </li>
+        <li className={`submenu-item ${activeTab === 7 ? 'active' : ''}`} onClick={() => { setActiveTab(7); setIsSidebarOpen(false); }} title="Seller Report">
+          Seller Report
+        </li>
+        <li className={`submenu-item ${activeTab === 8 ? 'active' : ''}`} onClick={() => { setActiveTab(8); setIsSidebarOpen(false); }} title="Seller Analytic">
+          Seller Analytic
+        </li>
+        <li className={`submenu-item ${activeTab === 9 ? 'active' : ''}`} onClick={() => { setActiveTab(9); setIsSidebarOpen(false); }} title="Seller Complains">
+          Seller Complains
+        </li>
+      </ul>
+    )}
+  </li>
 
-      
+  {/* Advanced Dropdown */}
+  <li className={`menu-item dropdown-parent ${advancedDropdownOpen || [10,11,12,13].includes(activeTab) ? 'active' : ''}`}>
+    <div className={`dropdown-header ${advancedDropdownOpen || [10,11,12,13].includes(activeTab) ? 'active' : ''}`} onClick={handleAdvancedDropdown}>
+      <FiSettings className="menu-icon" />
+      <span className="nav-label">Advanced</span>
+      <FiChevronDown className={`dropdown-arrow ${advancedDropdownOpen ? 'open' : ''}`} />
+    </div>
+    {advancedDropdownOpen && (
+      <ul className="submenu">
+        <li className={`submenu-item ${activeTab === 10 ? 'active' : ''}`} onClick={() => { setActiveTab(10); setIsSidebarOpen(false); }} title="Download">
+          Download
+        </li>
+        <li className={`submenu-item ${activeTab === 11 ? 'active' : ''}`} onClick={() => { setActiveTab(11); setIsSidebarOpen(false); }} title="Earning">
+          Earning
+        </li>
+        <li className={`submenu-item ${activeTab === 12 ? 'active' : ''}`} onClick={() => { setActiveTab(12); setIsSidebarOpen(false); }} title="Analytic">
+          Analytic
+        </li>
+        <li className={`submenu-item ${activeTab === 13 ? 'active' : ''}`} onClick={() => { setActiveTab(13); setIsSidebarOpen(false); }} title="Asset">
+          Asset
+        </li>
+      </ul>
+    )}
+  </li>
+</ul>
+  ) : (
+    <ul className="sidebar-menu">
+     
+      <li className={`menu-item dropdown-header ${activeTab === 0 ? 'active' : ''}`} onClick={() => { setActiveTab(1); setIsSidebarOpen(false); }} title="Blog Editor">
+        <FiFileText className="menu-icon" />
+        <span className="nav-label">Blogs</span>
+      </li>
+      <li className={`menu-item dropdown-header ${activeTab === 1 ? 'active' : ''}`} onClick={() => { setActiveTab(2); setIsSidebarOpen(false); }} title="Portfolio">
+        <FiBriefcase className="menu-icon" />
+        <span className="nav-label">Portfolio</span>
+      </li>
+    </ul>
+  )}
+
+  <div className="sidebar-footer">
+    <button className="menu-item compact" title="Settings">
+      <FiSettings className="menu-icon" />
+      <span className="nav-label">Settings</span>
+    </button>
+    <button className="menu-item compact" title="Logout" onClick={async () => { try { await signOut(auth); navigate('/'); } catch {} }}>
+      <FiLogOut className="menu-icon" />
+      <span className="nav-label">Logout</span>
+    </button>
+  </div>
+</div>
+
       <div className="main-content">
-        {/* <div className="topbar">
-          <div className="topbar-left">
-            <button className="icon-button mobile-only" onClick={() => setIsSidebarOpen(true)} title="Open Menu">
-              <FiMenu />
-            </button>
-            <div className="search-bar">
-              <FiSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder={
-                  activeTab === 1
-                    ? "Search users..."
-                    : activeTab === 2
-                    ? "Search messages..."
-                    : activeTab === 4
-                    ? "Search blogs..."
-                    : activeTab === 5
-                    ? "Search portfolios..."
-                    : activeTab === 6
-                    ? "Search assets..."
-                    : activeTab === 7
-                    ? "Search admins..."
-                    : "Search..."
-                }
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="topbar-right">
-            <div className="notification-button" title="Notifications">
-              <FiBell />
-              {stats.pendingMessages > 0 && <span className="notification-badge">{stats.pendingMessages}</span>}
-            </div>
-            <button className="icon-button" title="Settings">
-              <FiSettings />
-            </button>
-            <div className="profile-chip" title={auth.currentUser?.email || "Admin"}>
-              <FiUser className="profile-icon" />
-              <span className="profile-email">{auth.currentUser?.email || "Admin"}</span>
-            </div>
-          </div>
-        </div> */}
-
         <div className="header">
           <h1 className="page-title">
             {activeTab === 0 && "Dashboard Overview"}
