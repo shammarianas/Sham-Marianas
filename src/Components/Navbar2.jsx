@@ -291,6 +291,7 @@ const Navbar = () => {
 
   return (
     <>
+    
       <div className="navbar navbar-expand-lg bord blur">
         {/* <nav className="navbar navbar-expand-lg bord blur"> */}
 
@@ -301,15 +302,21 @@ const Navbar = () => {
             alt="Sham Marianas logo"
           />
         </Link>
-        <Link to="/stock">
-          <div className="ml-auto vi-more">
-            <span className="butn butn-sm butn-bord radius-30">
-              <span>Explore</span>
-            </span>
-            <span className="icon ti-arrow-top-right"></span>
-          </div>
-        </Link>
-        <Search />
+        
+        {/* SIRF EXPLORE + SEARCH admin mein hide */}
+  {currentPage !== "/admin" && (
+    <>
+      <Link to="/stock">
+        <div className="ml-auto vi-more">
+          <span className="butn butn-sm butn-bord radius-30">
+            <span>Explore</span>
+          </span>
+          <span className="icon ti-arrow-top-right"></span>
+        </div>
+      </Link>
+      <Search />
+    </>
+  )}
         <div className="right">
           <div className="nav_buttons">
             {/* <Link to="/Cart">
@@ -361,12 +368,14 @@ const Navbar = () => {
                   </li>
                 </ul>
               </div>
+              
             </div>
           </div>
         </div>
       </div>
+   
 
-      {!["/", "/Login", "/Upload", "/reset"].includes(currentPage) && (
+      {!["/", "/Login", "/Upload", "/reset", "/admin"].includes(currentPage) && (
         <div className="bottom-bar">
           <div className="links">
             <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>

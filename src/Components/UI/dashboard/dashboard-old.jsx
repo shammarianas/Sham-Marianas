@@ -1,5 +1,6 @@
 import { auth, db, storage } from "../../../../firebase";
-import React, { useEffect, useState, useCallback } from "react";
+// import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc, getDocs, collection, collectionGroup, updateDoc, setDoc, deleteDoc, orderBy, query, addDoc } from "firebase/firestore";
 import Upload from "../../../Pages/Upload";
@@ -110,6 +111,95 @@ const AdminDashboard = () => {
   const [selectedSupportTicket, setSelectedSupportTicket] = useState(null);
   const [supportResponse, setSupportResponse] = useState("");
   const navigate = useNavigate();
+ const [selectedDashboard, setSelectedDashboard] = useState('admin');
+const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+const dropdownRef = useRef(null);
+const [usersDropdownOpen, setUsersDropdownOpen] = useState(false);
+const [sellersDropdownOpen, setSellersDropdownOpen] = useState(false);
+const [advancedDropdownOpen, setAdvancedDropdownOpen] = useState(false);
+
+// Component mount hone pe default dashboard set karo
+useEffect(() => {
+  if (selectedDashboard === 'admin') {
+    setActiveTab(1); // Users menu
+    setUsersDropdownOpen(true); // Users dropdown open
+  } else {
+    setActiveTab(1); // Blogs menu
+  }
+}, [selectedDashboard]);
+
+const handleUsersDropdown = () => {
+  setUsersDropdownOpen(!usersDropdownOpen);
+  setSellersDropdownOpen(false);
+  setAdvancedDropdownOpen(false);
+};
+
+const handleSellersDropdown = () => {
+  setSellersDropdownOpen(!sellersDropdownOpen);
+  setUsersDropdownOpen(false);
+  setAdvancedDropdownOpen(false);
+};
+
+const handleAdvancedDropdown = () => {
+  setAdvancedDropdownOpen(!advancedDropdownOpen);
+  setUsersDropdownOpen(false);
+  setSellersDropdownOpen(false);
+};
+
+const handleDashboardChange = (type) => {
+  setSelectedDashboard(type);
+  
+  // Set appropriate active tab based on dashboard type
+  if (type === 'admin') {
+    setActiveTab(1); // Users menu open karo
+    setUsersDropdownOpen(true); // Users dropdown automatically open karo
+    setSellersDropdownOpen(false);
+    setAdvancedDropdownOpen(false);
+  } else {
+    setActiveTab(1); // Blogs menu open karo (Company dashboard)
+    setUsersDropdownOpen(false);
+    setSellersDropdownOpen(false);
+    setAdvancedDropdownOpen(false);
+  }
+  
+  setIsDropdownOpen(false);
+};
+
+const toggleDropdown = () => {
+  console.log('Dropdown clicked, current state:', isDropdownOpen);
+  setIsDropdownOpen(!isDropdownOpen);
+};
+
+// Close dropdown when clicking outside
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setIsDropdownOpen(false);
+    }
+  };
+
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
+
+// Jab activeTab change ho, automatically parent dropdown open karo
+useEffect(() => {
+  if ([1, 2, 3].includes(activeTab)) {
+    setUsersDropdownOpen(true);
+    setSellersDropdownOpen(false);
+    setAdvancedDropdownOpen(false);
+  } else if ([4, 5, 6, 7, 8, 9].includes(activeTab)) {
+    setSellersDropdownOpen(true);
+    setUsersDropdownOpen(false);
+    setAdvancedDropdownOpen(false);
+  } else if ([10, 11, 12, 13].includes(activeTab)) {
+    setAdvancedDropdownOpen(true);
+    setUsersDropdownOpen(false);
+    setSellersDropdownOpen(false);
+  }
+}, [activeTab]);
 
   // Asset categories
   const ASSET_CATEGORIES = [
@@ -117,6 +207,8 @@ const AdminDashboard = () => {
     "Icons", "Fonts", "Scripts", "Mockups", "Audio", "Templates"
   ];
 
+
+  
   // Helper functions
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -879,57 +971,138 @@ const AdminDashboard = () => {
     }
   };
 
+  
+
   if (error && !isAdmin) {
     return <UnauthorizedAccess error={error} />;
   }
 
-  return (
-    <div className="admin-dashboard">
-      {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />}
-      <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-brand">
-            <div className="logo-full">Admin Panel</div>
-            <div className="logo-compact">AP</div>
-          </div>
-          <button className="sidebar-toggle" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} title={isSidebarCollapsed ? 'Expand' : 'Collapse'}>
-            <FiChevronLeft className={`toggle-icon ${isSidebarCollapsed ? 'rotated' : ''}`} />
+
+return (
+   <div className="admin-dashboard">
+      <div className="sidebar">
+        {/* Dropdown with ref added */}
+        <div className="custom-dropdown" ref={dropdownRef}>
+          <button
+            className="dashboard-dropdown"
+            onClick={toggleDropdown}
+            title="Select Dashboard"
+          >
+            {selectedDashboard === 'admin' ? 'Admin Dashboard' : 'Company Dashboard'}
+            <FiChevronDown className="dropdown-icon" />
           </button>
+          {isDropdownOpen && (
+            <ul className="dropdown-menu">
+              <li
+                className={selectedDashboard === 'admin' ? 'selected' : ''}
+                onClick={() => handleDashboardChange('admin')}
+              >
+                Admin Dashboard
+              </li>
+              <li
+                className={selectedDashboard === 'company' ? 'selected' : ''}
+                onClick={() => handleDashboardChange('company')}
+              >
+                Company Dashboard
+              </li>
+            </ul>
+          )}
         </div>
-        <ul className="sidebar-menu">
-          <li className={`menu-item ${activeTab === 0 ? 'active' : ''}`} onClick={() => { setActiveTab(0); setIsSidebarOpen(false); }} title="Dashboard">
-            <FiHome className="menu-icon" />
-            <span className="nav-label">Dashboard</span>
-          </li>
-          <li className={`menu-item ${activeTab === 1 ? 'active' : ''}`} onClick={() => { setActiveTab(1); setIsSidebarOpen(false); }} title="Users">
-            <FiUsers className="menu-icon" />
-            <span className="nav-label">Users</span>
-          </li>
-          <li className={`menu-item ${activeTab === 2 ? 'active' : ''}`} onClick={() => { setActiveTab(2); setIsSidebarOpen(false); }} title="Support">
-            <FiMail className="menu-icon" />
-            <span className="nav-label">Support</span>
-          </li>
-          <li className={`menu-item ${activeTab === 3 ? 'active' : ''}`} onClick={() => { setActiveTab(3); setIsSidebarOpen(false); }} title="Uploads">
-            <FiUpload className="menu-icon" />
-            <span className="nav-label">Uploads</span>
-          </li>
-          <li className={`menu-item ${activeTab === 4 ? 'active' : ''}`} onClick={() => { setActiveTab(4); setIsSidebarOpen(false); }} title="Blog">
-            <FiFileText className="menu-icon" />
-            <span className="nav-label">Blog</span>
-          </li>
-          <li className={`menu-item ${activeTab === 5 ? 'active' : ''}`} onClick={() => { setActiveTab(5); setIsSidebarOpen(false); }} title="Portfolio">
-            <FiFileText className="menu-icon" />
-            <span className="nav-label">Portfolio</span>
-          </li>
-          <li className={`menu-item ${activeTab === 6 ? 'active' : ''}`} onClick={() => { setActiveTab(6); setIsSidebarOpen(false); }} title="Stock Management">
-            <FiBox className="menu-icon" />
-            <span className="nav-label">Stock Management</span>
-          </li>
-          <li className={`menu-item ${activeTab === 7 ? 'active' : ''}`} onClick={() => { setActiveTab(7); setIsSidebarOpen(false); }} title="Admin Manager">
-            <FiShield className="menu-icon" />
-            <span className="nav-label">Admin Manager</span>
-          </li>
-        </ul>
+
+        {/* Conditional Sidebar Menu based on selected dashboard */}
+        {selectedDashboard === 'admin' ? (
+          <ul className="sidebar-menu">
+            {/* Users Dropdown */}
+            <li className={`menu-item dropdown-parent ${usersDropdownOpen || [1,2,3].includes(activeTab) ? 'active' : ''}`}>
+              <div className={`dropdown-header ${usersDropdownOpen || [1,2,3].includes(activeTab) ? 'active' : ''}`} onClick={handleUsersDropdown}>
+                <FiUsers className="menu-icon" /> 
+                <span className="nav-label">Users</span>
+                <FiChevronDown className={`dropdown-arrow ${usersDropdownOpen ? 'open' : ''}`} />
+              </div>
+              {usersDropdownOpen && (
+                <ul className="submenu">
+                  <li className={`submenu-item ${activeTab === 1 ? 'active' : ''}`} onClick={() => { setActiveTab(1); setIsSidebarOpen(false); }} title="User Information">
+                    User Information
+                  </li>
+                  <li className={`submenu-item ${activeTab === 2 ? 'active' : ''}`} onClick={() => { setActiveTab(2); setIsSidebarOpen(false); }} title="User Report">
+                    User Report
+                  </li>
+                  <li className={`submenu-item ${activeTab === 3 ? 'active' : ''}`} onClick={() => { setActiveTab(3); setIsSidebarOpen(false); }} title="Payment & Plan">
+                    Payment & Plan
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Sellers Dropdown */}
+            <li className={`menu-item dropdown-parent ${sellersDropdownOpen || [4,5,6,7,8,9].includes(activeTab) ? 'active' : ''}`}>
+              <div className={`dropdown-header ${sellersDropdownOpen || [4,5,6,7,8,9].includes(activeTab) ? 'active' : ''}`} onClick={handleSellersDropdown}>
+                <FiUser className="menu-icon" />
+                <span className="nav-label">Sellers</span>
+                <FiChevronDown className={`dropdown-arrow ${sellersDropdownOpen ? 'open' : ''}`} />
+              </div>
+              {sellersDropdownOpen && (
+                <ul className="submenu">
+                  <li className={`submenu-item ${activeTab === 4 ? 'active' : ''}`} onClick={() => { setActiveTab(4); setIsSidebarOpen(false); }} title="Seller Account Verify">
+                    Seller Account Verify
+                  </li>
+                  <li className={`submenu-item ${activeTab === 5 ? 'active' : ''}`} onClick={() => { setActiveTab(5); setIsSidebarOpen(false); }} title="Asset Request">
+                    Asset Request
+                  </li>
+                  <li className={`submenu-item ${activeTab === 6 ? 'active' : ''}`} onClick={() => { setActiveTab(6); setIsSidebarOpen(false); }} title="Seller Earning">
+                    Seller Earning
+                  </li>
+                  <li className={`submenu-item ${activeTab === 7 ? 'active' : ''}`} onClick={() => { setActiveTab(7); setIsSidebarOpen(false); }} title="Seller Report">
+                    Seller Report
+                  </li>
+                  <li className={`submenu-item ${activeTab === 8 ? 'active' : ''}`} onClick={() => { setActiveTab(8); setIsSidebarOpen(false); }} title="Seller Analytic">
+                    Seller Analytic
+                  </li>
+                  <li className={`submenu-item ${activeTab === 9 ? 'active' : ''}`} onClick={() => { setActiveTab(9); setIsSidebarOpen(false); }} title="Seller Complains">
+                    Seller Complains
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Advanced Dropdown */}
+            <li className={`menu-item dropdown-parent ${advancedDropdownOpen || [10,11,12,13].includes(activeTab) ? 'active' : ''}`}>
+              <div className={`dropdown-header ${advancedDropdownOpen || [10,11,12,13].includes(activeTab) ? 'active' : ''}`} onClick={handleAdvancedDropdown}>
+                <FiSettings className="menu-icon" />
+                <span className="nav-label">Advanced</span>
+                <FiChevronDown className={`dropdown-arrow ${advancedDropdownOpen ? 'open' : ''}`} />
+              </div>
+              {advancedDropdownOpen && (
+                <ul className="submenu">
+                  <li className={`submenu-item ${activeTab === 10 ? 'active' : ''}`} onClick={() => { setActiveTab(10); setIsSidebarOpen(false); }} title="Download">
+                    Download
+                  </li>
+                  <li className={`submenu-item ${activeTab === 11 ? 'active' : ''}`} onClick={() => { setActiveTab(11); setIsSidebarOpen(false); }} title="Earning">
+                    Earning
+                  </li>
+                  <li className={`submenu-item ${activeTab === 12 ? 'active' : ''}`} onClick={() => { setActiveTab(12); setIsSidebarOpen(false); }} title="Analytic">
+                    Analytic
+                  </li>
+                  <li className={`submenu-item ${activeTab === 13 ? 'active' : ''}`} onClick={() => { setActiveTab(13); setIsSidebarOpen(false); }} title="Asset">
+                    Asset
+                  </li>
+                </ul>
+              )}
+            </li>
+          </ul>
+        ) : (
+          <ul className="sidebar-menu">
+            <li className={`menu-item dropdown-header comp-menu ${activeTab === 1 ? 'active' : ''}`} onClick={() => { setActiveTab(1); setIsSidebarOpen(false); }} title="Blog Editor">
+              <FiFileText className="menu-icon" />
+              <span className="nav-label">Blogs</span>
+            </li>
+            <li className={`menu-item dropdown-header comp-menu ${activeTab === 2 ? 'active' : ''}`} onClick={() => { setActiveTab(2); setIsSidebarOpen(false); }} title="Portfolio">
+              <FiBriefcase className="menu-icon" />
+              <span className="nav-label">Portfolio</span>
+            </li>
+          </ul>
+        )}
+
         <div className="sidebar-footer">
           <button className="menu-item compact" title="Settings">
             <FiSettings className="menu-icon" />
@@ -942,597 +1115,327 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="main-content">
-        <div className="topbar">
-          <div className="topbar-left">
-            <button className="icon-button mobile-only" onClick={() => setIsSidebarOpen(true)} title="Open Menu">
-              <FiMenu />
-            </button>
-            <div className="search-bar">
-              <FiSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder={
-                  activeTab === 1
-                    ? "Search users..."
-                    : activeTab === 2
-                    ? "Search messages..."
-                    : activeTab === 4
-                    ? "Search blogs..."
-                    : activeTab === 5
-                    ? "Search portfolios..."
-                    : activeTab === 6
-                    ? "Search assets..."
-                    : activeTab === 7
-                    ? "Search admins..."
-                    : "Search..."
-                }
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="topbar-right">
-            <div className="notification-button" title="Notifications">
-              <FiBell />
-              {stats.pendingMessages > 0 && <span className="notification-badge">{stats.pendingMessages}</span>}
-            </div>
-            <button className="icon-button" title="Settings">
-              <FiSettings />
-            </button>
-            <div className="profile-chip" title={auth.currentUser?.email || "Admin"}>
-              <FiUser className="profile-icon" />
-              <span className="profile-email">{auth.currentUser?.email || "Admin"}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="header">
-          <h1 className="page-title">
-            {activeTab === 0 && "Dashboard Overview"}
-            {activeTab === 1 && "User Management"}
-            {activeTab === 2 && "Support Messages"}
-            {activeTab === 3 && "File Uploads"}
-            {activeTab === 4 && "Blog Editor"}
-            {activeTab === 5 && "Portfolio Uploads"}
-            {activeTab === 6 && "Stock Management"}
-            {activeTab === 7 && "Admin Manager"}
-          </h1>
-        </div>
-
-        {error && (
-          <div className="error-alert">
-            {error}
-            <button onClick={() => setError(null)} className="close-error">
-              <FiX />
-            </button>
-          </div>
-        )}
-
-        {activeTab === 0 && (
-          <div className="overview-grid">
-            <WelcomeBanner
-              name={auth.currentUser?.displayName || auth.currentUser?.email?.split("@")[0] || "Admin"}
-              totalUsers={users.length}
-              totalAssets={assets.length}
-            />
-
-            <KPICards
-              users={users}
-              admins={users.filter((u) => u.role === "admin").length}
-              messages={supportMessages}
-              blogs={blogs}
-              portfolios={portfolios}
-              assets={assets}
-            />
-
-            <div className="insights-grid">
-              <div className="content-card">
-                <div className="card-header">
-                  <h3 className="panel-title">Popular Categories</h3>
-                </div>
-                <div className="card-body">
-                  <UsageDistribution assets={assets} />
-                </div>
-              </div>
-
-              <div className="content-card">
-                <div className="card-header">
-                  <h3 className="panel-title">Recent Activity</h3>
-                </div>
-                <div className="card-body">
-                  <RecentActivity messages={supportMessages} blogs={blogs} portfolios={portfolios} assets={assets} />
-                </div>
-              </div>
-            </div>
-
-            <QuickActions onNavigate={(tab) => setActiveTab(tab)} onExportCSV={handleExportCSV} onExportJSON={handleExportJSON} onExportPDF={handleExportPDF} isExporting={isExporting} />
-
-            <div className="overview-panels">
-              <div className="content-card">
-                <div className="card-header">
-                  <h3 className="panel-title">Recent Users</h3>
-                </div>
-                <div className="card-body">
-                  <div className="table-container">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Email</th>
-                          <th>Role</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users.slice(0, 5).map((u) => (
-                          <tr key={u.id}>
-                            <td>{u.email || "Unknown"}</td>
-                            <td>
-                              <span className={`role-badge ${u.role}`}>{u.role || "Unknown"}</span>
-                            </td>
-                          </tr>
-                        ))}
-                        {users.length === 0 && (
-                          <tr>
-                            <td colSpan="2" className="no-data">No users yet</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-
-              <div className="content-card">
-                <div className="card-header">
-                  <h3 className="panel-title">Recent Support</h3>
-                </div>
-                <div className="card-body">
-                  <div className="table-container">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Subject</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {supportMessages.slice(0, 5).map((m) => (
-                          <tr key={m.id}>
-                            <td>{m.subject || "No Subject"}</td>
-                            <td>
-                              <span className={`status-badge ${m.status}`}>{m.status || "Unknown"}</span>
-                            </td>
-                          </tr>
-                        ))}
-                        {supportMessages.length === 0 && (
-                          <tr>
-                            <td colSpan="2" className="no-data">No messages</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {loading && <div className="loading-overlay">Loading...</div>}
-
-        {activeTab !== 0 && (
-          <div className="content-card">
-            <div className="card-header">
-              <div className="filters">
-                {activeTab === 1 && (
-                  <>
-                    <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="filter-select">
-                      <option value="">All Roles</option>
-                      <option value="admin">Admin</option>
-                      <option value="moderator">Moderator</option>
-                      <option value="user">User</option>
-                    </select>
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
-                      <option value="">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="pending">Pending</option>
-                      <option value="banned">Banned</option>
-                      <option value="suspended">Suspended</option>
-                    </select>
-                    <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="filter-select">
-                      <option value="">Any Time</option>
-                      <option value="7">Last 7 days</option>
-                      <option value="30">Last 30 days</option>
-                      <option value="90">Last 90 days</option>
-                    </select>
-                    <div className="filter-group-responsive">
-                      <button onClick={() => handleSort("name")} className={`sort-button ${sortConfig.key === "name" ? "active" : ""}`}>
-                        Name {sortConfig.key === "name" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                      </button>
-                      <button onClick={() => handleSort("email")} className={`sort-button ${sortConfig.key === "email" ? "active" : ""}`}>
-                        Email {sortConfig.key === "email" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                      </button>
-                      <button onClick={() => handleSort("role")} className={`sort-button ${sortConfig.key === "role" ? "active" : ""}`}>
-                        Role {sortConfig.key === "role" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                      </button>
-                      <button onClick={() => handleSort("lastActive")} className={`sort-button ${sortConfig.key === "lastActive" ? "active" : ""}`}>
-                        Last Active {sortConfig.key === "lastActive" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                      </button>
-                    </div>
-                  </>
-                )}
-                {activeTab === 2 && (
-                  <>
-                    {isAdmin && (
-                      <select
-                        value={selectedProfileId || ""}
-                        onChange={(e) => {
-                          setSelectedProfileId(e.target.value);
-                          fetchSupportMessages(e.target.value);
-                        }}
-                        className="filter-select"
-                      >
-                        <option value="" disabled>
-                          Select User
-                        </option>
-                        {users.map((user) => (
-                          <option key={user.id} value={user.id}>
-                            {user.email}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    <select value={messageFilter} onChange={(e) => setMessageFilter(e.target.value)} className="filter-select">
-                      <option value="all">All Messages</option>
-                      <option value="unopened">Unopened</option>
-                      <option value="opened">Opened</option>
-                      <option value="responded">Responded</option>
-                    </select>
-                    <button onClick={() => handleSort("createdAt")} className={`sort-button ${sortConfig.key === "createdAt" ? "active" : ""}`}>
-                      Date {sortConfig.key === "createdAt" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                    </button>
-                    <button onClick={() => handleSort("subject")} className={`sort-button ${sortConfig.key === "subject" ? "active" : ""}`}>
-                      Subject {sortConfig.key === "subject" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                    </button>
-                  </>
-                )}
-                {activeTab === 4 && (
-                  <>
-                    <button onClick={() => handleSort("title")} className={`sort-button ${sortConfig.key === "title" ? "active" : ""}`}>
-                      Title {sortConfig.key === "title" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                    </button>
-                    <button onClick={() => handleSort("createdAt")} className={`sort-button ${sortConfig.key === "createdAt" ? "active" : ""}`}>
-                      Date {sortConfig.key === "createdAt" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                    </button>
-                  </>
-                )}
-                {activeTab === 5 && (
-                  <>
-                    <button onClick={() => handleSort("title")} className={`sort-button ${sortConfig.key === "title" ? "active" : ""}`}>
-                      Title {sortConfig.key === "title" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                    </button>
-                    <button onClick={() => handleSort("createdAt")} className={`sort-button ${sortConfig.key === "createdAt" ? "active" : ""}`}>
-                      Date {sortConfig.key === "createdAt" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                    </button>
-                  </>
-                )}
-                {activeTab === 6 && (
-                  <>
-                    <button onClick={() => handleSort("name")} className={`sort-button ${sortConfig.key === "name" ? "active" : ""}`}>
-                      Name {sortConfig.key === "name" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                    </button>
-                    <button onClick={() => handleSort("createdAt")} className={`sort-button ${sortConfig.key === "createdAt" ? "active" : ""}`}>
-                      Date {sortConfig.key === "createdAt" && (sortConfig.direction === "ascending" ? <FiChevronUp /> : <FiChevronDown />)}
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="card-body">
-              {activeTab === 1 && (
-                <UserList
-                  users={currentUsers}
-                  onRoleChange={handleRoleChange}
-                  selectedUsers={selectedUsers}
-                  setSelectedUsers={setSelectedUsers}
-                  handleBulkRoleChange={handleBulkRoleChange}
-                  onUpdateStatus={handleUpdateUserStatus}
-                  onDelete={handleDeleteUser}
-                  userSearchTerm={userSearchTerm}
-                  setUserSearchTerm={setUserSearchTerm}
-                  selectedUserRole={selectedUserRole}
-                  setSelectedUserRole={setSelectedUserRole}
-                  selectedUserStatus={selectedUserStatus}
-                  setSelectedUserStatus={setSelectedUserStatus}
-                  showUserDialog={showUserDialog}
-                  setShowUserDialog={setShowUserDialog}
-                  selectedUser={selectedUser}
-                  setSelectedUser={setSelectedUser}
-                  formatCurrency={formatCurrency}
-                  formatDate={formatDate}
-                  getRoleColor={getRoleColor}
-                  handleUserStatusToggle={handleUserStatusToggle}
-                  handleUserRoleChange={handleUserRoleChange}
-                />
-              )}
-              {activeTab === 2 && (
-                <>
-                  <div className="user-header">
-                    <div className="header-content">
-                      <h2 className="header-title"><FiMail className="header-icon" /> Support Tickets</h2>
-                      <p className="header-subtitle">Manage customer support requests</p>
-                    </div>
-                    <div className="filter-group-responsive">
-                      <select className="filter-select" value={supportStatusFilter} onChange={(e)=>setSupportStatusFilter(e.target.value)}>
-                        <option value="all">All Status</option>
-                        <option value="open">Open</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
-                        <option value="closed">Closed</option>
-                      </select>
-                      <select className="filter-select" value={supportCategoryFilter} onChange={(e)=>setSupportCategoryFilter(e.target.value)}>
-                        <option value="all">All Categories</option>
-                        <option value="technical">Technical</option>
-                        <option value="billing">Billing</option>
-                        <option value="general">General</option>
-                        <option value="bug-report">Bug Report</option>
-                        <option value="feature-request">Feature Request</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="content-card">
-                    <div className="card-body table-wrapper">
-                      <div className="table-container">
-                        <table className="data-table">
-                          <thead>
-                            <tr>
-                              <th>Ticket</th>
-                              <th>User</th>
-                              <th>Category</th>
-                              <th>Priority</th>
-                              <th>Status</th>
-                              <th>Created</th>
-                              <th>Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {supportMessages.filter((t)=>{
-                              const s=(t.status||'unopened').toLowerCase();
-                              const openSet=['unopened','opened'];
-                              const statusOk = supportStatusFilter==='all' ? true : supportStatusFilter==='open' ? openSet.includes(s) : supportStatusFilter==='in-progress' ? s==='opened' : supportStatusFilter==='resolved' ? ['responded','closed','resolved'].includes(s) : supportStatusFilter==='closed' ? s==='closed' : true;
-                              const c=(t.category||'general').toLowerCase();
-                              const catOk = supportCategoryFilter==='all' || c===supportCategoryFilter;
-                              return statusOk && catOk;
-                            }).length === 0 ? (
-                              <tr>
-                                <td colSpan={7} className="no-data">No support tickets found</td>
-                              </tr>
-                            ) : (
-                              supportMessages.filter((t)=>{
-                                const s=(t.status||'unopened').toLowerCase();
-                                const openSet=['unopened','opened'];
-                                const statusOk = supportStatusFilter==='all' ? true : supportStatusFilter==='open' ? openSet.includes(s) : supportStatusFilter==='in-progress' ? s==='opened' : supportStatusFilter==='resolved' ? ['responded','closed','resolved'].includes(s) : supportStatusFilter==='closed' ? s==='closed' : true;
-                                const c=(t.category||'general').toLowerCase();
-                                const catOk = supportCategoryFilter==='all' || c===supportCategoryFilter;
-                                return statusOk && catOk;
-                              }).map((ticket)=>{
-                                const priority=(ticket.priority||'medium').toLowerCase();
-                                const status=(ticket.status||'unopened').toLowerCase();
-                                return (
-                                  <tr key={ticket.id}>
-                                    <td>
-                                      <div className="inbox-title">{ticket.subject || 'No Subject'}</div>
-                                      <div className="inbox-email">{(ticket.description||ticket.message||'').slice(0,120)}</div>
-                                    </td>
-                                    <td>
-                                      <div className="inbox-title">{ticket.userName || ticket.email || 'Unknown'}</div>
-                                      <div className="inbox-email">{ticket.userEmail || ''}</div>
-                                    </td>
-                                    <td>{(ticket.category||'general')}</td>
-                                    <td>
-                                      <span className={`status-badge ${priority==='urgent'?'banned': priority==='high'?'pending': priority==='medium'?'active':'normal'}`}>{priority}</span>
-                                    </td>
-                                    <td><span className={`status-badge ${status}`}>{status}</span></td>
-                                    <td>{ticket.createdAt?.toDate?.().toLocaleDateString?.() || 'N/A'}</td>
-                                    <td>
-                                      <button className="action-button" onClick={()=>{ setSelectedSupportTicket(ticket); setSupportResponse(ticket.adminResponse||''); setShowSupportTicketDialog(true); }}>
-                                        <FiCornerUpLeft /> {ticket.adminResponse? 'Update' : 'Respond'}
-                                      </button>
-                                    </td>
-                                  </tr>
-                                );
-                              })
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  {showSupportTicketDialog && selectedSupportTicket && (
-                    <div className="modal-overlay">
-                      <div className="modal enhanced-modal">
-                        <div className="modal-header">
-                          <h3 className="modal-title"><FiMessageSquare className="modal-icon" /> Support Ticket Response</h3>
-                          <button onClick={()=>setShowSupportTicketDialog(false)} className="close-button"><FiX /></button>
-                        </div>
-                        <div className="modal-body">
-                          <div className="message-content">
-                            <div className="drawer-section">
-                              <div className="inbox-title">{selectedSupportTicket.subject}</div>
-                              <div className="inbox-email">{selectedSupportTicket.userName} ({selectedSupportTicket.userEmail})</div>
-                              <div className="message-content" style={{marginTop: '0.5rem'}}>{selectedSupportTicket.message || selectedSupportTicket.description}</div>
-                            </div>
-                            <div className="drawer-section">
-                              <label className="detail-label">Your Response</label>
-                              <textarea className="reply-input" rows={4} value={supportResponse} onChange={(e)=>setSupportResponse(e.target.value)} placeholder="Enter your response..." />
-                            </div>
-                          </div>
-                          <div className="modal-footer">
-                            <button className="action-button" disabled={!supportResponse.trim()} onClick={()=>handleRespondToTicket(selectedSupportTicket.id, supportResponse, 'opened')}><FiAlertCircle /> Mark In Progress</button>
-                            <button className="action-button" disabled={!supportResponse.trim()} onClick={()=>handleRespondToTicket(selectedSupportTicket.id, supportResponse, 'responded')}><FiCheckCircle /> Mark Resolved</button>
-                            <button className="action-button secondary" onClick={()=>setShowSupportTicketDialog(false)}>Cancel</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-              {activeTab === 3 && (
-                <div className="uploads-layout">
-                  <Upload />
-                  <div className="uploads-preview">
-                    <h3 className="panel-title">Recent Uploads</h3>
-                    <PreviewGrid assets={assets.slice(0, 12)} />
-                  </div>
-                </div>
-              )}
-              {activeTab === 4 && (
-                <BlogSection
-                  blogs={currentBlogs}
-                  onDelete={handleDeleteBlog}
-                  onToggleStatus={handleToggleBlogStatus}
-                  blogSearchTerm={blogSearchTerm}
-                  setBlogSearchTerm={setBlogSearchTerm}
-                  selectedBlogStatus={selectedBlogStatus}
-                  setSelectedBlogStatus={setSelectedBlogStatus}
-                  showBlogDialog={showBlogDialog}
-                  setShowBlogDialog={setShowBlogDialog}
-                  selectedBlog={selectedBlog}
-                  setSelectedBlog={setSelectedBlog}
-                  onCreate={() => { setIsBlogModalOpen(true); }}
-                  formatDate={formatDate}
-                />
-              )}
-              {activeTab === 5 && (
-                <PortfolioList
-                  portfolios={currentPortfolios}
-                  onDelete={handleDeletePortfolio}
-                  onCreate={() => {
-                    setIsPortfolioModalOpen(true);
-                  }}
-                  onToggleFeatured={handleTogglePortfolioFeatured}
-                  onUpdateStatus={handleUpdatePortfolioStatus}
-                  formatDate={formatDate}
-                />
-              )}
-              {activeTab === 6 && (
-                <AssetList
-                  assets={currentAssets}
-                  onDelete={handleDeleteAsset}
-                  assetSearchTerm={assetSearchTerm}
-                  setAssetSearchTerm={setAssetSearchTerm}
-                  selectedCategory={selectedCategory}
-                  setSelectedCategory={setSelectedCategory}
-                  showAssetDialog={showAssetDialog}
-                  setShowAssetDialog={setShowAssetDialog}
-                  selectedAsset={selectedAsset}
-                  setSelectedAsset={setSelectedAsset}
-                  showCreateAssetDialog={showCreateAssetDialog}
-                  setShowCreateAssetDialog={setShowCreateAssetDialog}
-                  formatCurrency={formatCurrency}
-                  formatDate={formatDate}
-                  handleToggleAssetFeatured={handleToggleAssetFeatured}
-                  handleToggleAssetTrending={handleToggleAssetTrending}
-                  ASSET_CATEGORIES={ASSET_CATEGORIES}
-                />
-              )}
-              {activeTab === 7 && <AdminManager setError={setError} />}
-            </div>
-
-            <div className="card-footer">
-              <div className="pagination">
-                <button onClick={() => paginate(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="page-nav">
-                  Previous
-                </button>
-                {Array.from(
-                  {
-                    length: Math.ceil(
-                      (activeTab === 1
-                        ? filteredUsers.length
-                        : activeTab === 2
-                        ? filteredMessages.length
-                        : activeTab === 4
-                        ? filteredBlogs.length
-                        : activeTab === 5
-                        ? filteredPortfolios.length
-                        : activeTab === 6
-                        ? filteredAssets.length
-                        : 1) / itemsPerPage
-                    ),
-                  },
-                  (_, i) => (
-                    <button key={i + 1} onClick={() => paginate(i + 1)} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
-                      {i + 1}
-                    </button>
-                  )
-                )}
-                <button
-                  onClick={() =>
-                    paginate(
-                      Math.min(
-                        Math.ceil(
-                          (activeTab === 1
-                            ? filteredUsers.length
-                            : activeTab === 2
-                            ? filteredMessages.length
-                            : activeTab === 4
-                            ? filteredBlogs.length
-                            : activeTab === 5
-                            ? filteredPortfolios.length
-                            : activeTab === 6
-                            ? filteredAssets.length
-                            : 1) / itemsPerPage
-                        ),
-                        currentPage + 1
-                      )
-                    )
-                  }
-                  disabled={
-                    currentPage ===
-                    Math.ceil(
-                      (activeTab === 1
-                        ? filteredUsers.length
-                        : activeTab === 2
-                        ? filteredMessages.length
-                        : activeTab === 4
-                        ? filteredBlogs.length
-                        : activeTab === 5
-                        ? filteredPortfolios.length
-                        : activeTab === 6
-                        ? filteredAssets.length
-                        : 1) / itemsPerPage
-                    )
-                  }
-                  className="page-nav"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {selectedMessage && <MessageModal message={selectedMessage} onClose={() => setSelectedMessage(null)} onStatusChange={handleStatusChange} />}
-        {isBlogModalOpen && (
-          <BlogEditorModal
-            isOpen={isBlogModalOpen}
-            onClose={() => { setIsBlogModalOpen(false); loadBlogs(); }}
-          />
-        )}
-        {isPortfolioModalOpen && (
-          <ProjectModal
-            isOpen={isPortfolioModalOpen}
-            onClose={() => { setIsPortfolioModalOpen(false); loadProjects(); }}
-          />
-        )}
+    <div className="main-content">
+      <div className="header">
+        <h1 className="page-title">
+          {/* Admin Dashboard Titles */}
+          {activeTab === 0 && "Dashboard Overview"}
+          {activeTab === 1 && "User Information"}
+          {activeTab === 2 && "User Report"}
+          {activeTab === 3 && "Payment & Plan"}
+          {activeTab === 4 && "Seller Account Verify"}
+          {activeTab === 5 && "Asset Request"}
+          {activeTab === 6 && "Seller Earning"}
+          {activeTab === 7 && "Seller Report"}
+          {activeTab === 8 && "Seller Analytic"}
+          {activeTab === 9 && "Seller Complains"}
+          {activeTab === 10 && "Download"}
+          {activeTab === 11 && "Earning"}
+          {activeTab === 12 && "Analytic"}
+          {activeTab === 13 && "Asset"}
+          
+          {/* Company Dashboard Titles */}
+          {activeTab === 1 && selectedDashboard === 'company' && "Blog Editor"}
+          {activeTab === 2 && selectedDashboard === 'company' && "Portfolio Management"}
+        </h1>
       </div>
+
+      {error && (
+        <div className="error-alert">
+          {error}
+          <button onClick={() => setError(null)} className="close-error">
+            <FiX />
+          </button>
+        </div>
+      )}
+
+      {/* Admin Dashboard Content */}
+      {selectedDashboard === 'admin' && (
+        <>
+          {activeTab === 0 && (
+            <div className="overview-grid">
+              <WelcomeBanner
+                name={auth.currentUser?.displayName || auth.currentUser?.email?.split("@")[0] || "Admin"}
+                totalUsers={users.length}
+                totalAssets={assets.length}
+              />
+
+              <KPICards
+                users={users}
+                admins={users.filter((u) => u.role === "admin").length}
+                messages={supportMessages}
+                blogs={blogs}
+                portfolios={portfolios}
+                assets={assets}
+              />
+
+              <div className="insights-grid">
+                <div className="content-card">
+                  <div className="card-header">
+                    <h3 className="panel-title">Popular Categories</h3>
+                  </div>
+                  <div className="card-body">
+                    <UsageDistribution assets={assets} />
+                  </div>
+                </div>
+
+                <div className="content-card">
+                  <div className="card-header">
+                    <h3 className="panel-title">Recent Activity</h3>
+                  </div>
+                  <div className="card-body">
+                    <RecentActivity messages={supportMessages} blogs={blogs} portfolios={portfolios} assets={assets} />
+                  </div>
+                </div>
+              </div>
+
+              <QuickActions onNavigate={(tab) => setActiveTab(tab)} onExportCSV={handleExportCSV} onExportJSON={handleExportJSON} onExportPDF={handleExportPDF} isExporting={isExporting} />
+
+              <div className="overview-panels">
+                <div className="content-card">
+                  <div className="card-header">
+                    <h3 className="panel-title">Recent Users</h3>
+                  </div>
+                  <div className="card-body">
+                    <div className="table-container">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Email</th>
+                            <th>Role</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {users.slice(0, 5).map((u) => (
+                            <tr key={u.id}>
+                              <td>{u.email || "Unknown"}</td>
+                              <td>
+                                <span className={`role-badge ${u.role}`}>{u.role || "Unknown"}</span>
+                              </td>
+                            </tr>
+                          ))}
+                          {users.length === 0 && (
+                            <tr>
+                              <td colSpan="2" className="no-data">No users yet</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="content-card">
+                  <div className="card-header">
+                    <h3 className="panel-title">Recent Support</h3>
+                  </div>
+                  <div className="card-body">
+                    <div className="table-container">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Subject</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {supportMessages.slice(0, 5).map((m) => (
+                            <tr key={m.id}>
+                              <td>{m.subject || "No Subject"}</td>
+                              <td>
+                                <span className={`status-badge ${m.status}`}>{m.status || "Unknown"}</span>
+                              </td>
+                            </tr>
+                          ))}
+                          {supportMessages.length === 0 && (
+                            <tr>
+                              <td colSpan="2" className="no-data">No messages</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* New Admin Menu Content - Simple Placeholders */}
+          {activeTab === 1 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>User Information Management</h3>
+                <p>User information dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 2 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>User Report</h3>
+                <p>User reporting dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 3 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Payment & Plan Management</h3>
+                <p>Payment and subscription plans dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 4 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Seller Account Verification</h3>
+                <p>Seller account verification dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 5 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Asset Requests</h3>
+                <p>Asset request management dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 6 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Seller Earnings</h3>
+                <p>Seller earnings dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 7 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Seller Reports</h3>
+                <p>Seller reporting dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 8 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Seller Analytics</h3>
+                <p>Seller analytics dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 9 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Seller Complaints</h3>
+                <p>Seller complaints management dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 10 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Downloads</h3>
+                <p>Downloads management dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 11 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Earnings</h3>
+                <p>Earnings dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 12 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Analytics</h3>
+                <p>Advanced analytics dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 13 && (
+            <div className="content-card">
+              <div className="card-body">
+                <h3>Asset Management</h3>
+                <p>Asset management dashboard will be implemented here.</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Company Dashboard Content */}
+      {selectedDashboard === 'company' && (
+        <>
+          {activeTab === 1 && (
+            <BlogSection
+              blogs={currentBlogs}
+              onDelete={handleDeleteBlog}
+              onToggleStatus={handleToggleBlogStatus}
+              blogSearchTerm={blogSearchTerm}
+              setBlogSearchTerm={setBlogSearchTerm}
+              selectedBlogStatus={selectedBlogStatus}
+              setSelectedBlogStatus={setSelectedBlogStatus}
+              showBlogDialog={showBlogDialog}
+              setShowBlogDialog={setShowBlogDialog}
+              selectedBlog={selectedBlog}
+              setSelectedBlog={setSelectedBlog}
+              onCreate={() => { setIsBlogModalOpen(true); }}
+              formatDate={formatDate}
+            />
+          )}
+
+          {activeTab === 2 && (
+            <PortfolioList
+              portfolios={currentPortfolios}
+              onDelete={handleDeletePortfolio}
+              onCreate={() => {
+                setIsPortfolioModalOpen(true);
+              }}
+              onToggleFeatured={handleTogglePortfolioFeatured}
+              onUpdateStatus={handleUpdatePortfolioStatus}
+              formatDate={formatDate}
+            />
+          )}
+        </>
+      )}
+
+      {loading && <div className="loading-overlay">Loading...</div>}
+
+      {/* Existing Modals */}
+      {selectedMessage && <MessageModal message={selectedMessage} onClose={() => setSelectedMessage(null)} onStatusChange={handleStatusChange} />}
+      {isBlogModalOpen && (
+        <BlogEditorModal
+          isOpen={isBlogModalOpen}
+          onClose={() => { setIsBlogModalOpen(false); loadBlogs(); }}
+        />
+      )}
+      {isPortfolioModalOpen && (
+        <ProjectModal
+          isOpen={isPortfolioModalOpen}
+          onClose={() => { setIsPortfolioModalOpen(false); loadProjects(); }}
+        />
+      )}
     </div>
-  );
-};
+  </div>
+)};
 
 const PreviewGrid = ({ assets }) => {
   return (
