@@ -1849,12 +1849,19 @@ ul {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 0.5rem;
+  word-break: break-word; 
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .asset-info-description {
   color: var(--text-secondary);
   margin: 0 0 1rem;
   line-height: 1.5;
+   word-break: break-word; 
+    overflow-wrap: break-word;
+    hyphens: auto;
+
 }
 .asset-title,
 .asset-description,
