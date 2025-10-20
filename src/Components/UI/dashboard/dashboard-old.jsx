@@ -2,7 +2,19 @@ import { auth, db, storage } from "../../../../firebase";
 // import React, { useEffect, useState, useCallback } from "react";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc, getDocs, collection, collectionGroup, updateDoc, setDoc, deleteDoc, orderBy, query, addDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  getDocs,
+  collection,
+  collectionGroup,
+  updateDoc,
+  setDoc,
+  deleteDoc,
+  orderBy,
+  query,
+  addDoc,
+} from "firebase/firestore";
 import Upload from "../../../Pages/Upload";
 import BlogEditorModal from "../../../Pages/BlogEditor";
 import ProjectModal from "../../../Pages/PortfolioUpload";
@@ -45,7 +57,7 @@ import {
   FiPlus,
   FiCornerUpLeft,
   FiMessageSquare,
-  FiAlertCircle
+  FiAlertCircle,
 } from "react-icons/fi";
 import "./style.css";
 import { serverTimestamp } from "firebase/firestore";
@@ -53,7 +65,10 @@ import { httpsCallable } from "firebase/functions";
 import { functions } from "../../../../firebase";
 import { signOut } from "firebase/auth";
 import { seedAll } from "../../../utils/seedFirestore";
-import { wipeCollections, DEFAULT_WIPE_TARGETS } from "../../../utils/wipeFirestore";
+import {
+  wipeCollections,
+  DEFAULT_WIPE_TARGETS,
+} from "../../../utils/wipeFirestore";
 
 const UnauthorizedAccess = ({ error }) => {
   return (
@@ -93,7 +108,10 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "ascending",
+  });
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState(null);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
@@ -111,136 +129,149 @@ const AdminDashboard = () => {
   const [selectedSupportTicket, setSelectedSupportTicket] = useState(null);
   const [supportResponse, setSupportResponse] = useState("");
   const navigate = useNavigate();
- const [selectedDashboard, setSelectedDashboard] = useState('admin');
-const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-const dropdownRef = useRef(null);
-const [usersDropdownOpen, setUsersDropdownOpen] = useState(false);
-const [sellersDropdownOpen, setSellersDropdownOpen] = useState(false);
-const [advancedDropdownOpen, setAdvancedDropdownOpen] = useState(false);
+  const [selectedDashboard, setSelectedDashboard] = useState("admin");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const [usersDropdownOpen, setUsersDropdownOpen] = useState(false);
+  const [sellersDropdownOpen, setSellersDropdownOpen] = useState(false);
+  const [advancedDropdownOpen, setAdvancedDropdownOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [blogToEdit, setBlogToEdit] = useState(null);
 
-// Component mount hone pe default dashboard set karo
-useEffect(() => {
-  if (selectedDashboard === 'admin') {
-    setActiveTab(1); // Users menu
-    setUsersDropdownOpen(true); // Users dropdown open
-  } else {
-    setActiveTab(1); // Blogs menu
-  }
-}, [selectedDashboard]);
-
-const handleUsersDropdown = () => {
-  setUsersDropdownOpen(!usersDropdownOpen);
-  setSellersDropdownOpen(false);
-  setAdvancedDropdownOpen(false);
-};
-
-const handleSellersDropdown = () => {
-  setSellersDropdownOpen(!sellersDropdownOpen);
-  setUsersDropdownOpen(false);
-  setAdvancedDropdownOpen(false);
-};
-
-const handleAdvancedDropdown = () => {
-  setAdvancedDropdownOpen(!advancedDropdownOpen);
-  setUsersDropdownOpen(false);
-  setSellersDropdownOpen(false);
-};
-
-const handleDashboardChange = (type) => {
-  setSelectedDashboard(type);
-  
-  // Set appropriate active tab based on dashboard type
-  if (type === 'admin') {
-    setActiveTab(1); // Users menu open karo
-    setUsersDropdownOpen(true); // Users dropdown automatically open karo
-    setSellersDropdownOpen(false);
-    setAdvancedDropdownOpen(false);
-  } else {
-    setActiveTab(1); // Blogs menu open karo (Company dashboard)
-    setUsersDropdownOpen(false);
-    setSellersDropdownOpen(false);
-    setAdvancedDropdownOpen(false);
-  }
-  
-  setIsDropdownOpen(false);
-};
-
-const toggleDropdown = () => {
-  console.log('Dropdown clicked, current state:', isDropdownOpen);
-  setIsDropdownOpen(!isDropdownOpen);
-};
-
-// Close dropdown when clicking outside
-useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setIsDropdownOpen(false);
+  // Component mount hone pe default dashboard set karo
+  useEffect(() => {
+    if (selectedDashboard === "admin") {
+      setActiveTab(1); // Users menu
+      setUsersDropdownOpen(true); // Users dropdown open
+    } else {
+      setActiveTab(1); // Blogs menu
     }
-  };
+  }, [selectedDashboard]);
 
-  document.addEventListener('mousedown', handleClickOutside);
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
-  };
-}, []);
-
-// Jab activeTab change ho, automatically parent dropdown open karo
-useEffect(() => {
-  if ([1, 2, 3].includes(activeTab)) {
-    setUsersDropdownOpen(true);
+  const handleUsersDropdown = () => {
+    setUsersDropdownOpen(!usersDropdownOpen);
     setSellersDropdownOpen(false);
     setAdvancedDropdownOpen(false);
-  } else if ([4, 5, 6, 7, 8, 9].includes(activeTab)) {
-    setSellersDropdownOpen(true);
+  };
+
+  const handleSellersDropdown = () => {
+    setSellersDropdownOpen(!sellersDropdownOpen);
     setUsersDropdownOpen(false);
     setAdvancedDropdownOpen(false);
-  } else if ([10, 11, 12, 13].includes(activeTab)) {
-    setAdvancedDropdownOpen(true);
+  };
+
+  const handleAdvancedDropdown = () => {
+    setAdvancedDropdownOpen(!advancedDropdownOpen);
     setUsersDropdownOpen(false);
     setSellersDropdownOpen(false);
-  }
-}, [activeTab]);
+  };
+
+  const handleDashboardChange = (type) => {
+    setSelectedDashboard(type);
+
+    // Set appropriate active tab based on dashboard type
+    if (type === "admin") {
+      setActiveTab(1); // Users menu open karo
+      setUsersDropdownOpen(true); // Users dropdown automatically open karo
+      setSellersDropdownOpen(false);
+      setAdvancedDropdownOpen(false);
+    } else {
+      setActiveTab(1); // Blogs menu open karo (Company dashboard)
+      setUsersDropdownOpen(false);
+      setSellersDropdownOpen(false);
+      setAdvancedDropdownOpen(false);
+    }
+
+    setIsDropdownOpen(false);
+  };
+
+  const toggleDropdown = () => {
+    console.log("Dropdown clicked, current state:", isDropdownOpen);
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Jab activeTab change ho, automatically parent dropdown open karo
+  useEffect(() => {
+    if ([1, 2, 3].includes(activeTab)) {
+      setUsersDropdownOpen(true);
+      setSellersDropdownOpen(false);
+      setAdvancedDropdownOpen(false);
+    } else if ([4, 5, 6, 7, 8, 9].includes(activeTab)) {
+      setSellersDropdownOpen(true);
+      setUsersDropdownOpen(false);
+      setAdvancedDropdownOpen(false);
+    } else if ([10, 11, 12, 13].includes(activeTab)) {
+      setAdvancedDropdownOpen(true);
+      setUsersDropdownOpen(false);
+      setSellersDropdownOpen(false);
+    }
+  }, [activeTab]);
 
   // Asset categories
   const ASSET_CATEGORIES = [
-    "3D Models", "Textures", "HDRIs", "Videos", "Images", "Graphics",
-    "Icons", "Fonts", "Scripts", "Mockups", "Audio", "Templates"
+    "3D Models",
+    "Textures",
+    "HDRIs",
+    "Videos",
+    "Images",
+    "Graphics",
+    "Icons",
+    "Fonts",
+    "Scripts",
+    "Mockups",
+    "Audio",
+    "Templates",
   ];
 
-
-  
   // Helper functions
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount || 0);
   };
 
   const formatDate = (date) => {
-    if (!date) return 'N/A';
+    if (!date) return "N/A";
     const d = normalizeDate(date);
-    return d ? d.toLocaleDateString() : 'N/A';
+    return d ? d.toLocaleDateString() : "N/A";
   };
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'admin': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'moderator': return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
-      default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+      case "admin":
+        return "bg-blue-500/20 text-blue-300 border-blue-500/30";
+      case "moderator":
+        return "bg-purple-500/20 text-purple-300 border-purple-500/30";
+      default:
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
     }
   };
 
   const handleUserStatusToggle = async (userId) => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (user) {
-      const newStatus = user.status === 'active' ? 'inactive' : 'active';
+      const newStatus = user.status === "active" ? "inactive" : "active";
       await handleUpdateUserStatus(userId, newStatus);
     }
   };
 
   const handleUserRoleChange = async (userId, newRole) => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (user) {
       await handleRoleChange(userId, newRole, user.email);
     }
@@ -248,16 +279,18 @@ useEffect(() => {
 
   // Asset management handlers
   const handleToggleAssetFeatured = async (assetId) => {
-    const asset = assets.find(a => a.id === assetId);
+    const asset = assets.find((a) => a.id === assetId);
     if (asset) {
       try {
         await updateDoc(doc(db, "Assets", assetId), {
           isFeatured: !asset.isFeatured,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         });
-        setAssets(prev => prev.map(a =>
-          a.id === assetId ? { ...a, isFeatured: !a.isFeatured } : a
-        ));
+        setAssets((prev) =>
+          prev.map((a) =>
+            a.id === assetId ? { ...a, isFeatured: !a.isFeatured } : a
+          )
+        );
       } catch (error) {
         setError(`Failed to update asset: ${error.message}`);
       }
@@ -265,16 +298,18 @@ useEffect(() => {
   };
 
   const handleToggleAssetTrending = async (assetId) => {
-    const asset = assets.find(a => a.id === assetId);
+    const asset = assets.find((a) => a.id === assetId);
     if (asset) {
       try {
         await updateDoc(doc(db, "Assets", assetId), {
           isTrending: !asset.isTrending,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         });
-        setAssets(prev => prev.map(a =>
-          a.id === assetId ? { ...a, isTrending: !a.isTrending } : a
-        ));
+        setAssets((prev) =>
+          prev.map((a) =>
+            a.id === assetId ? { ...a, isTrending: !a.isTrending } : a
+          )
+        );
       } catch (error) {
         setError(`Failed to update asset: ${error.message}`);
       }
@@ -285,16 +320,15 @@ useEffect(() => {
   const AUTHORIZED_ADMINS = [
     "admin@shammarianas.com",
     "adebayour66265@gmail.com",
-    "shammarianas@gmail.com"
+    "shammarianas@gmail.com",
   ];
 
   // Check admin status
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-
       if (!currentUser) {
         setError("Please log in to access the admin dashboard");
-        navigate('/Login');
+        navigate("/Login");
         return;
       }
 
@@ -305,7 +339,6 @@ useEffect(() => {
           return;
         }
 
-
         if (await checkAdminStatus(email)) {
           setIsAdmin(true);
 
@@ -314,13 +347,14 @@ useEffect(() => {
           if (email === PRIMARY_ADMIN) {
             try {
               await Promise.all(
-                AUTHORIZED_ADMINS
-                  .filter((e) => e && e !== PRIMARY_ADMIN)
-                  .map((e) => setDoc(
-                    doc(db, "adminUsers", e),
-                    { createdAt: serverTimestamp(), promotedBy: email },
-                    { merge: true }
-                  ))
+                AUTHORIZED_ADMINS.filter((e) => e && e !== PRIMARY_ADMIN).map(
+                  (e) =>
+                    setDoc(
+                      doc(db, "adminUsers", e),
+                      { createdAt: serverTimestamp(), promotedBy: email },
+                      { merge: true }
+                    )
+                )
               );
             } catch {}
           }
@@ -329,7 +363,7 @@ useEffect(() => {
           setSelectedProfileId(currentUser.uid);
         } else {
           setError("You do not have admin privileges");
-          navigate('/');
+          navigate("/");
         }
       } catch (error) {
         setError(`Failed to verify admin privileges: ${error.message}`);
@@ -374,7 +408,10 @@ useEffect(() => {
     try {
       if (!db) throw new Error("Firebase not initialized");
       const querySnapshot = await getDocs(collection(db, "Profiles"));
-      const userList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const userList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setUsers(userList);
     } catch (error) {
       setError(`Failed to load users: ${error.message}`);
@@ -389,16 +426,33 @@ useEffect(() => {
       if (!db) throw new Error("Firebase not initialized");
 
       if (isAdmin && !profileId) {
-        const q = query(collectionGroup(db, "Support"), orderBy("createdAt", "desc"));
+        const q = query(
+          collectionGroup(db, "Support"),
+          orderBy("createdAt", "desc")
+        );
         const snap = await getDocs(q);
-        const messages = snap.docs.map((d) => ({ id: d.id, profileId: d.ref.parent.parent?.id || "", ...d.data() }));
+        const messages = snap.docs.map((d) => ({
+          id: d.id,
+          profileId: d.ref.parent.parent?.id || "",
+          ...d.data(),
+        }));
         setSupportMessages(messages);
       } else {
         const uid = profileId || auth.currentUser?.uid;
-        if (!uid) { setSupportMessages([]); return; }
-        const q = query(collection(db, `Profiles/${uid}/Support`), orderBy("createdAt", "desc"));
+        if (!uid) {
+          setSupportMessages([]);
+          return;
+        }
+        const q = query(
+          collection(db, `Profiles/${uid}/Support`),
+          orderBy("createdAt", "desc")
+        );
         const snap = await getDocs(q);
-        const messages = snap.docs.map((d) => ({ id: d.id, profileId: uid, ...d.data() }));
+        const messages = snap.docs.map((d) => ({
+          id: d.id,
+          profileId: uid,
+          ...d.data(),
+        }));
         setSupportMessages(messages);
       }
     } catch (error) {
@@ -408,29 +462,32 @@ useEffect(() => {
     }
   };
 
- // Fetch blogs when Blog tab is selected
-   const loadBlogs = async () => {
-     setLoading(true);
-     try {
-       const querySnapshot = await getDocs(collection(db, "blogs"));
-       const blogsData = [];
-       querySnapshot.forEach((doc) => {
-         blogsData.push({ id: doc.id, ...doc.data() });
-       });
-       setBlogs(blogsData);
-     } catch (error) {
-       setError(`Failed to load blogs: ${error.message}`);
-     } finally {
-       setLoading(false);
-     }
-   };
- 
+  // Fetch blogs when Blog tab is selected
+  const loadBlogs = async () => {
+    setLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, "blogs"));
+      const blogsData = [];
+      querySnapshot.forEach((doc) => {
+        blogsData.push({ id: doc.id, ...doc.data() });
+      });
+      setBlogs(blogsData);
+    } catch (error) {
+      setError(`Failed to load blogs: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-  // Load blogs for admin dashboard (tab 4) OR company dashboard (tab 1)
-  if (activeTab === 4 || (selectedDashboard === 'company' && activeTab === 1)) {
-    loadBlogs();
-  }
-}, [activeTab, selectedDashboard]);
+    // Load blogs for admin dashboard (tab 4) OR company dashboard (tab 1)
+    if (
+      activeTab === 4 ||
+      (selectedDashboard === "company" && activeTab === 1)
+    ) {
+      loadBlogs();
+    }
+  }, [activeTab, selectedDashboard]);
 
   // Load portfolios (projects)
   const loadProjects = async () => {
@@ -451,7 +508,10 @@ useEffect(() => {
 
   // Fetch portfolios (projects) when Portfolio tab is selected
   useEffect(() => {
-    if (activeTab === 5 || (selectedDashboard === 'company' && activeTab === 1)) {
+    if (
+      activeTab === 5 ||
+      (selectedDashboard === "company" && activeTab === 1)
+    ) {
       loadProjects();
     }
   }, [activeTab]);
@@ -462,7 +522,10 @@ useEffect(() => {
     try {
       const q = query(collection(db, "Assets"));
       const querySnapshot = await getDocs(q);
-      const assetsData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const assetsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setAssets(assetsData);
     } catch (error) {
       setError(`Failed to load assets: ${error.message}`);
@@ -483,12 +546,24 @@ useEffect(() => {
       setError("Only admins can change user roles");
       return;
     }
-    if (window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to change this user's role to ${newRole}?`
+      )
+    ) {
       try {
         const lowerCaseEmail = (userEmail || "").toLowerCase();
         const setUserRoleFn = httpsCallable(functions, "setUserRole");
-        await setUserRoleFn({ targetEmail: lowerCaseEmail, userId, role: newRole });
-        setUsers(users.map((user) => (user.id === userId ? { ...user, role: newRole } : user)));
+        await setUserRoleFn({
+          targetEmail: lowerCaseEmail,
+          userId,
+          role: newRole,
+        });
+        setUsers(
+          users.map((user) =>
+            user.id === userId ? { ...user, role: newRole } : user
+          )
+        );
       } catch (error) {
         setError(`Failed to update role: ${error.message}`);
       }
@@ -496,18 +571,26 @@ useEffect(() => {
   };
 
   const handleUpdateUserStatus = async (userId, newStatus) => {
-    if (!isAdmin) { setError("Only admins can change user status"); return; }
+    if (!isAdmin) {
+      setError("Only admins can change user status");
+      return;
+    }
     try {
       const setUserStatusFn = httpsCallable(functions, "setUserStatus");
       await setUserStatusFn({ userId, status: newStatus });
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u)));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
+      );
     } catch (error) {
       setError(`Failed to update status: ${error.message}`);
     }
   };
 
   const handleDeleteUser = async (userId, email) => {
-    if (!isAdmin) { setError("Only admins can delete users"); return; }
+    if (!isAdmin) {
+      setError("Only admins can delete users");
+      return;
+    }
     try {
       const deleteUserFn = httpsCallable(functions, "deleteUser");
       await deleteUserFn({ userId, email: (email || "").toLowerCase() });
@@ -523,7 +606,11 @@ useEffect(() => {
       return;
     }
     if (selectedUsers.length === 0) return;
-    if (window.confirm(`Are you sure you want to change the role of ${selectedUsers.length} user(s) to "${newRole}"?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to change the role of ${selectedUsers.length} user(s) to "${newRole}"?`
+      )
+    ) {
       try {
         await Promise.all(
           selectedUsers.map(async (userId) => {
@@ -531,10 +618,18 @@ useEffect(() => {
             if (!user || !user.email) return;
             const lowerCaseEmail = (user.email || "").toLowerCase();
             const setUserRoleFn = httpsCallable(functions, "setUserRole");
-            await setUserRoleFn({ targetEmail: lowerCaseEmail, userId, role: newRole });
+            await setUserRoleFn({
+              targetEmail: lowerCaseEmail,
+              userId,
+              role: newRole,
+            });
           })
         );
-        setUsers(users.map((user) => (selectedUsers.includes(user.id) ? { ...user, role: newRole } : user)));
+        setUsers(
+          users.map((user) =>
+            selectedUsers.includes(user.id) ? { ...user, role: newRole } : user
+          )
+        );
         setSelectedUsers([]);
       } catch (error) {
         setError(`Failed to update user roles: ${error.message}`);
@@ -547,10 +642,20 @@ useEffect(() => {
       setError("Only admins can change other users' message status");
       return;
     }
-    if (window.confirm("Are you sure you want to change this message's status?")) {
+    if (
+      window.confirm("Are you sure you want to change this message's status?")
+    ) {
       try {
-        await updateDoc(doc(db, `Profiles/${profileId}/Support`, messageId), { status: newStatus });
-        setSupportMessages(supportMessages.map((msg) => (msg.id === messageId && msg.profileId === profileId ? { ...msg, status: newStatus } : msg)));
+        await updateDoc(doc(db, `Profiles/${profileId}/Support`, messageId), {
+          status: newStatus,
+        });
+        setSupportMessages(
+          supportMessages.map((msg) =>
+            msg.id === messageId && msg.profileId === profileId
+              ? { ...msg, status: newStatus }
+              : msg
+          )
+        );
       } catch (error) {
         setError(`Failed to update message status: ${error.message}`);
       }
@@ -558,20 +663,42 @@ useEffect(() => {
   };
 
   const handleBulkStatusChange = async (newStatus) => {
-    if (!isAdmin && selectedMessages.some((id) => supportMessages.find((msg) => msg.id === id).profileId !== auth.currentUser?.uid)) {
-      setError("Only admins can perform bulk status changes for other users' messages");
+    if (
+      !isAdmin &&
+      selectedMessages.some(
+        (id) =>
+          supportMessages.find((msg) => msg.id === id).profileId !==
+          auth.currentUser?.uid
+      )
+    ) {
+      setError(
+        "Only admins can perform bulk status changes for other users' messages"
+      );
       return;
     }
     if (selectedMessages.length === 0) return;
-    if (window.confirm(`Change status of ${selectedMessages.length} message(s) to ${newStatus}?`)) {
+    if (
+      window.confirm(
+        `Change status of ${selectedMessages.length} message(s) to ${newStatus}?`
+      )
+    ) {
       try {
         await Promise.all(
           selectedMessages.map((messageId) => {
             const message = supportMessages.find((msg) => msg.id === messageId);
-            return updateDoc(doc(db, `Profiles/${message.profileId}/Support`, messageId), { status: newStatus });
+            return updateDoc(
+              doc(db, `Profiles/${message.profileId}/Support`, messageId),
+              { status: newStatus }
+            );
           })
         );
-        setSupportMessages(supportMessages.map((msg) => (selectedMessages.includes(msg.id) ? { ...msg, status: newStatus } : msg)));
+        setSupportMessages(
+          supportMessages.map((msg) =>
+            selectedMessages.includes(msg.id)
+              ? { ...msg, status: newStatus }
+              : msg
+          )
+        );
         setSelectedMessages([]);
       } catch (error) {
         setError(`Failed to update message statuses: ${error.message}`);
@@ -581,14 +708,26 @@ useEffect(() => {
 
   const handleRespondToTicket = async (ticketId, response, newStatus) => {
     try {
-      const profileId = selectedSupportTicket?.profileId || selectedProfileId || auth.currentUser?.uid;
-      if (!profileId) { setError("No profile selected for this ticket"); return; }
+      const profileId =
+        selectedSupportTicket?.profileId ||
+        selectedProfileId ||
+        auth.currentUser?.uid;
+      if (!profileId) {
+        setError("No profile selected for this ticket");
+        return;
+      }
       await updateDoc(doc(db, `Profiles/${profileId}/Support`, ticketId), {
         adminResponse: response,
         status: newStatus,
-        respondedAt: serverTimestamp()
+        respondedAt: serverTimestamp(),
       });
-      setSupportMessages(prev => prev.map(m => (m.id === ticketId && m.profileId === profileId) ? { ...m, adminResponse: response, status: newStatus } : m));
+      setSupportMessages((prev) =>
+        prev.map((m) =>
+          m.id === ticketId && m.profileId === profileId
+            ? { ...m, adminResponse: response, status: newStatus }
+            : m
+        )
+      );
       setShowSupportTicketDialog(false);
       setSupportResponse("");
     } catch (e) {
@@ -597,7 +736,8 @@ useEffect(() => {
   };
 
   const handleDeleteBlog = async (blogId) => {
-    if (!window.confirm("Are you sure you want to delete this blog post?")) return;
+    if (!window.confirm("Are you sure you want to delete this blog post?"))
+      return;
     try {
       await deleteDoc(doc(db, "blogs", blogId));
       await loadBlogs();
@@ -608,25 +748,42 @@ useEffect(() => {
   };
 
   const handleToggleBlogStatus = async (blogId, currentStatus) => {
-    const newStatus = (currentStatus || "draft").toLowerCase() === "published" ? "DRAFT" : "PUBLISHED";
-    try {
-      await updateDoc(doc(db, "blogs", blogId), { status: newStatus, updatedAt: serverTimestamp() });
-      await loadBlogs();
-    } catch (error) {
-      console.error("Update blog status error:", error);
-      setError("Failed to update blog post status");
-    }
-  };
+  // Current status ko properly check karo
+  const normalizedStatus = (currentStatus || "draft").toLowerCase();
+  const newStatus = normalizedStatus === "published" ? "DRAFT" : "PUBLISHED";
+  
+  try {
+    await updateDoc(doc(db, "blogs", blogId), {
+      status: newStatus,
+      updatedAt: serverTimestamp(),
+      // Agar publish kar rahe hain to publishedAt set karo
+      ...(newStatus === "PUBLISHED" && { publishedAt: serverTimestamp() })
+    });
+    
+    // Blogs ko refresh karo
+    await loadBlogs();
+    
+    // Success message
+    alert(`Blog ${newStatus === "PUBLISHED" ? "published" : "drafted"} successfully!`);
+  } catch (error) {
+    console.error("Update blog status error:", error);
+    setError("Failed to update blog post status");
+  }
+};
 
   const handleDeletePortfolio = async (portfolioId) => {
     if (!isAdmin) {
       setError("Only admins can delete portfolio items");
       return;
     }
-    if (window.confirm("Are you sure you want to delete this portfolio item?")) {
+    if (
+      window.confirm("Are you sure you want to delete this portfolio item?")
+    ) {
       try {
         await deleteDoc(doc(db, "projects", portfolioId));
-        setPortfolios(portfolios.filter((portfolio) => portfolio.id !== portfolioId));
+        setPortfolios(
+          portfolios.filter((portfolio) => portfolio.id !== portfolioId)
+        );
       } catch (error) {
         setError(`Failed to delete portfolio item: ${error.message}`);
       }
@@ -639,8 +796,15 @@ useEffect(() => {
       return;
     }
     try {
-      await updateDoc(doc(db, "projects", portfolioId), { status: newStatus, updatedAt: serverTimestamp() });
-      setPortfolios((prev) => prev.map((p) => (p.id === portfolioId ? { ...p, status: newStatus } : p)));
+      await updateDoc(doc(db, "projects", portfolioId), {
+        status: newStatus,
+        updatedAt: serverTimestamp(),
+      });
+      setPortfolios((prev) =>
+        prev.map((p) =>
+          p.id === portfolioId ? { ...p, status: newStatus } : p
+        )
+      );
     } catch (error) {
       setError(`Failed to update portfolio status: ${error.message}`);
     }
@@ -654,8 +818,15 @@ useEffect(() => {
     const target = portfolios.find((p) => p.id === portfolioId);
     const current = !!target?.featured;
     try {
-      await updateDoc(doc(db, "projects", portfolioId), { featured: !current, updatedAt: serverTimestamp() });
-      setPortfolios((prev) => prev.map((p) => (p.id === portfolioId ? { ...p, featured: !current } : p)));
+      await updateDoc(doc(db, "projects", portfolioId), {
+        featured: !current,
+        updatedAt: serverTimestamp(),
+      });
+      setPortfolios((prev) =>
+        prev.map((p) =>
+          p.id === portfolioId ? { ...p, featured: !current } : p
+        )
+      );
     } catch (error) {
       setError(`Failed to update portfolio: ${error.message}`);
     }
@@ -696,18 +867,29 @@ useEffect(() => {
   const filteredUsers = users.filter((user) => {
     const searchTerm = activeTab === 1 ? userSearchTerm : search;
     const roleFilterValue = activeTab === 1 ? selectedUserRole : roleFilter;
-    const statusFilterValue = activeTab === 1 ? selectedUserStatus : statusFilter;
+    const statusFilterValue =
+      activeTab === 1 ? selectedUserStatus : statusFilter;
 
-    const matchesText = (user.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       (user.name || user.displayName || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilterValue === "all" || !roleFilterValue ? true : user.role === roleFilterValue;
-    const matchesStatus = statusFilterValue === "all" || !statusFilterValue ? true : (user.status || "active") === statusFilterValue;
+    const matchesText =
+      (user.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.name || user.displayName || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    const matchesRole =
+      roleFilterValue === "all" || !roleFilterValue
+        ? true
+        : user.role === roleFilterValue;
+    const matchesStatus =
+      statusFilterValue === "all" || !statusFilterValue
+        ? true
+        : (user.status || "active") === statusFilterValue;
     const matchesDate = withinDate(user.createdAt);
     return matchesText && matchesRole && matchesStatus && matchesDate;
   });
 
   const valueByKey = (obj, key) => {
-    if (key === "lastActive") return normalizeDate(obj.lastActive)?.getTime() || 0;
+    if (key === "lastActive")
+      return normalizeDate(obj.lastActive)?.getTime() || 0;
     return (obj[key] || "").toString().toLowerCase();
   };
 
@@ -715,44 +897,91 @@ useEffect(() => {
     if (!sortConfig.key) return 0;
     const av = valueByKey(a, sortConfig.key);
     const bv = valueByKey(b, sortConfig.key);
-    return sortConfig.direction === "ascending" ? (av < bv ? -1 : av > bv ? 1 : 0) : av > bv ? -1 : av < bv ? 1 : 0;
+    return sortConfig.direction === "ascending"
+      ? av < bv
+        ? -1
+        : av > bv
+        ? 1
+        : 0
+      : av > bv
+      ? -1
+      : av < bv
+      ? 1
+      : 0;
   });
 
   const filteredMessages = supportMessages.filter((msg) => {
-    const matchesSearch = msg.subject?.toLowerCase().includes(search.toLowerCase()) || msg.email?.toLowerCase().includes(search.toLowerCase());
-    return messageFilter === "all" ? matchesSearch : msg.status === messageFilter && matchesSearch;
+    const matchesSearch =
+      msg.subject?.toLowerCase().includes(search.toLowerCase()) ||
+      msg.email?.toLowerCase().includes(search.toLowerCase());
+    return messageFilter === "all"
+      ? matchesSearch
+      : msg.status === messageFilter && matchesSearch;
   });
   const sortedMessages = [...filteredMessages].sort((a, b) => {
     if (!sortConfig.key) return 0;
     const aValue = a[sortConfig.key] || "";
     const bValue = b[sortConfig.key] || "";
-    return sortConfig.direction === "ascending" ? (aValue < bValue ? -1 : 1) : aValue > bValue ? -1 : 1;
+    return sortConfig.direction === "ascending"
+      ? aValue < bValue
+        ? -1
+        : 1
+      : aValue > bValue
+      ? -1
+      : 1;
   });
 
-  const filteredBlogs = blogs.filter((blog) => blog.title?.toLowerCase().includes(search.toLowerCase()) || !blog.title);
+  const filteredBlogs = blogs.filter(
+    (blog) =>
+      blog.title?.toLowerCase().includes(search.toLowerCase()) || !blog.title
+  );
   const sortedBlogs = [...filteredBlogs].sort((a, b) => {
     if (!sortConfig.key) return 0;
     const aValue = a[sortConfig.key] || "";
     const bValue = b[sortConfig.key] || "";
-    return sortConfig.direction === "ascending" ? (aValue < bValue ? -1 : 1) : aValue > bValue ? -1 : 1;
+    return sortConfig.direction === "ascending"
+      ? aValue < bValue
+        ? -1
+        : 1
+      : aValue > bValue
+      ? -1
+      : 1;
   });
 
-  const filteredPortfolios = portfolios.filter((portfolio) => portfolio.title?.toLowerCase().includes(search.toLowerCase()) || !portfolio.title);
+  const filteredPortfolios = portfolios.filter(
+    (portfolio) =>
+      portfolio.title?.toLowerCase().includes(search.toLowerCase()) ||
+      !portfolio.title
+  );
   const sortedPortfolios = [...filteredPortfolios].sort((a, b) => {
     if (!sortConfig.key) return 0;
     const aValue = a[sortConfig.key] || "";
     const bValue = b[sortConfig.key] || "";
-    return sortConfig.direction === "ascending" ? (aValue < bValue ? -1 : 1) : aValue > bValue ? -1 : 1;
+    return sortConfig.direction === "ascending"
+      ? aValue < bValue
+        ? -1
+        : 1
+      : aValue > bValue
+      ? -1
+      : 1;
   });
 
   const filteredAssets = assets.filter((asset) => {
     const searchTerm = activeTab === 6 ? assetSearchTerm : search;
     const categoryFilter = activeTab === 6 ? selectedCategory : "";
 
-    const matchesText = (asset.name || asset.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       (asset.description || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || !categoryFilter ? true :
-                           (asset.category || asset.type || "").toLowerCase() === categoryFilter.toLowerCase();
+    const matchesText =
+      (asset.name || asset.title || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (asset.description || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" || !categoryFilter
+        ? true
+        : (asset.category || asset.type || "").toLowerCase() ===
+          categoryFilter.toLowerCase();
 
     return matchesText && matchesCategory;
   });
@@ -760,15 +989,27 @@ useEffect(() => {
     if (!sortConfig.key) return 0;
     const aValue = a[sortConfig.key] || "";
     const bValue = b[sortConfig.key] || "";
-    return sortConfig.direction === "ascending" ? (aValue < bValue ? -1 : 1) : aValue > bValue ? -1 : 1;
+    return sortConfig.direction === "ascending"
+      ? aValue < bValue
+        ? -1
+        : 1
+      : aValue > bValue
+      ? -1
+      : 1;
   });
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentUsers = sortedUsers.slice(indexOfFirstItem, indexOfLastItem);
-  const currentMessages = sortedMessages.slice(indexOfFirstItem, indexOfLastItem);
+  const currentMessages = sortedMessages.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
   const currentBlogs = sortedBlogs.slice(indexOfFirstItem, indexOfLastItem);
-  const currentPortfolios = sortedPortfolios.slice(indexOfFirstItem, indexOfLastItem);
+  const currentPortfolios = sortedPortfolios.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
   const currentAssets = sortedAssets.slice(indexOfFirstItem, indexOfLastItem);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -776,41 +1017,67 @@ useEffect(() => {
   const stats = {
     totalUsers: users.length,
     totalAdmins: users.filter((user) => user.role === "admin").length,
-    pendingMessages: supportMessages.filter((msg) => msg.status === "unopened").length,
+    pendingMessages: supportMessages.filter((msg) => msg.status === "unopened")
+      .length,
     totalBlogs: blogs.length,
     totalPortfolios: portfolios.length,
     totalAssets: assets.length,
   };
 
-  const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-  const lastNMonths = (n=12) => {
+  const monthKey = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const lastNMonths = (n = 12) => {
     const arr = [];
     const now = new Date();
-    for (let i = n-1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-      arr.push({ key: monthKey(d), label: d.toLocaleString('en-US',{ month:'short', year:'numeric' }) });
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      arr.push({
+        key: monthKey(d),
+        label: d.toLocaleString("en-US", { month: "short", year: "numeric" }),
+      });
     }
     return arr;
   };
 
   const analytics = React.useMemo(() => {
-    const totalDownloads = assets.reduce((s,a)=> s + (a.downloads||0), 0);
-    const totalRevenue = assets.reduce((s,a)=> s + ((a.price||0) * (a.downloads||0)), 0);
-    const categories = assets.reduce((acc,a)=>{ const k=(a.category||a.type||'other').toString().toLowerCase(); acc[k]=(acc[k]||0)+1; return acc; },{});
-    const popularCategories = Object.entries(categories).map(([category,count])=>({ category, count }));
+    const totalDownloads = assets.reduce((s, a) => s + (a.downloads || 0), 0);
+    const totalRevenue = assets.reduce(
+      (s, a) => s + (a.price || 0) * (a.downloads || 0),
+      0
+    );
+    const categories = assets.reduce((acc, a) => {
+      const k = (a.category || a.type || "other").toString().toLowerCase();
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {});
+    const popularCategories = Object.entries(categories).map(
+      ([category, count]) => ({ category, count })
+    );
 
     const months = lastNMonths(12);
-    const monthlyRevenue = months.map(m=>{
-      const rev = assets.filter(a=>{ const d=normalizeDate(a.createdAt); return d && monthKey(d)===m.key; }).reduce((s,a)=> s + ((a.price||0)*(a.downloads||0)),0);
+    const monthlyRevenue = months.map((m) => {
+      const rev = assets
+        .filter((a) => {
+          const d = normalizeDate(a.createdAt);
+          return d && monthKey(d) === m.key;
+        })
+        .reduce((s, a) => s + (a.price || 0) * (a.downloads || 0), 0);
       return { month: m.label, revenue: rev };
     });
-    const monthlyDownloads = months.map(m=>{
-      const dls = assets.filter(a=>{ const d=normalizeDate(a.createdAt); return d && monthKey(d)===m.key; }).reduce((s,a)=> s + (a.downloads||0),0);
+    const monthlyDownloads = months.map((m) => {
+      const dls = assets
+        .filter((a) => {
+          const d = normalizeDate(a.createdAt);
+          return d && monthKey(d) === m.key;
+        })
+        .reduce((s, a) => s + (a.downloads || 0), 0);
       return { month: m.label, downloads: dls };
     });
 
     const totalOrders = totalDownloads;
-    const conversionRate = users.length ? Math.min(100, (totalOrders / users.length) * 100) : 0;
+    const conversionRate = users.length
+      ? Math.min(100, (totalOrders / users.length) * 100)
+      : 0;
     const averageOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
 
     return {
@@ -826,10 +1093,23 @@ useEffect(() => {
 
   const revenueData = React.useMemo(() => {
     const months = lastNMonths(12);
-    return months.map(m=>{
-      const revenue = assets.filter(a=>{ const d=normalizeDate(a.createdAt); return d && monthKey(d)===m.key; }).reduce((s,a)=> s + ((a.price||0)*(a.downloads||0)),0);
-      const orders = assets.filter(a=>{ const d=normalizeDate(a.createdAt); return d && monthKey(d)===m.key; }).reduce((s,a)=> s + (a.downloads||0),0);
-      const usersInMonth = users.filter(u=>{ const d=normalizeDate(u.createdAt); return d && monthKey(d)===m.key; }).length;
+    return months.map((m) => {
+      const revenue = assets
+        .filter((a) => {
+          const d = normalizeDate(a.createdAt);
+          return d && monthKey(d) === m.key;
+        })
+        .reduce((s, a) => s + (a.price || 0) * (a.downloads || 0), 0);
+      const orders = assets
+        .filter((a) => {
+          const d = normalizeDate(a.createdAt);
+          return d && monthKey(d) === m.key;
+        })
+        .reduce((s, a) => s + (a.downloads || 0), 0);
+      const usersInMonth = users.filter((u) => {
+        const d = normalizeDate(u.createdAt);
+        return d && monthKey(d) === m.key;
+      }).length;
       return { month: m.label, revenue, orders, users: usersInMonth };
     });
   }, [assets, users]);
@@ -838,11 +1118,18 @@ useEffect(() => {
     const days = 30;
     const arr = [];
     let total = 0;
-    const byDay = users.reduce((acc,u)=>{ const d=normalizeDate(u.createdAt); if(!d) return acc; const k=d.toISOString().slice(0,10); acc[k]=(acc[k]||0)+1; return acc; },{});
-    for (let i = days-1; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate()-i);
-      const key = d.toISOString().slice(0,10);
-      const newUsers = byDay[key]||0;
+    const byDay = users.reduce((acc, u) => {
+      const d = normalizeDate(u.createdAt);
+      if (!d) return acc;
+      const k = d.toISOString().slice(0, 10);
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {});
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const newUsers = byDay[key] || 0;
       total += newUsers;
       arr.push({ date: key, newUsers, totalUsers: total });
     }
@@ -851,54 +1138,107 @@ useEffect(() => {
 
   const formatDateForFilename = () => {
     const now = new Date();
-    return now.toISOString().split('T')[0];
+    return now.toISOString().split("T")[0];
   };
 
   const generateCSVContent = () => {
     const rows = [];
-    rows.push(["Analytics Report", `Generated on ${new Date().toLocaleDateString()}`]);
+    rows.push([
+      "Analytics Report",
+      `Generated on ${new Date().toLocaleDateString()}`,
+    ]);
     rows.push([""]);
     rows.push(["Key Metrics"]);
-    rows.push(["Metric","Value","Change"]);
-    rows.push(["Total Revenue", formatCurrency(analytics.totalRevenue), "+12.3%"]);
-    rows.push(["Total Orders", analytics.salesReport.totalOrders.toLocaleString(), "+8.7%"]);
-    rows.push(["Active Users", analytics.totalUsers.toLocaleString(), "+15.2%"]);
-    rows.push(["Conversion Rate", `${analytics.salesReport.conversionRate.toFixed(1)}%`, "-2.1%"]);
+    rows.push(["Metric", "Value", "Change"]);
+    rows.push([
+      "Total Revenue",
+      formatCurrency(analytics.totalRevenue),
+      "+12.3%",
+    ]);
+    rows.push([
+      "Total Orders",
+      analytics.salesReport.totalOrders.toLocaleString(),
+      "+8.7%",
+    ]);
+    rows.push([
+      "Active Users",
+      analytics.totalUsers.toLocaleString(),
+      "+15.2%",
+    ]);
+    rows.push([
+      "Conversion Rate",
+      `${analytics.salesReport.conversionRate.toFixed(1)}%`,
+      "-2.1%",
+    ]);
     rows.push([""]);
     rows.push(["Monthly Revenue Trend"]);
-    rows.push(["Month","Revenue","Orders","Users"]);
-    revenueData.forEach(item=>{
-      rows.push([item.month, formatCurrency(item.revenue), item.orders.toString(), item.users.toString()]);
+    rows.push(["Month", "Revenue", "Orders", "Users"]);
+    revenueData.forEach((item) => {
+      rows.push([
+        item.month,
+        formatCurrency(item.revenue),
+        item.orders.toString(),
+        item.users.toString(),
+      ]);
     });
     rows.push([""]);
     rows.push(["User Growth (Last 7 Days)"]);
-    rows.push(["Date","New Users","Total Users"]);
-    userGrowthData.slice(-7).forEach(item=>{
-      rows.push([item.date, item.newUsers.toString(), item.totalUsers.toString()]);
+    rows.push(["Date", "New Users", "Total Users"]);
+    userGrowthData.slice(-7).forEach((item) => {
+      rows.push([
+        item.date,
+        item.newUsers.toString(),
+        item.totalUsers.toString(),
+      ]);
     });
     rows.push([""]);
     rows.push(["Asset Categories"]);
-    rows.push(["Category","Count","Percentage"]);
-    const totalAssets = analytics.popularCategories.reduce((s,c)=> s + c.count, 0) || 1;
-    analytics.popularCategories.forEach(category=>{
-      const percentage = ((category.count/totalAssets)*100).toFixed(1);
-      rows.push([category.category, category.count.toString(), `${percentage}%`]);
+    rows.push(["Category", "Count", "Percentage"]);
+    const totalAssets =
+      analytics.popularCategories.reduce((s, c) => s + c.count, 0) || 1;
+    analytics.popularCategories.forEach((category) => {
+      const percentage = ((category.count / totalAssets) * 100).toFixed(1);
+      rows.push([
+        category.category,
+        category.count.toString(),
+        `${percentage}%`,
+      ]);
     });
     rows.push([""]);
     rows.push(["Top Performing Assets"]);
-    rows.push(["Asset","Category","Downloads","Revenue","Growth"]);
+    rows.push(["Asset", "Category", "Downloads", "Revenue", "Growth"]);
     const topAssets = assets
-      .map(a=>({ name: a.title||a.name||'Asset', category: a.category||a.type||'other', downloads: a.downloads||0, revenue: (a.price||0)*(a.downloads||0), growth: 0 }))
-      .sort((a,b)=> b.revenue - a.revenue)
-      .slice(0,5);
-    topAssets.forEach(asset=>{
-      rows.push([asset.name, asset.category, asset.downloads.toLocaleString(), formatCurrency(asset.revenue), `${asset.growth}%`]);
+      .map((a) => ({
+        name: a.title || a.name || "Asset",
+        category: a.category || a.type || "other",
+        downloads: a.downloads || 0,
+        revenue: (a.price || 0) * (a.downloads || 0),
+        growth: 0,
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+    topAssets.forEach((asset) => {
+      rows.push([
+        asset.name,
+        asset.category,
+        asset.downloads.toLocaleString(),
+        formatCurrency(asset.revenue),
+        `${asset.growth}%`,
+      ]);
     });
-    return rows.map(row=> row.map(cell=>`"${cell.toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+    return rows
+      .map((row) =>
+        row.map((cell) => `"${cell.toString().replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
   };
 
   const generateJSONReport = () => ({
-    reportMetadata: { generatedAt: new Date().toISOString(), reportType: 'Analytics Report', timeRange: 'Last 12 months' },
+    reportMetadata: {
+      generatedAt: new Date().toISOString(),
+      reportType: "Analytics Report",
+      timeRange: "Last 12 months",
+    },
     keyMetrics: {
       totalRevenue: analytics.totalRevenue,
       totalOrders: analytics.salesReport.totalOrders,
@@ -912,17 +1252,28 @@ useEffect(() => {
     userGrowthData,
     categoryDistribution: analytics.popularCategories,
     topPerformingAssets: assets
-      .map(a=>({ name: a.title||a.name||'Asset', category: a.category||a.type||'other', downloads: a.downloads||0, revenue: (a.price||0)*(a.downloads||0), growth: 0 }))
-      .sort((a,b)=> b.revenue - a.revenue)
-      .slice(0,5),
+      .map((a) => ({
+        name: a.title || a.name || "Asset",
+        category: a.category || a.type || "other",
+        downloads: a.downloads || 0,
+        revenue: (a.price || 0) * (a.downloads || 0),
+        growth: 0,
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5),
     recentSales: [],
   });
 
   const downloadFile = (content, filename, contentType) => {
     const blob = new Blob([content], { type: contentType });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url; link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleExportCSV = async () => {
@@ -930,11 +1281,11 @@ useEffect(() => {
     try {
       const csv = generateCSVContent();
       const filename = `analytics-report-${formatDateForFilename()}.csv`;
-      downloadFile(csv, filename, 'text/csv;charset=utf-8;');
-      alert('CSV report exported successfully!');
+      downloadFile(csv, filename, "text/csv;charset=utf-8;");
+      alert("CSV report exported successfully!");
     } catch (e) {
-      console.error('Export error:', e);
-      setError('Failed to export CSV report');
+      console.error("Export error:", e);
+      setError("Failed to export CSV report");
     } finally {
       setIsExporting(false);
     }
@@ -945,11 +1296,11 @@ useEffect(() => {
     try {
       const json = JSON.stringify(generateJSONReport(), null, 2);
       const filename = `analytics-report-${formatDateForFilename()}.json`;
-      downloadFile(json, filename, 'application/json;charset=utf-8;');
-      alert('JSON report exported successfully!');
+      downloadFile(json, filename, "application/json;charset=utf-8;");
+      alert("JSON report exported successfully!");
     } catch (e) {
-      console.error('Export error:', e);
-      setError('Failed to export JSON report');
+      console.error("Export error:", e);
+      setError("Failed to export JSON report");
     } finally {
       setIsExporting(false);
     }
@@ -959,28 +1310,534 @@ useEffect(() => {
     setIsExporting(true);
     try {
       const reportData = generateJSONReport();
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) { setError('Please allow popups to generate PDF'); setIsExporting(false); return; }
-      const pdfContent = `<!DOCTYPE html><html><head><title>Analytics Report - ${formatDateForFilename()}</title><style>@page{margin:1cm;size:A4}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;color:#333;line-height:1.6;font-size:12px}.header{text-align:center;margin-bottom:30px;border-bottom:3px solid #2563eb;padding-bottom:20px}.header h1{color:#2563eb;margin:0;font-size:28px;font-weight:bold}.header .subtitle{color:#6b7280;margin-top:5px;font-size:14px}.section{margin-bottom:25px;page-break-inside:avoid}.section h2{color:#1f2937;border-bottom:2px solid #e5e7eb;padding-bottom:8px;margin-bottom:15px;font-size:18px;font-weight:600}.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin:15px 0}.metric-card{border:1px solid #d1d5db;padding:15px;border-radius:8px;background:#f9fafb;text-align:center}.metric-value{font-size:20px;font-weight:bold;color:#059669;margin-bottom:5px}.metric-label{color:#6b7280;font-size:12px;font-weight:500}.metric-change{font-size:11px;margin-top:3px}.change-positive{color:#059669}.change-negative{color:#dc2626}table{width:100%;border-collapse:collapse;margin:15px 0;font-size:11px}th,td{border:1px solid #d1d5db;padding:8px 6px;text-align:left}th{background-color:#f3f4f6;font-weight:600;color:#374151}tr:nth-child(even){background-color:#f9fafb}.revenue-table td:nth-child(3),.revenue-table td:nth-child(4){text-align:right}.footer{margin-top:30px;padding-top:15px;border-top:1px solid #e5e7eb;text-align:center;color:#6b7280;font-size:10px}@media print{body{margin:0}.no-print{display:none}}</style></head><body><div class="header"><h1>Analytics Report</h1><div class="subtitle">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</div></div><div class="section"><h2>Executive Summary</h2><div class="metrics"><div class="metric-card"><div class="metric-value">${formatCurrency(reportData.keyMetrics.totalRevenue)}</div><div class="metric-label">Total Revenue</div><div class="metric-change change-positive">+12.3% vs last month</div></div><div class="metric-card"><div class="metric-value">${reportData.keyMetrics.totalOrders.toLocaleString()}</div><div class="metric-label">Total Orders</div><div class="metric-change change-positive">+8.7% vs last month</div></div><div class="metric-card"><div class="metric-value">${reportData.keyMetrics.activeUsers.toLocaleString()}</div><div class="metric-label">Active Users</div><div class="metric-change change-positive">+15.2% vs last month</div></div><div class="metric-card"><div class="metric-value">${reportData.keyMetrics.conversionRate.toFixed(1)}%</div><div class="metric-label">Conversion Rate</div><div class="metric-change change-negative">-2.1% vs last month</div></div></div></div><div class="section"><h2>Monthly Revenue Performance</h2><table class="revenue-table"><thead><tr><th>Month</th><th>Revenue</th><th>Orders</th><th>Users</th></tr></thead><tbody>${revenueData.map(item=>`<tr><td>${item.month}</td><td>${formatCurrency(item.revenue)}</td><td>${item.orders}</td><td>${item.users}</td></tr>`).join('')}</tbody></table></div><div class="section"><h2>Asset Category Distribution</h2><table><thead><tr><th>Category</th><th>Count</th><th>Percentage</th></tr></thead><tbody>${analytics.popularCategories.map(cat=>{const total=analytics.popularCategories.reduce((s,c)=>s+c.count,0)||1;const pct=((cat.count/total)*100).toFixed(1);return `<tr><td>${cat.category}</td><td>${cat.count}</td><td>${pct}%</td></tr>`}).join('')}</tbody></table></div><div class="section"><h2>Top Performing Assets</h2><table><thead><tr><th>Asset Name</th><th>Category</th><th>Downloads</th><th>Revenue</th><th>Growth</th></tr></thead><tbody>${assets.map(a=>({ name:a.title||a.name||'Asset', category:a.category||a.type||'other', downloads:a.downloads||0, revenue:(a.price||0)*(a.downloads||0), growth:0 })).sort((a,b)=>b.revenue-a.revenue).slice(0,5).map(asset=>`<tr><td>${asset.name}</td><td>${asset.category}</td><td>${asset.downloads.toLocaleString()}</td><td>${formatCurrency(asset.revenue)}</td><td class="change-positive">+${asset.growth}%</td></tr>`).join('')}</tbody></table></div><div class="footer"><p>This report contains confidential business information. Generated by Digital Marketplace Analytics System.</p></div></body></html>`;
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        setError("Please allow popups to generate PDF");
+        setIsExporting(false);
+        return;
+      }
+      const pdfContent = `<!DOCTYPE html><html><head><title>Analytics Report - ${formatDateForFilename()}</title><style>@page{margin:1cm;size:A4}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;color:#333;line-height:1.6;font-size:12px}.header{text-align:center;margin-bottom:30px;border-bottom:3px solid #2563eb;padding-bottom:20px}.header h1{color:#2563eb;margin:0;font-size:28px;font-weight:bold}.header .subtitle{color:#6b7280;margin-top:5px;font-size:14px}.section{margin-bottom:25px;page-break-inside:avoid}.section h2{color:#1f2937;border-bottom:2px solid #e5e7eb;padding-bottom:8px;margin-bottom:15px;font-size:18px;font-weight:600}.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin:15px 0}.metric-card{border:1px solid #d1d5db;padding:15px;border-radius:8px;background:#f9fafb;text-align:center}.metric-value{font-size:20px;font-weight:bold;color:#059669;margin-bottom:5px}.metric-label{color:#6b7280;font-size:12px;font-weight:500}.metric-change{font-size:11px;margin-top:3px}.change-positive{color:#059669}.change-negative{color:#dc2626}table{width:100%;border-collapse:collapse;margin:15px 0;font-size:11px}th,td{border:1px solid #d1d5db;padding:8px 6px;text-align:left}th{background-color:#f3f4f6;font-weight:600;color:#374151}tr:nth-child(even){background-color:#f9fafb}.revenue-table td:nth-child(3),.revenue-table td:nth-child(4){text-align:right}.footer{margin-top:30px;padding-top:15px;border-top:1px solid #e5e7eb;text-align:center;color:#6b7280;font-size:10px}@media print{body{margin:0}.no-print{display:none}}</style></head><body><div class="header"><h1>Analytics Report</h1><div class="subtitle">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</div></div><div class="section"><h2>Executive Summary</h2><div class="metrics"><div class="metric-card"><div class="metric-value">${formatCurrency(
+        reportData.keyMetrics.totalRevenue
+      )}</div><div class="metric-label">Total Revenue</div><div class="metric-change change-positive">+12.3% vs last month</div></div><div class="metric-card"><div class="metric-value">${reportData.keyMetrics.totalOrders.toLocaleString()}</div><div class="metric-label">Total Orders</div><div class="metric-change change-positive">+8.7% vs last month</div></div><div class="metric-card"><div class="metric-value">${reportData.keyMetrics.activeUsers.toLocaleString()}</div><div class="metric-label">Active Users</div><div class="metric-change change-positive">+15.2% vs last month</div></div><div class="metric-card"><div class="metric-value">${reportData.keyMetrics.conversionRate.toFixed(
+        1
+      )}%</div><div class="metric-label">Conversion Rate</div><div class="metric-change change-negative">-2.1% vs last month</div></div></div></div><div class="section"><h2>Monthly Revenue Performance</h2><table class="revenue-table"><thead><tr><th>Month</th><th>Revenue</th><th>Orders</th><th>Users</th></tr></thead><tbody>${revenueData
+        .map(
+          (item) =>
+            `<tr><td>${item.month}</td><td>${formatCurrency(
+              item.revenue
+            )}</td><td>${item.orders}</td><td>${item.users}</td></tr>`
+        )
+        .join(
+          ""
+        )}</tbody></table></div><div class="section"><h2>Asset Category Distribution</h2><table><thead><tr><th>Category</th><th>Count</th><th>Percentage</th></tr></thead><tbody>${analytics.popularCategories
+        .map((cat) => {
+          const total =
+            analytics.popularCategories.reduce((s, c) => s + c.count, 0) || 1;
+          const pct = ((cat.count / total) * 100).toFixed(1);
+          return `<tr><td>${cat.category}</td><td>${cat.count}</td><td>${pct}%</td></tr>`;
+        })
+        .join(
+          ""
+        )}</tbody></table></div><div class="section"><h2>Top Performing Assets</h2><table><thead><tr><th>Asset Name</th><th>Category</th><th>Downloads</th><th>Revenue</th><th>Growth</th></tr></thead><tbody>${assets
+        .map((a) => ({
+          name: a.title || a.name || "Asset",
+          category: a.category || a.type || "other",
+          downloads: a.downloads || 0,
+          revenue: (a.price || 0) * (a.downloads || 0),
+          growth: 0,
+        }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5)
+        .map(
+          (asset) =>
+            `<tr><td>${asset.name}</td><td>${
+              asset.category
+            }</td><td>${asset.downloads.toLocaleString()}</td><td>${formatCurrency(
+              asset.revenue
+            )}</td><td class="change-positive">+${asset.growth}%</td></tr>`
+        )
+        .join(
+          ""
+        )}</tbody></table></div><div class="footer"><p>This report contains confidential business information. Generated by Digital Marketplace Analytics System.</p></div></body></html>`;
       printWindow.document.write(pdfContent);
       printWindow.document.close();
-      setTimeout(()=>{ printWindow.focus(); printWindow.print(); setTimeout(()=>{ alert("PDF report ready! Use your browser's print dialog to save as PDF."); setIsExporting(false); }, 500); }, 300);
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+        setTimeout(() => {
+          alert(
+            "PDF report ready! Use your browser's print dialog to save as PDF."
+          );
+          setIsExporting(false);
+        }, 500);
+      }, 300);
     } catch (e) {
-      console.error('PDF export error:', e);
-      setError('Failed to generate PDF report');
+      console.error("PDF export error:", e);
+      setError("Failed to generate PDF report");
       setIsExporting(false);
     }
   };
-
-  
 
   if (error && !isAdmin) {
     return <UnauthorizedAccess error={error} />;
   }
 
+  // Add this component after the BlogSection component in your file
 
-return (
-   <div className="admin-dashboard">
+  const UserDashboard = ({
+    users,
+    onRoleChange,
+    selectedUsers,
+    setSelectedUsers,
+    handleBulkRoleChange,
+    onUpdateStatus,
+    onDelete,
+    userSearchTerm,
+    setUserSearchTerm,
+    selectedUserRole,
+    setSelectedUserRole,
+    selectedUserStatus,
+    setSelectedUserStatus,
+    showUserDialog,
+    setShowUserDialog,
+    selectedUser,
+    setSelectedUser,
+    formatCurrency,
+    formatDate,
+    getRoleColor,
+    handleUserStatusToggle,
+    handleUserRoleChange,
+  }) => {
+    const [userStats, setUserStats] = useState({
+      total: 0,
+      active: 0,
+      admins: 0,
+      countries: {},
+    });
+
+    // Calculate user statistics
+    useEffect(() => {
+      if (users.length > 0) {
+        const stats = {
+          total: users.length,
+          active: users.filter((user) => (user.status || "active") === "active")
+            .length,
+          admins: users.filter((user) => user.role === "admin").length,
+          countries: {},
+        };
+
+        // Count users by country
+        users.forEach((user) => {
+          const country = user.country || user.location || "Unknown";
+          stats.countries[country] = (stats.countries[country] || 0) + 1;
+        });
+
+        setUserStats(stats);
+      }
+    }, [users]);
+
+    // Filter users based on search and filters
+    const filteredUsers = users.filter((user) => {
+      const matchesSearch =
+        (user.email || "")
+          .toLowerCase()
+          .includes(userSearchTerm.toLowerCase()) ||
+        (user.name || user.displayName || "")
+          .toLowerCase()
+          .includes(userSearchTerm.toLowerCase()) ||
+        (user.country || "")
+          .toLowerCase()
+          .includes(userSearchTerm.toLowerCase());
+
+      const matchesRole =
+        selectedUserRole === "all" || user.role === selectedUserRole;
+      const matchesStatus =
+        selectedUserStatus === "all" ||
+        (user.status || "active") === selectedUserStatus;
+
+      return matchesSearch && matchesRole && matchesStatus;
+    });
+
+    // Get top countries
+    const topCountries = Object.entries(userStats.countries)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    return (
+      <div className="user-dashboard">
+        {/* Header Section */}
+        <div className="dashboard-header">
+          <div className="header-content">
+            <h2 className="header-title">
+              <FiUsers className="header-icon" />
+              User Management Dashboard
+            </h2>
+            <p className="header-subtitle">
+              Manage and monitor user accounts across your platform
+            </p>
+          </div>
+          <div className="header-actions">
+            <span className="user-badge-count">
+              {filteredUsers.length} users
+            </span>
+          </div>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="stats-grid">
+          <div className="stat-card primary">
+            <div className="stat-icon">
+              <FiUsers />
+            </div>
+            <div className="stat-content">
+              <div className="stat-value">{userStats.total}</div>
+              <div className="stat-label">Total Users</div>
+            </div>
+          </div>
+
+          <div className="stat-card success">
+            <div className="stat-icon">
+              <FiUserCheck />
+            </div>
+            <div className="stat-content">
+              <div className="stat-value">{userStats.active}</div>
+              <div className="stat-label">Active Users</div>
+            </div>
+          </div>
+
+          <div className="stat-card warning">
+            <div className="stat-icon">
+              <FiShield />
+            </div>
+            <div className="stat-content">
+              <div className="stat-value">{userStats.admins}</div>
+              <div className="stat-label">Administrators</div>
+            </div>
+          </div>
+
+          <div className="stat-card info">
+            <div className="stat-icon">
+              <FiMapPin />
+            </div>
+            <div className="stat-content">
+              <div className="stat-value">
+                {Object.keys(userStats.countries).length}
+              </div>
+              <div className="stat-label">Countries</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="dashboard-content">
+          {/* Left Column - Analytics */}
+          <div className="analytics-column">
+            {/* Country Distribution */}
+            <div className="content-card">
+              <div className="card-header">
+                <h3 className="panel-title">
+                  <FiMapPin className="panel-icon" />
+                  User Distribution by Country
+                </h3>
+              </div>
+              <div className="card-body">
+                {topCountries.length > 0 ? (
+                  <div className="country-list">
+                    {topCountries.map(([country, count]) => (
+                      <div key={country} className="country-item">
+                        <div className="country-info">
+                          <span className="country-name">{country}</span>
+                          <span className="country-count">{count} users</span>
+                        </div>
+                        <div className="country-progress">
+                          <div
+                            className="progress-bar"
+                            style={{
+                              width: `${(count / userStats.total) * 100}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-data">No country data available</div>
+                )}
+              </div>
+            </div>
+
+            {/* Role Distribution */}
+            <div className="content-card">
+              <div className="card-header">
+                <h3 className="panel-title">
+                  <FiShield className="panel-icon" />
+                  User Roles
+                </h3>
+              </div>
+              <div className="card-body">
+                <div className="role-distribution">
+                  <div className="role-item">
+                    <span className="role-label">Admins</span>
+                    <span className="role-count">{userStats.admins}</span>
+                  </div>
+                  <div className="role-item">
+                    <span className="role-label">Moderators</span>
+                    <span className="role-count">
+                      {users.filter((user) => user.role === "moderator").length}
+                    </span>
+                  </div>
+                  <div className="role-item">
+                    <span className="role-label">Users</span>
+                    <span className="role-count">
+                      {
+                        users.filter(
+                          (user) => user.role === "user" || !user.role
+                        ).length
+                      }
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - User List */}
+          <div className="users-column">
+            {/* Filters Card */}
+            <div className="content-card filters-card">
+              <div className="card-body">
+                <div className="filters-grid">
+                  <div className="search-input-wrapper">
+                    <FiSearch className="search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search users by name, email, or country..."
+                      value={userSearchTerm}
+                      onChange={(e) => setUserSearchTerm(e.target.value)}
+                      className="search-input"
+                    />
+                  </div>
+
+                  <select
+                    value={selectedUserRole}
+                    onChange={(e) => setSelectedUserRole(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="user">User</option>
+                  </select>
+
+                  <select
+                    value={selectedUserStatus}
+                    onChange={(e) => setSelectedUserStatus(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="suspended">Suspended</option>
+                  </select>
+
+                  <div className="filter-result">
+                    <FiFilter className="filter-icon" />
+                    <span className="filter-text">
+                      {filteredUsers.length} results
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bulk Actions */}
+            {selectedUsers.length > 0 && (
+              <div className="content-card bulk-actions-card">
+                <div className="card-body">
+                  <div className="bulk-actions">
+                    <span className="bulk-selected">
+                      {selectedUsers.length} users selected
+                    </span>
+                    <div className="bulk-buttons">
+                      <button
+                        onClick={() => handleBulkRoleChange("admin")}
+                        className="action-button"
+                      >
+                        Make Admin
+                      </button>
+                      <button
+                        onClick={() => handleBulkRoleChange("moderator")}
+                        className="action-button"
+                      >
+                        Make Moderator
+                      </button>
+                      <button
+                        onClick={() => handleBulkRoleChange("user")}
+                        className="action-button"
+                      >
+                        Make User
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Users Grid */}
+            {filteredUsers.length > 0 ? (
+              <div className="users-grid">
+                {filteredUsers.map((user) => (
+                  <UserCard
+                    key={user.id}
+                    user={user}
+                    onSelect={() => {
+                      const newSelected = selectedUsers.includes(user.id)
+                        ? selectedUsers.filter((id) => id !== user.id)
+                        : [...selectedUsers, user.id];
+                      setSelectedUsers(newSelected);
+                    }}
+                    isSelected={selectedUsers.includes(user.id)}
+                    onViewDetails={() => {
+                      setSelectedUser(user);
+                      setShowUserDialog(true);
+                    }}
+                    onStatusToggle={handleUserStatusToggle}
+                    onRoleChange={handleUserRoleChange}
+                    formatCurrency={formatCurrency}
+                    formatDate={formatDate}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="content-card">
+                <div className="card-body empty-state">
+                  <FiUsers className="empty-icon" />
+                  <h3 className="empty-title">No users found</h3>
+                  <p className="empty-text">
+                    {userSearchTerm
+                      ? "No users match your search criteria."
+                      : "No users are currently registered."}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* User Details Modal */}
+        {showUserDialog && selectedUser && (
+          <UserDetailsModal
+            user={selectedUser}
+            onClose={() => setShowUserDialog(false)}
+            onStatusToggle={handleUserStatusToggle}
+            onRoleChange={handleUserRoleChange}
+            onDelete={onDelete}
+            formatCurrency={formatCurrency}
+            formatDate={formatDate}
+            getRoleColor={getRoleColor}
+          />
+        )}
+      </div>
+    );
+  };
+
+  // User Card Component
+  const UserCard = ({
+    user,
+    onSelect,
+    isSelected,
+    onViewDetails,
+    onStatusToggle,
+    onRoleChange,
+    formatCurrency,
+    formatDate,
+  }) => {
+    const name =
+      user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
+    const status = (user.status || "active").toLowerCase();
+    const isActive = status === "active";
+
+    return (
+      <div className={`user-card ${isSelected ? "selected" : ""}`}>
+        <div className="user-card-header">
+          <div className="user-checkbox">
+            <input type="checkbox" checked={isSelected} onChange={onSelect} />
+          </div>
+          <div className="user-avatar">
+            {user.photoURL ? (
+              <img src={user.photoURL} alt={name} className="avatar-img" />
+            ) : (
+              <div className="avatar-initials">
+                {(name[0] || "").toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className="user-badges">
+            <span
+              className={`status-badge ${isActive ? "active" : "inactive"}`}
+            >
+              {isActive ? "Active" : "Inactive"}
+            </span>
+            <span className={`role-badge ${user.role || "user"}`}>
+              {user.role || "User"}
+            </span>
+          </div>
+        </div>
+
+        <div className="user-card-body">
+          <h3 className="user-name">{name}</h3>
+          <p className="user-email">{user.email}</p>
+
+          {user.country && (
+            <div className="user-location">
+              <FiMapPin className="location-icon" />
+              <span>{user.country}</span>
+            </div>
+          )}
+
+          <div className="user-stats">
+            <div className="user-stat">
+              <span className="stat-label">Purchases</span>
+              <span className="stat-value">{user.totalPurchases || 0}</span>
+            </div>
+            <div className="user-stat">
+              <span className="stat-label">Spent</span>
+              <span className="stat-value">
+                {formatCurrency(user.totalSpent || 0)}
+              </span>
+            </div>
+            <div className="user-stat">
+              <span className="stat-label">Downloads</span>
+              <span className="stat-value">{user.totalDownloads || 0}</span>
+            </div>
+          </div>
+
+          <div className="user-meta">
+            <span className="join-date">
+              Joined: {formatDate(user.createdAt || user.joinDate)}
+            </span>
+          </div>
+        </div>
+
+        <div className="user-card-actions">
+          <button className="action-button secondary" onClick={onViewDetails}>
+            <FiEye className="button-icon" />
+            View Details
+          </button>
+          <button
+            className="action-button secondary"
+            onClick={() => onStatusToggle(user.id)}
+          >
+            {isActive ? <FiX /> : <FiUserCheck />}
+            {isActive ? "Deactivate" : "Activate"}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // MEnu Design
+  return (
+    <div className="admin-dashboard">
       <div className="sidebar">
         {/* Dropdown with ref added */}
         <div className="custom-dropdown" ref={dropdownRef}>
@@ -989,20 +1846,22 @@ return (
             onClick={toggleDropdown}
             title="Select Dashboard"
           >
-            {selectedDashboard === 'admin' ? 'Admin Dashboard' : 'Company Dashboard'}
+            {selectedDashboard === "admin"
+              ? "Admin Dashboard"
+              : "Company Dashboard"}
             <FiChevronDown className="dropdown-icon" />
           </button>
           {isDropdownOpen && (
             <ul className="dropdown-menu">
               <li
-                className={selectedDashboard === 'admin' ? 'selected' : ''}
-                onClick={() => handleDashboardChange('admin')}
+                className={selectedDashboard === "admin" ? "selected" : ""}
+                onClick={() => handleDashboardChange("admin")}
               >
                 Admin Dashboard
               </li>
               <li
-                className={selectedDashboard === 'company' ? 'selected' : ''}
-                onClick={() => handleDashboardChange('company')}
+                className={selectedDashboard === "company" ? "selected" : ""}
+                onClick={() => handleDashboardChange("company")}
               >
                 Company Dashboard
               </li>
@@ -1011,24 +1870,68 @@ return (
         </div>
 
         {/* Conditional Sidebar Menu based on selected dashboard */}
-        {selectedDashboard === 'admin' ? (
+        {selectedDashboard === "admin" ? (
           <ul className="sidebar-menu">
             {/* Users Dropdown */}
-            <li className={`menu-item dropdown-parent ${usersDropdownOpen || [1,2,3].includes(activeTab) ? 'active' : ''}`}>
-              <div className={`dropdown-header ${usersDropdownOpen || [1,2,3].includes(activeTab) ? 'active' : ''}`} onClick={handleUsersDropdown}>
-                <FiUsers className="menu-icon" /> 
+            <li
+              className={`menu-item dropdown-parent ${
+                usersDropdownOpen || [1, 2, 3].includes(activeTab)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <div
+                className={`dropdown-header ${
+                  usersDropdownOpen || [1, 2, 3].includes(activeTab)
+                    ? "active"
+                    : ""
+                }`}
+                onClick={handleUsersDropdown}
+              >
+                <FiUsers className="menu-icon" />
                 <span className="nav-label">Users</span>
-                <FiChevronDown className={`dropdown-arrow ${usersDropdownOpen ? 'open' : ''}`} />
+                <FiChevronDown
+                  className={`dropdown-arrow ${
+                    usersDropdownOpen ? "open" : ""
+                  }`}
+                />
               </div>
               {usersDropdownOpen && (
                 <ul className="submenu">
-                  <li className={`submenu-item ${activeTab === 1 ? 'active' : ''}`} onClick={() => { setActiveTab(1); setIsSidebarOpen(false); }} title="User Information">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 1 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(1);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="User Information"
+                  >
                     User Information
                   </li>
-                  <li className={`submenu-item ${activeTab === 2 ? 'active' : ''}`} onClick={() => { setActiveTab(2); setIsSidebarOpen(false); }} title="User Report">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 2 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(2);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="User Report"
+                  >
                     User Report
                   </li>
-                  <li className={`submenu-item ${activeTab === 3 ? 'active' : ''}`} onClick={() => { setActiveTab(3); setIsSidebarOpen(false); }} title="Payment & Plan">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 3 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(3);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Payment & Plan"
+                  >
                     Payment & Plan
                   </li>
                 </ul>
@@ -1036,30 +1939,101 @@ return (
             </li>
 
             {/* Sellers Dropdown */}
-            <li className={`menu-item dropdown-parent ${sellersDropdownOpen || [4,5,6,7,8,9].includes(activeTab) ? 'active' : ''}`}>
-              <div className={`dropdown-header ${sellersDropdownOpen || [4,5,6,7,8,9].includes(activeTab) ? 'active' : ''}`} onClick={handleSellersDropdown}>
+            <li
+              className={`menu-item dropdown-parent ${
+                sellersDropdownOpen || [4, 5, 6, 7, 8, 9].includes(activeTab)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <div
+                className={`dropdown-header ${
+                  sellersDropdownOpen || [4, 5, 6, 7, 8, 9].includes(activeTab)
+                    ? "active"
+                    : ""
+                }`}
+                onClick={handleSellersDropdown}
+              >
                 <FiUser className="menu-icon" />
                 <span className="nav-label">Sellers</span>
-                <FiChevronDown className={`dropdown-arrow ${sellersDropdownOpen ? 'open' : ''}`} />
+                <FiChevronDown
+                  className={`dropdown-arrow ${
+                    sellersDropdownOpen ? "open" : ""
+                  }`}
+                />
               </div>
               {sellersDropdownOpen && (
                 <ul className="submenu">
-                  <li className={`submenu-item ${activeTab === 4 ? 'active' : ''}`} onClick={() => { setActiveTab(4); setIsSidebarOpen(false); }} title="Seller Account Verify">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 4 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(4);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Seller Account Verify"
+                  >
                     Seller Account Verify
                   </li>
-                  <li className={`submenu-item ${activeTab === 5 ? 'active' : ''}`} onClick={() => { setActiveTab(5); setIsSidebarOpen(false); }} title="Asset Request">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 5 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(5);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Asset Request"
+                  >
                     Asset Request
                   </li>
-                  <li className={`submenu-item ${activeTab === 6 ? 'active' : ''}`} onClick={() => { setActiveTab(6); setIsSidebarOpen(false); }} title="Seller Earning">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 6 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(6);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Seller Earning"
+                  >
                     Seller Earning
                   </li>
-                  <li className={`submenu-item ${activeTab === 7 ? 'active' : ''}`} onClick={() => { setActiveTab(7); setIsSidebarOpen(false); }} title="Seller Report">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 7 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(7);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Seller Report"
+                  >
                     Seller Report
                   </li>
-                  <li className={`submenu-item ${activeTab === 8 ? 'active' : ''}`} onClick={() => { setActiveTab(8); setIsSidebarOpen(false); }} title="Seller Analytic">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 8 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(8);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Seller Analytic"
+                  >
                     Seller Analytic
                   </li>
-                  <li className={`submenu-item ${activeTab === 9 ? 'active' : ''}`} onClick={() => { setActiveTab(9); setIsSidebarOpen(false); }} title="Seller Complains">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 9 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(9);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Seller Complains"
+                  >
                     Seller Complains
                   </li>
                 </ul>
@@ -1067,24 +2041,77 @@ return (
             </li>
 
             {/* Advanced Dropdown */}
-            <li className={`menu-item dropdown-parent ${advancedDropdownOpen || [10,11,12,13].includes(activeTab) ? 'active' : ''}`}>
-              <div className={`dropdown-header ${advancedDropdownOpen || [10,11,12,13].includes(activeTab) ? 'active' : ''}`} onClick={handleAdvancedDropdown}>
+            <li
+              className={`menu-item dropdown-parent ${
+                advancedDropdownOpen || [10, 11, 12, 13].includes(activeTab)
+                  ? "active"
+                  : ""
+              }`}
+            >
+              <div
+                className={`dropdown-header ${
+                  advancedDropdownOpen || [10, 11, 12, 13].includes(activeTab)
+                    ? "active"
+                    : ""
+                }`}
+                onClick={handleAdvancedDropdown}
+              >
                 <FiSettings className="menu-icon" />
                 <span className="nav-label">Advanced</span>
-                <FiChevronDown className={`dropdown-arrow ${advancedDropdownOpen ? 'open' : ''}`} />
+                <FiChevronDown
+                  className={`dropdown-arrow ${
+                    advancedDropdownOpen ? "open" : ""
+                  }`}
+                />
               </div>
               {advancedDropdownOpen && (
                 <ul className="submenu">
-                  <li className={`submenu-item ${activeTab === 10 ? 'active' : ''}`} onClick={() => { setActiveTab(10); setIsSidebarOpen(false); }} title="Download">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 10 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(10);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Download"
+                  >
                     Download
                   </li>
-                  <li className={`submenu-item ${activeTab === 11 ? 'active' : ''}`} onClick={() => { setActiveTab(11); setIsSidebarOpen(false); }} title="Earning">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 11 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(11);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Earning"
+                  >
                     Earning
                   </li>
-                  <li className={`submenu-item ${activeTab === 12 ? 'active' : ''}`} onClick={() => { setActiveTab(12); setIsSidebarOpen(false); }} title="Analytic">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 12 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(12);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Analytic"
+                  >
                     Analytic
                   </li>
-                  <li className={`submenu-item ${activeTab === 13 ? 'active' : ''}`} onClick={() => { setActiveTab(13); setIsSidebarOpen(false); }} title="Asset">
+                  <li
+                    className={`submenu-item ${
+                      activeTab === 13 ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setActiveTab(13);
+                      setIsSidebarOpen(false);
+                    }}
+                    title="Asset"
+                  >
                     Asset
                   </li>
                 </ul>
@@ -1093,11 +2120,29 @@ return (
           </ul>
         ) : (
           <ul className="sidebar-menu">
-            <li className={`menu-item dropdown-header comp-menu ${activeTab === 1 ? 'active' : ''}`} onClick={() => { setActiveTab(1); setIsSidebarOpen(false); }} title="Blog Editor">
+            <li
+              className={`menu-item dropdown-header comp-menu ${
+                activeTab === 1 ? "active" : ""
+              }`}
+              onClick={() => {
+                setActiveTab(1);
+                setIsSidebarOpen(false);
+              }}
+              title="Blog Editor"
+            >
               <FiFileText className="menu-icon" />
               <span className="nav-label">Blogs</span>
             </li>
-            <li className={`menu-item dropdown-header comp-menu ${activeTab === 2 ? 'active' : ''}`} onClick={() => { setActiveTab(2); setIsSidebarOpen(false); }} title="Portfolio">
+            <li
+              className={`menu-item dropdown-header comp-menu ${
+                activeTab === 2 ? "active" : ""
+              }`}
+              onClick={() => {
+                setActiveTab(2);
+                setIsSidebarOpen(false);
+              }}
+              title="Portfolio"
+            >
               <FiBriefcase className="menu-icon" />
               <span className="nav-label">Portfolio</span>
             </li>
@@ -1109,347 +2154,458 @@ return (
             <FiSettings className="menu-icon" />
             <span className="nav-label">Settings</span>
           </button>
-          <button className="menu-item compact" title="Logout" onClick={async () => { try { await signOut(auth); navigate('/'); } catch {} }}>
+          <button
+            className="menu-item compact"
+            title="Logout"
+            onClick={async () => {
+              try {
+                await signOut(auth);
+                navigate("/");
+              } catch {}
+            }}
+          >
             <FiLogOut className="menu-icon" />
             <span className="nav-label">Logout</span>
           </button>
         </div>
       </div>
 
-    <div className="main-content">
-      <div className="header">
-        <h1 className="page-title">
-          {/* Admin Dashboard Titles */}
-          {activeTab === 0 && "Dashboard Overview"}
-          {activeTab === 1 && "User Information"}
-          {activeTab === 2 && "User Report"}
-          {activeTab === 3 && "Payment & Plan"}
-          {activeTab === 4 && "Seller Account Verify"}
-          {activeTab === 5 && "Asset Request"}
-          {activeTab === 6 && "Seller Earning"}
-          {activeTab === 7 && "Seller Report"}
-          {activeTab === 8 && "Seller Analytic"}
-          {activeTab === 9 && "Seller Complains"}
-          {activeTab === 10 && "Download"}
-          {activeTab === 11 && "Earning"}
-          {activeTab === 12 && "Analytic"}
-          {activeTab === 13 && "Asset"}
-          
-          {/* Company Dashboard Titles */}
-          {activeTab === 1 && selectedDashboard === 'company' && "Blog Editor"}
-          {activeTab === 2 && selectedDashboard === 'company' && "Portfolio Management"}
-        </h1>
-      </div>
+      <div className="main-content">
+        <div className="header">
+          <h1 className="page-title">
+            {/* Admin Dashboard Titles */}
+            {activeTab === 0 && "Dashboard Overview"}
+            {activeTab === 1 && ""}
+            {activeTab === 2 && ""}
+            {activeTab === 3 && "Payment & Plan"}
+            {activeTab === 4 && "Seller Account Verify"}
+            {activeTab === 5 && "Asset Request"}
+            {activeTab === 6 && "Seller Earning"}
+            {activeTab === 7 && "Seller Report"}
+            {activeTab === 8 && "Seller Analytic"}
+            {activeTab === 9 && "Seller Complains"}
+            {activeTab === 10 && "Download"}
+            {activeTab === 11 && "Earning"}
+            {activeTab === 12 && "Analytic"}
+            {activeTab === 13 && "Asset"}
 
-      {error && (
-        <div className="error-alert">
-          {error}
-          <button onClick={() => setError(null)} className="close-error">
-            <FiX />
-          </button>
+            {/* Company Dashboard Titles */}
+            {activeTab === 1 &&
+              selectedDashboard === "company" &&
+              ""}
+            {activeTab === 2 &&
+              selectedDashboard === "company" &&
+              ""}
+          </h1>
         </div>
-      )}
 
-      {/* Admin Dashboard Content */}
-      {selectedDashboard === 'admin' && (
-        <>
-          {activeTab === 0 && (
-            <div className="overview-grid">
-              <WelcomeBanner
-                name={auth.currentUser?.displayName || auth.currentUser?.email?.split("@")[0] || "Admin"}
-                totalUsers={users.length}
-                totalAssets={assets.length}
-              />
+        {error && (
+          <div className="error-alert">
+            {error}
+            <button onClick={() => setError(null)} className="close-error">
+              <FiX />
+            </button>
+          </div>
+        )}
 
-              <KPICards
-                users={users}
-                admins={users.filter((u) => u.role === "admin").length}
-                messages={supportMessages}
-                blogs={blogs}
-                portfolios={portfolios}
-                assets={assets}
-              />
+        {/* Admin Dashboard Content */}
+        {selectedDashboard === "admin" && (
+          <>
+            {activeTab === 0 && (
+              <div className="overview-grid">
+                <WelcomeBanner
+                  name={
+                    auth.currentUser?.displayName ||
+                    auth.currentUser?.email?.split("@")[0] ||
+                    "Admin"
+                  }
+                  totalUsers={users.length}
+                  totalAssets={assets.length}
+                />
 
-              <div className="insights-grid">
-                <div className="content-card">
-                  <div className="card-header">
-                    <h3 className="panel-title">Popular Categories</h3>
+                <KPICards
+                  users={users}
+                  admins={users.filter((u) => u.role === "admin").length}
+                  messages={supportMessages}
+                  blogs={blogs}
+                  portfolios={portfolios}
+                  assets={assets}
+                />
+
+                <div className="insights-grid">
+                  <div className="content-card">
+                    <div className="card-header">
+                      <h3 className="panel-title">Popular Categories</h3>
+                    </div>
+                    <div className="card-body">
+                      <UsageDistribution assets={assets} />
+                    </div>
                   </div>
-                  <div className="card-body">
-                    <UsageDistribution assets={assets} />
-                  </div>
-                </div>
 
-                <div className="content-card">
-                  <div className="card-header">
-                    <h3 className="panel-title">Recent Activity</h3>
-                  </div>
-                  <div className="card-body">
-                    <RecentActivity messages={supportMessages} blogs={blogs} portfolios={portfolios} assets={assets} />
-                  </div>
-                </div>
-              </div>
-
-              <QuickActions onNavigate={(tab) => setActiveTab(tab)} onExportCSV={handleExportCSV} onExportJSON={handleExportJSON} onExportPDF={handleExportPDF} isExporting={isExporting} />
-
-              <div className="overview-panels">
-                <div className="content-card">
-                  <div className="card-header">
-                    <h3 className="panel-title">Recent Users</h3>
-                  </div>
-                  <div className="card-body">
-                    <div className="table-container">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Email</th>
-                            <th>Role</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {users.slice(0, 5).map((u) => (
-                            <tr key={u.id}>
-                              <td>{u.email || "Unknown"}</td>
-                              <td>
-                                <span className={`role-badge ${u.role}`}>{u.role || "Unknown"}</span>
-                              </td>
-                            </tr>
-                          ))}
-                          {users.length === 0 && (
-                            <tr>
-                              <td colSpan="2" className="no-data">No users yet</td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+                  <div className="content-card">
+                    <div className="card-header">
+                      <h3 className="panel-title">Recent Activity</h3>
+                    </div>
+                    <div className="card-body">
+                      <RecentActivity
+                        messages={supportMessages}
+                        blogs={blogs}
+                        portfolios={portfolios}
+                        assets={assets}
+                      />
                     </div>
                   </div>
                 </div>
 
-                <div className="content-card">
-                  <div className="card-header">
-                    <h3 className="panel-title">Recent Support</h3>
-                  </div>
-                  <div className="card-body">
-                    <div className="table-container">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Subject</th>
-                            <th>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {supportMessages.slice(0, 5).map((m) => (
-                            <tr key={m.id}>
-                              <td>{m.subject || "No Subject"}</td>
-                              <td>
-                                <span className={`status-badge ${m.status}`}>{m.status || "Unknown"}</span>
-                              </td>
-                            </tr>
-                          ))}
-                          {supportMessages.length === 0 && (
+                <QuickActions
+                  onNavigate={(tab) => setActiveTab(tab)}
+                  onExportCSV={handleExportCSV}
+                  onExportJSON={handleExportJSON}
+                  onExportPDF={handleExportPDF}
+                  isExporting={isExporting}
+                />
+
+                <div className="overview-panels">
+                  <div className="content-card">
+                    <div className="card-header">
+                      <h3 className="panel-title">Recent Users</h3>
+                    </div>
+                    <div className="card-body">
+                      <div className="table-container">
+                        <table className="data-table">
+                          <thead>
                             <tr>
-                              <td colSpan="2" className="no-data">No messages</td>
+                              <th>Email</th>
+                              <th>Role</th>
                             </tr>
-                          )}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {users.slice(0, 5).map((u) => (
+                              <tr key={u.id}>
+                                <td>{u.email || "Unknown"}</td>
+                                <td>
+                                  <span className={`role-badge ${u.role}`}>
+                                    {u.role || "Unknown"}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                            {users.length === 0 && (
+                              <tr>
+                                <td colSpan="2" className="no-data">
+                                  No users yet
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="content-card">
+                    <div className="card-header">
+                      <h3 className="panel-title">Recent Support</h3>
+                    </div>
+                    <div className="card-body">
+                      <div className="table-container">
+                        <table className="data-table">
+                          <thead>
+                            <tr>
+                              <th>Subject</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {supportMessages.slice(0, 5).map((m) => (
+                              <tr key={m.id}>
+                                <td>{m.subject || "No Subject"}</td>
+                                <td>
+                                  <span className={`status-badge ${m.status}`}>
+                                    {m.status || "Unknown"}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                            {supportMessages.length === 0 && (
+                              <tr>
+                                <td colSpan="2" className="no-data">
+                                  No messages
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* New Admin Menu Content - Simple Placeholders */}
-          {activeTab === 1 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>User Information Management</h3>
-                <p>User information dashboard will be implemented here.</p>
+            {/*User Dashbord laout-----------------------------------------*/}
+            {activeTab === 1 && (
+              <UserDashboard
+                users={currentUsers}
+                onRoleChange={handleRoleChange}
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+                handleBulkRoleChange={handleBulkRoleChange}
+                onUpdateStatus={handleUpdateUserStatus}
+                onDelete={handleDeleteUser}
+                userSearchTerm={userSearchTerm}
+                setUserSearchTerm={setUserSearchTerm}
+                selectedUserRole={selectedUserRole}
+                setSelectedUserRole={setSelectedUserRole}
+                selectedUserStatus={selectedUserStatus}
+                setSelectedUserStatus={setSelectedUserStatus}
+                showUserDialog={showUserDialog}
+                setShowUserDialog={setShowUserDialog}
+                selectedUser={selectedUser}
+                setSelectedUser={setSelectedUser}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+                getRoleColor={getRoleColor}
+                handleUserStatusToggle={handleUserStatusToggle}
+                handleUserRoleChange={handleUserRoleChange}
+              />
+            )}
+
+            {activeTab === 2 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>User Report</h3>
+                  <p>User reporting dashboard will be implemented here.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 2 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>User Report</h3>
-                <p>User reporting dashboard will be implemented here.</p>
+            {activeTab === 3 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Payment & Plan Management</h3>
+                  <p>
+                    Payment and subscription plans dashboard will be implemented
+                    here.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 3 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Payment & Plan Management</h3>
-                <p>Payment and subscription plans dashboard will be implemented here.</p>
+            {activeTab === 4 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Seller Account Verification</h3>
+                  <p>
+                    Seller account verification dashboard will be implemented
+                    here.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 4 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Seller Account Verification</h3>
-                <p>Seller account verification dashboard will be implemented here.</p>
+            {activeTab === 5 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Asset Requests</h3>
+                  <p>
+                    Asset request management dashboard will be implemented here.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 5 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Asset Requests</h3>
-                <p>Asset request management dashboard will be implemented here.</p>
+            {activeTab === 6 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Seller Earnings</h3>
+                  <p>Seller earnings dashboard will be implemented here.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 6 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Seller Earnings</h3>
-                <p>Seller earnings dashboard will be implemented here.</p>
+            {activeTab === 7 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Seller Reports</h3>
+                  <p>Seller reporting dashboard will be implemented here.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 7 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Seller Reports</h3>
-                <p>Seller reporting dashboard will be implemented here.</p>
+            {activeTab === 8 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Seller Analytics</h3>
+                  <p>Seller analytics dashboard will be implemented here.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 8 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Seller Analytics</h3>
-                <p>Seller analytics dashboard will be implemented here.</p>
+            {activeTab === 9 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Seller Complaints</h3>
+                  <p>
+                    Seller complaints management dashboard will be implemented
+                    here.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 9 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Seller Complaints</h3>
-                <p>Seller complaints management dashboard will be implemented here.</p>
+            {activeTab === 10 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Downloads</h3>
+                  <p>
+                    Downloads management dashboard will be implemented here.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 10 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Downloads</h3>
-                <p>Downloads management dashboard will be implemented here.</p>
+            {activeTab === 11 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Earnings</h3>
+                  <p>Earnings dashboard will be implemented here.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 11 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Earnings</h3>
-                <p>Earnings dashboard will be implemented here.</p>
+            {activeTab === 12 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Analytics</h3>
+                  <p>Advanced analytics dashboard will be implemented here.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 12 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Analytics</h3>
-                <p>Advanced analytics dashboard will be implemented here.</p>
+            {activeTab === 13 && (
+              <div className="content-card">
+                <div className="card-body">
+                  <h3>Asset Management</h3>
+                  <p>Asset management dashboard will be implemented here.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </>
+        )}
 
-          {activeTab === 13 && (
-            <div className="content-card">
-              <div className="card-body">
-                <h3>Asset Management</h3>
-                <p>Asset management dashboard will be implemented here.</p>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+        {/* Company Dashboard Content */}
+        {selectedDashboard === "company" && (
+          <>
+            {activeTab === 1 && (
+              <BlogSection
+                blogs={currentBlogs}
+                onDelete={handleDeleteBlog}
+                onToggleStatus={handleToggleBlogStatus}
+                blogSearchTerm={blogSearchTerm}
+                setBlogSearchTerm={setBlogSearchTerm}
+                selectedBlogStatus={selectedBlogStatus}
+                setSelectedBlogStatus={setSelectedBlogStatus}
+                showBlogDialog={showBlogDialog}
+                setShowBlogDialog={setShowBlogDialog}
+                selectedBlog={selectedBlog}
+                setSelectedBlog={setSelectedBlog}
+                onCreate={() => {
+                  setIsBlogModalOpen(true);
+                }}
+                formatDate={formatDate}
+              />
+            )}
 
-      {/* Company Dashboard Content */}
-      {selectedDashboard === 'company' && (
-        <>
-          {activeTab === 1 && (
-            <BlogSection
-              blogs={currentBlogs}
-              onDelete={handleDeleteBlog}
-              onToggleStatus={handleToggleBlogStatus}
-              blogSearchTerm={blogSearchTerm}
-              setBlogSearchTerm={setBlogSearchTerm}
-              selectedBlogStatus={selectedBlogStatus}
-              setSelectedBlogStatus={setSelectedBlogStatus}
-              showBlogDialog={showBlogDialog}
-              setShowBlogDialog={setShowBlogDialog}
-              selectedBlog={selectedBlog}
-              setSelectedBlog={setSelectedBlog}
-              onCreate={() => { setIsBlogModalOpen(true); }}
-              formatDate={formatDate}
-            />
-          )}
+            {activeTab === 2 && (
+              <PortfolioList
+                portfolios={currentPortfolios}
+                onDelete={handleDeletePortfolio}
+                onCreate={() => {
+                  setIsPortfolioModalOpen(true);
+                }}
+                onToggleFeatured={handleTogglePortfolioFeatured}
+                onUpdateStatus={handleUpdatePortfolioStatus}
+                formatDate={formatDate}
+              />
+            )}
+          </>
+        )}
 
-          {activeTab === 2 && (
-            <PortfolioList
-              portfolios={currentPortfolios}
-              onDelete={handleDeletePortfolio}
-              onCreate={() => {
-                setIsPortfolioModalOpen(true);
-              }}
-              onToggleFeatured={handleTogglePortfolioFeatured}
-              onUpdateStatus={handleUpdatePortfolioStatus}
-              formatDate={formatDate}
-            />
-          )}
-        </>
-      )}
+        {loading && <div className="loading-overlay">Loading...</div>}
 
-      {loading && <div className="loading-overlay">Loading...</div>}
+        {/* Existing Modals */}
+        {selectedMessage && (
+          <MessageModal
+            message={selectedMessage}
+            onClose={() => setSelectedMessage(null)}
+            onStatusChange={handleStatusChange}
+          />
+        )}
+{isBlogModalOpen && (
+  <BlogEditorModal
+    isOpen={isBlogModalOpen}
+    onClose={() => {
+      setIsBlogModalOpen(false);
+      loadBlogs();
+    }}
+  />
+)}
 
-      {/* Existing Modals */}
-      {selectedMessage && <MessageModal message={selectedMessage} onClose={() => setSelectedMessage(null)} onStatusChange={handleStatusChange} />}
-      {isBlogModalOpen && (
-        <BlogEditorModal
-          isOpen={isBlogModalOpen}
-          onClose={() => { setIsBlogModalOpen(false); loadBlogs(); }}
-        />
-      )}
-      {isPortfolioModalOpen && (
-        <ProjectModal
-          isOpen={isPortfolioModalOpen}
-          onClose={() => { setIsPortfolioModalOpen(false); loadProjects(); }}
-        />
-      )}
+{/* Edit blog modal - YEH THEEK HAI */}
+{isEditModalOpen && blogToEdit && (
+  <BlogEditorModal
+    isOpen={isEditModalOpen}
+    onClose={() => {
+      setIsEditModalOpen(false);
+      setBlogToEdit(null);
+    
+    }}
+    blogToEdit={blogToEdit} // This will pre-fill the form with existing data
+  />
+)}
+        {isPortfolioModalOpen && (
+          <ProjectModal
+            isOpen={isPortfolioModalOpen}
+            onClose={() => {
+              setIsPortfolioModalOpen(false);
+              loadProjects();
+            }}
+          />
+        )}
+      </div>
     </div>
-  </div>
-)};
+  );
+};
 
 const PreviewGrid = ({ assets }) => {
   return (
     <div className="preview-grid">
       {assets.length === 0 && <div className="no-data">No uploads yet</div>}
       {assets.map((a) => {
-        const thumb = a.thumbnail || (Array.isArray(a.images) && a.images[0]) || (Array.isArray(a.icons) && a.icons[0]) || "";
+        const thumb =
+          a.thumbnail ||
+          (Array.isArray(a.images) && a.images[0]) ||
+          (Array.isArray(a.icons) && a.icons[0]) ||
+          "";
         return (
           <div className="preview-card" key={a.id}>
-            {thumb ? <img src={thumb} alt={a.title || a.name || "asset"} className="preview-image" /> : <div className="preview-placeholder" />}
+            {thumb ? (
+              <img
+                src={thumb}
+                alt={a.title || a.name || "asset"}
+                className="preview-image"
+              />
+            ) : (
+              <div className="preview-placeholder" />
+            )}
             <div className="preview-info">
-              <div className="preview-title">{a.title || a.name || "Untitled"}</div>
-              <div className="preview-meta">{a.type || a.category || "Asset"}</div>
+              <div className="preview-title">
+                {a.title || a.name || "Untitled"}
+              </div>
+              <div className="preview-meta">
+                {a.type || a.category || "Asset"}
+              </div>
             </div>
           </div>
         );
@@ -1458,7 +2614,14 @@ const PreviewGrid = ({ assets }) => {
   );
 };
 
-const SupportList = ({ messages, onStatusChange, onMessageClick, selectedMessages, setSelectedMessages, handleBulkStatusChange }) => {
+const SupportList = ({
+  messages,
+  onStatusChange,
+  onMessageClick,
+  selectedMessages,
+  setSelectedMessages,
+  handleBulkStatusChange,
+}) => {
   const [selected, setSelected] = useState(null);
   const [thread, setThread] = useState([]);
   const [replyText, setReplyText] = useState("");
@@ -1486,27 +2649,60 @@ const SupportList = ({ messages, onStatusChange, onMessageClick, selectedMessage
 
   const filtered = messages.filter((m) => {
     const s = (m.status || "").toLowerCase();
-    const inView = viewFilter === "inbox" ? ["unopened", "opened"].includes(s) : viewFilter === "resolved" ? ["responded", "closed", "resolved"].includes(s) : ["archived"].includes(s);
+    const inView =
+      viewFilter === "inbox"
+        ? ["unopened", "opened"].includes(s)
+        : viewFilter === "resolved"
+        ? ["responded", "closed", "resolved"].includes(s)
+        : ["archived"].includes(s);
     const byStatus = statusFilterLocal ? s === statusFilterLocal : true;
     return inView && byStatus;
   });
 
   const handleSelectAll = () => {
-    setSelectedMessages(selectedMessages.length === filtered.length ? [] : filtered.map((msg) => msg.id));
+    setSelectedMessages(
+      selectedMessages.length === filtered.length
+        ? []
+        : filtered.map((msg) => msg.id)
+    );
   };
 
   const openMessage = async (msg) => {
     setSelected(msg);
     try {
-      const repliesSnap = await getDocs(collection(db, `Profiles/${msg.profileId}/Support/${msg.id}/Replies`));
+      const repliesSnap = await getDocs(
+        collection(db, `Profiles/${msg.profileId}/Support/${msg.id}/Replies`)
+      );
       const replies = repliesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      const base = [{ id: "root", sender: "user", message: msg.description, createdAt: msg.createdAt }];
-      const toTime = (v) => { const d = normalizeDate(v); return d ? d.getTime() : 0; };
-      setThread([...base, ...replies].sort((a, b) => toTime(a.createdAt) - toTime(b.createdAt)));
+      const base = [
+        {
+          id: "root",
+          sender: "user",
+          message: msg.description,
+          createdAt: msg.createdAt,
+        },
+      ];
+      const toTime = (v) => {
+        const d = normalizeDate(v);
+        return d ? d.getTime() : 0;
+      };
+      setThread(
+        [...base, ...replies].sort(
+          (a, b) => toTime(a.createdAt) - toTime(b.createdAt)
+        )
+      );
     } catch {
-      setThread([{ id: "root", sender: "user", message: msg.description, createdAt: msg.createdAt }]);
+      setThread([
+        {
+          id: "root",
+          sender: "user",
+          message: msg.description,
+          createdAt: msg.createdAt,
+        },
+      ]);
     }
-    if (msg.status === "unopened") onStatusChange(msg.profileId, msg.id, "opened");
+    if (msg.status === "unopened")
+      onStatusChange(msg.profileId, msg.id, "opened");
     onMessageClick?.(msg);
   };
 
@@ -1514,12 +2710,35 @@ const SupportList = ({ messages, onStatusChange, onMessageClick, selectedMessage
     <div className="support-module">
       <aside className="support-sidebar">
         <div className="support-sections">
-          <button className={`support-tab ${viewFilter==='inbox'?'active':''}`} onClick={() => setViewFilter('inbox')}>Inbox</button>
-          <button className={`support-tab ${viewFilter==='resolved'?'active':''}`} onClick={() => setViewFilter('resolved')}>Resolved</button>
-          <button className={`support-tab ${viewFilter==='archived'?'active':''}`} onClick={() => setViewFilter('archived')}>Archived</button>
+          <button
+            className={`support-tab ${viewFilter === "inbox" ? "active" : ""}`}
+            onClick={() => setViewFilter("inbox")}
+          >
+            Inbox
+          </button>
+          <button
+            className={`support-tab ${
+              viewFilter === "resolved" ? "active" : ""
+            }`}
+            onClick={() => setViewFilter("resolved")}
+          >
+            Resolved
+          </button>
+          <button
+            className={`support-tab ${
+              viewFilter === "archived" ? "active" : ""
+            }`}
+            onClick={() => setViewFilter("archived")}
+          >
+            Archived
+          </button>
         </div>
         <div className="support-filters">
-          <select className="filter-select" value={statusFilterLocal} onChange={(e)=>setStatusFilterLocal(e.target.value)}>
+          <select
+            className="filter-select"
+            value={statusFilterLocal}
+            onChange={(e) => setStatusFilterLocal(e.target.value)}
+          >
             <option value="">All Status</option>
             <option value="unopened">Unopened</option>
             <option value="opened">Opened</option>
@@ -1530,29 +2749,61 @@ const SupportList = ({ messages, onStatusChange, onMessageClick, selectedMessage
         <div className="inbox-toolbar">
           {selectedMessages.length > 0 && (
             <div className="table-actions">
-              <button onClick={() => handleBulkStatusChange('opened')} className="action-button">Mark Opened</button>
-              <button onClick={() => handleBulkStatusChange('responded')} className="action-button">Mark Responded</button>
+              <button
+                onClick={() => handleBulkStatusChange("opened")}
+                className="action-button"
+              >
+                Mark Opened
+              </button>
+              <button
+                onClick={() => handleBulkStatusChange("responded")}
+                className="action-button"
+              >
+                Mark Responded
+              </button>
             </div>
           )}
         </div>
         <div className="support-inbox-list">
           <div className="inbox-head">
             <label className="user-select-all">
-              <input type="checkbox" checked={selectedMessages.length === filtered.length && filtered.length > 0} onChange={handleSelectAll} />
+              <input
+                type="checkbox"
+                checked={
+                  selectedMessages.length === filtered.length &&
+                  filtered.length > 0
+                }
+                onChange={handleSelectAll}
+              />
               <span>Select all</span>
             </label>
           </div>
           <div className="inbox-items">
-            {filtered.length === 0 && <div className="no-data">No messages</div>}
+            {filtered.length === 0 && (
+              <div className="no-data">No messages</div>
+            )}
             {filtered.map((msg) => {
               const isActive = selected?.id === msg.id;
               return (
-                <button key={msg.id} className={`inbox-item ${isActive?'active':''}`} onClick={() => openMessage(msg)}>
-                  <div className="inbox-title">{msg.subject || 'No Subject'}</div>
+                <button
+                  key={msg.id}
+                  className={`inbox-item ${isActive ? "active" : ""}`}
+                  onClick={() => openMessage(msg)}
+                >
+                  <div className="inbox-title">
+                    {msg.subject || "No Subject"}
+                  </div>
                   <div className="inbox-meta">
-                    <span className="inbox-email">{msg.email || 'Unknown'}</span>
-                    <span className={`status-badge ${msg.status}`}>{msg.status || 'Unknown'}</span>
-                    <span className="inbox-time">{msg.createdAt?.toDate?.().toLocaleDateString?.() || 'N/A'}</span>
+                    <span className="inbox-email">
+                      {msg.email || "Unknown"}
+                    </span>
+                    <span className={`status-badge ${msg.status}`}>
+                      {msg.status || "Unknown"}
+                    </span>
+                    <span className="inbox-time">
+                      {msg.createdAt?.toDate?.().toLocaleDateString?.() ||
+                        "N/A"}
+                    </span>
                   </div>
                 </button>
               );
@@ -1567,15 +2818,46 @@ const SupportList = ({ messages, onStatusChange, onMessageClick, selectedMessage
         ) : (
           <div className="conversation-wrapper">
             <div className="conversation-header">
-              <div className="conv-title">{selected.subject || 'No Subject'}</div>
+              <div className="conv-title">
+                {selected.subject || "No Subject"}
+              </div>
               <div className="conv-actions">
-                <select className="role-select" value={assignee || selected.assignedTo || ''} onChange={async (e)=>{ const v=e.target.value; try { await updateDoc(doc(db, `Profiles/${selected.profileId}/Support`, selected.id), { assignedTo: v }); setAssignee(v); } catch {} }}>
+                <select
+                  className="role-select"
+                  value={assignee || selected.assignedTo || ""}
+                  onChange={async (e) => {
+                    const v = e.target.value;
+                    try {
+                      await updateDoc(
+                        doc(
+                          db,
+                          `Profiles/${selected.profileId}/Support`,
+                          selected.id
+                        ),
+                        { assignedTo: v }
+                      );
+                      setAssignee(v);
+                    } catch {}
+                  }}
+                >
                   <option value="">Assign to...</option>
                   {admins.map((a) => (
-                    <option key={a} value={a}>{a}</option>
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
                   ))}
                 </select>
-                <select className="status-select" value={selected.status || 'opened'} onChange={(e)=>onStatusChange(selected.profileId, selected.id, e.target.value)}>
+                <select
+                  className="status-select"
+                  value={selected.status || "opened"}
+                  onChange={(e) =>
+                    onStatusChange(
+                      selected.profileId,
+                      selected.id,
+                      e.target.value
+                    )
+                  }
+                >
                   <option value="unopened">Unopened</option>
                   <option value="opened">Open</option>
                   <option value="responded">Resolved</option>
@@ -1586,15 +2868,31 @@ const SupportList = ({ messages, onStatusChange, onMessageClick, selectedMessage
 
             <div className="conversation-body">
               {thread.map((m) => {
-                const sender = (m.sender || 'user').toLowerCase();
+                const sender = (m.sender || "user").toLowerCase();
                 const tsDate = normalizeDate(m.createdAt);
-                const ts = tsDate ? tsDate.toLocaleString() : '';
+                const ts = tsDate ? tsDate.toLocaleString() : "";
                 return (
-                  <div key={m.id} className={`msg-row ${sender==='admin'?'right':'left'}`}>
-                    <div className={`msg-bubble ${sender==='admin'?'admin':'user'}`}>
+                  <div
+                    key={m.id}
+                    className={`msg-row ${
+                      sender === "admin" ? "right" : "left"
+                    }`}
+                  >
+                    <div
+                      className={`msg-bubble ${
+                        sender === "admin" ? "admin" : "user"
+                      }`}
+                    >
                       {m.message && <div className="msg-text">{m.message}</div>}
                       {m.attachment && (
-                        <a className="msg-attachment" href={m.attachment} target="_blank" rel="noreferrer">Attachment</a>
+                        <a
+                          className="msg-attachment"
+                          href={m.attachment}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Attachment
+                        </a>
                       )}
                       <div className="msg-time">{ts}</div>
                     </div>
@@ -1605,42 +2903,113 @@ const SupportList = ({ messages, onStatusChange, onMessageClick, selectedMessage
 
             <div className="reply-box">
               <div className="reply-tools">
-                <button className="qa-button" onClick={()=>setCannedOpen(!cannedOpen)}>Canned</button>
+                <button
+                  className="qa-button"
+                  onClick={() => setCannedOpen(!cannedOpen)}
+                >
+                  Canned
+                </button>
                 {cannedOpen && (
                   <div className="canned-menu">
-                    {["Thanks for reaching out! We're looking into this now.","Can you share more details or a screenshot?","This has been resolved. Please confirm on your side."].map((c) => (
-                      <button key={c} className="canned-item" onClick={()=>{ setReplyText(c); setCannedOpen(false); }}>{c}</button>
+                    {[
+                      "Thanks for reaching out! We're looking into this now.",
+                      "Can you share more details or a screenshot?",
+                      "This has been resolved. Please confirm on your side.",
+                    ].map((c) => (
+                      <button
+                        key={c}
+                        className="canned-item"
+                        onClick={() => {
+                          setReplyText(c);
+                          setCannedOpen(false);
+                        }}
+                      >
+                        {c}
+                      </button>
                     ))}
                   </div>
                 )}
                 <label className="attach-label">
-                  <input type="file" className="attach-input" onChange={(e)=> setAttachment(e.target.files && e.target.files[0] ? e.target.files[0] : null)} />
+                  <input
+                    type="file"
+                    className="attach-input"
+                    onChange={(e) =>
+                      setAttachment(
+                        e.target.files && e.target.files[0]
+                          ? e.target.files[0]
+                          : null
+                      )
+                    }
+                  />
                   Attach
                 </label>
               </div>
-              <textarea className="reply-input" rows={3} placeholder="Write a reply..." value={replyText} onChange={(e)=>setReplyText(e.target.value)} />
+              <textarea
+                className="reply-input"
+                rows={3}
+                placeholder="Write a reply..."
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+              />
               <div className="reply-actions">
-                <button className="action-button" onClick={async ()=>{
-                  if (!selected || (!replyText && !attachment)) return;
-                  let attachmentUrl = null;
-                  try {
-                    if (attachment) {
-                      const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
-                      const path = `support_attachments/${selected.id}/${attachment.name}`;
-                      const storageRef = ref(storage, path);
-                      const up = await uploadBytes(storageRef, attachment);
-                      attachmentUrl = await getDownloadURL(up.ref);
-                    }
-                    await addDoc(collection(db, `Profiles/${selected.profileId}/Support/${selected.id}/Replies`), { sender: 'admin', message: replyText, attachment: attachmentUrl, createdAt: serverTimestamp(), agent: auth.currentUser?.email || 'admin' });
-                    setReplyText('');
-                    setAttachment(null);
-                    const repliesSnap = await getDocs(collection(db, `Profiles/${selected.profileId}/Support/${selected.id}/Replies`));
-                    const replies = repliesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-                    const base = [{ id: 'root', sender: 'user', message: selected.description, createdAt: selected.createdAt }];
-                    setThread([...base, ...replies]);
-                    onStatusChange(selected.profileId, selected.id, 'responded');
-                  } catch {}
-                }}>Send Reply</button>
+                <button
+                  className="action-button"
+                  onClick={async () => {
+                    if (!selected || (!replyText && !attachment)) return;
+                    let attachmentUrl = null;
+                    try {
+                      if (attachment) {
+                        const { ref, uploadBytes, getDownloadURL } =
+                          await import("firebase/storage");
+                        const path = `support_attachments/${selected.id}/${attachment.name}`;
+                        const storageRef = ref(storage, path);
+                        const up = await uploadBytes(storageRef, attachment);
+                        attachmentUrl = await getDownloadURL(up.ref);
+                      }
+                      await addDoc(
+                        collection(
+                          db,
+                          `Profiles/${selected.profileId}/Support/${selected.id}/Replies`
+                        ),
+                        {
+                          sender: "admin",
+                          message: replyText,
+                          attachment: attachmentUrl,
+                          createdAt: serverTimestamp(),
+                          agent: auth.currentUser?.email || "admin",
+                        }
+                      );
+                      setReplyText("");
+                      setAttachment(null);
+                      const repliesSnap = await getDocs(
+                        collection(
+                          db,
+                          `Profiles/${selected.profileId}/Support/${selected.id}/Replies`
+                        )
+                      );
+                      const replies = repliesSnap.docs.map((d) => ({
+                        id: d.id,
+                        ...d.data(),
+                      }));
+                      const base = [
+                        {
+                          id: "root",
+                          sender: "user",
+                          message: selected.description,
+                          createdAt: selected.createdAt,
+                        },
+                      ];
+                      setThread([...base, ...replies]);
+                      onStatusChange(
+                        selected.profileId,
+                        selected.id,
+                        "responded"
+                      );
+                    } catch {}
+                  }}
+                >
+                  Send Reply
+                </button>
               </div>
             </div>
           </div>
@@ -1650,11 +3019,168 @@ const SupportList = ({ messages, onStatusChange, onMessageClick, selectedMessage
   );
 };
 
+
+const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
+  if (!blog) return null;
+
+  const status = (blog.status || "draft").toLowerCase();
+  const isPublished = status === "published";
+  
+  const img = blog.featuredImage || blog.featuredImageUrl || blog.coverImgUrl || 
+              blog.coverImageUrl || blog.thumbnail || "";
+
+  // Quill editor ke content ko extract karo
+  const extractContentFromQuill = (quillHtml) => {
+    if (!quillHtml) return '';
+    
+    console.log("🔍 Original blog content:", quillHtml);
+    
+    // Create temporary div
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = quillHtml;
+    
+    // Find the .ql-editor element
+    const editorContent = tempDiv.querySelector('.ql-editor');
+    if (editorContent) {
+      console.log("✅ Found .ql-editor content:", editorContent.innerHTML);
+      return editorContent.innerHTML;
+    }
+    
+    // Check if it's direct content without wrapper
+    const hasQuillWrapper = tempDiv.querySelector('[class*="ql"]');
+    if (!hasQuillWrapper) {
+      console.log("✅ Direct content (no wrapper):", quillHtml);
+      return quillHtml;
+    }
+    
+    // Agar koi aur Quill wrapper hai
+    console.log("⚠️ Other Quill wrapper found, using innerHTML");
+    return tempDiv.innerHTML;
+  };
+
+  const getCleanContent = (content) => {
+    if (!content) return '';
+    
+    const extracted = extractContentFromQuill(content);
+    
+    // HTML tags remove karo aur clean text banao
+    const cleanText = extracted
+   .replace(/<p>/gi, '')      // Replace opening <p> with new line
+    .replace(/<\/p>/gi, '')    // Replace closing </p> with new line
+    .replace(/<br\s*\/?>/gi, '\n') // Replace <br> with new line
+    .replace(/<[^>]*>/g, ' ')    // Remove any other HTML tags
+    .replace(/&nbsp;/g, ' ')     // Replace &nbsp; with space
+    .replace(/&amp;/g, '&')      // Replace &amp; with &
+    .replace(/&lt;/g, '<')       // Replace &lt; with <
+    .replace(/&gt;/g, '>')       // Replace &gt; with >
+    .replace(/&quot;/g, '"')     // Replace &quot; with "
+    .replace(/\n\s*\n/g, '\n')   // Remove multiple empty lines
+    .replace(/\s+/g, ' ')        // Multiple spaces to single space
+    .trim();                     // Trim whitespace
+    console.log("🧹 Cleaned content:", cleanText);
+    
+    return cleanText;
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal enhanced-modal">
+        <div className="modal-header">
+          <h3 className="modal-title">
+            <FiFileText className="modal-icon" />
+            Blog Post Details
+          </h3>
+          <button onClick={onClose} className="close-button">
+            <FiX />
+          </button>
+        </div>
+        <div className="modal-body enhanced-modal-body">
+          {/* Blog Preview */}
+          <div className="asset-preview">
+            {img ? (
+              <img
+                src={img}
+                alt={blog.title || "Blog"}
+                className="preview-image"
+              />
+            ) : (
+              <div className="preview-placeholder">
+                <FiFileText className="placeholder-icon large" />
+              </div>
+            )}
+          </div>
+
+          {/* Blog Info */}
+          <div className="asset-info-section">
+            <h3 className="asset-info-title">{blog.title || "Untitled"}</h3>
+            <p className="asset-info-description">
+              {blog.excerpt || "No excerpt available"}
+            </p>
+
+            {blog.content && (
+              <div className="blog-content-preview">
+                <h4>Content Preview:</h4>
+                <div className="content-preview pb-3 pt-2">
+                  {(() => {
+                    const cleanContent = getCleanContent(blog.content);
+                    return cleanContent.length > 300 
+                      ? `${cleanContent.substring(0, 300)}...` 
+                      : cleanContent;
+                  })()}
+                </div>
+              </div>
+            )}
+
+            <div className="asset-info-grid">
+              <div className="info-item">
+                <span className="info-label">Status</span>
+                <span className="info-value">
+                  <span className={`status-badge ${isPublished ? 'active' : 'pending'}`}>
+                    {isPublished ? 'Published' : 'Draft'}
+                  </span>
+                </span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Author</span>
+                <span className="info-value">
+                  {blog.authorName || "Unknown"}
+                </span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Created</span>
+                <span className="info-value">
+                  {formatDate ? formatDate(blog.createdAt) : "N/A"}
+                </span>
+              </div>
+            </div>
+
+            {Array.isArray(blog.tags) && blog.tags.length > 0 && (
+              <div className="asset-info-section">
+                <div className="info-label">Tags</div>
+                <div className="usage-list">
+                  {blog.tags.map((tag, index) => (
+                    <span key={index} className="role-badge user">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  );
+};
 const BlogList = ({ blogs, onDelete, onCreate, onToggleStatus }) => {
   return (
     <div className="table-container">
       <div className="table-actions">
-        <button onClick={onCreate} className="action-button">Create New Blog</button>
+        <button onClick={onCreate} className="action-button">
+          Create New Blog
+        </button>
       </div>
       <table className="data-table">
         <thead>
@@ -1668,25 +3194,32 @@ const BlogList = ({ blogs, onDelete, onCreate, onToggleStatus }) => {
         <tbody>
           {blogs.length === 0 ? (
             <tr>
-              <td colSpan="4" className="no-data">No blogs found</td>
+              <td colSpan="4" className="no-data">
+                No blogs found
+              </td>
             </tr>
           ) : (
             blogs.map((blog) => {
-              const status = (blog.status || 'draft').toLowerCase();
+              const status = (blog.status || "draft").toLowerCase();
               return (
                 <tr key={blog.id}>
                   <td>{blog.title || "Untitled"}</td>
                   <td>{blog.author || "Unknown"}</td>
-                  <td>{blog.createdAt?.toDate?.().toLocaleDateString?.() || "N/A"}</td>
+                  <td>
+                    {blog.createdAt?.toDate?.().toLocaleDateString?.() || "N/A"}
+                  </td>
                   <td>
                     <div className="actions">
                       <button
                         className="action-button secondary"
                         onClick={() => onToggleStatus(blog.id, status)}
                       >
-                        {status === 'published' ? 'Make Draft' : 'Publish'}
+                        {status === "published" ? "Make Draft" : "Publish"}
                       </button>
-                      <button onClick={() => onDelete(blog.id)} className="action-button delete-button">
+                      <button
+                        onClick={() => onDelete(blog.id)}
+                        className="action-button delete-button"
+                      >
                         <FiTrash2 /> Delete
                       </button>
                     </div>
@@ -1701,18 +3234,70 @@ const BlogList = ({ blogs, onDelete, onCreate, onToggleStatus }) => {
   );
 };
 
-const BlogSection = ({ blogs, onDelete, onToggleStatus, blogSearchTerm, setBlogSearchTerm, selectedBlogStatus, setSelectedBlogStatus, showBlogDialog, setShowBlogDialog, selectedBlog, setSelectedBlog, onCreate, formatDate }) => {
+const BlogSection = ({
+  blogs,
+  onDelete,
+  onToggleStatus,
+  blogSearchTerm,
+  setBlogSearchTerm,
+  selectedBlogStatus,
+  setSelectedBlogStatus,
+  showBlogDialog,
+  setShowBlogDialog,
+  selectedBlog,
+  setSelectedBlog,
+  onCreate,
+  formatDate,
+}) => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [blogToEdit, setBlogToEdit] = useState(null);
+  
+
   const filteredBlogs = blogs.filter((blog) => {
     const term = blogSearchTerm.toLowerCase();
-    const matchesSearch = (blog.title || "").toLowerCase().includes(term) ||
+    const matchesSearch =
+      (blog.title || "").toLowerCase().includes(term) ||
+      (blog.excerpt || "").toLowerCase().includes(term) ||
       (blog.content || "").toLowerCase().includes(term) ||
-      (Array.isArray(blog.tags) && blog.tags.some((t) => (t || "").toLowerCase().includes(term)));
-    const status = (blog.status || 'draft').toLowerCase();
-    const matchesStatus = selectedBlogStatus === 'all' || status === selectedBlogStatus;
+      (Array.isArray(blog.tags) &&
+        blog.tags.some((t) => (t || "").toLowerCase().includes(term)));
+
+    const status = (blog.status || "draft").toLowerCase();
+    const matchesStatus =
+      selectedBlogStatus === "all" || status === selectedBlogStatus.toLowerCase();
+    
     return matchesSearch && matchesStatus;
   });
 
-  return (
+  const handleEditBlog = (blog) => {
+    setBlogToEdit(blog);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setBlogToEdit(null);
+  };
+
+  // Edit Icon Component
+  const EditIcon = () => (
+    <svg 
+      width="16" 
+      height="16" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+
+// Blog Section 
+return (
     <div className="asset-management-enhanced">
       <div className="asset-header">
         <div className="header-content">
@@ -1723,7 +3308,9 @@ const BlogSection = ({ blogs, onDelete, onToggleStatus, blogSearchTerm, setBlogS
           <p className="header-subtitle">Create and manage blog posts</p>
         </div>
         <div className="header-actions">
-          <span className="asset-badge-count">{filteredBlogs.length} posts</span>
+          <span className="asset-badge-count">
+            {filteredBlogs.length} posts
+          </span>
           <button className="action-button upload-button" onClick={onCreate}>
             <FiPlus className="button-icon" /> Create Blog Post
           </button>
@@ -1754,7 +3341,9 @@ const BlogSection = ({ blogs, onDelete, onToggleStatus, blogSearchTerm, setBlogS
             </select>
             <div className="filter-result">
               <FiFilter className="filter-icon" />
-              <span className="filter-text">{filteredBlogs.length} results</span>
+              <span className="filter-text">
+                {filteredBlogs.length} results
+              </span>
             </div>
           </div>
         </div>
@@ -1763,44 +3352,92 @@ const BlogSection = ({ blogs, onDelete, onToggleStatus, blogSearchTerm, setBlogS
       {filteredBlogs.length > 0 ? (
         <div className="assets-grid">
           {filteredBlogs.map((blog) => {
-            const status = (blog.status || 'draft').toLowerCase();
-            const img = blog.featuredImage || blog.featuredImageUrl || blog.coverImgUrl || blog.coverImageUrl || blog.thumbnail || '';
-            const dateText = formatDate ? formatDate(blog.createdAt) : '';
-            const firstTag = Array.isArray(blog.tags) && blog.tags.length > 0 ? blog.tags[0] : 'General';
+            const status = (blog.status || "draft").toLowerCase();
+            const isPublished = status === "published";
+            const img =
+              blog.featuredImage ||
+              blog.featuredImageUrl ||
+              blog.coverImgUrl ||
+              blog.coverImageUrl ||
+              blog.thumbnail ||
+              "";
+            const dateText = formatDate ? formatDate(blog.createdAt) : "";
+            const firstTag =
+              Array.isArray(blog.tags) && blog.tags.length > 0
+                ? blog.tags[0]
+                : "General";
+            
             return (
               <div key={blog.id || blog._id} className="asset-card">
                 <div className="asset-image-wrapper">
                   {img ? (
-                    <img src={img} alt={blog.title || 'Blog'} className="asset-image" />
+                    <img
+                      src={img}
+                      alt={blog.title || blog.excerpt || "Blog"}
+                      className="asset-image"
+                    />
                   ) : (
-                    <div className="asset-placeholder"><FiFileText className="placeholder-icon" /></div>
+                    <div className="asset-placeholder">
+                      <FiFileText className="placeholder-icon" />
+                    </div>
                   )}
                   <div className="asset-badges">
-                    <span className={`status-badge ${status === 'published' ? 'active' : 'pending'}`}>{status}</span>
+                    <span
+                      className={`status-badge ${
+                        isPublished ? "active" : "pending"
+                      }`}
+                    >
+                      {isPublished ? "Published" : "Draft"}
+                    </span>
                   </div>
                 </div>
                 <div className="asset-content">
                   <div className="asset-header-row">
-                    <h3 className="asset-title">{blog.title || 'Untitled'}</h3>
+                    <h3 className="asset-title">{blog.title || blog.excerpt || "Untitled"}</h3>
                     <div className="asset-menu">
                       <span className="role-badge user">{firstTag}</span>
                     </div>
                   </div>
-                  <p className="asset-description">{blog.excerpt || ''}</p>
+                  <p className="asset-description">{blog.excerpt || ""}</p>
                   <div className="asset-footer">
-                    <span className="asset-author"><FiUser className="author-icon" /> by {blog.authorName || 'Unknown'}</span>
+                    <span className="asset-author">
+                      <FiUser className="author-icon" /> by{" "}
+                      {blog.authorName || "Unknown"}
+                    </span>
                     <span className="asset-date">{dateText}</span>
                   </div>
                   <div className="table-actions">
-                    <button className="action-button secondary" onClick={() => { setSelectedBlog(blog); setShowBlogDialog(true); }}>
-                      <FiEye className="button-icon" /> View
+                    <div>
+                      <button
+                        className="action-button secondary"
+                        onClick={() => onToggleStatus(blog.id || blog._id, status)}
+                      >
+                        {isPublished ? "Make Draft" : "Publish"}
+                      </button>
+                    </div>
+                    <div className="d-flex gap-2">
+                      <button
+                        className="action-button secondary"
+                        onClick={() => {
+                          setSelectedBlog(blog);
+                          setShowBlogDialog(true);
+                        }}
+                      >
+                        <FiEye className="button-icon" /> 
+                      </button>
+                     <button
+                      className="action-button secondary"
+                      onClick={() => handleEditBlog(blog)}
+                    >
+                      <EditIcon /> 
                     </button>
-                    <button className="action-button secondary" onClick={() => onToggleStatus(blog.id || blog._id, status)}>
-                      {status === 'published' ? 'Make Draft' : 'Publish'}
-                    </button>
-                    <button className="action-button danger" onClick={() => onDelete(blog.id || blog._id)}>
-                      <FiTrash2 className="button-icon" /> Delete
-                    </button>
+                      <button
+                        className="action-button danger"
+                        onClick={() => onDelete(blog.id || blog._id)}
+                      >
+                        <FiTrash2 className="button-icon" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1812,7 +3449,11 @@ const BlogSection = ({ blogs, onDelete, onToggleStatus, blogSearchTerm, setBlogS
           <div className="card-body empty-state">
             <FiFileText className="empty-icon" />
             <h3 className="empty-title">No blog posts found</h3>
-            <p className="empty-text">{blogSearchTerm ? 'No blog posts match your search criteria.' : 'No blog posts are currently available.'}</p>
+            <p className="empty-text">
+              {blogSearchTerm
+                ? "No blog posts match your search criteria."
+                : "No blog posts are currently available."}
+            </p>
             <button className="action-button upload-button" onClick={onCreate}>
               <FiPlus className="button-icon" /> Create First Blog Post
             </button>
@@ -1821,58 +3462,36 @@ const BlogSection = ({ blogs, onDelete, onToggleStatus, blogSearchTerm, setBlogS
       )}
 
       {showBlogDialog && selectedBlog && (
-        <BlogDetailsModal blog={selectedBlog} onClose={() => setShowBlogDialog(false)} />
+        <BlogDetailsModal
+          blog={selectedBlog}
+          onClose={() => setShowBlogDialog(false)}
+          formatDate={formatDate}
+        />
+      )}
+
+      {/* Edit Blog Modal */}
+      {isEditModalOpen && blogToEdit && (
+        <BlogEditorModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          blogToEdit={blogToEdit}
+        />
       )}
     </div>
   );
 };
 
-const BlogDetailsModal = ({ blog, onClose }) => {
-  const dateText = blog?.createdAt?.toDate?.()?.toLocaleDateString?.() || '';
-  return (
-    <div className="modal-overlay">
-      <div className="modal enhanced-modal">
-        <div className="modal-header">
-          <h3 className="modal-title"><FiFileText className="modal-icon" /> Blog Post Details</h3>
-          <button onClick={onClose} className="close-button"><FiX /></button>
-        </div>
-        <div className="modal-body enhanced-modal-body">
-          {blog?.featuredImage && (
-            <div className="asset-preview">
-              <img src={blog.featuredImage} alt={blog.title || 'Blog'} className="preview-image" />
-            </div>
-          )}
-          <div className="asset-info-section">
-            <h4 className="asset-info-title">{blog?.title || 'Untitled'}</h4>
-            <p className="asset-info-description">{blog?.excerpt || ''}</p>
-            <div className="asset-info-grid">
-              <div className="info-item"><div className="info-label">Author</div><div className="info-value">{blog?.authorName || 'Unknown'}</div></div>
-              <div className="info-item"><div className="info-label">Status</div><div className="info-value">{blog?.status || 'draft'}</div></div>
-              <div className="info-item"><div className="info-label">Views</div><div className="info-value">{blog?.views || 0}</div></div>
-              <div className="info-item"><div className="info-label">Created</div><div className="info-value">{dateText}</div></div>
-            </div>
-            {Array.isArray(blog?.tags) && blog.tags.length > 0 && (
-              <div className="asset-info-section">
-                <div className="info-label">Tags</div>
-                <div className="usage-list">
-                  {blog.tags.map((t, i) => (<span key={i} className="role-badge user">{t}</span>))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="asset-info-section">
-            <div className="info-label">Content</div>
-            <div className="message-content" dangerouslySetInnerHTML={{ __html: blog?.content || '' }} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpdateStatus, formatDate }) => {
+const PortfolioList = ({
+  portfolios,
+  onDelete,
+  onCreate,
+  onToggleFeatured,
+  onUpdateStatus,
+  formatDate,
+}) => {
   const [portfolioSearchTerm, setPortfolioSearchTerm] = useState("");
-  const [selectedPortfolioCategory, setSelectedPortfolioCategory] = useState("all");
+  const [selectedPortfolioCategory, setSelectedPortfolioCategory] =
+    useState("all");
   const [selectedPortfolioStatus, setSelectedPortfolioStatus] = useState("all");
   const [showPortfolioDialog, setShowPortfolioDialog] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState(null);
@@ -1886,14 +3505,26 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
   );
 
   const filteredPortfolios = portfolios.filter((p) => {
-    const matchesSearch = (p.title || "").toLowerCase().includes(portfolioSearchTerm.toLowerCase());
-    const matchesCategory = selectedPortfolioCategory === "all" || (p.category || p.type) === selectedPortfolioCategory;
+    const matchesSearch = (p.title || "")
+      .toLowerCase()
+      .includes(portfolioSearchTerm.toLowerCase());
+    const matchesCategory =
+      selectedPortfolioCategory === "all" ||
+      (p.category || p.type) === selectedPortfolioCategory;
     const status = (p.status || "draft").toLowerCase();
-    const matchesStatus = selectedPortfolioStatus === "all" || status === selectedPortfolioStatus;
+    const matchesStatus =
+      selectedPortfolioStatus === "all" || status === selectedPortfolioStatus;
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const getImage = (p) => p.image || p.coverImgUrl || p.featureImgUrl || p.thumbnail || (Array.isArray(p.images) && p.images[0]) || p.cover || "";
+  const getImage = (p) =>
+    p.image ||
+    p.coverImgUrl ||
+    p.featureImgUrl ||
+    p.thumbnail ||
+    (Array.isArray(p.images) && p.images[0]) ||
+    p.cover ||
+    "";
 
   return (
     <div className="asset-management-enhanced">
@@ -1903,10 +3534,14 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
             <FiBriefcase className="header-icon asset-icon" />
             Portfolio Management
           </h2>
-          <p className="header-subtitle">Manage portfolio projects and showcase work</p>
+          <p className="header-subtitle">
+            Manage portfolio projects and showcase work
+          </p>
         </div>
         <div className="header-actions">
-          <span className="asset-badge-count">{filteredPortfolios.length} projects</span>
+          <span className="asset-badge-count">
+            {filteredPortfolios.length} projects
+          </span>
           <button className="action-button upload-button" onClick={onCreate}>
             <FiPlus className="button-icon" />
             Add Project
@@ -1950,7 +3585,9 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
             </select>
             <div className="filter-result">
               <FiFilter className="filter-icon" />
-              <span className="filter-text">{filteredPortfolios.length} results</span>
+              <span className="filter-text">
+                {filteredPortfolios.length} results
+              </span>
             </div>
           </div>
         </div>
@@ -1962,7 +3599,9 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
             <FiBriefcase className="empty-icon" />
             <h3 className="empty-title">No portfolio projects found</h3>
             <p className="empty-text">
-              {portfolioSearchTerm ? "No projects match your search criteria." : "No portfolio projects are currently available."}
+              {portfolioSearchTerm
+                ? "No projects match your search criteria."
+                : "No portfolio projects are currently available."}
             </p>
             <button className="action-button upload-button" onClick={onCreate}>
               <FiPlus className="button-icon" />
@@ -1976,7 +3615,11 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
             <div key={p.id} className="asset-card">
               <div className="asset-image-wrapper">
                 {getImage(p) ? (
-                  <img src={getImage(p)} alt={p.title || "Project"} className="asset-image" />
+                  <img
+                    src={getImage(p)}
+                    alt={p.title || "Project"}
+                    className="asset-image"
+                  />
                 ) : (
                   <div className="asset-placeholder">
                     <FiImage className="placeholder-icon" />
@@ -1988,8 +3631,14 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
                       <FiStar className="badge-icon" /> Featured
                     </span>
                   )}
-                  <span className={`status-badge ${((p.status||"draft").toLowerCase()==='published')? 'active' : 'pending'}`}>
-                    {(p.status || "draft")}
+                  <span
+                    className={`status-badge ${
+                      (p.status || "draft").toLowerCase() === "published"
+                        ? "active"
+                        : "pending"
+                    }`}
+                  >
+                    {p.status || "draft"}
                   </span>
                 </div>
               </div>
@@ -2000,14 +3649,19 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
                   <div className="asset-menu">
                     <button
                       className="menu-trigger"
-                      onClick={() => { setSelectedPortfolio(p); setShowPortfolioDialog(true); }}
+                      onClick={() => {
+                        setSelectedPortfolio(p);
+                        setShowPortfolioDialog(true);
+                      }}
                     >
                       <FiMoreHorizontal />
                     </button>
                   </div>
                 </div>
 
-                <p className="asset-description">{p.description || "No description available"}</p>
+                <p className="asset-description">
+                  {p.description || "No description available"}
+                </p>
 
                 <div className="asset-meta">
                   <span className="meta-item">
@@ -2018,9 +3672,12 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
 
                 <div className="asset-footer">
                   <span className="asset-author">
-                    <FiUser className="author-icon" /> by {p.authorName || p.owner || p.userId || "Unknown"}
+                    <FiUser className="author-icon" /> by{" "}
+                    {p.authorName || p.owner || p.userId || "Unknown"}
                   </span>
-                  <span className="asset-date">{formatDate && formatDate(p.createdAt)}</span>
+                  <span className="asset-date">
+                    {formatDate && formatDate(p.createdAt)}
+                  </span>
                 </div>
 
                 <div className="table-actions">
@@ -2028,15 +3685,28 @@ const PortfolioList = ({ portfolios, onDelete, onCreate, onToggleFeatured, onUpd
                     className="action-button secondary"
                     onClick={() => onToggleFeatured(p.id)}
                   >
-                    <FiStar className="button-icon" /> {p.featured ? "Unfeature" : "Feature"}
+                    <FiStar className="button-icon" />{" "}
+                    {p.featured ? "Unfeature" : "Feature"}
                   </button>
                   <button
                     className="action-button secondary"
-                    onClick={() => onUpdateStatus(p.id, (p.status||"draft").toLowerCase()==="published"?"draft":"published")}
+                    onClick={() =>
+                      onUpdateStatus(
+                        p.id,
+                        (p.status || "draft").toLowerCase() === "published"
+                          ? "draft"
+                          : "published"
+                      )
+                    }
                   >
-                    {(p.status||"draft").toLowerCase()==="published"?"Make Draft":"Publish"}
+                    {(p.status || "draft").toLowerCase() === "published"
+                      ? "Make Draft"
+                      : "Publish"}
                   </button>
-                  <button className="action-button danger" onClick={() => onDelete(p.id)}>
+                  <button
+                    className="action-button danger"
+                    onClick={() => onDelete(p.id)}
+                  >
                     <FiTrash2 className="button-icon" /> Delete
                   </button>
                 </div>
@@ -2061,33 +3731,59 @@ const PortfolioDetailsModal = ({ portfolio, onClose }) => {
     <div className="modal-overlay">
       <div className="modal enhanced-modal">
         <div className="modal-header">
-          <h3 className="modal-title"><FiBriefcase className="modal-icon" /> Portfolio Details</h3>
-          <button onClick={onClose} className="close-button"><FiX /></button>
+          <h3 className="modal-title">
+            <FiBriefcase className="modal-icon" /> Portfolio Details
+          </h3>
+          <button onClick={onClose} className="close-button">
+            <FiX />
+          </button>
         </div>
         <div className="modal-body enhanced-modal-body">
           <div className="asset-preview">
-            {portfolio.image || portfolio.coverImgUrl || portfolio.featureImgUrl ? (
-              <img src={portfolio.image || portfolio.coverImgUrl || portfolio.featureImgUrl} alt={portfolio.title} className="preview-image" />
+            {portfolio.image ||
+            portfolio.coverImgUrl ||
+            portfolio.featureImgUrl ? (
+              <img
+                src={
+                  portfolio.image ||
+                  portfolio.coverImgUrl ||
+                  portfolio.featureImgUrl
+                }
+                alt={portfolio.title}
+                className="preview-image"
+              />
             ) : (
               <div className="preview-placeholder" />
             )}
           </div>
           <div className="asset-info-section">
             <h4 className="asset-info-title">{portfolio.title}</h4>
-            <p className="asset-info-description">{portfolio.description || "No description"}</p>
+            <p className="asset-info-description">
+              {portfolio.description || "No description"}
+            </p>
 
             <div className="asset-info-grid">
               <div className="info-item">
                 <div className="info-label">Category</div>
-                <div className="info-value">{portfolio.category || portfolio.type || "Uncategorized"}</div>
+                <div className="info-value">
+                  {portfolio.category || portfolio.type || "Uncategorized"}
+                </div>
               </div>
               <div className="info-item">
                 <div className="info-label">Author</div>
-                <div className="info-value">{portfolio.authorName || portfolio.owner || portfolio.userId || "Unknown"}</div>
+                <div className="info-value">
+                  {portfolio.authorName ||
+                    portfolio.owner ||
+                    portfolio.userId ||
+                    "Unknown"}
+                </div>
               </div>
               <div className="info-item">
                 <div className="info-label">Created</div>
-                <div className="info-value">{portfolio.createdAt?.toDate?.().toLocaleDateString?.() || "N/A"}</div>
+                <div className="info-value">
+                  {portfolio.createdAt?.toDate?.().toLocaleDateString?.() ||
+                    "N/A"}
+                </div>
               </div>
               <div className="info-item">
                 <div className="info-label">Status</div>
@@ -2095,16 +3791,19 @@ const PortfolioDetailsModal = ({ portfolio, onClose }) => {
               </div>
             </div>
 
-            {Array.isArray(portfolio.technologies) && portfolio.technologies.length > 0 && (
-              <div className="asset-info-section">
-                <div className="info-label">Technologies</div>
-                <div className="usage-list">
-                  {portfolio.technologies.map((t, i) => (
-                    <span key={i} className="role-badge user">{t}</span>
-                  ))}
+            {Array.isArray(portfolio.technologies) &&
+              portfolio.technologies.length > 0 && (
+                <div className="asset-info-section">
+                  <div className="info-label">Technologies</div>
+                  <div className="usage-list">
+                    {portfolio.technologies.map((t, i) => (
+                      <span key={i} className="role-badge user">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
       </div>
@@ -2112,7 +3811,25 @@ const PortfolioDetailsModal = ({ portfolio, onClose }) => {
   );
 };
 
-const AssetList = ({ assets, onDelete, assetSearchTerm, setAssetSearchTerm, selectedCategory, setSelectedCategory, showAssetDialog, setShowAssetDialog, selectedAsset, setSelectedAsset, showCreateAssetDialog, setShowCreateAssetDialog, formatCurrency, formatDate, handleToggleAssetFeatured, handleToggleAssetTrending, ASSET_CATEGORIES }) => {
+const AssetList = ({
+  assets,
+  onDelete,
+  assetSearchTerm,
+  setAssetSearchTerm,
+  selectedCategory,
+  setSelectedCategory,
+  showAssetDialog,
+  setShowAssetDialog,
+  selectedAsset,
+  setSelectedAsset,
+  showCreateAssetDialog,
+  setShowCreateAssetDialog,
+  formatCurrency,
+  formatDate,
+  handleToggleAssetFeatured,
+  handleToggleAssetTrending,
+  ASSET_CATEGORIES,
+}) => {
   return (
     <div className="asset-management-enhanced">
       {/* Header */}
@@ -2177,7 +3894,9 @@ const AssetList = ({ assets, onDelete, assetSearchTerm, setAssetSearchTerm, sele
             <FiBox className="empty-icon" />
             <h3 className="empty-title">No assets found</h3>
             <p className="empty-text">
-              {assetSearchTerm ? "No assets match your search criteria." : "No assets are currently available."}
+              {assetSearchTerm
+                ? "No assets match your search criteria."
+                : "No assets are currently available."}
             </p>
             <button
               className="action-button upload-button"
@@ -2195,7 +3914,12 @@ const AssetList = ({ assets, onDelete, assetSearchTerm, setAssetSearchTerm, sele
               <div className="asset-image-wrapper">
                 {asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
                   <img
-                    src={asset.thumbnail || (Array.isArray(asset.images) && asset.images[0]) || (Array.isArray(asset.icons) && asset.icons[0]) || ""}
+                    src={
+                      asset.thumbnail ||
+                      (Array.isArray(asset.images) && asset.images[0]) ||
+                      (Array.isArray(asset.icons) && asset.icons[0]) ||
+                      ""
+                    }
                     alt={asset.title || asset.name || "Asset"}
                     className="asset-image"
                   />
@@ -2223,7 +3947,11 @@ const AssetList = ({ assets, onDelete, assetSearchTerm, setAssetSearchTerm, sele
 
                 {/* Price badge */}
                 <div className="asset-price-badge">
-                  <span className={`price-badge ${asset.price > 0 ? 'premium' : 'free'}`}>
+                  <span
+                    className={`price-badge ${
+                      asset.price > 0 ? "premium" : "free"
+                    }`}
+                  >
                     {asset.price > 0 ? formatCurrency(asset.price) : "Free"}
                   </span>
                 </div>
@@ -2231,7 +3959,9 @@ const AssetList = ({ assets, onDelete, assetSearchTerm, setAssetSearchTerm, sele
 
               <div className="asset-content">
                 <div className="asset-header-row">
-                  <h3 className="asset-title">{asset.title || asset.name || "Untitled"}</h3>
+                  <h3 className="asset-title">
+                    {asset.title || asset.name || "Untitled"}
+                  </h3>
                   <div className="asset-menu">
                     <button
                       className="menu-trigger"
@@ -2245,7 +3975,9 @@ const AssetList = ({ assets, onDelete, assetSearchTerm, setAssetSearchTerm, sele
                   </div>
                 </div>
 
-                <p className="asset-description">{asset.description || "No description available"}</p>
+                <p className="asset-description">
+                  {asset.description || "No description available"}
+                </p>
 
                 <div className="asset-meta">
                   <span className="meta-item">
@@ -2263,7 +3995,9 @@ const AssetList = ({ assets, onDelete, assetSearchTerm, setAssetSearchTerm, sele
                     <FiUser className="author-icon" />
                     by {asset.authorName || asset.userId || "Unknown"}
                   </span>
-                  <span className="asset-date">{formatDate(asset.createdAt)}</span>
+                  <span className="asset-date">
+                    {formatDate(asset.createdAt)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -2321,18 +4055,39 @@ const MessageModal = ({ message, onClose, onStatusChange }) => {
               <strong>From:</strong> {message.email || "Unknown"}
             </div>
             <div>
-              <strong>Date:</strong> {message.createdAt?.toDate().toLocaleString() || "N/A"}
+              <strong>Date:</strong>{" "}
+              {message.createdAt?.toDate().toLocaleString() || "N/A"}
             </div>
-            <div className={`status-badge ${message.status}`}>{message.status || "Unknown"}</div>
+            <div className={`status-badge ${message.status}`}>
+              {message.status || "Unknown"}
+            </div>
           </div>
-          <div className="message-content">{message.description || "No content"}</div>
+          <div className="message-content">
+            {message.description || "No content"}
+          </div>
         </div>
         <div className="modal-footer">
-          <button onClick={handleMarkAsOpened} disabled={message.status === "opened"} className={`action-button ${message.status === "opened" ? "disabled" : ""}`}>
-            <FiCheck /> {message.status === "opened" ? "Already Opened" : "Mark as Opened"}
+          <button
+            onClick={handleMarkAsOpened}
+            disabled={message.status === "opened"}
+            className={`action-button ${
+              message.status === "opened" ? "disabled" : ""
+            }`}
+          >
+            <FiCheck />{" "}
+            {message.status === "opened" ? "Already Opened" : "Mark as Opened"}
           </button>
-          <button onClick={handleMarkAsResponded} disabled={message.status === "responded"} className={`action-button ${message.status === "responded" ? "disabled" : ""}`}>
-            <FiCheck /> {message.status === "responded" ? "Already Responded" : "Mark as Responded"}
+          <button
+            onClick={handleMarkAsResponded}
+            disabled={message.status === "responded"}
+            className={`action-button ${
+              message.status === "responded" ? "disabled" : ""
+            }`}
+          >
+            <FiCheck />{" "}
+            {message.status === "responded"
+              ? "Already Responded"
+              : "Mark as Responded"}
           </button>
         </div>
       </div>
@@ -2340,13 +4095,42 @@ const MessageModal = ({ message, onClose, onStatusChange }) => {
   );
 };
 
-const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handleBulkRoleChange, onUpdateStatus, onDelete, userSearchTerm, setUserSearchTerm, selectedUserRole, setSelectedUserRole, selectedUserStatus, setSelectedUserStatus, showUserDialog, setShowUserDialog, selectedUser, setSelectedUser, formatCurrency, formatDate, getRoleColor, handleUserStatusToggle, handleUserRoleChange }) => {
+const UserList = ({
+  users,
+  onRoleChange,
+  selectedUsers,
+  setSelectedUsers,
+  handleBulkRoleChange,
+  onUpdateStatus,
+  onDelete,
+  userSearchTerm,
+  setUserSearchTerm,
+  selectedUserRole,
+  setSelectedUserRole,
+  selectedUserStatus,
+  setSelectedUserStatus,
+  showUserDialog,
+  setShowUserDialog,
+  selectedUser,
+  setSelectedUser,
+  formatCurrency,
+  formatDate,
+  getRoleColor,
+  handleUserStatusToggle,
+  handleUserRoleChange,
+}) => {
   const handleSelectUser = (userId) => {
-    setSelectedUsers(selectedUsers.includes(userId) ? selectedUsers.filter((id) => id !== userId) : [...selectedUsers, userId]);
+    setSelectedUsers(
+      selectedUsers.includes(userId)
+        ? selectedUsers.filter((id) => id !== userId)
+        : [...selectedUsers, userId]
+    );
   };
 
   const handleSelectAll = () => {
-    setSelectedUsers(selectedUsers.length === users.length ? [] : users.map((user) => user.id));
+    setSelectedUsers(
+      selectedUsers.length === users.length ? [] : users.map((user) => user.id)
+    );
   };
 
   const [confirm, setConfirm] = useState(null);
@@ -2360,7 +4144,9 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
             <FiUsers className="header-icon" />
             User Management
           </h2>
-          <p className="header-subtitle">Manage user accounts, roles, and permissions</p>
+          <p className="header-subtitle">
+            Manage user accounts, roles, and permissions
+          </p>
         </div>
         <div className="header-badge">
           <span className="badge-count">{users.length} users</span>
@@ -2412,9 +4198,24 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
       {/* Bulk Actions */}
       {selectedUsers.length > 0 && (
         <div className="table-actions">
-          <button onClick={() => handleBulkRoleChange("admin")} className="action-button">Make Admin</button>
-          <button onClick={() => handleBulkRoleChange("moderator")} className="action-button">Make Moderator</button>
-          <button onClick={() => handleBulkRoleChange("user")} className="action-button">Make Regular User</button>
+          <button
+            onClick={() => handleBulkRoleChange("admin")}
+            className="action-button"
+          >
+            Make Admin
+          </button>
+          <button
+            onClick={() => handleBulkRoleChange("moderator")}
+            className="action-button"
+          >
+            Make Moderator
+          </button>
+          <button
+            onClick={() => handleBulkRoleChange("user")}
+            className="action-button"
+          >
+            Make Regular User
+          </button>
         </div>
       )}
 
@@ -2426,7 +4227,9 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
               <FiUsers className="empty-icon" />
               <h3 className="empty-title">No users found</h3>
               <p className="empty-text">
-                {userSearchTerm ? "No users match your search criteria." : "No users are currently registered."}
+                {userSearchTerm
+                  ? "No users match your search criteria."
+                  : "No users are currently registered."}
               </p>
             </div>
           ) : (
@@ -2437,7 +4240,10 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
                     <th className="checkbox-column">
                       <input
                         type="checkbox"
-                        checked={selectedUsers.length === users.length && users.length > 0}
+                        checked={
+                          selectedUsers.length === users.length &&
+                          users.length > 0
+                        }
                         onChange={handleSelectAll}
                       />
                     </th>
@@ -2453,7 +4259,11 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
                 </thead>
                 <tbody>
                   {users.map((user) => {
-                    const name = user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
+                    const name =
+                      user.name ||
+                      user.displayName ||
+                      user.email?.split("@")[0] ||
+                      "Unknown";
                     const status = (user.status || "active").toLowerCase();
                     const isActive = status === "active";
                     return (
@@ -2469,14 +4279,22 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
                           <div className="user-profile">
                             <div className="user-avatar">
                               {user.photoURL ? (
-                                <img src={user.photoURL} alt={name} className="avatar-img" />
+                                <img
+                                  src={user.photoURL}
+                                  alt={name}
+                                  className="avatar-img"
+                                />
                               ) : (
-                                <div className="avatar-initials">{(name[0] || "").toUpperCase()}</div>
+                                <div className="avatar-initials">
+                                  {(name[0] || "").toUpperCase()}
+                                </div>
                               )}
                             </div>
                             <div className="user-info">
                               <div className="user-name">{name}</div>
-                              <div className="user-email">{user.email || "Unknown"}</div>
+                              <div className="user-email">
+                                {user.email || "Unknown"}
+                              </div>
                               {user.location && (
                                 <div className="user-location">
                                   <FiMapPin className="location-icon" />
@@ -2487,16 +4305,32 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
                           </div>
                         </td>
                         <td>
-                          <span className={`role-badge enhanced ${user.role || 'user'}`}>
-                            {user.role === "admin" && <FiShield className="role-icon" />}
-                            {user.role === "moderator" && <FiShield className="role-icon" />}
+                          <span
+                            className={`role-badge enhanced ${
+                              user.role || "user"
+                            }`}
+                          >
+                            {user.role === "admin" && (
+                              <FiShield className="role-icon" />
+                            )}
+                            {user.role === "moderator" && (
+                              <FiShield className="role-icon" />
+                            )}
                             {user.role || "user"}
                           </span>
                         </td>
                         <td>
                           <div className="status-column">
-                            <span className={`status-badge enhanced ${isActive ? 'active' : 'inactive'}`}>
-                              {isActive ? <FiUserCheck className="status-icon" /> : <FiX className="status-icon" />}
+                            <span
+                              className={`status-badge enhanced ${
+                                isActive ? "active" : "inactive"
+                              }`}
+                            >
+                              {isActive ? (
+                                <FiUserCheck className="status-icon" />
+                              ) : (
+                                <FiX className="status-icon" />
+                              )}
                               {isActive ? "Active" : "Inactive"}
                             </span>
                             {user.isEmailVerified && (
@@ -2508,19 +4342,29 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
                           </div>
                         </td>
                         <td>
-                          <div className="metric-value">{user.totalPurchases || 0}</div>
+                          <div className="metric-value">
+                            {user.totalPurchases || 0}
+                          </div>
                         </td>
                         <td>
-                          <div className="metric-value currency">{formatCurrency(user.totalSpent || 0)}</div>
+                          <div className="metric-value currency">
+                            {formatCurrency(user.totalSpent || 0)}
+                          </div>
                         </td>
                         <td>
-                          <div className="metric-value downloads">{user.totalDownloads || 0}</div>
+                          <div className="metric-value downloads">
+                            {user.totalDownloads || 0}
+                          </div>
                         </td>
                         <td>
                           <div className="date-column">
-                            <div className="join-date">{formatDate(user.createdAt || user.joinDate)}</div>
+                            <div className="join-date">
+                              {formatDate(user.createdAt || user.joinDate)}
+                            </div>
                             {user.lastLogin && (
-                              <div className="last-login">Last: {formatDate(user.lastLogin)}</div>
+                              <div className="last-login">
+                                Last: {formatDate(user.lastLogin)}
+                              </div>
                             )}
                           </div>
                         </td>
@@ -2563,13 +4407,28 @@ const UserList = ({ users, onRoleChange, selectedUsers, setSelectedUsers, handle
 
       {confirm && (
         <ConfirmModal
-          title={confirm.type === 'delete' ? 'Delete User' : confirm.type === 'suspend' ? 'Suspend User' : 'Activate User'}
-          message={confirm.type === 'delete' ? 'This action cannot be undone.' : confirm.type === 'suspend' ? 'User will be suspended.' : 'User will be re-activated.'}
+          title={
+            confirm.type === "delete"
+              ? "Delete User"
+              : confirm.type === "suspend"
+              ? "Suspend User"
+              : "Activate User"
+          }
+          message={
+            confirm.type === "delete"
+              ? "This action cannot be undone."
+              : confirm.type === "suspend"
+              ? "User will be suspended."
+              : "User will be re-activated."
+          }
           onCancel={() => setConfirm(null)}
           onConfirm={() => {
-            if (confirm.type === 'delete') onDelete(confirm.user.id, confirm.user.email);
-            if (confirm.type === 'suspend') onUpdateStatus(confirm.user.id, 'suspended');
-            if (confirm.type === 'activate') onUpdateStatus(confirm.user.id, 'active');
+            if (confirm.type === "delete")
+              onDelete(confirm.user.id, confirm.user.email);
+            if (confirm.type === "suspend")
+              onUpdateStatus(confirm.user.id, "suspended");
+            if (confirm.type === "activate")
+              onUpdateStatus(confirm.user.id, "active");
             setConfirm(null);
           }}
         />
@@ -2590,7 +4449,10 @@ const AdminManager = ({ setError }) => {
     const fetchAdmins = async () => {
       try {
         const snapshot = await getDocs(collection(db, "adminUsers"));
-        const adminList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const adminList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setAdmins(adminList);
       } catch (error) {
         setError(`Failed to fetch admin list: ${error.message}`);
@@ -2611,7 +4473,10 @@ const AdminManager = ({ setError }) => {
         addedBy: auth.currentUser?.email || "unknown",
         createdAt: serverTimestamp(),
       });
-      setAdmins([...admins, { id: email, addedBy: auth.currentUser?.email, createdAt: new Date() }]);
+      setAdmins([
+        ...admins,
+        { id: email, addedBy: auth.currentUser?.email, createdAt: new Date() },
+      ]);
       setNewAdminEmail("");
       setLogMessage(`Admin ${email} added successfully.`);
       setLogType("success");
@@ -2635,16 +4500,39 @@ const AdminManager = ({ setError }) => {
   };
 
   const toggleTarget = (name) => {
-    setSelectedTargets((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
+    setSelectedTargets((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+    );
   };
 
   const handleWipe = async () => {
-    const collections = includeProfiles ? [...selectedTargets, "Profiles"] : selectedTargets;
-    if (!collections.length) { setLogMessage("Select at least one collection to wipe."); setLogType("error"); return; }
-    if (!window.confirm(`This will permanently delete data in: ${collections.join(", ")}. Continue?`)) return;
+    const collections = includeProfiles
+      ? [...selectedTargets, "Profiles"]
+      : selectedTargets;
+    if (!collections.length) {
+      setLogMessage("Select at least one collection to wipe.");
+      setLogType("error");
+      return;
+    }
+    if (
+      !window.confirm(
+        `This will permanently delete data in: ${collections.join(
+          ", "
+        )}. Continue?`
+      )
+    )
+      return;
     try {
-      const summary = await wipeCollections(collections, { includeProfiles: includeProfiles, keepCurrentProfile: true, allowAdminUsersWipe: false });
-      setLogMessage(`Wipe completed: ${Object.entries(summary).map(([k,v]) => `${k}:${v}`).join("; ")}`);
+      const summary = await wipeCollections(collections, {
+        includeProfiles: includeProfiles,
+        keepCurrentProfile: true,
+        allowAdminUsersWipe: false,
+      });
+      setLogMessage(
+        `Wipe completed: ${Object.entries(summary)
+          .map(([k, v]) => `${k}:${v}`)
+          .join("; ")}`
+      );
       setLogType("success");
     } catch (e) {
       setLogMessage(`Wipe failed: ${e.message}`);
@@ -2675,7 +4563,9 @@ const AdminManager = ({ setError }) => {
           onChange={(e) => setNewAdminEmail(e.target.value)}
           className="admin-input"
         />
-        <button onClick={addAdmin} className="action-button">Add Admin</button>
+        <button onClick={addAdmin} className="action-button">
+          Add Admin
+        </button>
       </div>
 
       <div className="content-card data-tools-card">
@@ -2687,31 +4577,70 @@ const AdminManager = ({ setError }) => {
             <div className="wipe-options">
               {DEFAULT_WIPE_TARGETS.map((name) => (
                 <label key={name} className="role-select wipe-option">
-                  <input type="checkbox" checked={selectedTargets.includes(name)} onChange={() => toggleTarget(name)} />
+                  <input
+                    type="checkbox"
+                    checked={selectedTargets.includes(name)}
+                    onChange={() => toggleTarget(name)}
+                  />
                   <span className="wipe-option-label">{name}</span>
                 </label>
               ))}
               <label className="role-select wipe-option">
-                <input type="checkbox" checked={includeProfiles} onChange={(e) => setIncludeProfiles(e.target.checked)} />
-                <span className="wipe-option-label">Profiles (excludes current)</span>
+                <input
+                  type="checkbox"
+                  checked={includeProfiles}
+                  onChange={(e) => setIncludeProfiles(e.target.checked)}
+                />
+                <span className="wipe-option-label">
+                  Profiles (excludes current)
+                </span>
               </label>
             </div>
             <div className="seed-actions">
-              <button className="action-button" onClick={handleWipe}><FiTrash2 /> Wipe Selected</button>
-              <button className="action-button" onClick={handleSeed}><FiPlus /> Seed Firestore</button>
+              <button className="action-button" onClick={handleWipe}>
+                <FiTrash2 /> Wipe Selected
+              </button>
+              <button className="action-button" onClick={handleSeed}>
+                <FiPlus /> Seed Firestore
+              </button>
             </div>
           </div>
-          {logMessage && <div className={`admin-log ${logType === "success" ? "log-success" : logType === 'info' ? 'log-info' : "log-error"}`}>{logMessage}</div>}
+          {logMessage && (
+            <div
+              className={`admin-log ${
+                logType === "success"
+                  ? "log-success"
+                  : logType === "info"
+                  ? "log-info"
+                  : "log-error"
+              }`}
+            >
+              {logMessage}
+            </div>
+          )}
         </div>
       </div>
 
-      {logMessage && <div className={`admin-log ${logType === "success" ? "log-success" : "log-error"}`}>{logMessage}</div>}
+      {logMessage && (
+        <div
+          className={`admin-log ${
+            logType === "success" ? "log-success" : "log-error"
+          }`}
+        >
+          {logMessage}
+        </div>
+      )}
 
       <ul className="admin-list">
         {admins.map((admin) => (
           <li key={admin.id} className="admin-list-item">
             <span className="admin-email">{admin.id}</span>
-            <button onClick={() => removeAdmin(admin.id)} className="remove-admin">Remove</button>
+            <button
+              onClick={() => removeAdmin(admin.id)}
+              className="remove-admin"
+            >
+              Remove
+            </button>
           </li>
         ))}
       </ul>
@@ -2722,7 +4651,11 @@ const AdminManager = ({ setError }) => {
 const normalizeDate = (value) => {
   if (!value) return null;
   if (value.toDate) {
-    try { return value.toDate(); } catch { return null; }
+    try {
+      return value.toDate();
+    } catch {
+      return null;
+    }
   }
   if (value.seconds) return new Date(value.seconds * 1000);
   if (typeof value === "number") return new Date(value);
@@ -2747,7 +4680,9 @@ const KPICards = ({ users, admins, messages, blogs, portfolios, assets }) => {
   return (
     <div className="kpi-grid">
       <div className="kpi-card">
-        <div className="kpi-icon kpi-users"><FiUsers /></div>
+        <div className="kpi-icon kpi-users">
+          <FiUsers />
+        </div>
         <div className="kpi-content">
           <div className="kpi-value">{users.length}</div>
           <div className="kpi-label">Total Users</div>
@@ -2755,7 +4690,9 @@ const KPICards = ({ users, admins, messages, blogs, portfolios, assets }) => {
         <div className="delta-badge">+{newUsers} this week</div>
       </div>
       <div className="kpi-card">
-        <div className="kpi-icon kpi-admins"><FiUser /></div>
+        <div className="kpi-icon kpi-admins">
+          <FiUser />
+        </div>
         <div className="kpi-content">
           <div className="kpi-value">{admins}</div>
           <div className="kpi-label">Admins</div>
@@ -2763,7 +4700,9 @@ const KPICards = ({ users, admins, messages, blogs, portfolios, assets }) => {
         <div className="delta-badge">{admins > 0 ? "Active" : "None"}</div>
       </div>
       <div className="kpi-card">
-        <div className="kpi-icon kpi-messages"><FiMail /></div>
+        <div className="kpi-icon kpi-messages">
+          <FiMail />
+        </div>
         <div className="kpi-content">
           <div className="kpi-value">{messages.length}</div>
           <div className="kpi-label">Support Tickets</div>
@@ -2771,7 +4710,9 @@ const KPICards = ({ users, admins, messages, blogs, portfolios, assets }) => {
         <div className="delta-badge">+{newMsgs} this week</div>
       </div>
       <div className="kpi-card">
-        <div className="kpi-icon kpi-assets"><FiBox /></div>
+        <div className="kpi-icon kpi-assets">
+          <FiBox />
+        </div>
         <div className="kpi-content">
           <div className="kpi-value">{assets.length}</div>
           <div className="kpi-label">Total Assets</div>
@@ -2788,7 +4729,9 @@ const UsageDistribution = ({ assets }) => {
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
-  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const entries = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
   const total = assets.length || 1;
   return (
     <div className="usage-list">
@@ -2799,7 +4742,10 @@ const UsageDistribution = ({ assets }) => {
           <div className="usage-row" key={type}>
             <div className="usage-label">{type}</div>
             <div className="progress">
-              <div className="progress-bar" style={{ "--progress-width": `${pct}%` }} />
+              <div
+                className="progress-bar"
+                style={{ "--progress-width": `${pct}%` }}
+              />
             </div>
             <div className="usage-value">{pct}%</div>
           </div>
@@ -2811,10 +4757,34 @@ const UsageDistribution = ({ assets }) => {
 
 const RecentActivity = ({ messages, blogs, portfolios, assets }) => {
   const items = [];
-  messages.forEach((m) => items.push({ t: normalizeDate(m.createdAt), type: "Support", label: m.subject || "No Subject" }));
-  blogs.forEach((b) => items.push({ t: normalizeDate(b.createdAt), type: "Blog", label: b.title || "Untitled" }));
-  portfolios.forEach((p) => items.push({ t: normalizeDate(p.createdAt), type: "Portfolio", label: p.title || "Untitled" }));
-  assets.forEach((a) => items.push({ t: normalizeDate(a.createdAt), type: "Asset", label: a.title || a.name || "Untitled" }));
+  messages.forEach((m) =>
+    items.push({
+      t: normalizeDate(m.createdAt),
+      type: "Support",
+      label: m.subject || "No Subject",
+    })
+  );
+  blogs.forEach((b) =>
+    items.push({
+      t: normalizeDate(b.createdAt),
+      type: "Blog",
+      label: b.title || "Untitled",
+    })
+  );
+  portfolios.forEach((p) =>
+    items.push({
+      t: normalizeDate(p.createdAt),
+      type: "Portfolio",
+      label: p.title || "Untitled",
+    })
+  );
+  assets.forEach((a) =>
+    items.push({
+      t: normalizeDate(a.createdAt),
+      type: "Asset",
+      label: a.title || a.name || "Untitled",
+    })
+  );
   const recent = items
     .filter((i) => i.t)
     .sort((a, b) => b.t - a.t)
@@ -2826,73 +4796,168 @@ const RecentActivity = ({ messages, blogs, portfolios, assets }) => {
         <li key={idx} className="activity-item">
           <span className="activity-type">{i.type}</span>
           <span className="activity-label">{i.label}</span>
-          <span className="activity-time">{i.t?.toLocaleDateString?.() || ""}</span>
+          <span className="activity-time">
+            {i.t?.toLocaleDateString?.() || ""}
+          </span>
         </li>
       ))}
     </ul>
   );
 };
 
-const QuickActions = ({ onNavigate, onExportCSV, onExportJSON, onExportPDF, isExporting }) => {
+const QuickActions = ({
+  onNavigate,
+  onExportCSV,
+  onExportJSON,
+  onExportPDF,
+  isExporting,
+}) => {
   return (
     <div className="quick-actions">
-      <button className="qa-button" onClick={() => onNavigate(1)}><FiUsers /> Manage Users</button>
-      <button className="qa-button" onClick={() => onNavigate(3)}><FiUpload /> Add Upload</button>
-      <button className="qa-button" onClick={() => onNavigate(4)}><FiFileText /> Create Blog</button>
-      <button className="qa-button" onClick={() => onNavigate(5)}><FiFileText /> Add Portfolio</button>
-      <button className="qa-button" onClick={onExportCSV} disabled={isExporting}><FiDownload /> Export CSV</button>
-      <button className="qa-button" onClick={onExportJSON} disabled={isExporting}><FiDownload /> Export JSON</button>
-      <button className="qa-button" onClick={onExportPDF} disabled={isExporting}><FiDownload /> Export PDF</button>
+      <button className="qa-button" onClick={() => onNavigate(1)}>
+        <FiUsers /> Manage Users
+      </button>
+      <button className="qa-button" onClick={() => onNavigate(3)}>
+        <FiUpload /> Add Upload
+      </button>
+      <button className="qa-button" onClick={() => onNavigate(4)}>
+        <FiFileText /> Create Blog
+      </button>
+      <button className="qa-button" onClick={() => onNavigate(5)}>
+        <FiFileText /> Add Portfolio
+      </button>
+      <button
+        className="qa-button"
+        onClick={onExportCSV}
+        disabled={isExporting}
+      >
+        <FiDownload /> Export CSV
+      </button>
+      <button
+        className="qa-button"
+        onClick={onExportJSON}
+        disabled={isExporting}
+      >
+        <FiDownload /> Export JSON
+      </button>
+      <button
+        className="qa-button"
+        onClick={onExportPDF}
+        disabled={isExporting}
+      >
+        <FiDownload /> Export PDF
+      </button>
     </div>
   );
 };
 
 const UserProfileDrawer = ({ user, onClose, onUpdateStatus, onRoleChange }) => {
-  const [tab, setTab] = useState('overview');
-  const name = user.name || user.displayName || user.email?.split('@')[0] || 'Unknown';
-  const status = (user.status || 'active').toLowerCase();
+  const [tab, setTab] = useState("overview");
+  const name =
+    user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
+  const status = (user.status || "active").toLowerCase();
   return (
     <div className="drawer-backdrop" onClick={onClose}>
       <aside className="drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
           <div className="avatar large">
-            {user.photoURL ? <img src={user.photoURL} alt={name} className="avatar-img" /> : <div className="avatar-initials">{(name[0] || '').toUpperCase()}</div>}
+            {user.photoURL ? (
+              <img src={user.photoURL} alt={name} className="avatar-img" />
+            ) : (
+              <div className="avatar-initials">
+                {(name[0] || "").toUpperCase()}
+              </div>
+            )}
           </div>
           <div className="drawer-title">
             <div className="name">{name}</div>
             <div className="meta">{user.email}</div>
           </div>
-          <button className="close-button" onClick={onClose}><FiX /></button>
+          <button className="close-button" onClick={onClose}>
+            <FiX />
+          </button>
         </div>
         <div className="tabs">
-          <button className={`tab ${tab==='overview'?'active':''}`} onClick={() => setTab('overview')}>Overview</button>
-          <button className={`tab ${tab==='activity'?'active':''}`} onClick={() => setTab('activity')}>Activity Logs</button>
-          <button className={`tab ${tab==='permissions'?'active':''}`} onClick={() => setTab('permissions')}>Permissions</button>
-          <button className={`tab ${tab==='settings'?'active':''}`} onClick={() => setTab('settings')}>Settings</button>
+          <button
+            className={`tab ${tab === "overview" ? "active" : ""}`}
+            onClick={() => setTab("overview")}
+          >
+            Overview
+          </button>
+          <button
+            className={`tab ${tab === "activity" ? "active" : ""}`}
+            onClick={() => setTab("activity")}
+          >
+            Activity Logs
+          </button>
+          <button
+            className={`tab ${tab === "permissions" ? "active" : ""}`}
+            onClick={() => setTab("permissions")}
+          >
+            Permissions
+          </button>
+          <button
+            className={`tab ${tab === "settings" ? "active" : ""}`}
+            onClick={() => setTab("settings")}
+          >
+            Settings
+          </button>
         </div>
         <div className="drawer-body">
-          {tab === 'overview' && (
+          {tab === "overview" && (
             <div className="drawer-section">
               <div className="info-grid">
-                <div><div className="label">Role</div><div className="value"><span className={`role-badge ${user.role}`}>{user.role || 'user'}</span></div></div>
-                <div><div className="label">Status</div><div className="value"><span className={`status-badge ${status}`}>{status}</span></div></div>
-                <div><div className="label">Last Active</div><div className="value">{normalizeDate(user.lastActive)?.toLocaleString?.() || 'N/A'}</div></div>
-                <div><div className="label">Joined</div><div className="value">{normalizeDate(user.createdAt)?.toLocaleDateString?.() || 'N/A'}</div></div>
+                <div>
+                  <div className="label">Role</div>
+                  <div className="value">
+                    <span className={`role-badge ${user.role}`}>
+                      {user.role || "user"}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div className="label">Status</div>
+                  <div className="value">
+                    <span className={`status-badge ${status}`}>{status}</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="label">Last Active</div>
+                  <div className="value">
+                    {normalizeDate(user.lastActive)?.toLocaleString?.() ||
+                      "N/A"}
+                  </div>
+                </div>
+                <div>
+                  <div className="label">Joined</div>
+                  <div className="value">
+                    {normalizeDate(user.createdAt)?.toLocaleDateString?.() ||
+                      "N/A"}
+                  </div>
+                </div>
               </div>
             </div>
           )}
-          {tab === 'activity' && (
+          {tab === "activity" && (
             <div className="drawer-section">
               <ul className="activity-list">
-                <li className="activity-item"><span className="activity-type">Login</span><span className="activity-label">Signed in</span><span className="activity-time">��</span></li>
+                <li className="activity-item">
+                  <span className="activity-type">Login</span>
+                  <span className="activity-label">Signed in</span>
+                  <span className="activity-time">��</span>
+                </li>
               </ul>
             </div>
           )}
-          {tab === 'permissions' && (
+          {tab === "permissions" && (
             <div className="drawer-section">
               <div className="perm-row">
                 <label>Role</label>
-                <select className="role-select" value={user.role || 'user'} onChange={(e) => onRoleChange(e.target.value)}>
+                <select
+                  className="role-select"
+                  value={user.role || "user"}
+                  onChange={(e) => onRoleChange(e.target.value)}
+                >
                   <option value="admin">Admin</option>
                   <option value="moderator">Moderator</option>
                   <option value="user">User</option>
@@ -2900,7 +4965,11 @@ const UserProfileDrawer = ({ user, onClose, onUpdateStatus, onRoleChange }) => {
               </div>
               <div className="perm-row">
                 <label>Status</label>
-                <select className="role-select" value={status} onChange={(e) => onUpdateStatus(user.id, e.target.value)}>
+                <select
+                  className="role-select"
+                  value={status}
+                  onChange={(e) => onUpdateStatus(user.id, e.target.value)}
+                >
                   <option value="active">Active</option>
                   <option value="pending">Pending</option>
                   <option value="banned">Banned</option>
@@ -2909,7 +4978,7 @@ const UserProfileDrawer = ({ user, onClose, onUpdateStatus, onRoleChange }) => {
               </div>
             </div>
           )}
-          {tab === 'settings' && (
+          {tab === "settings" && (
             <div className="drawer-section">
               <div className="perm-row">
                 <label>Name</label>
@@ -2933,21 +5002,35 @@ const ConfirmModal = ({ title, message, onCancel, onConfirm }) => {
       <div className="modal">
         <div className="modal-header">
           <h3>{title}</h3>
-          <button className="close-button" onClick={onCancel}><FiX /></button>
+          <button className="close-button" onClick={onCancel}>
+            <FiX />
+          </button>
         </div>
         <div className="modal-body">
           <p>{message}</p>
         </div>
         <div className="modal-footer">
-          <button className="action-button" onClick={onCancel}>Cancel</button>
-          <button className="action-button" onClick={onConfirm}>Confirm</button>
+          <button className="action-button" onClick={onCancel}>
+            Cancel
+          </button>
+          <button className="action-button" onClick={onConfirm}>
+            Confirm
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-const AssetDetailsModal = ({ asset, onClose, onDelete, onToggleFeatured, onToggleTrending, formatCurrency, formatDate }) => {
+const AssetDetailsModal = ({
+  asset,
+  onClose,
+  onDelete,
+  onToggleFeatured,
+  onToggleTrending,
+  formatCurrency,
+  formatDate,
+}) => {
   return (
     <div className="modal-overlay">
       <div className="modal enhanced-modal">
@@ -2965,7 +5048,12 @@ const AssetDetailsModal = ({ asset, onClose, onDelete, onToggleFeatured, onToggl
           <div className="asset-preview">
             {asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
               <img
-                src={asset.thumbnail || (Array.isArray(asset.images) && asset.images[0]) || (Array.isArray(asset.icons) && asset.icons[0]) || ""}
+                src={
+                  asset.thumbnail ||
+                  (Array.isArray(asset.images) && asset.images[0]) ||
+                  (Array.isArray(asset.icons) && asset.icons[0]) ||
+                  ""
+                }
                 alt={asset.title || asset.name || "Asset"}
                 className="preview-image"
               />
@@ -2978,17 +5066,25 @@ const AssetDetailsModal = ({ asset, onClose, onDelete, onToggleFeatured, onToggl
 
           {/* Asset Info */}
           <div className="asset-info-section">
-            <h3 className="asset-info-title">{asset.title || asset.name || "Untitled"}</h3>
-            <p className="asset-info-description">{asset.description || "No description available"}</p>
+            <h3 className="asset-info-title">
+              {asset.title || asset.name || "Untitled"}
+            </h3>
+            <p className="asset-info-description">
+              {asset.description || "No description available"}
+            </p>
 
             <div className="asset-info-grid">
               <div className="info-item">
                 <span className="info-label">Category</span>
-                <span className="info-value">{asset.category || asset.type || "Uncategorized"}</span>
+                <span className="info-value">
+                  {asset.category || asset.type || "Uncategorized"}
+                </span>
               </div>
               <div className="info-item">
                 <span className="info-label">Price</span>
-                <span className="info-value">{asset.price > 0 ? formatCurrency(asset.price) : "Free"}</span>
+                <span className="info-value">
+                  {asset.price > 0 ? formatCurrency(asset.price) : "Free"}
+                </span>
               </div>
               <div className="info-item">
                 <span className="info-label">Downloads</span>
@@ -2996,18 +5092,28 @@ const AssetDetailsModal = ({ asset, onClose, onDelete, onToggleFeatured, onToggl
               </div>
               <div className="info-item">
                 <span className="info-label">Created</span>
-                <span className="info-value">{formatDate(asset.createdAt)}</span>
+                <span className="info-value">
+                  {formatDate(asset.createdAt)}
+                </span>
               </div>
               <div className="info-item">
                 <span className="info-label">Author</span>
-                <span className="info-value">{asset.authorName || asset.userId || "Unknown"}</span>
+                <span className="info-value">
+                  {asset.authorName || asset.userId || "Unknown"}
+                </span>
               </div>
               <div className="info-item">
                 <span className="info-label">Status</span>
                 <div className="status-badges">
-                  {asset.isFeatured && <span className="status-badge featured">Featured</span>}
-                  {asset.isTrending && <span className="status-badge trending">Trending</span>}
-                  {!asset.isFeatured && !asset.isTrending && <span className="status-badge normal">Normal</span>}
+                  {asset.isFeatured && (
+                    <span className="status-badge featured">Featured</span>
+                  )}
+                  {asset.isTrending && (
+                    <span className="status-badge trending">Trending</span>
+                  )}
+                  {!asset.isFeatured && !asset.isTrending && (
+                    <span className="status-badge normal">Normal</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -3034,7 +5140,13 @@ const AssetDetailsModal = ({ asset, onClose, onDelete, onToggleFeatured, onToggl
             <button
               className="action-button danger"
               onClick={() => {
-                if (window.confirm(`Delete asset "${asset.title || asset.name}"? This action cannot be undone.`)) {
+                if (
+                  window.confirm(
+                    `Delete asset "${
+                      asset.title || asset.name
+                    }"? This action cannot be undone.`
+                  )
+                ) {
                   onDelete(asset.id);
                   onClose();
                 }
@@ -3068,9 +5180,13 @@ const CreateAssetModal = ({ isOpen, onClose }) => {
         <div className="modal-body">
           <div className="upload-wrapper">
             {/* This will contain the Upload component */}
-            <p className="upload-info">Upload component will be integrated here</p>
+            <p className="upload-info">
+              Upload component will be integrated here
+            </p>
             <div className="upload-actions">
-              <button className="action-button" onClick={onClose}>Close</button>
+              <button className="action-button" onClick={onClose}>
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -3079,7 +5195,16 @@ const CreateAssetModal = ({ isOpen, onClose }) => {
   );
 };
 
-const UserDetailsModal = ({ user, onClose, onStatusToggle, onRoleChange, onDelete, formatCurrency, formatDate, getRoleColor }) => {
+const UserDetailsModal = ({
+  user,
+  onClose,
+  onStatusToggle,
+  onRoleChange,
+  onDelete,
+  formatCurrency,
+  formatDate,
+  getRoleColor,
+}) => {
   return (
     <div className="modal-overlay">
       <div className="modal enhanced-modal">
@@ -3097,20 +5222,36 @@ const UserDetailsModal = ({ user, onClose, onStatusToggle, onRoleChange, onDelet
           <div className="user-profile-header">
             <div className="profile-avatar">
               {user.photoURL ? (
-                <img src={user.photoURL} alt={user.name} className="avatar-img large" />
+                <img
+                  src={user.photoURL}
+                  alt={user.name}
+                  className="avatar-img large"
+                />
               ) : (
-                <div className="avatar-initials large">{(user.name?.charAt(0) || "").toUpperCase()}</div>
+                <div className="avatar-initials large">
+                  {(user.name?.charAt(0) || "").toUpperCase()}
+                </div>
               )}
             </div>
             <div className="profile-info">
-              <h3 className="profile-name">{user.name || user.displayName || "Unknown"}</h3>
+              <h3 className="profile-name">
+                {user.name || user.displayName || "Unknown"}
+              </h3>
               <p className="profile-email">{user.email}</p>
               <div className="profile-badges">
-                <span className={`role-badge enhanced ${user.role || 'user'}`}>
+                <span className={`role-badge enhanced ${user.role || "user"}`}>
                   {user.role || "user"}
                 </span>
-                <span className={`status-badge enhanced ${(user.status || 'active') === 'active' ? 'active' : 'inactive'}`}>
-                  {(user.status || 'active') === 'active' ? "Active" : "Inactive"}
+                <span
+                  className={`status-badge enhanced ${
+                    (user.status || "active") === "active"
+                      ? "active"
+                      : "inactive"
+                  }`}
+                >
+                  {(user.status || "active") === "active"
+                    ? "Active"
+                    : "Inactive"}
                 </span>
               </div>
             </div>
@@ -3126,21 +5267,27 @@ const UserDetailsModal = ({ user, onClose, onStatusToggle, onRoleChange, onDelet
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-value currency">{formatCurrency(user.totalSpent || 0)}</div>
+              <div className="stat-value currency">
+                {formatCurrency(user.totalSpent || 0)}
+              </div>
               <div className="stat-label">
                 <FiDollarSign className="stat-icon" />
                 Total Spent
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-value downloads">{user.totalDownloads || 0}</div>
+              <div className="stat-value downloads">
+                {user.totalDownloads || 0}
+              </div>
               <div className="stat-label">
                 <FiDownload className="stat-icon" />
                 Downloads
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-value">{user.isEmailVerified ? "Yes" : "No"}</div>
+              <div className="stat-value">
+                {user.isEmailVerified ? "Yes" : "No"}
+              </div>
               <div className="stat-label">
                 <FiCheckCircle className="stat-icon" />
                 Email Verified
@@ -3185,7 +5332,7 @@ const UserDetailsModal = ({ user, onClose, onStatusToggle, onRoleChange, onDelet
               className="action-button secondary"
               onClick={() => onStatusToggle(user.id || user._id)}
             >
-              {(user.status || 'active') === 'active' ? (
+              {(user.status || "active") === "active" ? (
                 <>
                   <FiX className="button-icon" />
                   Deactivate
@@ -3210,7 +5357,11 @@ const UserDetailsModal = ({ user, onClose, onStatusToggle, onRoleChange, onDelet
                 <button
                   className="action-button danger"
                   onClick={() => {
-                    if (window.confirm(`Delete user "${user.name}"? This action cannot be undone.`)) {
+                    if (
+                      window.confirm(
+                        `Delete user "${user.name}"? This action cannot be undone.`
+                      )
+                    ) {
                       onDelete(user.id || user._id, user.email);
                       onClose();
                     }
@@ -3235,7 +5386,9 @@ const WelcomeBanner = ({ name, totalUsers, totalAssets }) => {
         <div className="welcome-header">
           <div className="welcome-title">
             <h2 className="welcome-text">Welcome back, {name}! 👋</h2>
-            <p className="welcome-sub">Here's what's happening with your marketplace today.</p>
+            <p className="welcome-sub">
+              Here's what's happening with your marketplace today.
+            </p>
             <div className="welcome-meta">
               <div className="welcome-meta-item">
                 <FiActivity className="meta-icon online" />
@@ -3252,7 +5405,9 @@ const WelcomeBanner = ({ name, totalUsers, totalAssets }) => {
             </div>
           </div>
           <div className="welcome-graphic">
-            <div className="graphic-circle"><FiActivity /></div>
+            <div className="graphic-circle">
+              <FiActivity />
+            </div>
           </div>
         </div>
       </div>
