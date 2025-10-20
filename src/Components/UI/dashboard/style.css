@@ -38,7 +38,7 @@ admin-container {
 /* Admin Dashboard Layout */
 .admin-dashboard {
   display: flex;
-  min-height: 100vh;
+  min-height: 120vh;
   background-color: var(--dark);
   
 }
@@ -47,7 +47,6 @@ ul{
 }
 .sidebar {
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-color, #2c2d2c); /* Fallback to #2c2d2c */
   padding: 1.5rem 0;
   height: 100vh;
   position: sticky;
@@ -133,6 +132,7 @@ flex-direction: row;
   margin-top: 1.5rem;
       display: grid;
     gap: 10px;
+    border-top: 1px solid var(--border-color);
 }
 
 .menu-item {

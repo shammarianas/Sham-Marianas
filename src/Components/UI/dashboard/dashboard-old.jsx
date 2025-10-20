@@ -344,7 +344,7 @@ useEffect(() => {
 
     // Primary admin (must match Firestore rules)
     const PRIMARY_ADMIN = "admin@shammarianas.com";
-    const ALSO_AUTHORIZED = ["adebayour66265@gmail.com","shammarianas@gmail.com"];
+    const ALSO_AUTHORIZED = ["shammarianas@gmail.com"];
     if (email === PRIMARY_ADMIN) {
       try {
         await setDoc(
@@ -408,28 +408,29 @@ useEffect(() => {
     }
   };
 
-  // Fetch blogs when Blog tab is selected
-  const loadBlogs = async () => {
-    setLoading(true);
-    try {
-      const querySnapshot = await getDocs(collection(db, "blogs"));
-      const blogsData = [];
-      querySnapshot.forEach((doc) => {
-        blogsData.push({ id: doc.id, ...doc.data() });
-      });
-      setBlogs(blogsData);
-    } catch (error) {
-      setError(`Failed to load blogs: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+ // Fetch blogs when Blog tab is selected
+   const loadBlogs = async () => {
+     setLoading(true);
+     try {
+       const querySnapshot = await getDocs(collection(db, "blogs"));
+       const blogsData = [];
+       querySnapshot.forEach((doc) => {
+         blogsData.push({ id: doc.id, ...doc.data() });
+       });
+       setBlogs(blogsData);
+     } catch (error) {
+       setError(`Failed to load blogs: ${error.message}`);
+     } finally {
+       setLoading(false);
+     }
+   };
+ 
   useEffect(() => {
-    if (activeTab === 4) {
-      loadBlogs();
-    }
-  }, [activeTab]);
+  // Load blogs for admin dashboard (tab 4) OR company dashboard (tab 1)
+  if (activeTab === 4 || (selectedDashboard === 'company' && activeTab === 1)) {
+    loadBlogs();
+  }
+}, [activeTab, selectedDashboard]);
 
   // Load portfolios (projects)
   const loadProjects = async () => {
@@ -450,7 +451,7 @@ useEffect(() => {
 
   // Fetch portfolios (projects) when Portfolio tab is selected
   useEffect(() => {
-    if (activeTab === 5) {
+    if (activeTab === 5 || (selectedDashboard === 'company' && activeTab === 1)) {
       loadProjects();
     }
   }, [activeTab]);
