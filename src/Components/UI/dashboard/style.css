@@ -1856,7 +1856,13 @@ ul {
   margin: 0 0 1rem;
   line-height: 1.5;
 }
-
+.asset-title,
+.asset-description,
+.meta-item,
+.asset-author {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
 .asset-info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { db, auth } from "../../firebase";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
 import { Link } from "react-router-dom";
@@ -29,11 +36,18 @@ function Header() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "projects"));
+        // ✅ Fetch only PUBLISHED projects
+        const projectQuery = query(
+          collection(db, "projects"),
+          where("status", "==", "published")
+        );
+
+        const querySnapshot = await getDocs(projectQuery);
         const projectsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
         setProjects(projectsData);
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -167,8 +181,7 @@ function Header() {
                       coverImgUrl={project.featureImgUrl}
                       title={project.title}
                     />
-                    <div className="portfolio-card">
-                      <div className="cont d-flex align-items-end py-3 px-2">
+                    <div className="cont d-flex align-items-end mt-30">
                       <div>
                         <span className="p-color mb-5 sub-title">
                           {project.category.charAt(0).toUpperCase() +
@@ -181,7 +194,6 @@ function Header() {
                           <span className="ti-arrow-top-right"></span>
                         </Link>
                       </div>
-                    </div>
                     </div>
                   </div>
                 </div>

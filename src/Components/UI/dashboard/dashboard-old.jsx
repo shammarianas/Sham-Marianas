@@ -489,32 +489,32 @@ const AdminDashboard = () => {
     }
   }, [activeTab, selectedDashboard]);
 
-  // Load portfolios (projects)
-  const loadProjects = async () => {
-    setLoading(true);
-    try {
-      const querySnapshot = await getDocs(collection(db, "projects"));
-      const projectsData = [];
-      querySnapshot.forEach((doc) => {
-        projectsData.push({ id: doc.id, ...doc.data() });
-      });
-      setPortfolios(projectsData);
-    } catch (error) {
-      setError(`Failed to load portfolios: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+ // Load portfolios (projects) - YEH FUNCTION THEEK HAI
+const loadProjects = async () => {
+  setLoading(true);
+  try {
+    const querySnapshot = await getDocs(collection(db, "projects"));
+    const projectsData = [];
+    querySnapshot.forEach((doc) => {
+      projectsData.push({ id: doc.id, ...doc.data() });
+    });
+    setPortfolios(projectsData);
+  } catch (error) {
+    setError(`Failed to load portfolios: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // Fetch portfolios (projects) when Portfolio tab is selected
-  useEffect(() => {
-    if (
-      activeTab === 5 ||
-      (selectedDashboard === "company" && activeTab === 1)
-    ) {
-      loadProjects();
-    }
-  }, [activeTab]);
+// Fetch portfolios (projects) when Portfolio tab is selected - YEH THEEK KARO
+useEffect(() => {
+  console.log("Active Tab:", activeTab, "Selected Dashboard:", selectedDashboard);
+  
+  if (activeTab === 5 || (selectedDashboard === "company" && activeTab === 2)) {
+    console.log("Loading portfolios...");
+    loadProjects();
+  }
+}, [activeTab, selectedDashboard]); // Dependencies sahi hain
 
   // Fetch All Assets
   const fetchAssets = useCallback(async () => {
@@ -2519,7 +2519,7 @@ const AdminDashboard = () => {
 
             {activeTab === 2 && (
               <PortfolioList
-                portfolios={currentPortfolios}
+                portfolios={portfolios}
                 onDelete={handleDeletePortfolio}
                 onCreate={() => {
                   setIsPortfolioModalOpen(true);
@@ -3019,6 +3019,7 @@ const SupportList = ({
   );
 };
 
+//  ------------------------------Blog Section------------------------------
 
 const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
   if (!blog) return null;
@@ -3174,6 +3175,7 @@ const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
     </div>
   );
 };
+
 const BlogList = ({ blogs, onDelete, onCreate, onToggleStatus }) => {
   return (
     <div className="table-container">
@@ -3480,6 +3482,7 @@ return (
     </div>
   );
 };
+// -------------------------------Blogs End --------------------------
 
 const PortfolioList = ({
   portfolios,
@@ -3490,11 +3493,39 @@ const PortfolioList = ({
   formatDate,
 }) => {
   const [portfolioSearchTerm, setPortfolioSearchTerm] = useState("");
-  const [selectedPortfolioCategory, setSelectedPortfolioCategory] =
-    useState("all");
+  const [selectedPortfolioCategory, setSelectedPortfolioCategory] = useState("all");
   const [selectedPortfolioStatus, setSelectedPortfolioStatus] = useState("all");
   const [showPortfolioDialog, setShowPortfolioDialog] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [portfolioToEdit, setPortfolioToEdit] = useState(null);
+
+  // Edit Icon Component
+  const EditIcon = () => (
+    <svg 
+      width="16" 
+      height="16" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+
+  const handleEditPortfolio = (portfolio) => {
+    setPortfolioToEdit(portfolio);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setPortfolioToEdit(null);
+  };
 
   const uniqueCategories = Array.from(
     new Set(
@@ -3648,13 +3679,11 @@ const PortfolioList = ({
                   <h3 className="asset-title">{p.title || "Untitled"}</h3>
                   <div className="asset-menu">
                     <button
-                      className="menu-trigger"
-                      onClick={() => {
-                        setSelectedPortfolio(p);
-                        setShowPortfolioDialog(true);
-                      }}
+                      className="action-button secondary"
+                      onClick={() => onToggleFeatured(p.id)}
                     >
-                      <FiMoreHorizontal />
+                      <FiStar className="button-icon" />
+                      {p.featured ? "Unfeature" : "Feature"}
                     </button>
                   </div>
                 </div>
@@ -3680,35 +3709,49 @@ const PortfolioList = ({
                   </span>
                 </div>
 
+                {/* ACTION BUTTONS - Blog section ki tarah */}
                 <div className="table-actions">
-                  <button
-                    className="action-button secondary"
-                    onClick={() => onToggleFeatured(p.id)}
-                  >
-                    <FiStar className="button-icon" />{" "}
-                    {p.featured ? "Unfeature" : "Feature"}
-                  </button>
-                  <button
-                    className="action-button secondary"
-                    onClick={() =>
-                      onUpdateStatus(
-                        p.id,
-                        (p.status || "draft").toLowerCase() === "published"
-                          ? "draft"
-                          : "published"
-                      )
-                    }
-                  >
-                    {(p.status || "draft").toLowerCase() === "published"
-                      ? "Make Draft"
-                      : "Publish"}
-                  </button>
-                  <button
-                    className="action-button danger"
-                    onClick={() => onDelete(p.id)}
-                  >
-                    <FiTrash2 className="button-icon" /> Delete
-                  </button>
+                  <div>
+                    
+                    <button
+                      className="action-button secondary"
+                      onClick={() =>
+                        onUpdateStatus(
+                          p.id,
+                          (p.status || "draft").toLowerCase() === "published"
+                            ? "draft"
+                            : "published"
+                        )
+                      }
+                    >
+                      {(p.status || "draft").toLowerCase() === "published"
+                        ? "Make Draft"
+                        : "Publish"}
+                    </button>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="action-button secondary"
+                      onClick={() => {
+                        setSelectedPortfolio(p);
+                        setShowPortfolioDialog(true);
+                      }}
+                    >
+                      <FiEye className="button-icon" />
+                    </button>
+                    <button
+                      className="action-button secondary"
+                      onClick={() => handleEditPortfolio(p)}
+                    >
+                      <EditIcon />
+                    </button>
+                    <button
+                      className="action-button danger"
+                      onClick={() => onDelete(p.id)}
+                    >
+                      <FiTrash2 className="button-icon" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3720,6 +3763,15 @@ const PortfolioList = ({
         <PortfolioDetailsModal
           portfolio={selectedPortfolio}
           onClose={() => setShowPortfolioDialog(false)}
+        />
+      )}
+
+      {/* Edit Portfolio Modal */}
+      {isEditModalOpen && portfolioToEdit && (
+        <ProjectModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          projectToEdit={portfolioToEdit}
         />
       )}
     </div>
