@@ -299,7 +299,8 @@ function BlogDetails() {
                 </div>
               </div>
             </div>
-
+ 
+ {/* Sidebar blog */}
             <div className="col-lg-4">
               <div className="sidebar blog-sidebar">
                 <div className="widget">
