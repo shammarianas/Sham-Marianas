@@ -116,10 +116,10 @@ function Blogs() {
                 <div className="md-mb80">
                   {filteredBlogs.length > 0 ? (
                     filteredBlogs.map((blog) => (
-                      <div className="item mb-80" key={blog.id}>
+                      <div className="item mb-80 blog-card" key={blog.id}>
                         {blog.featuredImageUrl && (
                           <div className="img">
-                            <img src={blog.featuredImageUrl} alt={blog.title} />
+                            <img className="gallery-image" src={blog.featuredImageUrl} alt={blog.title} />
                           </div>
                         )}
                         <div className="content">
