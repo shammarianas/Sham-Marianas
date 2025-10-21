@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { db, storage } from "../../firebase";
-import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
-const ProjectModal = ({ isOpen, onClose }) => {
+const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
   const [projectData, setProjectData] = useState({
     title: "",
     category: "design",
@@ -21,9 +21,51 @@ const ProjectModal = ({ isOpen, onClose }) => {
     descriptionImgUrls: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const coverImageInputRef = useRef(null);
   const descriptionImageInputRef = useRef(null);
   const featureImageInputRef = useRef(null);
+
+  // Edit mode mein data set karo
+  useEffect(() => {
+    if (projectToEdit) {
+      setIsEditMode(true);
+      setProjectData({
+        title: projectToEdit.title || "",
+        category: projectToEdit.category || "design",
+        client: projectToEdit.client || "",
+        startDate: projectToEdit.startDate || "",
+        designer: projectToEdit.designer || "",
+        challengeTitle: projectToEdit.challengeTitle || "The Challenge",
+        challengeDescription: projectToEdit.challengeDescription || "",
+        description: projectToEdit.description || "",
+        descriptionImages: [],
+        coverImage: null,
+        featureImage: null,
+        coverImgUrl: projectToEdit.coverImgUrl || "",
+        featureImgUrl: projectToEdit.featureImgUrl || "",
+        descriptionImgUrls: projectToEdit.descriptionImgUrls || [],
+      });
+    } else {
+      setIsEditMode(false);
+      setProjectData({
+        title: "",
+        category: "design",
+        client: "",
+        startDate: "",
+        designer: "",
+        challengeTitle: "The Challenge",
+        challengeDescription: "",
+        description: "",
+        descriptionImages: [],
+        coverImage: null,
+        featureImage: null,
+        coverImgUrl: "",
+        featureImgUrl: "",
+        descriptionImgUrls: [],
+      });
+    }
+  }, [projectToEdit]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -109,6 +151,14 @@ const ProjectModal = ({ isOpen, onClose }) => {
     });
   };
 
+  const removeExistingDescriptionImage = (index) => {
+    setProjectData((prev) => {
+      const newImgUrls = [...prev.descriptionImgUrls];
+      newImgUrls.splice(index, 1);
+      return { ...prev, descriptionImgUrls: newImgUrls };
+    });
+  };
+
   const clearDescriptionImages = () => {
     setProjectData((prev) => {
       prev.descriptionImages.forEach((image) => URL.revokeObjectURL(image.preview));
@@ -121,7 +171,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
   const clearCoverImage = () => {
     setProjectData((prev) => {
-      if (prev.coverImgUrl) {
+      if (prev.coverImgUrl && prev.coverImgUrl.startsWith('blob:')) {
         URL.revokeObjectURL(prev.coverImgUrl);
       }
       return { ...prev, coverImage: null, coverImgUrl: "" };
@@ -133,7 +183,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
   const clearFeatureImage = () => {
     setProjectData((prev) => {
-      if (prev.featureImgUrl) {
+      if (prev.featureImgUrl && prev.featureImgUrl.startsWith('blob:')) {
         URL.revokeObjectURL(prev.featureImgUrl);
       }
       return { ...prev, featureImage: null, featureImgUrl: "" };
@@ -148,31 +198,54 @@ const ProjectModal = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
 
     try {
-      let descriptionImgUrls = [];
+      let descriptionImgUrls = [...projectData.descriptionImgUrls];
+      
+      // New description images upload karo
       if (projectData.descriptionImages.length > 0) {
         const uploadPromises = projectData.descriptionImages.map(async (image) => {
           const storageRef = ref(storage, `projects/${image.file.name}-${Date.now()}`);
           await uploadBytes(storageRef, image.file);
           return await getDownloadURL(storageRef);
         });
-        descriptionImgUrls = await Promise.all(uploadPromises);
+        const newUrls = await Promise.all(uploadPromises);
+        descriptionImgUrls = [...descriptionImgUrls, ...newUrls];
       }
 
-      let coverImgUrl = "";
+      let coverImgUrl = projectData.coverImgUrl;
+      // Agar new cover image upload kiya hai
       if (projectData.coverImage) {
+        // Purani image delete karo agar edit mode mein hai
+        if (isEditMode && projectToEdit.coverImgUrl) {
+          try {
+            const oldImageRef = ref(storage, projectToEdit.coverImgUrl);
+            await deleteObject(oldImageRef);
+          } catch (error) {
+            console.log("Old cover image delete nahi hui:", error);
+          }
+        }
         const storageRef = ref(storage, `projects/${projectData.coverImage.name}-${Date.now()}`);
         await uploadBytes(storageRef, projectData.coverImage);
         coverImgUrl = await getDownloadURL(storageRef);
       }
 
-      let featureImgUrl = "";
+      let featureImgUrl = projectData.featureImgUrl;
+      // Agar new feature image upload kiya hai
       if (projectData.featureImage) {
+        // Purani image delete karo agar edit mode mein hai
+        if (isEditMode && projectToEdit.featureImgUrl) {
+          try {
+            const oldImageRef = ref(storage, projectToEdit.featureImgUrl);
+            await deleteObject(oldImageRef);
+          } catch (error) {
+            console.log("Old feature image delete nahi hui:", error);
+          }
+        }
         const storageRef = ref(storage, `projects/${projectData.featureImage.name}-${Date.now()}`);
         await uploadBytes(storageRef, projectData.featureImage);
         featureImgUrl = await getDownloadURL(storageRef);
       }
 
-      const docRef = await addDoc(collection(db, "projects"), {
+      const projectDataToSave = {
         title: projectData.title,
         category: projectData.category,
         client: projectData.client,
@@ -184,9 +257,19 @@ const ProjectModal = ({ isOpen, onClose }) => {
         descriptionImgUrls,
         coverImgUrl,
         featureImgUrl,
-        createdAt: new Date(),
-      });
+        updatedAt: new Date(),
+      };
 
+      if (isEditMode) {
+        // Update existing project
+        await updateDoc(doc(db, "projects", projectToEdit.id), projectDataToSave);
+      } else {
+        // Create new project
+        projectDataToSave.createdAt = new Date();
+        await addDoc(collection(db, "projects"), projectDataToSave);
+      }
+
+      // Form reset karo
       setProjectData({
         title: "",
         category: "design",
@@ -208,7 +291,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
       clearFeatureImage();
       onClose();
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.error("Error saving project: ", error);
       alert("Error saving project: " + error.message);
     } finally {
       setIsSubmitting(false);
@@ -303,7 +386,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
         }
         .project-form-hint {
           font-size: 0.9rem;
-          color: #e53e3e;
+          color: #6b7280;
           margin-top: 0.25rem;
         }
         .project-form-buttons {
@@ -385,11 +468,49 @@ const ProjectModal = ({ isOpen, onClose }) => {
           text-overflow: ellipsis;
           white-space: nowrap;
         }
+        .existing-images-section {
+          margin-top: 1rem;
+          padding: 1rem;
+          background: #f9fafb;
+          border-radius: 0.5rem;
+        }
+        .existing-images-title {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 0.5rem;
+        }
+        .mt-2 {
+          margin-top: 0.5rem;
+        }
+        .flex {
+          display: flex;
+        }
+        .justify-between {
+          justify-content: space-between;
+        }
+        .items-center {
+          align-items: center;
+        }
+        .text-sm {
+          font-size: 0.875rem;
+        }
+        .text-gray-600 {
+          color: #6b7280;
+        }
+        .text-red-600 {
+          color: #dc2626;
+        }
+        .hover\\:text-red-800:hover {
+          color: #991b1b;
+        }
       `}</style>
       <div className="project-modal-container">
         <div className="project-modal-content">
           <div className="project-modal-header">
-            <h1 className="project-modal-title">Add New Project</h1>
+            <h1 className="project-modal-title">
+              {isEditMode ? "Edit Project" : "Add New Project"}
+            </h1>
             <button onClick={onClose} className="project-modal-close" aria-label="Close">
               <svg xmlns="http://www.w3.org/2000/svg" style={{ height: 24, width: 24 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -402,7 +523,15 @@ const ProjectModal = ({ isOpen, onClose }) => {
               <label className="project-form-label">
                 Project Title <span className="project-form-required">*</span>
               </label>
-              <input type="text" name="title" value={projectData.title} onChange={handleInputChange} required className="project-form-input" placeholder="Enter project title" />
+              <input 
+                type="text" 
+                name="title" 
+                value={projectData.title} 
+                onChange={handleInputChange} 
+                required 
+                className="project-form-input" 
+                placeholder="Enter project title" 
+              />
             </div>
 
             <div className="project-form-group">
@@ -420,28 +549,59 @@ const ProjectModal = ({ isOpen, onClose }) => {
               <label className="project-form-label">
                 Client <span className="project-form-required">*</span>
               </label>
-              <input type="text" name="client" value={projectData.client} onChange={handleInputChange} required className="project-form-input" placeholder="Enter client name" />
+              <input 
+                type="text" 
+                name="client" 
+                value={projectData.client} 
+                onChange={handleInputChange} 
+                required 
+                className="project-form-input" 
+                placeholder="Enter client name" 
+              />
             </div>
 
             <div className="project-form-group">
               <label className="project-form-label">
                 Start Date <span className="project-form-required">*</span>
               </label>
-              <input type="date" name="startDate" value={projectData.startDate} onChange={handleInputChange} required className="project-form-input" />
+              <input 
+                type="date" 
+                name="startDate" 
+                value={projectData.startDate} 
+                onChange={handleInputChange} 
+                required 
+                className="project-form-input" 
+              />
             </div>
 
             <div className="project-form-group">
               <label className="project-form-label">
                 Designer <span className="project-form-required">*</span>
               </label>
-              <input type="text" name="designer" value={projectData.designer} onChange={handleInputChange} required className="project-form-input" placeholder="Enter designer name" />
+              <input 
+                type="text" 
+                name="designer" 
+                value={projectData.designer} 
+                onChange={handleInputChange} 
+                required 
+                className="project-form-input" 
+                placeholder="Enter designer name" 
+              />
             </div>
 
             <div className="project-form-group">
               <label className="project-form-label">
                 Challenge Title <span className="project-form-required">*</span>
               </label>
-              <input type="text" name="challengeTitle" value={projectData.challengeTitle} onChange={handleInputChange} required className="project-form-input" placeholder="Enter challenge title" />
+              <input 
+                type="text" 
+                name="challengeTitle" 
+                value={projectData.challengeTitle} 
+                onChange={handleInputChange} 
+                required 
+                className="project-form-input" 
+                placeholder="Enter challenge title" 
+              />
             </div>
 
             <div className="project-form-group">
@@ -461,19 +621,51 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
             <div className="project-form-group">
               <label className="project-form-label">
-                Project Cover Image <span className="project-form-required">*</span>
+                Project Description <span className="project-form-required">*</span>
               </label>
-              <input type="file" ref={coverImageInputRef} onChange={handleCoverImgChange} accept="image/jpeg,image/png,image/gif,image/webp" required className="project-form-file" />
+              <textarea
+                name="description"
+                value={projectData.description}
+                onChange={handleInputChange}
+                required
+                className="project-form-textarea"
+                placeholder="Enter project description"
+                rows="4"
+              />
+            </div>
+
+            <div className="project-form-group">
+              <label className="project-form-label">
+                Project Cover Image {!isEditMode && <span className="project-form-required">*</span>}
+              </label>
+              <input 
+                type="file" 
+                ref={coverImageInputRef} 
+                onChange={handleCoverImgChange} 
+                accept="image/jpeg,image/png,image/gif,image/webp" 
+                required={!isEditMode}
+                className="project-form-file" 
+              />
               <p className="project-form-hint">* Only JPEG, PNG, GIF, or WebP images below 1.25MB can be uploaded.</p>
-              {projectData.coverImage && (
+              {(projectData.coverImage || projectData.coverImgUrl) && (
                 <div className="mt-2">
                   <div className="image-preview-container">
                     <div className="image-preview">
-                      <img src={projectData.coverImgUrl} alt="Cover preview" />
-                      <button type="button" onClick={clearCoverImage} className="remove-image-btn" title="Remove image">
+                      <img 
+                        src={projectData.coverImgUrl} 
+                        alt="Cover preview" 
+                      />
+                      <button 
+                        type="button" 
+                        onClick={clearCoverImage} 
+                        className="remove-image-btn" 
+                        title="Remove image"
+                      >
                         ×
                       </button>
-                      <p className="image-filename">{projectData.coverImage.name}</p>
+                      <p className="image-filename">
+                        {projectData.coverImage ? projectData.coverImage.name : "Existing Image"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -482,19 +674,36 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
             <div className="project-form-group">
               <label className="project-form-label">
-                Project Feature Image <span className="project-form-required">*</span>
+                Project Feature Image {!isEditMode && <span className="project-form-required">*</span>}
               </label>
-              <input type="file" ref={featureImageInputRef} onChange={handleFeatureImgChange} accept="image/jpeg,image/png,image/gif,image/webp" required className="project-form-file" />
+              <input 
+                type="file" 
+                ref={featureImageInputRef} 
+                onChange={handleFeatureImgChange} 
+                accept="image/jpeg,image/png,image/gif,image/webp" 
+                required={!isEditMode}
+                className="project-form-file" 
+              />
               <p className="project-form-hint">* Only JPEG, PNG, GIF, or WebP images below 1.25MB can be uploaded.</p>
-              {projectData.featureImage && (
+              {(projectData.featureImage || projectData.featureImgUrl) && (
                 <div className="mt-2">
                   <div className="image-preview-container">
                     <div className="image-preview">
-                      <img src={projectData.featureImgUrl} alt="Feature preview" />
-                      <button type="button" onClick={clearFeatureImage} className="remove-image-btn" title="Remove image">
+                      <img 
+                        src={projectData.featureImgUrl} 
+                        alt="Feature preview" 
+                      />
+                      <button 
+                        type="button" 
+                        onClick={clearFeatureImage} 
+                        className="remove-image-btn" 
+                        title="Remove image"
+                      >
                         ×
                       </button>
-                      <p className="image-filename">{projectData.featureImage.name}</p>
+                      <p className="image-filename">
+                        {projectData.featureImage ? projectData.featureImage.name : "Existing Image"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -503,7 +712,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
             <div className="project-form-group">
               <label className="project-form-label">
-                Project Description Images (Multiple) <span className="project-form-required">*</span>
+                Project Description Images (Multiple) {!isEditMode && <span className="project-form-required">*</span>}
               </label>
               <input
                 type="file"
@@ -511,18 +720,37 @@ const ProjectModal = ({ isOpen, onClose }) => {
                 onChange={handleDescriptionImageChange}
                 accept="image/jpeg,image/png,image/gif,image/webp"
                 multiple
-                required
+                required={!isEditMode}
                 className="project-form-file"
               />
               <p className="project-form-hint">* Only JPEG, PNG, GIF, or WebP images below 1.25MB can be uploaded.</p>
+              
+              {/* Existing description images (edit mode mein) */}
+              {isEditMode && projectData.descriptionImgUrls.length > 0 && (
+                <div className="existing-images-section">
+                  <div className="existing-images-title">Existing Description Images:</div>
+                  <div className="image-preview-container">
+                    {projectData.descriptionImgUrls.map((imgUrl, index) => (
+                      <div key={index} className="image-preview">
+                        <img src={imgUrl} alt={`Description ${index}`} />
+                        <button 
+                          type="button" 
+                          onClick={() => removeExistingDescriptionImage(index)} 
+                          className="remove-image-btn" 
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
+                        <p className="image-filename">Existing Image {index + 1}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* New description images */}
               {projectData.descriptionImages.length > 0 && (
                 <div className="mt-2">
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-600">Selected files: {projectData.descriptionImages.length}</p>
-                    <button type="button" onClick={clearDescriptionImages} className="text-sm text-red-600 hover:text-red-800">
-                      Clear All
-                    </button>
-                  </div>
                   <div className="image-preview-container">
                     {projectData.descriptionImages.map((image, index) => (
                       <div key={index} className="image-preview">
@@ -543,7 +771,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
                 Cancel
               </button>
               <button type="submit" disabled={isSubmitting} className="project-btn project-btn-submit">
-                {isSubmitting ? "Saving..." : "Save Project"}
+                {isSubmitting ? "Saving..." : (isEditMode ? "Update Project" : "Save Project")}
               </button>
             </div>
           </form>
