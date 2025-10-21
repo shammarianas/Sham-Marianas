@@ -223,19 +223,21 @@ function BlogDetails() {
           <div className="row xlg-marg">
             <div className="col-lg-8">
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
-                <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
+               <div>
+                 <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
                   <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: blog.content }} />
                 </article>
                 <Link to="/blogs" className="d-flex align-items-center main-color mt-40">
                   <span className="text mr-15">Back to Blogs</span>
                   <span className="ti-arrow-left"></span>
                 </Link>
+               </div>
 
                 <div className="comments-from mt-80">
                   <div className="mb-60">
                     <h3>Leave a comment</h3>
                   </div>
-                  <form id="contact-form" method="post" action="contact.php">
+                  <form id="contact-form" method="post" action="">
                     <div className="messages"></div>
                     <div className="controls row">
                       <div className="col-lg-6">
@@ -335,7 +337,7 @@ function BlogDetails() {
                       <span className="tag">
                         <Link to="/blogs">Web Design</Link>
                       </span>
-                      <h6>
+                      <h6 className="sidebar-blog-title">
                         <Link to="/blogs">Ways to quickly increase traffic to your website</Link>
                       </h6>
                     </div>
