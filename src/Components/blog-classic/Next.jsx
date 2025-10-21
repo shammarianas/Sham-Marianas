@@ -133,7 +133,7 @@ function Next() {
         </div>
       </div>
       <div>
-        <a href="/#blog" className="all-works-butn text-center">
+        <a href="/blog" className="all-works-butn text-center">
           <span className="ti-view-grid fz-24 mb-10" />
           <span className="d-block fz-12 text-u ls1">All Blogs</span>
         </a>

@@ -176,12 +176,12 @@ function Header() {
                   key={project.id}
                   className={`col-lg-4 col-md-6 items ${project.category}`}
                 >
-                  <div className="item mb-50">
+                  <div className="item card-pro mb-50">
                     <SingleImage
                       coverImgUrl={project.featureImgUrl}
                       title={project.title}
                     />
-                    <div className="cont d-flex align-items-end mt-30">
+                    <div className="cont  d-flex align-items-end p-3">
                       <div>
                         <span className="p-color mb-5 sub-title">
                           {project.category.charAt(0).toUpperCase() +
