@@ -5573,6 +5573,8 @@ footer.clean-footer.crev .circle-blur {
 
 /* Portfolio
 -----------------------------------------------------------------*/
+
+
 .work-fade {
   position: relative;
 }
@@ -5596,7 +5598,6 @@ footer.clean-footer.crev .circle-blur {
   padding: 10px 30px;
   margin: -1px 0;
 }
-
 .work-fade .item .cont .text:first-of-type {
   border-radius: 0 20px 0 0;
 }
@@ -6016,7 +6017,53 @@ footer.clean-footer.crev .circle-blur {
   -o-transition-delay: 0.4s;
   transition-delay: 0.4s;
 }
+.card-pro {
+  break-inside: avoid;
+  margin-bottom: 2.3em;
+  width: var(--card-width);
+  height: var(--card-height);
+  background-color: #2d2d2d;
+  border: 1px solid #333333;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
+.card-pro:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+.card-pro{
+  border-radius: 10px;
+  background-color: #2d2d2d;
+  border-color: #333333;
+}
+.card-pro h6{
+  padding-right: 35px;
+ display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-wrap: wrap;
+  word-break: break-word;
+}
+.card-pro .img-gallery {
+     /* width: 50%; */
+    /* max-width: 350px; */
+    height: 100vh;
+    max-height: 300px;
+    overflow: hidden;
+  overflow: hidden;
+}
+
+.card-pro .gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
 .work-minimal .item:hover .img .cont {
   opacity: 1;
   -webkit-transform: translateY(0);
