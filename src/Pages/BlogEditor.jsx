@@ -1,6 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { db, storage } from "../../firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useQuill } from "react-quilljs";
 import "react-quill/dist/quill.snow.css";
@@ -24,47 +24,22 @@ const modules = {
       ["link", "image", "video"],
     ],
     handlers: {
-      image: null, // Will be set in the component
+      image: null,
     },
   },
 };
 
 const formats = [
-  "header",
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "script",
-  "link",
-  "image",
-  "video",
-  "color",
-  "background",
-  "align",
-  "code-block",
-  "direction",
+  "header", "font", "size", "bold", "italic", "underline", "strike",
+  "blockquote", "list", "bullet", "indent", "script", "link", "image",
+  "video", "color", "background", "align", "code-block", "direction",
 ];
 
-function BlogEditorModal({ isOpen, onClose }) {
+function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   const { quill, quillRef } = useQuill({ modules, formats });
   const [blogData, setBlogData] = useState({
-    title: "",
-    slug: "",
-    category: "business",
-    excerpt: "",
-    status: "DRAFT",
-    featuredImage: null,
-    featuredImageUrl: "",
-    coverImage: null,
-    coverImageUrl: "",
-    content: "",
+    title: "", slug: "", category: "business", excerpt: "", status: "DRAFT",
+    featuredImage: null, featuredImageUrl: "", coverImage: null, coverImageUrl: "", content: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [featuredImagePreview, setFeaturedImagePreview] = useState(null);
@@ -72,8 +47,109 @@ function BlogEditorModal({ isOpen, onClose }) {
   const featuredImageInputRef = useRef(null);
   const coverImageInputRef = useRef(null);
 
-  // Custom image handler for Quill
-  React.useEffect(() => {
+  // Extract ONLY the content from Quill HTML (remove wrapper)
+  const extractPureContent = (quillHtml) => {
+    if (!quillHtml) return '';
+    
+    console.log("🔍 Original HTML:", quillHtml);
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = quillHtml;
+    
+    // Try multiple methods to extract content
+    let content = '';
+    
+    // Method 1: Find .ql-editor
+    const editorElement = tempDiv.querySelector('.ql-editor');
+    if (editorElement) {
+      content = editorElement.innerHTML;
+      console.log("✅ Extracted from .ql-editor:", content);
+    } 
+    // Method 2: Check if it's already clean content
+    else if (tempDiv.children.length === 1 && tempDiv.firstElementChild?.classList?.contains('ql-editor')) {
+      content = tempDiv.firstElementChild.innerHTML;
+      console.log("✅ Extracted from single .ql-editor:", content);
+    }
+    // Method 3: Direct content (no wrapper)
+    else {
+      content = quillHtml;
+      console.log("✅ Using direct content:", content);
+    }
+    
+    return content;
+  };
+
+  // Get clean content from current Quill instance
+  const getCurrentContent = () => {
+    if (!quill) return '';
+    
+    try {
+      // Get the Delta and convert to HTML
+      const delta = quill.getContents();
+      const html = quill.root.innerHTML;
+      
+      console.log("📝 Current Quill HTML:", html);
+      console.log("📝 Current Quill Delta:", delta);
+      
+      // Extract pure content
+      return extractPureContent(html);
+    } catch (error) {
+      console.error("Error getting content:", error);
+      return '';
+    }
+  };
+
+  // Load existing blog data
+  useEffect(() => {
+    if (blogToEdit && isOpen && quill) {
+      console.log("📖 Loading existing blog:", blogToEdit);
+      
+      setBlogData({
+        title: blogToEdit.title || "",
+        slug: blogToEdit.slug || "",
+        category: blogToEdit.category || "business",
+        excerpt: blogToEdit.excerpt || "",
+        status: blogToEdit.status || "DRAFT",
+        featuredImage: null,
+        featuredImageUrl: blogToEdit.featuredImageUrl || "",
+        coverImage: null,
+        coverImageUrl: blogToEdit.coverImageUrl || "",
+        content: blogToEdit.content || "",
+      });
+
+      // Set image previews
+      if (blogToEdit.featuredImageUrl) {
+        setFeaturedImagePreview(blogToEdit.featuredImageUrl);
+      }
+      if (blogToEdit.coverImageUrl) {
+        setCoverImagePreview(blogToEdit.coverImageUrl);
+      }
+
+      // Load content into Quill after delay
+      setTimeout(() => {
+        if (quill && blogToEdit.content) {
+          const cleanContent = extractPureContent(blogToEdit.content);
+          console.log("🔄 Loading clean content into Quill:", cleanContent);
+          quill.clipboard.dangerouslyPasteHTML(cleanContent);
+        }
+      }, 200);
+      
+    } else if (!blogToEdit && quill) {
+      // Reset for new blog
+      setBlogData({
+        title: "", slug: "", category: "business", excerpt: "", status: "DRAFT",
+        featuredImage: null, featuredImageUrl: "", coverImage: null, coverImageUrl: "", content: "",
+      });
+      setFeaturedImagePreview(null);
+      setCoverImagePreview(null);
+      if (featuredImageInputRef.current) featuredImageInputRef.current.value = "";
+      if (coverImageInputRef.current) coverImageInputRef.current.value = "";
+      quill.setText("");
+    }
+  }, [blogToEdit, isOpen, quill]);
+
+  // Image handler
+  useEffect(() => {
     if (quill) {
       const toolbar = quill.getModule("toolbar");
       toolbar.addHandler("image", () => {
@@ -121,9 +197,7 @@ function BlogEditorModal({ isOpen, onClose }) {
       }
       setBlogData((prev) => ({ ...prev, featuredImage: file }));
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFeaturedImagePreview(reader.result);
-      };
+      reader.onloadend = () => setFeaturedImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
@@ -137,71 +211,71 @@ function BlogEditorModal({ isOpen, onClose }) {
       }
       setBlogData((prev) => ({ ...prev, coverImage: file }));
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverImagePreview(reader.result);
-      };
+      reader.onloadend = () => setCoverImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
   const generateSlug = (title) => {
-    return title
-      .toLowerCase()
-      .replace(/[^\w\s]/gi, "")
-      .replace(/\s+/g, "-")
-      .slice(0, 50);
+    return title.toLowerCase().replace(/[^\w\s]/gi, "").replace(/\s+/g, "-").slice(0, 50);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const content = quillRef.current?.innerHTML || "";
+    
+    // Get CLEAN content only
+ const content = getPureContent();
+  console.log('💾 Saving PURE content:', content);
+    
     try {
-      const slug = generateSlug(blogData.title);
+      const slug = blogToEdit ? blogData.slug : generateSlug(blogData.title);
 
-      let featuredImageUrl = "";
+      let featuredImageUrl = blogData.featuredImageUrl;
       if (blogData.featuredImage) {
         const storageRef = ref(storage, `blogs/featured-images/${Date.now()}_${blogData.featuredImage.name}`);
         await uploadBytes(storageRef, blogData.featuredImage);
         featuredImageUrl = await getDownloadURL(storageRef);
       }
 
-      let coverImageUrl = "";
+      let coverImageUrl = blogData.coverImageUrl;
       if (blogData.coverImage) {
         const storageRef = ref(storage, `blogs/cover-images/${Date.now()}_${blogData.coverImage.name}`);
         await uploadBytes(storageRef, blogData.coverImage);
         coverImageUrl = await getDownloadURL(storageRef);
       }
 
-      const docRef = await addDoc(collection(db, "blogs"), {
+      const blogDataToSave = {
         title: blogData.title,
         slug: slug,
         category: blogData.category,
-        excerpt: blogData.excerpt || blogData.content.substring(0, 160) + "...",
-        content: content,
+        excerpt: blogData.excerpt || content.substring(0, 160).replace(/<[^>]*>/g, '') + "...",
+        content: content, // This is now CLEAN content
         featuredImageUrl: featuredImageUrl,
         coverImageUrl: coverImageUrl,
         status: blogData.status,
         author: "Admin",
-        publishedAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        commentsCount: 0,
-        views: 0,
-      });
+      };
 
-      alert("Blog published successfully!");
+      if (blogToEdit) {
+        await updateDoc(doc(db, "blogs", blogToEdit.id), blogDataToSave);
+        alert("Blog updated successfully!");
+      } else {
+        await addDoc(collection(db, "blogs"), {
+          ...blogDataToSave,
+          publishedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+          commentsCount: 0,
+          views: 0,
+        });
+        alert("Blog published successfully!");
+      }
+
+      // Reset and close
       setBlogData({
-        title: "",
-        slug: "",
-        category: "business",
-        excerpt: "",
-        status: "DRAFT",
-        featuredImage: null,
-        featuredImageUrl: "",
-        coverImage: null,
-        coverImageUrl: "",
-        content: "",
+        title: "", slug: "", category: "business", excerpt: "", status: "DRAFT",
+        featuredImage: null, featuredImageUrl: "", coverImage: null, coverImageUrl: "", content: "",
       });
       setFeaturedImagePreview(null);
       setCoverImagePreview(null);
@@ -210,8 +284,8 @@ function BlogEditorModal({ isOpen, onClose }) {
       if (quill) quill.setText("");
       onClose();
     } catch (error) {
-      console.error("Error publishing blog:", error);
-      alert("Error publishing blog: " + error.message);
+      console.error("Error saving blog:", error);
+      alert(`Error ${blogToEdit ? 'updating' : 'publishing'} blog: ` + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -223,143 +297,70 @@ function BlogEditorModal({ isOpen, onClose }) {
     <div className="blog-modal-overlay">
       <style>{`
         .blog-modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 50;
-          padding: 1rem;
+          position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
+          display: flex; align-items: center; justify-content: center; 
+          z-index: 9999; padding: 1rem;
         }
         .blog-modal-container {
-          background: #fff;
-          border-radius: 1.25rem;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-          width: 100%;
-          max-width: 900px;
-          max-height: 90vh;
-          overflow-y: auto;
+          background: #fff; border-radius: 1.25rem; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+          width: 100%; max-width: 900px; max-height: 80vh; overflow-y: auto;
         }
-        .blog-modal-content {
-          padding: 1.5rem;
-        }
+        .blog-modal-content { padding: 1.5rem; }
         .blog-modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1.5rem;
+          display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
         }
-        .blog-modal-title {
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #2d3748;
-        }
+        .blog-modal-title { font-size: 1.25rem; font-weight: 600; color: #2d3748; }
         .blog-modal-close {
-          background: none;
-          border: none;
-          color: #6b7280;
-          cursor: pointer;
-          transition: color 0.2s;
+          background: none; border: none; color: #6b7280; cursor: pointer; transition: color 0.2s;
         }
-        .blog-modal-close:hover {
-          color: #374151;
-        }
-        .blog-form-group {
-          margin-bottom: 1.5rem;
-        }
+        .blog-modal-close:hover { color: #374151; }
+        .blog-form-group { margin-bottom: 1.5rem; }
         .blog-form-label {
-          display: block;
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: #374151;
-          margin-bottom: 0.5rem;
+          display: block; font-size: 0.95rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;
         }
-        .blog-form-required {
-          color: #e53e3e;
+        .blog-form-required { color: #e53e3e; }
+        .blog-form-input, .blog-form-select, .blog-form-textarea {
+          width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem;
+          font-size: 1rem; outline: none; transition: border 0.2s, box-shadow 0.2s;
         }
-        .blog-form-input,
-        .blog-form-select,
-        .blog-form-textarea {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          font-size: 1rem;
-          outline: none;
-          transition: border 0.2s, box-shadow 0.2s;
-        }
-        .blog-form-input:focus,
-        .blog-form-select:focus,
-        .blog-form-textarea:focus {
-          border-color: #2563eb;
-          box-shadow: 0 0 0 2px #bfdbfe;
+        .blog-form-input:focus, .blog-form-select:focus, .blog-form-textarea:focus {
+          border-color: #2563eb; box-shadow: 0 0 0 2px #bfdbfe;
         }
         .blog-form-file {
-          width: 100%;
-          font-size: 0.95rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          padding: 0.5rem 1rem;
-          background: #f9fafb;
+          width: 100%; font-size: 0.95rem; border: 1px solid #d1d5db; border-radius: 0.5rem;
+          padding: 0.5rem 1rem; background: #f9fafb;
         }
-        .blog-form-hint {
-          font-size: 0.9rem;
-          color: #e53e3e;
-          margin-top: 0.25rem;
-        }
+        .blog-form-hint { font-size: 0.9rem; color: #6b7280; margin-top: 0.25rem; }
         .blog-form-buttons {
-          display: flex;
-          justify-content: flex-end;
-          gap: 1rem;
-          padding-top: 1rem;
+          display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1rem;
         }
         .blog-btn {
-          padding: 0.5rem 1.25rem;
-          border-radius: 0.5rem;
-          border: none;
-          font-size: 1rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.2s, color 0.2s, opacity 0.2s;
+          padding: 0.5rem 1.25rem; border-radius: 0.5rem; border: none; font-size: 1rem;
+          font-weight: 500; cursor: pointer; transition: background 0.2s, color 0.2s, opacity 0.2s;
         }
-        .blog-btn-cancel {
-          background: #e5e7eb;
-          color: #374151;
-        }
-        .blog-btn-cancel:hover {
-          background: #d1d5db;
-        }
-        .blog-btn-submit {
-          background: #2563eb;
-          color: #fff;
-        }
-        .blog-btn-submit:hover {
-          background: #1d4ed8;
-        }
-        .blog-btn-submit:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
+        .blog-btn-cancel { background: #e5e7eb; color: #374151; }
+        .blog-btn-cancel:hover { background: #d1d5db; }
+        .blog-btn-submit { background: #2563eb; color: #fff; }
+        .blog-btn-submit:hover { background: #1d4ed8; }
+        .blog-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
         .blog-quill-editor .ql-container {
-          min-height: 24rem;
-          background: #fff;
-          border-radius: 0.5rem;
-          border: 1px solid #d1d5db;
+          min-height: 24rem; background: #fff; border-radius: 0.5rem; border: 1px solid #d1d5db;
         }
         .blog-image-preview {
-          margin-top: 0.5rem;
-          max-width: 200px;
-          max-height: 200px;
-          object-fit: cover;
-          border-radius: 0.5rem;
-          border: 1px solid #d1d5db;
+          margin-top: 0.5rem; max-width: 200px; max-height: 200px; object-fit: cover;
+          border-radius: 0.5rem; border: 1px solid #d1d5db;
+        }
+        .current-image-note {
+          font-size: 0.85rem; color: #059669; font-style: italic; margin-top: 0.25rem;
         }
       `}</style>
+      
       <div className="blog-modal-container">
         <div className="blog-modal-content">
           <div className="blog-modal-header">
-            <h1 className="blog-modal-title">Create a New Blog Post</h1>
+            <h1 className="blog-modal-title">
+              {blogToEdit ? "Edit Blog Post" : "Create a New Blog Post"}
+            </h1>
             <button onClick={onClose} className="blog-modal-close" aria-label="Close">
               <svg xmlns="http://www.w3.org/2000/svg" style={{ height: 24, width: 24 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -370,9 +371,7 @@ function BlogEditorModal({ isOpen, onClose }) {
           <form onSubmit={handleSubmit}>
             {/* Title */}
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Title <span className="blog-form-required">*</span>
-              </label>
+              <label className="blog-form-label">Title <span className="blog-form-required">*</span></label>
               <input type="text" name="title" value={blogData.title} onChange={handleInputChange} required className="blog-form-input" placeholder="Enter blog title" />
             </div>
 
@@ -384,65 +383,51 @@ function BlogEditorModal({ isOpen, onClose }) {
 
             {/* Featured Image */}
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Featured Image <span className="blog-form-required">*</span>
-              </label>
-              <input type="file" ref={featuredImageInputRef} onChange={handleFeaturedImageChange} accept="image/*" required className="blog-form-file" />
+              <label className="blog-form-label">Featured Image <span className="blog-form-required">*</span></label>
+              <input type="file" ref={featuredImageInputRef} onChange={handleFeaturedImageChange} accept="image/*" className="blog-form-file" />
               <p className="blog-form-hint">* Only images below 1.25MB can be uploaded.</p>
+              {blogData.featuredImageUrl && !blogData.featuredImage && <p className="current-image-note">Current image will be kept if no new image is selected.</p>}
               {featuredImagePreview && <img src={featuredImagePreview} alt="Featured preview" className="blog-image-preview" />}
             </div>
 
             {/* Cover Image */}
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Cover Image <span className="blog-form-required">*</span>
-              </label>
-              <input type="file" ref={coverImageInputRef} onChange={handleCoverImageChange} accept="image/*" required className="blog-form-file" />
+              <label className="blog-form-label">Cover Image <span className="blog-form-required">*</span></label>
+              <input type="file" ref={coverImageInputRef} onChange={handleCoverImageChange} accept="image/*" className="blog-form-file" />
               <p className="blog-form-hint">* Only images below 1.25MB can be uploaded.</p>
+              {blogData.coverImageUrl && !blogData.coverImage && <p className="current-image-note">Current image will be kept if no new image is selected.</p>}
               {coverImagePreview && <img src={coverImagePreview} alt="Cover preview" className="blog-image-preview" />}
             </div>
 
             {/* Category */}
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Category <span className="blog-form-required">*</span>
-              </label>
+              <label className="blog-form-label">Category <span className="blog-form-required">*</span></label>
               <select name="category" value={blogData.category} onChange={handleInputChange} required className="blog-form-select">
-                <option value="business">Business</option>
-                <option value="technology">Technology</option>
-                <option value="design">Design</option>
-                <option value="lifestyle">Lifestyle</option>
+                <option value="business">Business</option><option value="technology">Technology</option>
+                <option value="design">Design</option><option value="lifestyle">Lifestyle</option>
                 <option value="marketing">Marketing</option>
               </select>
             </div>
 
             {/* Status */}
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Status <span className="blog-form-required">*</span>
-              </label>
+              <label className="blog-form-label">Status <span className="blog-form-required">*</span></label>
               <select name="status" value={blogData.status} onChange={handleInputChange} required className="blog-form-select">
-                <option value="DRAFT">Draft</option>
-                <option value="PUBLISHED">Published</option>
-                <option value="ARCHIVED">Archived</option>
+                <option value="DRAFT">Draft</option><option value="PUBLISHED">Published</option><option value="ARCHIVED">Archived</option>
               </select>
             </div>
 
             {/* Content */}
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Content <span className="blog-form-required">*</span>
-              </label>
+              <label className="blog-form-label">Content <span className="blog-form-required">*</span></label>
               <div ref={quillRef} className="blog-quill-editor" />
             </div>
 
             {/* Buttons */}
             <div className="blog-form-buttons">
-              <button type="button" onClick={onClose} className="blog-btn blog-btn-cancel">
-                Cancel
-              </button>
+              <button type="button" onClick={onClose} className="blog-btn blog-btn-cancel">Cancel</button>
               <button type="submit" disabled={isSubmitting} className="blog-btn blog-btn-submit">
-                {isSubmitting ? "Publishing..." : "Publish Blog"}
+                {isSubmitting ? "Saving..." : blogToEdit ? "Update Blog" : "Publish Blog"}
               </button>
             </div>
           </form>
