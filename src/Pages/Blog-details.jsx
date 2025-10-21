@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import loadBackgroudImages from "../common/loadBackgroudImages";
 import ProgressScroll from "../common/ProgressScroll";
@@ -13,6 +13,7 @@ function BlogDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
+  const [latestPosts, setLatestPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,12 +48,31 @@ function BlogDetails() {
           });
           setBlog(blogData);
         } else {
+          setBlog(null);
         }
       } catch (error) {
         console.error("Error fetching blog:", error);
         setBlog(null);
-      } finally {
-        setLoading(false);
+      }
+    };
+
+    const fetchLatestPosts = async () => {
+      try {
+        const blogsQuery = query(
+          collection(db, "blogs"),
+          where("status", "==", "PUBLISHED"),
+          where("id", "!=", id), // Exclude current blog
+          orderBy("createdAt", "desc"),
+          limit(3)
+        );
+        const querySnapshot = await getDocs(blogsQuery);
+        const postsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setLatestPosts(postsData);
+      } catch (error) {
+        console.error("Error fetching latest posts:", error);
       }
     };
 
@@ -100,11 +120,23 @@ function BlogDetails() {
       }
     };
 
-    fetchBlog();
-    checkAdminStatus();
-    fetchCategoryCounts();
-    loadBackgroudImages();
+    const loadData = async () => {
+      await Promise.all([fetchBlog(), fetchLatestPosts(), checkAdminStatus(), fetchCategoryCounts()]);
+      setLoading(false);
+      loadBackgroudImages();
+    };
+
+    loadData();
   }, [id]);
+
+  // Format Firestore timestamp to "DD / MMM"
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = date.toLocaleString("default", { month: "short" });
+    return `${day} / ${month}`;
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -187,7 +219,7 @@ function BlogDetails() {
       `}</style>
       <Cursor />
       <ProgressScroll />
-      <header className="header-blog bg-img" data-background={blog.coverImageUrl || "/assets/imgs/background/bg4.jpg"} data-overlay-dark="9">
+      <header className="header-blog bg-img" data-background={blog.featureImgUrl || "/assets/imgs/background/bg4.jpg"} data-overlay-dark="9">
         <div className="container">
           <div className="row">
             <div className="col-12">
@@ -223,15 +255,15 @@ function BlogDetails() {
           <div className="row xlg-marg">
             <div className="col-lg-8">
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
-               <div>
-                 <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
-                  <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: blog.content }} />
-                </article>
-                <Link to="/blogs" className="d-flex align-items-center main-color mt-40">
-                  <span className="text mr-15">Back to Blogs</span>
-                  <span className="ti-arrow-left"></span>
-                </Link>
-               </div>
+                <div>
+                  <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
+                    <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: blog.content }} />
+                  </article>
+                  <Link to="/blogs" className="d-flex align-items-center main-color mt-40">
+                    <span className="text mr-15">Back to Blogs</span>
+                    <span className="ti-arrow-left"></span>
+                  </Link>
+                </div>
 
                 <div className="comments-from mt-80">
                   <div className="mb-60">
@@ -269,7 +301,7 @@ function BlogDetails() {
             </div>
 
             <div className="col-lg-4">
-              <div className="sidebar">
+              <div className="sidebar blog-sidebar">
                 <div className="widget">
                   <h6 className="title-widget">Search Here</h6>
                   <form onSubmit={handleSearch} className="search-box">
@@ -320,72 +352,37 @@ function BlogDetails() {
                 </div>
                 <div className="widget last-post-thum">
                   <h6 className="title-widget">Latest Posts</h6>
-                  <div className="item d-flex align-items-center">
-                    <div>
-                      <div className="img">
-                        <Link to="/blogs">
-                          <img src="/assets/imgs/blog/c1.jpg" alt="" />
-                          <span className="date">
-                            <span>
-                              14 / <br /> Sep
-                            </span>
+                  {latestPosts.length === 0 ? (
+                    <p>No posts available</p>
+                  ) : (
+                    latestPosts.map((post) => (
+                      <div className="item d-flex align-items-center" key={post.id}>
+                        <div>
+                          <div className="img">
+                            <Link to={`/blog-details/${post.id}`}>
+                              <img
+                                src={post.featureImgUrl || "/assets/imgs/blog/placeholder.jpg"}
+                                alt={post.title}
+                              />
+                              <span className="date">
+                                <span>{formatDate(post.createdAt)}</span>
+                              </span>
+                            </Link>
+                          </div>
+                        </div>
+                        <div className="cont">
+                          <span className="tag">
+                            <Link to={`/blogs?category=${post.category}`}>
+                              {post.category ? post.category.charAt(0).toUpperCase() + post.category.slice(1) : "Uncategorized"}
+                            </Link>
                           </span>
-                        </Link>
+                          <h6 className="sidebar-blog-title">
+                            <Link to={`/blog-details/${post.id}`}>{post.title}</Link>
+                          </h6>
+                        </div>
                       </div>
-                    </div>
-                    <div className="cont">
-                      <span className="tag">
-                        <Link to="/blogs">Web Design</Link>
-                      </span>
-                      <h6 className="sidebar-blog-title">
-                        <Link to="/blogs">Ways to quickly increase traffic to your website</Link>
-                      </h6>
-                    </div>
-                  </div>
-                  <div className="item d-flex align-items-center">
-                    <div>
-                      <div className="img">
-                        <Link to="/blogs">
-                          <img src="/assets/imgs/blog/c2.jpg" alt="" />
-                          <span className="date">
-                            <span>
-                              14 / <br /> Sep
-                            </span>
-                          </span>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="cont">
-                      <span className="tag">
-                        <Link to="/blogs">Web Design</Link>
-                      </span>
-                      <h6>
-                        <Link to="/blogs">Breaking the rules: Using SQLite to demo web</Link>
-                      </h6>
-                    </div>
-                  </div>
-                  <div className="item d-flex align-items-center">
-                    <div>
-                      <div className="img">
-                        <Link to="/blogs">
-                          <img src="/assets/imgs/blog/c3.jpg" alt="" />
-                          <span className="date">
-                            <span>
-                              14 / <br /> Sep
-                            </span>
-                          </span>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="cont">
-                      <span className="tag">
-                        <Link to="/blogs">Web Design</Link>
-                      </span>
-                      <h6>
-                        <Link to="/blogs">Building better UI designs with layout grids</Link>
-                      </h6>
-                    </div>
-                  </div>
+                    ))
+                  )}
                 </div>
                 <div className="widget tags">
                   <h6 className="title-widget">Tags</h6>
