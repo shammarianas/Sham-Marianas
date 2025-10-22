@@ -105,7 +105,7 @@ function Next() {
                   </div>
                   <div>
                     <h6 className="sub-title fz-16 mb-5">Prev Project</h6>
-                    <a  href={`/project-details/${prevProject.id}`} className="fz-40 fw-600 stroke inside-pro-title">
+                    <a  href={`/project-details/${prevProject.id}`} className="fz-40 fw-600 stroke next-pre-title">
                       {prevProject.title}
                     </a>
                   </div>
@@ -129,7 +129,7 @@ function Next() {
                   <div className="cont d-flex align-items-center">
                     <div>
                       <h6 className="sub-title fz-16 mb-5">Next Project</h6>
-                      <a href={`/project-details/${nextProject.id}`} className="fz-40 fw-600 stroke">
+                      <a href={`/project-details/${nextProject.id}`} className="fz-40 fw-600 stroke next-pre-title">
                         {nextProject.title}
                       </a>
                     </div>
