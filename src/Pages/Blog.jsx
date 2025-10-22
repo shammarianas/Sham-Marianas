@@ -137,7 +137,7 @@ function Blogs() {
                             </div>
                           </div>
 
-                          <h3 className="mb-15">
+                          <h3 className="mb-15 fz-30">
                             <Link to={`/blog-details/${blog.id}`}>
                               {blog.title}
                             </Link>

@@ -938,16 +938,17 @@ figure {
 /* Cursor
 -----------------------------------------------------------------*/
 .hover-this .hover-anim {
-  pointer-events: none;
-  -webkit-transition: -webkit-transform 0.2s linear;
-  transition: -webkit-transform 0.2s linear;
-  -o-transition: transform 0.2s linear;
   transition: transform 0.2s linear;
-  transition: transform 0.2s linear, -webkit-transform 0.2s linear;
+  -webkit-transition: -webkit-transform 0.2s linear;
+  -o-transition: transform 0.2s linear;
+}
+
+.hover-this:hover .hover-anim {
+  transform: translateY(-5px); /* Example hover effect; adjust as needed */
 }
 
 .cursor {
-  pointer-events: none;
+  /* pointer-events: none; */
   position: fixed;
   padding: 0.3rem;
   background-color: #fff;
@@ -4104,7 +4105,7 @@ ease;
 }
 .blog-sidebar {
     height: auto !important;
-    padding: 0;
+    padding: 0 !important;
     display: grid;
     gap: 30px;
 }
