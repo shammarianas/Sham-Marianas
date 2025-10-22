@@ -158,7 +158,7 @@ function Blogs() {
 
                           <Link
                             to={`/blog-details/${blog.id}`}
-                            className="d-flex align-items-center main-color mt-40"
+                            className="d-flex align-items-center main-color mt-20"
                           >
                             <span className="text mr-15">Read More</span>
                             <span className="ti-arrow-top-right"></span>
