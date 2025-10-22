@@ -4089,6 +4089,9 @@ body.loaded {
     overflow: hidden;
     overflow: hidden;
 }
+.blog-cover-img{
+object-fit: cover;
+}
 .blog-card{
       border-radius: 10px;
     background-color: #2d2d2d;
@@ -8470,6 +8473,14 @@ footer.clean-footer.crev .circle-blur {
   .blog-header .right-info {
     margin: 30px 0 0;
   }
+  .blog-inside-title{
+    font-size: 55px;
+  }
+  @media (min-width:768px) {
+     .blog-inside-title{
+    font-size: 25px;
+  }
+  }
   .main-post .fz-60 {
     display: none;
   }
@@ -9080,4 +9091,29 @@ footer.clean-footer.crev .circle-blur {
 .blog-detail-size a:hover{
   color: #52b0b4;
   text-decoration: underline;
+}
+
+@media (max-width:768px) {
+  .blog-detail-size h1{
+  font-size: 24px !important;
+}
+.blog-detail-size h2{
+  font-size: 20px;
+}
+.blog-detail-size h3{
+  font-size: 16px;
+}
+.blog-detail-size h4{
+  font-size: 14px;
+}
+.blog-detail-size h5{
+  font-size: 12px;
+}
+.blog-detail-size h6{
+  font-size: 11px;
+}
+.blog-detail-size p{
+  font-size: 14px;
+}
+
 }

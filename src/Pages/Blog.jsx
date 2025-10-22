@@ -35,6 +35,8 @@ function Blogs() {
         const blogsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
+          // ✅ Fix cover image URL mapping
+          coverImageUrl: doc.data().coverImageUrl || doc.data().featuredImageUrl || doc.data().featureImgUrl || "/assets/imgs/blog/default-cover.jpg",
         }));
 
         console.log("Fetched published blogs:", blogsData); // Debug log
@@ -117,9 +119,9 @@ function Blogs() {
                   {filteredBlogs.length > 0 ? (
                     filteredBlogs.map((blog) => (
                       <div className="item mb-80 blog-card" key={blog.id}>
-                        {blog.featuredImageUrl && (
+                        {blog.coverImageUrl && (
                           <div className="img">
-                            <img className="gallery-image" src={blog.coverImageUrl} alt={blog.title} />
+                            <img className="gallery-image blog-cover-img" src={blog.coverImageUrl} alt={blog.title} />
                           </div>
                         )}
                         <div className="content">

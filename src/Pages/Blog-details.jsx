@@ -49,6 +49,15 @@ function BlogDetails() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const blogData = { id: docSnap.id, ...docSnap.data() };
+          
+          // ✅ FIX: Map ALL possible featured image fields
+          blogData.featuredImageUrl = blogData.featuredImageUrl || 
+                                    blogData.featureImgUrl || 
+                                    blogData.coverImageUrl ||
+                                    "/assets/imgs/background/bg4.jpg";
+          
+          console.log("🔍 Blog featured image URL:", blogData.featuredImageUrl); // Debug
+          
           blogData.content = sanitizeHtml(blogData.content, {
             allowedTags: [
               "p",
@@ -144,6 +153,8 @@ function BlogDetails() {
         const blogsList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
+          // ✅ FIX: Latest blogs cover image mapping
+          coverImageUrl: doc.data().coverImageUrl || doc.data().featureImgUrl || doc.data().featuredImageUrl || "/assets/imgs/blog/c1.jpg",
         }));
         setLatestBlogs(blogsList);
       } catch (error) {
@@ -279,9 +290,7 @@ function BlogDetails() {
 
       <header
         className="header-blog bg-img"
-        data-background={
-          blog.featuredImageUrl || "/assets/imgs/background/bg4.jpg"
-        }
+        data-background={blog.featuredImageUrl}
         data-overlay-dark="9"
       >
         <div className="container">
@@ -294,14 +303,14 @@ function BlogDetails() {
                       blog.category.slice(1)
                     : "Uncategorized"}
                 </div>
-                <h1 className="fz-55">{blog.title}</h1>
+                <h1 className="blog-inside-title">{blog.title}</h1>
                 <div className="info d-flex mt-40 align-items-center">
                   <div className="left-info">
                     <div className="d-flex align-items-center">
                       <div className="date">
                         <a href="#0">
                           <span className="opacity-7">Published</span>
-                          <h6 className="fz-16">
+                          <h6 className="fz-14">
                             {blog.publishedAt
                               ? new Date(
                                   blog.publishedAt.toDate()
@@ -452,10 +461,7 @@ function BlogDetails() {
                           <div className="img">
                             <Link to={`/blog/${post.id}`}>
                               <img
-                                src={
-                                  post.coverImageUrl ||
-                                  "/assets/imgs/blog/c1.jpg"
-                                }
+                                src={post.coverImageUrl}
                                 alt={post.title}
                               />
                               {post.publishedAt && (
