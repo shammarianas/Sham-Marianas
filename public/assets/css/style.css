@@ -7268,6 +7268,17 @@ footer.clean-footer.crev .circle-blur {
   padding-right: 60px;
 }
 
+.img-team{
+  height: 100vh;
+    max-height: 350px;
+    overflow: hidden;
+    overflow: hidden;
+}
+@media (min-width:1440px) {
+  .img-team{
+    max-height: 390px;
+  }
+}
 .team .item:hover .img .info {
   bottom: 15px;
   opacity: 1;
