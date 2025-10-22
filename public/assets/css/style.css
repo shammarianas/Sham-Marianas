@@ -938,13 +938,12 @@ figure {
 /* Cursor
 -----------------------------------------------------------------*/
 .hover-this .hover-anim {
-  transition: transform 0.2s linear;
+  /* pointer-events: none; */
   -webkit-transition: -webkit-transform 0.2s linear;
+  transition: -webkit-transform 0.2s linear;
   -o-transition: transform 0.2s linear;
-}
-
-.hover-this:hover .hover-anim {
-  transform: translateY(-5px); /* Example hover effect; adjust as needed */
+  transition: transform 0.2s linear;
+  transition: transform 0.2s linear, -webkit-transform 0.2s linear;
 }
 
 .cursor {
@@ -3667,7 +3666,7 @@ body.loaded {
   content: "";
   position: absolute;
   top: -30px;
-  bottom: -30px;
+  bottom: -10px;
   left: -30px;
   border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -4242,6 +4241,7 @@ ease;
     -webkit-box-orient: vertical;
     overflow: hidden;
     -webkit-line-clamp: 2;
+    word-break: break-word;
 }
 
 .sidebar .widget.last-post-thum .item .cont .tag {

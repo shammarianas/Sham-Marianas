@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import loadBackgroudImages from "../common/loadBackgroudImages";
 import ProgressScroll from "../common/ProgressScroll";
@@ -12,8 +22,8 @@ import sanitizeHtml from "sanitize-html";
 function BlogDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [blog, setBlog] = useState(null);
-  const [latestPosts, setLatestPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,6 +35,12 @@ function BlogDetails() {
     wordpress: 0,
     design: 0,
   });
+  const [latestBlogs, setLatestBlogs] = useState([]);
+
+  // Comment form states
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -34,7 +50,25 @@ function BlogDetails() {
         if (docSnap.exists()) {
           const blogData = { id: docSnap.id, ...docSnap.data() };
           blogData.content = sanitizeHtml(blogData.content, {
-            allowedTags: ["p", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "ul", "ol", "li", "a", "img", "div", "span", "br"],
+            allowedTags: [
+              "p",
+              "h1",
+              "h2",
+              "h3",
+              "h4",
+              "h5",
+              "h6",
+              "strong",
+              "em",
+              "ul",
+              "ol",
+              "li",
+              "a",
+              "img",
+              "div",
+              "span",
+              "br",
+            ],
             allowedAttributes: {
               a: ["href", "target", "rel"],
               img: ["src", "alt", "width", "height"],
@@ -53,26 +87,8 @@ function BlogDetails() {
       } catch (error) {
         console.error("Error fetching blog:", error);
         setBlog(null);
-      }
-    };
-
-    const fetchLatestPosts = async () => {
-      try {
-        const blogsQuery = query(
-          collection(db, "blogs"),
-          where("status", "==", "PUBLISHED"),
-          where("id", "!=", id), // Exclude current blog
-          orderBy("createdAt", "desc"),
-          limit(3)
-        );
-        const querySnapshot = await getDocs(blogsQuery);
-        const postsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setLatestPosts(postsData);
-      } catch (error) {
-        console.error("Error fetching latest posts:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -120,23 +136,27 @@ function BlogDetails() {
       }
     };
 
-    const loadData = async () => {
-      await Promise.all([fetchBlog(), fetchLatestPosts(), checkAdminStatus(), fetchCategoryCounts()]);
-      setLoading(false);
-      loadBackgroudImages();
+    const fetchLatestBlogs = async () => {
+      try {
+        const blogsRef = collection(db, "blogs");
+        const q = query(blogsRef, orderBy("publishedAt", "desc"), limit(3));
+        const querySnapshot = await getDocs(q);
+        const blogsList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setLatestBlogs(blogsList);
+      } catch (error) {
+        console.error("Error fetching latest blogs:", error);
+      }
     };
 
-    loadData();
+    fetchBlog();
+    checkAdminStatus();
+    fetchCategoryCounts();
+    fetchLatestBlogs();
+    loadBackgroudImages();
   }, [id]);
-
-  // Format Firestore timestamp to "DD / MMM"
-  const formatDate = (timestamp) => {
-    if (!timestamp) return "N/A";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = date.toLocaleString("default", { month: "short" });
-    return `${day} / ${month}`;
-  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -149,9 +169,45 @@ function BlogDetails() {
     navigate(`/blogs?category=${encodeURIComponent(category)}`);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">Loading blog...</div>;
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!blog) return <div className="min-h-screen flex items-center justify-center text-lg text-red-500">Blog not found</div>;
+    if (!name || !email || !message) {
+      alert("Please fill all fields!");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "blogs", id, "comments"), {
+        name,
+        email,
+        message,
+        createdAt: serverTimestamp(),
+      });
+
+      alert("Comment posted successfully!");
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch (error) {
+      console.error("Error posting comment:", error);
+      alert("Failed to post comment. Try again.");
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">
+        Loading blog...
+      </div>
+    );
+
+  if (!blog)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg text-red-500">
+        Blog not found
+      </div>
+    );
 
   return (
     <>
@@ -217,14 +273,27 @@ function BlogDetails() {
           }
         }
       `}</style>
+
       <Cursor />
       <ProgressScroll />
-      <header className="header-blog bg-img" data-background={blog.featureImgUrl || "/assets/imgs/background/bg4.jpg"} data-overlay-dark="9">
+
+      <header
+        className="header-blog bg-img"
+        data-background={
+          blog.coverImageUrl || "/assets/imgs/background/bg4.jpg"
+        }
+        data-overlay-dark="9"
+      >
         <div className="container">
           <div className="row">
             <div className="col-12">
               <div className="caption">
-                <div className="sub-title fz-12">{blog.category ? blog.category.charAt(0).toUpperCase() + blog.category.slice(1) : "Uncategorized"}</div>
+                <div className="sub-title fz-12">
+                  {blog.category
+                    ? blog.category.charAt(0).toUpperCase() +
+                      blog.category.slice(1)
+                    : "Uncategorized"}
+                </div>
                 <h1 className="fz-55">{blog.title}</h1>
                 <div className="info d-flex mt-40 align-items-center">
                   <div className="left-info">
@@ -232,7 +301,13 @@ function BlogDetails() {
                       <div className="date">
                         <a href="#0">
                           <span className="opacity-7">Published</span>
-                          <h6 className="fz-16">{new Date(blog.createdAt?.toDate()).toDateString()}</h6>
+                          <h6 className="fz-16">
+                            {blog.publishedAt
+                              ? new Date(
+                                  blog.publishedAt.toDate()
+                                ).toDateString()
+                              : "—"}
+                          </h6>
                         </a>
                       </div>
                     </div>
@@ -240,7 +315,9 @@ function BlogDetails() {
                   <div className="right-info ml-auto d-flex align-items-center">
                     <div className="mr-20">
                       <span className="pe-7s-comment fz-18 mr-10"></span>
-                      <span className="opacity-7">{blog.commentsCount || 0} Comments</span>
+                      <span className="opacity-7">
+                        {blog.commentsCount || 0} Comments
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -253,38 +330,64 @@ function BlogDetails() {
       <section className="blog section-padding">
         <div className="container">
           <div className="row xlg-marg">
+            {/* Blog Content */}
             <div className="col-lg-8">
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
-                <div>
-                  <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
-                    <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: blog.content }} />
-                  </article>
-                  <Link to="/blogs" className="d-flex align-items-center main-color mt-40">
-                    <span className="text mr-15">Back to Blogs</span>
-                    <span className="ti-arrow-left"></span>
-                  </Link>
-                </div>
+                <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
+                  <div
+                    className="prose prose-blue max-w-none"
+                    dangerouslySetInnerHTML={{ __html: blog.content }}
+                  />
+                </article>
+                <Link
+                  to="/blogs"
+                  className="d-flex align-items-center main-color mt-40"
+                >
+                  <span className="text mr-15">Back to Blogs</span>
+                  <span className="ti-arrow-left"></span>
+                </Link>
 
+                {/* Comment Form */}
                 <div className="comments-from mt-80">
                   <div className="mb-60">
                     <h3>Leave a comment</h3>
                   </div>
-                  <form id="contact-form" method="post" action="">
-                    <div className="messages"></div>
+                  <form onSubmit={handleCommentSubmit}>
                     <div className="controls row">
                       <div className="col-lg-6">
                         <div className="form-group mb-30">
-                          <input id="form_name" type="text" name="name" placeholder="Name" required="required" />
+                          <input
+                            type="text"
+                            name="name"
+                            placeholder="Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                          />
                         </div>
                       </div>
                       <div className="col-lg-6">
                         <div className="form-group mb-30">
-                          <input id="form_email" type="email" name="email" placeholder="Email" required="required" />
+                          <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                          />
                         </div>
                       </div>
                       <div className="col-12">
                         <div className="form-group">
-                          <textarea id="form_message" name="message" placeholder="Message" rows="4" required="required"></textarea>
+                          <textarea
+                            name="message"
+                            placeholder="Message"
+                            rows="4"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            required
+                          ></textarea>
                         </div>
                         <div className="text-center">
                           <div className="mt-30">
@@ -299,92 +402,98 @@ function BlogDetails() {
                 </div>
               </div>
             </div>
- 
- {/* Sidebar blog */}
+
+            {/* Sidebar */}
             <div className="col-lg-4">
               <div className="sidebar blog-sidebar">
+                {/* Search */}
                 <div className="widget">
                   <h6 className="title-widget">Search Here</h6>
                   <form onSubmit={handleSearch} className="search-box">
-                    <input type="text" name="search-post" placeholder="Search" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    <input
+                      type="text"
+                      name="search-post"
+                      placeholder="Search"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                     <span className="icon pe-7s-search"></span>
                   </form>
                 </div>
+
+                {/* Categories */}
                 <div className="widget catogry">
                   <h6 className="title-widget">Categories</h6>
                   <ul className="rest">
-                    <li>
-                      <span onClick={() => handleCategoryClick("all")} className={searchTerm === "" && !window.location.search.includes("category") ? "active" : ""} style={{ cursor: "pointer" }}>
-                        All
-                      </span>
-                      <span className="ml-auto">{categoryCounts.all}</span>
-                    </li>
-                    <li>
-                      <span onClick={() => handleCategoryClick("business")} className={window.location.search.includes("category=business") ? "active" : ""} style={{ cursor: "pointer" }}>
-                        Business
-                      </span>
-                      <span className="ml-auto">{categoryCounts.business}</span>
-                    </li>
-                    <li>
-                      <span onClick={() => handleCategoryClick("lifestyle")} className={window.location.search.includes("category=lifestyle") ? "active" : ""} style={{ cursor: "pointer" }}>
-                        Lifestyle
-                      </span>
-                      <span className="ml-auto">{categoryCounts.lifestyle}</span>
-                    </li>
-                    <li>
-                      <span onClick={() => handleCategoryClick("creative")} className={window.location.search.includes("category=creative") ? "active" : ""} style={{ cursor: "pointer" }}>
-                        Creative
-                      </span>
-                      <span className="ml-auto">{categoryCounts.creative}</span>
-                    </li>
-                    <li>
-                      <span onClick={() => handleCategoryClick("wordpress")} className={window.location.search.includes("category=wordpress") ? "active" : ""} style={{ cursor: "pointer" }}>
-                        WordPress
-                      </span>
-                      <span className="ml-auto">{categoryCounts.wordpress}</span>
-                    </li>
-                    <li>
-                      <span onClick={() => handleCategoryClick("design")} className={window.location.search.includes("category=design") ? "active" : ""} style={{ cursor: "pointer" }}>
-                        Design
-                      </span>
-                      <span className="ml-auto">{categoryCounts.design}</span>
-                    </li>
+                    {Object.entries(categoryCounts).map(([key, value]) => (
+                      <li key={key}>
+                        <span
+                          onClick={() => handleCategoryClick(key)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {key.charAt(0).toUpperCase() + key.slice(1)}
+                        </span>
+                        <span className="ml-auto">{value}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
+
+                {/* Latest Posts */}
                 <div className="widget last-post-thum">
                   <h6 className="title-widget">Latest Posts</h6>
-                  {latestPosts.length === 0 ? (
-                    <p>No posts available</p>
-                  ) : (
-                    latestPosts.map((post) => (
-                      <div className="item d-flex align-items-center" key={post.id}>
+                  {latestBlogs.length > 0 ? (
+                    latestBlogs.map((post) => (
+                      <div
+                        key={post.id}
+                        className="item d-flex align-items-center mb-20"
+                      >
                         <div>
                           <div className="img">
-                            <Link to={`/blog-details/${post.id}`}>
+                            <Link to={`/blog/${post.id}`}>
                               <img
-                                src={post.featureImgUrl || "/assets/imgs/blog/placeholder.jpg"}
+                                src={
+                                  post.coverImageUrl ||
+                                  "/assets/imgs/blog/c1.jpg"
+                                }
                                 alt={post.title}
                               />
-                              <span className="date">
-                                <span>{formatDate(post.createdAt)}</span>
-                              </span>
+                              {post.publishedAt && (
+                                <span className="date">
+                                  <span>
+                                    {new Date(
+                                      post.publishedAt.toDate()
+                                    ).toLocaleDateString("en-US", {
+                                      day: "2-digit",
+                                      month: "short",
+                                    })}
+                                  </span>
+                                </span>
+                              )}
                             </Link>
                           </div>
                         </div>
                         <div className="cont">
                           <span className="tag">
                             <Link to={`/blogs?category=${post.category}`}>
-                              {post.category ? post.category.charAt(0).toUpperCase() + post.category.slice(1) : "Uncategorized"}
+                              {post.category
+                                ? post.category.charAt(0).toUpperCase() +
+                                  post.category.slice(1)
+                                : "Uncategorized"}
                             </Link>
                           </span>
-                          <h6 className="sidebar-blog-title">
-                            <Link to={`/blog-details/${post.id}`}>{post.title}</Link>
+                          <h6>
+                            <Link to={`/blog/${post.id}`}>{post.title}</Link>
                           </h6>
                         </div>
                       </div>
                     ))
+                  ) : (
+                    <p>No recent posts found.</p>
                   )}
                 </div>
+
+                {/* Tags */}
                 <div className="widget tags">
                   <h6 className="title-widget">Tags</h6>
                   <div>
@@ -400,6 +509,7 @@ function BlogDetails() {
           </div>
         </div>
       </section>
+
       <Next />
       <Marq2 />
     </>
