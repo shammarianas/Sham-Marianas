@@ -9,14 +9,12 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./Pages/Home";
 import View from "./Pages/View";
 import Footer from "./Components/Footer";
-import TemplateFooter from "./Components/TemplateFooter";
 import Upload from "./Pages/Upload";
 import Cart from "./Pages/Cart";
 import Login from "./Pages/Login/Login";
 import Checkout from "./Pages/Checkout";
 import { FilterProvider } from "./Context/FilterContext";
 import Profile from "./Pages/Profile";
-
 import Logout from "./Pages/Logout";
 import Library from "./Pages/Library";
 import TextureViewer from "./Components/TextureViewer";
@@ -33,17 +31,13 @@ import PortfolioDetails from "./Pages/project-details";
 import Support from "./Pages/Support";
 import AboutUs from "./Pages/AboutUs";
 import Services from "./Pages/services";
-
 import StockPage from "./Pages/Stock";
 import MyDownloads from "./Pages/MyDownloads";
 import Favorites from "./Pages/Favorites";
 import Admin from "./Pages/Admin";
-
-// Services Route
 import BrandingDesignPage from "./Pages/ServicesDetails/BrandingDesignPage";
 import BrandingPage from "./Components/Content/HomePage";
 import Demo from "./Pages/services/Web-Services";
-
 import UiUxDesignPage from "./Pages/ServicesDetails/UIUXDesignPage";
 import WebDesign from "./Pages/ServicesDetails/WebDevelopment";
 import EcommercePage from "./Pages/ServicesDetails/E-CommercePage";
@@ -55,14 +49,10 @@ import VideoProduction from "./Pages/ServicesDetails/Video-Production";
 import PrintMedia from "./Pages/ServicesDetails/PrintMedia";
 import AiAutomation from "./Pages/ServicesDetails/AiAutomation";
 import BoothDesign from "./Pages/ServicesDetails/BoothDesign";
-
-
 import Success from "./Pages/Success";
-
 import CategoryTemplate from "./Pages/Types/CategoryTemplate";
 import PageTeam from "./Pages/Page-team";
 import Error from "./Pages/Error";
-// CategoryTemplate.js
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -107,8 +97,6 @@ export const AppRoutes = () => (
     <Route path="/stock" element={<StockPage />} />
     <Route path="/services" element={<Services />} />
     <Route path="/success" element={<Success />} />
-
-    {/* Static individual service pages */}
     <Route path="/services/branding" element={<BrandingDesignPage />} />
     <Route path="/services/uiux-design" element={<UiUxDesignPage />} />
     <Route path="/services/web-design" element={<WebDesign />} />
@@ -121,37 +109,20 @@ export const AppRoutes = () => (
     <Route path="/services/printing" element={<PrintMedia />} />
     <Route path="/services/ai-automation" element={<AiAutomation />} />
     <Route path="/services/exhibition" element={<BoothDesign />} />
-
-    {/* Demo Page */}
     <Route path="/services/brandingpage" element={<BrandingPage />} />
     <Route path="/services/demo" element={<Demo />} />
-
-    {/* Optional: 404 fallback */}
     <Route path="/:Category" element={<CategoryTemplate />} />
     <Route path="*" element={<Error />} />
   </Routes>
 );
 
-// Layout with footer control
+// Layout with only Footer
 const Layout = () => {
-  const location = useLocation();
-
-  // ✅ Only show TemplateFooter on Template Page
-  const renderFooter = () => {
-  const path = location.pathname.toLowerCase(); // 👈 Normalize path
-
-  if (path === "/stock" || path.includes("category")) {
-    return <TemplateFooter />;
-  } else {
-    return <Footer />;
-  }
-};
-
   return (
     <>
       <Navbar2 />
       <AppRoutes />
-      {renderFooter()}
+      <Footer />
     </>
   );
 };

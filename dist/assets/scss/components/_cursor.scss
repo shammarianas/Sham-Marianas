@@ -3,15 +3,18 @@
 -----------------------------------------------------------------*/
 
 .hover-this {
-
-    .hover-anim {
-        pointer-events: none;
-        transition: transform 0.2s linear;
-    }
+  .hover-anim {
+    transition: transform 0.2s linear;
+  }
+  // &:hover {
+  //   .hover-anim {
+  //     transform: translateY(-5px);
+  //   }
+  // }
 }
 
 .cursor {
-    pointer-events: none;
+    // pointer-events: none;
     position: fixed;
     padding: 0.3rem;
     background-color: #fff;

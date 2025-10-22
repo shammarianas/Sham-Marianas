@@ -122,7 +122,7 @@ export default function ProjectDetails() {
         }
         .image-gallery img {
           width: 80rem;
-          object-fit: cover;
+          object-fit: contain;
           max-width: 100%; /* Ensure images don't overflow */
           margin: 0; /* Remove any margin from images */
         }
