@@ -280,7 +280,7 @@ function BlogDetails() {
       <header
         className="header-blog bg-img"
         data-background={
-          blog.coverImageUrl || "/assets/imgs/background/bg4.jpg"
+          blog.featuredImageUrl || "/assets/imgs/background/bg4.jpg"
         }
         data-overlay-dark="9"
       >

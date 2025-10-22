@@ -9032,3 +9032,24 @@ footer.clean-footer.crev .circle-blur {
     margin-top: 10px;
   }
 }
+
+
+
+
+
+
+
+
+
+
+.ql-editor{
+  color: #0f0f0f;
+}
+.ql-editor p{
+  color: #0f0f0f;
+}
+.ql-editor ::selection {
+  background: #2563eb; /* 🔹 selection ka background color */
+  color: white;        /* 🔹 selected text ka color */
+}
+

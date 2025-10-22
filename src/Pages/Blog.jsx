@@ -119,7 +119,7 @@ function Blogs() {
                       <div className="item mb-80 blog-card" key={blog.id}>
                         {blog.featuredImageUrl && (
                           <div className="img">
-                            <img className="gallery-image" src={blog.featuredImageUrl} alt={blog.title} />
+                            <img className="gallery-image" src={blog.coverImageUrl} alt={blog.title} />
                           </div>
                         )}
                         <div className="content">
