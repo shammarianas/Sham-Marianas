@@ -4089,6 +4089,9 @@ body.loaded {
     overflow: hidden;
     overflow: hidden;
 }
+.blog-cover-img{
+object-fit: cover;
+}
 .blog-card{
       border-radius: 10px;
     background-color: #2d2d2d;
@@ -6096,7 +6099,7 @@ footer.clean-footer.crev .circle-blur {
 .card-pro h6{
   padding-right: 35px;
  display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex-wrap: wrap;
@@ -7268,6 +7271,17 @@ footer.clean-footer.crev .circle-blur {
   padding-right: 60px;
 }
 
+.img-team{
+  height: 100vh;
+    max-height: 350px;
+    overflow: hidden;
+    overflow: hidden;
+}
+@media (min-width:1440px) {
+  .img-team{
+    max-height: 390px;
+  }
+}
 .team .item:hover .img .info {
   bottom: 15px;
   opacity: 1;
@@ -8459,6 +8473,14 @@ footer.clean-footer.crev .circle-blur {
   .blog-header .right-info {
     margin: 30px 0 0;
   }
+  .blog-inside-title{
+    font-size: 55px;
+  }
+  @media (min-width:768px) {
+     .blog-inside-title{
+    font-size: 25px;
+  }
+  }
   .main-post .fz-60 {
     display: none;
   }
@@ -9020,4 +9042,78 @@ footer.clean-footer.crev .circle-blur {
     float: none;
     margin-top: 10px;
   }
+}
+
+
+
+
+
+
+
+
+
+
+.ql-editor{
+  color: #0f0f0f;
+}
+.ql-editor p{
+  color: #0f0f0f;
+}
+.ql-editor ::selection {
+  background: #2563eb; /* 🔹 selection ka background color */
+  color: white;        /* 🔹 selected text ka color */
+}
+
+.blog-detail-size h1{
+  font-size: 2em;
+}
+.blog-detail-size h2{
+  font-size: 1.5em;
+}
+.blog-detail-size h3{
+  font-size: 1.3em;
+}
+.blog-detail-size h4{
+  font-size: 1em;
+}
+.blog-detail-size h5{
+  font-size: 0.83em;
+}
+.blog-detail-size h6{
+  font-size: 0.67em;
+}
+.blog-detail-size p{
+  font-size: 1em;
+}
+.blog-detail-size a{
+  color: #52b0b4;
+}
+.blog-detail-size a:hover{
+  color: #52b0b4;
+  text-decoration: underline;
+}
+
+@media (max-width:768px) {
+  .blog-detail-size h1{
+  font-size: 24px !important;
+}
+.blog-detail-size h2{
+  font-size: 20px;
+}
+.blog-detail-size h3{
+  font-size: 16px;
+}
+.blog-detail-size h4{
+  font-size: 14px;
+}
+.blog-detail-size h5{
+  font-size: 12px;
+}
+.blog-detail-size h6{
+  font-size: 11px;
+}
+.blog-detail-size p{
+  font-size: 14px;
+}
+
 }

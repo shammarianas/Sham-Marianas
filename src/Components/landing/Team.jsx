@@ -26,7 +26,7 @@ function Team() {
           {data.map((item, i) => (
             <div key={i} className="col-lg-4">
               <div className="item mb-4 lg-mb50">
-                <div className="img">
+                <div className="img-team img">
                   <img src={item.img} alt="" />
                   <div className="info">
                     <span className="fz-12">{item.subName}</span>

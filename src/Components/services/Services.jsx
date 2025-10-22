@@ -100,7 +100,7 @@ function Services() {
       title: "Smart workflows",
       description:
         "We empower businesses with AI automation that transforms workflows, boosts productivity, and accelerates growth through intelligent solutions.",
-      img: "/assets/imgs/serv-img/11.jpg",
+      img: "/assets/imgs/serv-img/11.png",
     },
     {
       num: "12",
@@ -109,7 +109,7 @@ function Services() {
       title: "Engaging Spaces",
       description:
         "We develop exhibition booth designs that bring your brand to life with stunning visuals, smart layouts, and engaging displays that attract audiences and build memorable connections.",
-      img: "/assets/imgs/serv-img/12.jpg",
+      img: "/assets/imgs/serv-img/12.png",
     },
   ];
 
