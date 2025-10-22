@@ -4084,9 +4084,8 @@ body.loaded {
   height: 300px;
 }
 .img {
-    height: 100vh;
-    max-height: 450px;
-    overflow: hidden;
+    /* height: 100vh; */
+    /* max-height: 450px; */
     overflow: hidden;
 }
 .blog-cover-img{
@@ -5987,7 +5986,7 @@ footer.clean-footer.crev .circle-blur {
   border-bottom-right-radius: 10px;
 }
 .gallery-image{
-  height: 100vh !important;
+  /* height: 100vh !important; */
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }

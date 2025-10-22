@@ -308,7 +308,7 @@ function BlogDetails() {
                   <div className="left-info">
                     <div className="d-flex align-items-center">
                       <div className="date">
-                        <a href="#0">
+                        <a href="">
                           <span className="opacity-7">Published</span>
                           <h6 className="fz-14">
                             {blog.publishedAt
@@ -343,7 +343,7 @@ function BlogDetails() {
             <div className="col-lg-8">
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
                 <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
-                  <div
+                  <div target="_blank"
                     className="prose prose-blue max-w-none blog-detail-size"
                     dangerouslySetInnerHTML={{ __html: blog.content }}
                   />
