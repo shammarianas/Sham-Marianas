@@ -6096,7 +6096,7 @@ footer.clean-footer.crev .circle-blur {
 .card-pro h6{
   padding-right: 35px;
  display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex-wrap: wrap;

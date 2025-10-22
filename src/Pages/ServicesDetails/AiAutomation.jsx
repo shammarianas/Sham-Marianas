@@ -17,7 +17,7 @@ const AiAutomationPage = () => {
       "Every algorithm and process is tailored for maximum efficiency and seamless integration with your existing systems. We ensure every solution is user-friendly, scalable, and capable of handling real-world challenges. Whether it is an AI that instantly responds to customers, an automated system that manages your sales pipeline, or a process that analyzes thousands of data points in seconds, we make it happen.",
       "We merge innovation with intelligence to create automation solutions that do not just perform but excel.",
     ],
-    image: "/assets/imgs/VFXandCGIADs/09.png",
+    image: "/assets/imgs/AiAutomation/AI1.png",
   };
 
   const sectionTwo = {
@@ -33,7 +33,7 @@ const AiAutomationPage = () => {
        AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
       </>,
     ],
-    image: "/assets/imgs/VFXandCGIADs/009.png",
+    image: "/assets/imgs/AiAutomation/AI2.png",
   };
   const faqs = [
     {
@@ -99,7 +99,7 @@ const AiAutomationPage = () => {
           "Finance & Invoice Processing Automation",
           "Industry-Specific Automation Solutions",
         ]}
-        imageSrc="/assets/imgs/VFXandCGIADs/9.png"
+        imageSrc="/assets/imgs/AiAutomation/AI.png"
         imageAlt="Intro branding"
       />
       <BrandingContentSection sectionOne={sectionOne} sectionTwo={sectionTwo} />

@@ -18,7 +18,7 @@ const BoothDesignPage = () => {
       "When your booth feels well-designed, your audience feels confident about your brand. That’s the power of design done right, it turns curiosity into connection, and visitors into potential clients.",
       "From sketch to setup, we handle everything so you can focus on your event while we bring your booth to life."
     ],
-    image: "/assets/imgs/VFXandCGIADs/09.png",
+    image: "/assets/imgs/Booth/Booth1.png",
   };
 
   const sectionTwo = {
@@ -32,7 +32,7 @@ const BoothDesignPage = () => {
         , we believe design isn’t about decoration, it’s about communication. Every booth we build is designed to tell your story visually, consistently, and effectively.
       </>
     ],
-    image: "/assets/imgs/VFXandCGIADs/009.png",
+    image: "/assets/imgs/Booth/Booth2.png",
   };
   const faqs = [
     {
@@ -95,7 +95,7 @@ const BoothDesignPage = () => {
           "Flooring, Print Collateral & Accessories",
           "Installation, Management & On-Site Support",
         ]}
-        imageSrc="/assets/imgs/VFXandCGIADs/9.png"
+        imageSrc="/assets/imgs/Booth/Booth.png"
         imageAlt="Intro booth"
       />
       <BrandingContentSection sectionOne={sectionOne} sectionTwo={sectionTwo} />
