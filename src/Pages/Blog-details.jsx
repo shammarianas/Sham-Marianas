@@ -510,6 +510,7 @@ function BlogDetails() {
                     <Link to="/blogs">Infolio</Link>
                   </div>
                 </div>
+                
               </div>
             </div>
           </div>
