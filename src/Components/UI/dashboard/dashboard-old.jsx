@@ -3397,7 +3397,11 @@ return (
                   <div className="asset-header-row">
                     <h3 className="asset-title">{blog.title || blog.excerpt || "Untitled"}</h3>
                     <div className="asset-menu">
-                      <span className="role-badge user">{firstTag}</span>
+                      <span className="role-badge user">
+                      {blog.category 
+      ? blog.category.charAt(0).toUpperCase() + blog.category.slice(1)
+      : "General"}
+                      </span>
                     </div>
                   </div>
                   <p className="asset-description">{blog.excerpt || ""}</p>

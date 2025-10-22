@@ -13,7 +13,7 @@ import {
 import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
 import { Link } from "react-router-dom";
-import loadBackgroundImages from "../common/loadBackgroudImages"; // Corrected import
+import loadBackgroundImages from "../common/loadBackgroudImages";
 import Marq2 from "../Components/marq2";
 
 const SingleImage = ({ coverImgUrl, title }) => {
@@ -32,11 +32,12 @@ function Header() {
   const [projects, setProjects] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [filter, setFilter] = useState("*");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        // ✅ Fetch only PUBLISHED projects
         const projectQuery = query(
           collection(db, "projects"),
           where("status", "==", "published")
@@ -72,17 +73,26 @@ function Header() {
 
     fetchProjects();
     checkAdminStatus();
-    loadBackgroundImages(); // Corrected function name
+    loadBackgroundImages();
   }, []);
 
   const handleFilterChange = (filterValue) => {
     setFilter(filterValue);
   };
 
-  const filteredProjects =
-    filter === "*"
-      ? projects
-      : projects.filter((project) => project.category === filter.slice(1));
+  const toggleSearch = () => {
+    setShowSearch(!showSearch);
+    if (!showSearch) {
+      setSearchQuery("");
+    }
+  };
+
+  const filteredProjects = projects.filter((project) => {
+    const matchesCategory = filter === "*" || project.category === filter.slice(1);
+    const matchesSearch = !searchQuery || 
+      project.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <>
@@ -118,7 +128,7 @@ function Header() {
               </div>
             </div>
             <div className="filtering col-lg-8 d-flex justify-content-end align-items-end">
-              <div>
+              <div className="filter-container" style={{ position: "relative" }}>
                 <div className="filter">
                   <span
                     data-filter="*"
@@ -164,6 +174,132 @@ function Header() {
                     Marketing
                   </span>
                 </div>
+
+                {/* **SVG Search Icon - ALWAYS VISIBLE** */}
+                <div 
+                  className="search-icon-container"
+                  onClick={toggleSearch}
+                  style={{ 
+                    position: "absolute", 
+                    top: "50%", 
+                    right: "-45px",
+                    transform: "translateY(-50%)",
+                    width: "36px",
+                    height: "36px",
+                    background: "#52b0b4",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    transition: "all 0.3s ease",
+                    zIndex: 10
+                  }}
+                  title="Search projects"
+                >
+                 <i class="icon fa-solid fa-magnifying-glass" style={{ color: "#000" }}></i>
+                </div>
+
+                {/* **Search Bar - Direct Under Icon** */}
+                {showSearch && (
+                  <div 
+                    className="search-bar-container"
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 12px)",
+                      right: "-45px",
+                      minWidth: "280px",
+                      borderRadius: "8px",
+                      background:"#0f0f0f",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      zIndex: 1,
+
+                    }}
+                  >
+                    <div style={{ position: "relative", width: "100%" }}>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search projects by title..."
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px 12px 45px",
+                              border: "none",
+                          borderRadius: "8px",
+                          fontSize: "15px",
+                          outline: "none",
+                          fontFamily: "inherit",
+                          transition: "all 0.2s ease",
+                          background: "transparent"
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+                          e.target.style.background = "#0f0f0f";
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.boxShadow = "none";
+                          e.target.style.background = "#fafbfc";
+                        }}
+                      />
+                      {/* **Search Icon INSIDE Input** */}
+                      <div 
+                        style={{
+                          position: "absolute",
+                          left: "16px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          pointerEvents: "none"
+                        }}
+                      >
+                      <i class="icon fa-solid fa-magnifying-glass" style={{ color: "#6b7280" }}></i>
+                      </div>
+                      
+                      {/* **Clear Button** */}
+                      {searchQuery && (
+                        <button
+                          onClick={() => {
+                            setSearchQuery("");
+                          }}
+                          style={{
+                            position: "absolute",
+                            right: "16px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "none",
+                            border: "none",
+                            width: "24px",
+                            height: "24px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            color: "#6b7280",
+                            fontSize: "18px",
+                            fontWeight: "bold",
+                            borderRadius: "50%",
+                            transition: "all 0.2s ease"
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = "#f3f4f6"}
+                          onMouseLeave={(e) => e.target.style.background = "none"}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                    {searchQuery && (
+                      <div style={{
+                        fontSize: "12px",
+                        color: "#6b7280",
+                        marginTop: "8px",
+                        textAlign: "center"
+                      }}>
+                        {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} found
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -181,7 +317,7 @@ function Header() {
                       coverImgUrl={project.featureImgUrl}
                       title={project.title}
                     />
-                    <div className="cont  d-flex align-items-end p-3">
+                    <div className="cont d-flex align-items-end p-3">
                       <div>
                         <span className="p-color mb-5 sub-title">
                           {project.category.charAt(0).toUpperCase() +
@@ -200,7 +336,12 @@ function Header() {
               ))
             ) : (
               <div className="col-12 text-center">
-                <p>No projects found for this category.</p>
+                <p>
+                  {searchQuery 
+                    ? `No projects found matching "${searchQuery}"` 
+                    : "No projects found for this category."
+                  }
+                </p>
               </div>
             )}
           </div>
@@ -208,6 +349,29 @@ function Header() {
       </section>
 
       <Marq2 />
+      
+      <style jsx>{`
+        .search-icon-container:hover {
+          transform: translateY(-50%) scale(1.05) !important;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
+        }
+        .search-icon-container:hover svg {
+          color: #3b82f6 !important;
+        }
+        .search-bar-container {
+          animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </>
   );
 }

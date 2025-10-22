@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { db, storage } from "../../firebase";
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -11,13 +11,15 @@ const modules = {
     container: [
       ["bold", "italic", "underline", "strike"],
       ["blockquote", "code-block"],
-      [{ header: 1 }, { header: 2 }, { header: 3 }],
+      [{ 
+        header: [
+          1, 2, 3, 4, 5, 6, false
+        ] 
+      }],
       [{ list: "ordered" }, { list: "bullet" }],
       [{ script: "sub" }, { script: "super" }],
       [{ indent: "-1" }, { indent: "+1" }],
-      [{ size: ["small", false, "large", "huge"] }],
       [{ color: [] }, { background: [] }],
-      [{ font: [] }],
       [{ align: [] }],
       ["clean"],
       ["link", "image", "video"],
@@ -29,18 +31,16 @@ const modules = {
 };
 
 const formats = [
-  "header", "font", "size", "bold", "italic", "underline", "strike",
+  "header", "bold", "italic", "underline", "strike",
   "blockquote", "list", "bullet", "indent", "script", "link", "image",
   "video", "color", "background", "align", "code-block", "direction",
 ];
 
-// **UPDATED**: Single extractPureContent function with FULL Quill preservation
 const extractPureContent = (quillHtml) => {
   if (!quillHtml) return "";
   
   console.log("🔍 Original HTML:", quillHtml);
   
-  // Extract clean content from Quill
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = quillHtml;
   const qlEditor = tempDiv.querySelector(".ql-editor");
@@ -48,7 +48,6 @@ const extractPureContent = (quillHtml) => {
   
   console.log("✅ Extracted content:", content);
 
-  // **CRITICAL**: Preserve ALL Quill formatting for exact rendering in BlogDetails
   const sanitizedContent = sanitizeHtml(content, {
     allowedTags: [
       "p", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "b", "i",
@@ -56,24 +55,20 @@ const extractPureContent = (quillHtml) => {
       "code", "pre"
     ],
     allowedAttributes: {
-      '*': ['class', 'style'], // **ALLOW ALL** classes & inline styles
+      '*': ['class', 'style'],
       a: ["href", "target", "rel"],
       img: ["src", "alt", "width", "height", "class"],
     },
     allowedClasses: {
-      // **PRESERVE ALL QUILL CLASSES** for exact font rendering
       '*': [
         'ql-align-center', 'ql-align-right', 'ql-align-justify', 
-        'ql-indent-1', 'ql-indent-2', 'ql-indent-3',
-        'ql-size-small', 'ql-size-large', 'ql-size-huge'
+        'ql-indent-1', 'ql-indent-2', 'ql-indent-3'
       ],
       p: ['ql-align-center'],
-      span: ['ql-size-small', 'ql-size-large', 'ql-size-huge'],
       div: ['ql-indent-1', 'ql-indent-2'],
     },
     allowedStyles: {
       '*': {
-        'font-size': [/^[\d.]+(px|rem|em|%)$/, /^small$/, /^large$/, /^huge$/],
         'color': [/^#[\da-f]{3,6}$/i],
         'background-color': [/^#[\da-f]{3,6}$/i],
         'text-align': [/^(left|center|right|justify)$/],
@@ -94,6 +89,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     slug: "",
     category: "business",
     excerpt: "",
+    tags: [],
     status: "DRAFT",
     featuredImage: null,
     featureImgUrl: "",
@@ -104,15 +100,74 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [featuredImagePreview, setFeaturedImagePreview] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const [tagInput, setTagInput] = useState("");
+  const [isEditorLoaded, setIsEditorLoaded] = useState(false); // **NEW**: Track editor load
   const featuredImageInputRef = useRef(null);
   const coverImageInputRef = useRef(null);
+  const tagInputRef = useRef(null);
 
-  // Get clean content from current Quill instance
+  // **NEW**: Load content function
+  const loadContent = useCallback(() => {
+    if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
+      console.log("🔄 Loading content into Quill (ONCE):", blogToEdit.content);
+      try {
+        // Clear editor completely first
+        quill.setContents([]);
+        quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
+        
+        // Load content after small delay
+        setTimeout(() => {
+          const cleanContent = extractPureContent(blogToEdit.content);
+          quill.clipboard.dangerouslyPasteHTML(0, cleanContent, 'user');
+          console.log("✅ Content loaded successfully");
+        }, 50);
+      } catch (error) {
+        console.error("Error loading content:", error);
+      }
+    }
+  }, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
+
+  // **NEW**: Handle tag addition
+  const handleTagAdd = (e) => {
+    if (e.key === "Enter" && tagInput.trim()) {
+      e.preventDefault();
+      const newTag = tagInput.trim().toLowerCase();
+      
+      if (blogData.tags.length < 10 && !blogData.tags.includes(newTag)) {
+        setBlogData(prev => ({
+          ...prev,
+          tags: [...prev.tags, newTag]
+        }));
+      }
+      
+      setTagInput("");
+      tagInputRef.current?.focus();
+    }
+  };
+
+  const handleTagRemove = (tagToRemove) => {
+    setBlogData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const initializeEditor = () => {
+    if (quill && isOpen && !blogToEdit) {
+      setTimeout(() => {
+        quill.setContents([]);
+        quill.format('header', false);
+        quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
+        console.log("✅ Editor initialized with NORMAL PARAGRAPH (P)");
+        setIsEditorLoaded(true);
+      }, 100);
+    }
+  };
+
   const getCurrentContent = () => {
     if (!quill) return "";
     try {
       const html = quill.root.innerHTML;
-      console.log("📝 Current Quill HTML:", html);
       return extractPureContent(html);
     } catch (error) {
       console.error("Error getting content:", error);
@@ -120,16 +175,21 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     }
   };
 
-  // Load existing blog data
+  // **FIXED**: Load existing blog data - SEPARATED content loading
   useEffect(() => {
-    if (blogToEdit && isOpen && quill) {
-      console.log("📖 Loading existing blog:", blogToEdit);
+    if (blogToEdit && isOpen) {
+      console.log("📖 Loading existing blog data:", blogToEdit);
+
+      const existingTags = Array.isArray(blogToEdit.tags) 
+        ? blogToEdit.tags 
+        : blogToEdit.tags ? blogToEdit.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
 
       setBlogData({
         title: blogToEdit.title || "",
         slug: blogToEdit.slug || "",
         category: blogToEdit.category || "business",
         excerpt: blogToEdit.excerpt || "",
+        tags: existingTags,
         status: blogToEdit.status || "DRAFT",
         featuredImage: null,
         featureImgUrl: blogToEdit.featureImgUrl || blogToEdit.featuredImageUrl || "",
@@ -144,23 +204,14 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       if (blogToEdit.coverImageUrl) {
         setCoverImagePreview(blogToEdit.coverImageUrl);
       }
-
-      // **LOAD CONTENT WITH FULL FORMATTING PRESERVATION**
-      setTimeout(() => {
-        if (quill && blogToEdit.content) {
-          // Use the SAME sanitize function for loading to preserve formatting
-          const cleanContent = extractPureContent(blogToEdit.content);
-          console.log("🔄 Loading preserved content into Quill:", cleanContent);
-          quill.clipboard.dangerouslyPasteHTML(0, cleanContent, 'user');
-        }
-      }, 300); // Increased timeout for better reliability
-    } else if (!blogToEdit && quill) {
-      // Reset form
+    } else if (!blogToEdit && isOpen) {
+      // Reset form for new blog
       setBlogData({
         title: "",
         slug: "",
         category: "business",
         excerpt: "",
+        tags: [],
         status: "DRAFT",
         featuredImage: null,
         featureImgUrl: "",
@@ -170,11 +221,65 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       });
       setFeaturedImagePreview(null);
       setCoverImagePreview(null);
+      setTagInput("");
       if (featuredImageInputRef.current) featuredImageInputRef.current.value = "";
       if (coverImageInputRef.current) coverImageInputRef.current.value = "";
-      if (quill) quill.setText("");
     }
-  }, [blogToEdit, isOpen, quill]);
+  }, [blogToEdit, isOpen]); // **REMOVED quill dependency**
+
+  // **NEW**: Separate effect for editor initialization
+  useEffect(() => {
+    if (quill && isOpen) {
+      setIsEditorLoaded(true);
+      if (!blogToEdit) {
+        initializeEditor();
+      }
+    }
+  }, [quill, isOpen, blogToEdit]);
+
+  // **NEW**: Separate effect for loading content (ONLY when editor is ready)
+  useEffect(() => {
+    if (isEditorLoaded && blogToEdit) {
+      loadContent();
+    }
+  }, [isEditorLoaded, loadContent]);
+
+  // Custom CSS for header dropdown labels
+  useEffect(() => {
+    if (quill) {
+      const style = document.createElement('style');
+      style.textContent = `
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="1"]::after { content: "H1" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="2"]::after { content: "H2" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="3"]::after { content: "H3" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="4"]::after { content: "H4" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="5"]::before,
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="5"]::after { content: "H5" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="6"]::before,
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value="6"]::after { content: "H6" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value=""]::before,
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-label[data-value=""]::after { content: "P" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-item[data-value="1"]::before { content: "H1" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-item[data-value="2"]::before { content: "H2" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-item[data-value="3"]::before { content: "H3" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-item[data-value="4"]::before { content: "H4" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-item[data-value="5"]::before { content: "H5" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-item[data-value="6"]::before { content: "H6" !important; }
+        .blog-quill-editor .ql-picker.ql-header .ql-picker-item[data-value=""]::before { content: "P" !important; }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        if (document.head.contains(style)) {
+          document.head.removeChild(style);
+        }
+      };
+    }
+  }, [quill]);
 
   // Image handler for Quill toolbar
   useEffect(() => {
@@ -255,7 +360,6 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // **SAVE WITH FULL FORMATTING PRESERVATION**
     const content = getCurrentContent();
     console.log("💾 Saving FULLY FORMATTED content:", content);
 
@@ -287,7 +391,8 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         slug: slug,
         category: blogData.category,
         excerpt: blogData.excerpt || content.replace(/<[^>]*>/g, "").substring(0, 160) + "...",
-        content: content, // **FULLY FORMATTED CONTENT**
+        tags: blogData.tags,
+        content: content,
         featureImgUrl: featureImgUrl,
         coverImageUrl: coverImageUrl,
         status: blogData.status,
@@ -309,12 +414,13 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         alert("Blog published successfully!");
       }
 
-      // Reset form
+      // Reset everything
       setBlogData({
         title: "",
         slug: "",
         category: "business",
         excerpt: "",
+        tags: [],
         status: "DRAFT",
         featuredImage: null,
         featureImgUrl: "",
@@ -324,9 +430,14 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       });
       setFeaturedImagePreview(null);
       setCoverImagePreview(null);
+      setTagInput("");
+      setIsEditorLoaded(false);
       if (featuredImageInputRef.current) featuredImageInputRef.current.value = "";
       if (coverImageInputRef.current) coverImageInputRef.current.value = "";
-      if (quill) quill.setText("");
+      if (quill) {
+        quill.setContents([]);
+        quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
+      }
       onClose();
     } catch (error) {
       console.error("Error saving blog:", error);
@@ -382,8 +493,52 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
           background: #fff;
         }
+        
+        .blog-tags-container {
+          display: flex; flex-wrap: wrap; gap: 0.5rem; 
+          padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
+          border-radius: 0.75rem; background: #fafafa;
+          min-height: 48px; align-items: center;
+        }
+        .blog-tags-container:focus-within {
+          border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          background: #fff;
+        }
+        .blog-tag-input {
+          flex: 1; border: none; outline: none; 
+          background: transparent; font-size: 1rem;
+          min-width: 100px;
+        }
+        .blog-tag-input::placeholder {
+          color: #9ca3af;
+        }
+        .blog-tag {
+          display: flex; align-items: center; gap: 0.375rem;
+          padding: 0.375rem 0.75rem; border-radius: 9999px;
+          font-size: 0.875rem; font-weight: 500;
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+          animation: tagSlideIn 0.2s ease-out;
+        }
+        .blog-tag:hover {
+          transform: translateY(-1px); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+        }
+        .blog-tag-remove {
+          background: rgba(255,255,255,0.3); width: 16px; height: 16px;
+          border-radius: 50%; display: flex; align-items: center;
+          justify-content: center; font-size: 10px; font-weight: bold;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .blog-tag-remove:hover {
+          background: rgba(255,255,255,0.5); transform: scale(1.1);
+        }
+        @keyframes tagSlideIn {
+          from { opacity: 0; transform: translateX(-10px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        
         .blog-form-file {
-        color:#000;
+          color:#000;
           width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db; 
           border-radius: 0.75rem; padding: 2rem; text-align: center; 
           background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -444,6 +599,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           .blog-modal-content { padding: 1.5rem; }
           .blog-modal-title { font-size: 1.25rem; }
           .blog-quill-editor .ql-container { min-height: 300px; }
+          .blog-tags-container { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
         }
       `}</style>
 
@@ -474,6 +630,43 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
                 className="blog-form-input" 
                 placeholder="Enter an engaging blog title..."
               />
+            </div>
+
+            <div className="blog-form-group">
+              <label className="blog-form-label">
+                Tags (Max 10)
+              </label>
+              <div className="blog-tags-container" tabIndex="0">
+                {blogData.tags.map((tag, index) => (
+                  <div key={index} className="blog-tag">
+                    #{tag}
+                    <span 
+                      className="blog-tag-remove"
+                      onClick={() => handleTagRemove(tag)}
+                    >
+                      ×
+                    </span>
+                  </div>
+                ))}
+                <input
+                  ref={tagInputRef}
+                  type="text"
+                  className="blog-tag-input"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagAdd}
+                  placeholder={blogData.tags.length === 0 ? "Type tag and press Enter (e.g., business, tech, ai)..." : "Press Enter to add tag..."}
+                  maxLength={20}
+                />
+              </div>
+              <p className="blog-form-hint">
+                🏷️ Type tag name and press Enter. Max 10 tags. Click × to remove.
+              </p>
+              {blogData.tags.length > 0 && (
+                <p className="current-image-note" style={{marginTop: '0.5rem'}}>
+                  ✅ {blogData.tags.length} tag{blogData.tags.length > 1 ? 's' : ''} added
+                </p>
+              )}
             </div>
 
             <div className="blog-form-group">
@@ -564,7 +757,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
               <div ref={quillRef} className="blog-quill-editor" />
               <p className="blog-form-hint">
                 ✏️ Use the toolbar above to format your content. 
-                All formatting (H1-H6, font sizes, colors) will be preserved exactly.
+                All formatting (P, H1-H6, colors, alignment) will be preserved exactly.
               </p>
             </div>
 
@@ -575,7 +768,6 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
               <button type="submit" disabled={isSubmitting} className="blog-btn blog-btn-submit">
                 {isSubmitting ? (
                   <>
-                    
                     {blogToEdit ? "Updating..." : "Publishing..."}
                   </>
                 ) : blogToEdit ? (
