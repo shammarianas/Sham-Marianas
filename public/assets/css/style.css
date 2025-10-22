@@ -9053,3 +9053,31 @@ footer.clean-footer.crev .circle-blur {
   color: white;        /* 🔹 selected text ka color */
 }
 
+.blog-detail-size h1{
+  font-size: 2em;
+}
+.blog-detail-size h2{
+  font-size: 1.5em;
+}
+.blog-detail-size h3{
+  font-size: 1.3em;
+}
+.blog-detail-size h4{
+  font-size: 1em;
+}
+.blog-detail-size h5{
+  font-size: 0.83em;
+}
+.blog-detail-size h6{
+  font-size: 0.67em;
+}
+.blog-detail-size p{
+  font-size: 1em;
+}
+.blog-detail-size a{
+  color: #52b0b4;
+}
+.blog-detail-size a:hover{
+  color: #52b0b4;
+  text-decoration: underline;
+}

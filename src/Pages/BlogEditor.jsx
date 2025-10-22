@@ -383,6 +383,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           background: #fff;
         }
         .blog-form-file {
+        color:#000;
           width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db; 
           border-radius: 0.75rem; padding: 2rem; text-align: center; 
           background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -411,11 +412,11 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           transform: translateY(-1px);
         }
         .blog-btn-submit { 
-          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
+          background: #52b0b4; 
           color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
         }
         .blog-btn-submit:hover:not(:disabled) { 
-          background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); 
+          background: #52b0b4; 
           transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
         }
         .blog-btn-submit:disabled { 
@@ -450,7 +451,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         <div className="blog-modal-content">
           <div className="blog-modal-header">
             <h1 className="blog-modal-title">
-              {blogToEdit ? "✏️ Edit Blog Post" : "✨ Create New Blog Post"}
+              {blogToEdit ? "Edit Blog Post" : "Create New Blog Post"}
             </h1>
             <button onClick={onClose} className="blog-modal-close" aria-label="Close">
               <svg xmlns="http://www.w3.org/2000/svg" style={{ height: 24, width: 24 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -574,13 +575,13 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
               <button type="submit" disabled={isSubmitting} className="blog-btn blog-btn-submit">
                 {isSubmitting ? (
                   <>
-                    <span className="mr-2">💾</span>
+                    
                     {blogToEdit ? "Updating..." : "Publishing..."}
                   </>
                 ) : blogToEdit ? (
-                  "✏️ Update Blog"
+                  "Update Blog"
                 ) : (
-                  "🚀 Publish Blog"
+                  "Publish Blog"
                 )}
               </button>
             </div>

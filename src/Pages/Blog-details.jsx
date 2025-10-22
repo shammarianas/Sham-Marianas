@@ -335,7 +335,7 @@ function BlogDetails() {
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
                 <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
                   <div
-                    className="prose prose-blue max-w-none"
+                    className="prose prose-blue max-w-none blog-detail-size"
                     dangerouslySetInnerHTML={{ __html: blog.content }}
                   />
                 </article>
