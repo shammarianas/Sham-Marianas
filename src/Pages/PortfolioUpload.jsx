@@ -504,15 +504,16 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
                 Category <span className="blog-form-required">*</span>
               </label>
               <select name="category" value={projectData.category} onChange={handleInputChange} required className="blog-form-select">
-                <option value="design">🎨 Design</option>
-                <option value="development">💻 Development</option>
-                <option value="marketing">📈 Marketing</option>
+                <option value="design">Design</option>
+                <option value="development">Development</option>
+                <option value="marketing">Marketing</option>
+                <option value="marketing">Printing</option>
               </select>
             </div>
 
             <div className="blog-form-group">
               <label className="blog-form-label">
-                Client <span className="blog-form-required">*</span>
+                Country <span className="blog-form-required">*</span>
               </label>
               <input 
                 type="text" 
@@ -580,21 +581,6 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
                 required
                 className="blog-form-textarea"
                 placeholder="Enter challenge description"
-                rows="4"
-              />
-            </div>
-
-            <div className="blog-form-group">
-              <label className="blog-form-label">
-                Project Description <span className="blog-form-required">*</span>
-              </label>
-              <textarea
-                name="description"
-                value={projectData.description}
-                onChange={handleInputChange}
-                required
-                className="blog-form-textarea"
-                placeholder="Enter project description"
                 rows="4"
               />
             </div>

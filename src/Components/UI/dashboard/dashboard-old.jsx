@@ -12,6 +12,7 @@ import {
   setDoc,
   deleteDoc,
   orderBy,
+  onSnapshot,
   query,
   addDoc,
 } from "firebase/firestore";
@@ -463,18 +464,35 @@ const AdminDashboard = () => {
   };
 
   // Fetch blogs when Blog tab is selected
-  const loadBlogs = async () => {
+  const loadBlogs = () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "blogs"));
-      const blogsData = [];
-      querySnapshot.forEach((doc) => {
-        blogsData.push({ id: doc.id, ...doc.data() });
-      });
-      setBlogs(blogsData);
+      const blogsRef = collection(db, "blogs");
+      const q = query(blogsRef, orderBy("createdAt", "desc"));
+
+      // ✅ Listen for real-time updates
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          const blogsData = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setBlogs(blogsData);
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Error loading blogs:", error);
+          setError(`Failed to load blogs: ${error.message}`);
+          setLoading(false);
+        }
+      );
+
+      // ✅ Return unsubscribe function
+      return unsubscribe;
     } catch (error) {
+      console.error("Error setting up blog listener:", error);
       setError(`Failed to load blogs: ${error.message}`);
-    } finally {
       setLoading(false);
     }
   };
@@ -489,32 +507,40 @@ const AdminDashboard = () => {
     }
   }, [activeTab, selectedDashboard]);
 
- // Load portfolios (projects) - YEH FUNCTION THEEK HAI
-const loadProjects = async () => {
-  setLoading(true);
-  try {
-    const querySnapshot = await getDocs(collection(db, "projects"));
-    const projectsData = [];
-    querySnapshot.forEach((doc) => {
-      projectsData.push({ id: doc.id, ...doc.data() });
-    });
-    setPortfolios(projectsData);
-  } catch (error) {
-    setError(`Failed to load portfolios: ${error.message}`);
-  } finally {
-    setLoading(false);
-  }
-};
+  // Load portfolios (projects) - YEH FUNCTION THEEK HAI
+  const loadProjects = async () => {
+    setLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, "projects"));
+      const projectsData = [];
+      querySnapshot.forEach((doc) => {
+        projectsData.push({ id: doc.id, ...doc.data() });
+      });
+      setPortfolios(projectsData);
+    } catch (error) {
+      setError(`Failed to load portfolios: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-// Fetch portfolios (projects) when Portfolio tab is selected - YEH THEEK KARO
-useEffect(() => {
-  console.log("Active Tab:", activeTab, "Selected Dashboard:", selectedDashboard);
-  
-  if (activeTab === 5 || (selectedDashboard === "company" && activeTab === 2)) {
-    console.log("Loading portfolios...");
-    loadProjects();
-  }
-}, [activeTab, selectedDashboard]); // Dependencies sahi hain
+  // Fetch portfolios (projects) when Portfolio tab is selected - YEH THEEK KARO
+  useEffect(() => {
+    console.log(
+      "Active Tab:",
+      activeTab,
+      "Selected Dashboard:",
+      selectedDashboard
+    );
+
+    if (
+      activeTab === 5 ||
+      (selectedDashboard === "company" && activeTab === 2)
+    ) {
+      console.log("Loading portfolios...");
+      loadProjects();
+    }
+  }, [activeTab, selectedDashboard]); // Dependencies sahi hain
 
   // Fetch All Assets
   const fetchAssets = useCallback(async () => {
@@ -748,28 +774,32 @@ useEffect(() => {
   };
 
   const handleToggleBlogStatus = async (blogId, currentStatus) => {
-  // Current status ko properly check karo
-  const normalizedStatus = (currentStatus || "draft").toLowerCase();
-  const newStatus = normalizedStatus === "published" ? "DRAFT" : "PUBLISHED";
-  
-  try {
-    await updateDoc(doc(db, "blogs", blogId), {
-      status: newStatus,
-      updatedAt: serverTimestamp(),
-      // Agar publish kar rahe hain to publishedAt set karo
-      ...(newStatus === "PUBLISHED" && { publishedAt: serverTimestamp() })
-    });
-    
-    // Blogs ko refresh karo
-    await loadBlogs();
-    
-    // Success message
-    alert(`Blog ${newStatus === "PUBLISHED" ? "published" : "drafted"} successfully!`);
-  } catch (error) {
-    console.error("Update blog status error:", error);
-    setError("Failed to update blog post status");
-  }
-};
+    // Current status ko properly check karo
+    const normalizedStatus = (currentStatus || "draft").toLowerCase();
+    const newStatus = normalizedStatus === "published" ? "DRAFT" : "PUBLISHED";
+
+    try {
+      await updateDoc(doc(db, "blogs", blogId), {
+        status: newStatus,
+        updatedAt: serverTimestamp(),
+        // Agar publish kar rahe hain to publishedAt set karo
+        ...(newStatus === "PUBLISHED" && { publishedAt: serverTimestamp() }),
+      });
+
+      // Blogs ko refresh karo
+      await loadBlogs();
+
+      // Success message
+      alert(
+        `Blog ${
+          newStatus === "PUBLISHED" ? "published" : "drafted"
+        } successfully!`
+      );
+    } catch (error) {
+      console.error("Update blog status error:", error);
+      setError("Failed to update blog post status");
+    }
+  };
 
   const handleDeletePortfolio = async (portfolioId) => {
     if (!isAdmin) {
@@ -2190,12 +2220,8 @@ useEffect(() => {
             {activeTab === 13 && "Asset"}
 
             {/* Company Dashboard Titles */}
-            {activeTab === 1 &&
-              selectedDashboard === "company" &&
-              ""}
-            {activeTab === 2 &&
-              selectedDashboard === "company" &&
-              ""}
+            {activeTab === 1 && selectedDashboard === "company" && ""}
+            {activeTab === 2 && selectedDashboard === "company" && ""}
           </h1>
         </div>
 
@@ -2542,28 +2568,27 @@ useEffect(() => {
             onStatusChange={handleStatusChange}
           />
         )}
-{isBlogModalOpen && (
-  <BlogEditorModal
-    isOpen={isBlogModalOpen}
-    onClose={() => {
-      setIsBlogModalOpen(false);
-      loadBlogs();
-    }}
-  />
-)}
+        {isBlogModalOpen && (
+          <BlogEditorModal
+            isOpen={isBlogModalOpen}
+            onClose={() => {
+              setIsBlogModalOpen(false);
+              loadBlogs();
+            }}
+          />
+        )}
 
-{/* Edit blog modal - YEH THEEK HAI */}
-{isEditModalOpen && blogToEdit && (
-  <BlogEditorModal
-    isOpen={isEditModalOpen}
-    onClose={() => {
-      setIsEditModalOpen(false);
-      setBlogToEdit(null);
-    
-    }}
-    blogToEdit={blogToEdit} // This will pre-fill the form with existing data
-  />
-)}
+        {/* Edit blog modal - YEH THEEK HAI */}
+        {isEditModalOpen && blogToEdit && (
+          <BlogEditorModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setBlogToEdit(null);
+            }}
+            blogToEdit={blogToEdit} // This will pre-fill the form with existing data
+          />
+        )}
         {isPortfolioModalOpen && (
           <ProjectModal
             isOpen={isPortfolioModalOpen}
@@ -3026,60 +3051,65 @@ const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
 
   const status = (blog.status || "draft").toLowerCase();
   const isPublished = status === "published";
-  
-  const img = blog.featuredImage || blog.featuredImageUrl || blog.coverImgUrl || 
-              blog.coverImageUrl || blog.thumbnail || "";
+
+  const img =
+    blog.featuredImage ||
+    blog.featuredImageUrl ||
+    blog.coverImgUrl ||
+    blog.coverImageUrl ||
+    blog.thumbnail ||
+    "";
 
   // Quill editor ke content ko extract karo
   const extractContentFromQuill = (quillHtml) => {
-    if (!quillHtml) return '';
-    
+    if (!quillHtml) return "";
+
     console.log("🔍 Original blog content:", quillHtml);
-    
+
     // Create temporary div
-    const tempDiv = document.createElement('div');
+    const tempDiv = document.createElement("div");
     tempDiv.innerHTML = quillHtml;
-    
+
     // Find the .ql-editor element
-    const editorContent = tempDiv.querySelector('.ql-editor');
+    const editorContent = tempDiv.querySelector(".ql-editor");
     if (editorContent) {
       console.log("✅ Found .ql-editor content:", editorContent.innerHTML);
       return editorContent.innerHTML;
     }
-    
+
     // Check if it's direct content without wrapper
     const hasQuillWrapper = tempDiv.querySelector('[class*="ql"]');
     if (!hasQuillWrapper) {
       console.log("✅ Direct content (no wrapper):", quillHtml);
       return quillHtml;
     }
-    
+
     // Agar koi aur Quill wrapper hai
     console.log("⚠️ Other Quill wrapper found, using innerHTML");
     return tempDiv.innerHTML;
   };
 
   const getCleanContent = (content) => {
-    if (!content) return '';
-    
+    if (!content) return "";
+
     const extracted = extractContentFromQuill(content);
-    
+
     // HTML tags remove karo aur clean text banao
     const cleanText = extracted
-   .replace(/<p>/gi, '')      // Replace opening <p> with new line
-    .replace(/<\/p>/gi, '')    // Replace closing </p> with new line
-    .replace(/<br\s*\/?>/gi, '\n') // Replace <br> with new line
-    .replace(/<[^>]*>/g, ' ')    // Remove any other HTML tags
-    .replace(/&nbsp;/g, ' ')     // Replace &nbsp; with space
-    .replace(/&amp;/g, '&')      // Replace &amp; with &
-    .replace(/&lt;/g, '<')       // Replace &lt; with <
-    .replace(/&gt;/g, '>')       // Replace &gt; with >
-    .replace(/&quot;/g, '"')     // Replace &quot; with "
-    .replace(/\n\s*\n/g, '\n')   // Remove multiple empty lines
-    .replace(/\s+/g, ' ')        // Multiple spaces to single space
-    .trim();                     // Trim whitespace
+      .replace(/<p>/gi, "") // Replace opening <p> with new line
+      .replace(/<\/p>/gi, "") // Replace closing </p> with new line
+      .replace(/<br\s*\/?>/gi, "\n") // Replace <br> with new line
+      .replace(/<[^>]*>/g, " ") // Remove any other HTML tags
+      .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
+      .replace(/&amp;/g, "&") // Replace &amp; with &
+      .replace(/&lt;/g, "<") // Replace &lt; with <
+      .replace(/&gt;/g, ">") // Replace &gt; with >
+      .replace(/&quot;/g, '"') // Replace &quot; with "
+      .replace(/\n\s*\n/g, "\n") // Remove multiple empty lines
+      .replace(/\s+/g, " ") // Multiple spaces to single space
+      .trim(); // Trim whitespace
     console.log("🧹 Cleaned content:", cleanText);
-    
+
     return cleanText;
   };
 
@@ -3124,8 +3154,8 @@ const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
                 <div className="content-preview pb-3 pt-2">
                   {(() => {
                     const cleanContent = getCleanContent(blog.content);
-                    return cleanContent.length > 300 
-                      ? `${cleanContent.substring(0, 300)}...` 
+                    return cleanContent.length > 300
+                      ? `${cleanContent.substring(0, 300)}...`
                       : cleanContent;
                   })()}
                 </div>
@@ -3136,8 +3166,12 @@ const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
               <div className="info-item">
                 <span className="info-label">Status</span>
                 <span className="info-value">
-                  <span className={`status-badge ${isPublished ? 'active' : 'pending'}`}>
-                    {isPublished ? 'Published' : 'Draft'}
+                  <span
+                    className={`status-badge ${
+                      isPublished ? "active" : "pending"
+                    }`}
+                  >
+                    {isPublished ? "Published" : "Draft"}
                   </span>
                 </span>
               </div>
@@ -3168,8 +3202,6 @@ const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
               </div>
             )}
           </div>
-
-          
         </div>
       </div>
     </div>
@@ -3253,7 +3285,6 @@ const BlogSection = ({
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [blogToEdit, setBlogToEdit] = useState(null);
-  
 
   const filteredBlogs = blogs.filter((blog) => {
     const term = blogSearchTerm.toLowerCase();
@@ -3266,8 +3297,9 @@ const BlogSection = ({
 
     const status = (blog.status || "draft").toLowerCase();
     const matchesStatus =
-      selectedBlogStatus === "all" || status === selectedBlogStatus.toLowerCase();
-    
+      selectedBlogStatus === "all" ||
+      status === selectedBlogStatus.toLowerCase();
+
     return matchesSearch && matchesStatus;
   });
 
@@ -3283,14 +3315,14 @@ const BlogSection = ({
 
   // Edit Icon Component
   const EditIcon = () => (
-    <svg 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
       strokeLinejoin="round"
     >
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -3298,8 +3330,8 @@ const BlogSection = ({
     </svg>
   );
 
-// Blog Section 
-return (
+  // Blog Section
+  return (
     <div className="asset-management-enhanced">
       <div className="asset-header">
         <div className="header-content">
@@ -3368,7 +3400,7 @@ return (
               Array.isArray(blog.tags) && blog.tags.length > 0
                 ? blog.tags[0]
                 : "General";
-            
+
             return (
               <div key={blog.id || blog._id} className="asset-card">
                 <div className="asset-image-wrapper">
@@ -3395,16 +3427,19 @@ return (
                 </div>
                 <div className="asset-content">
                   <div className="asset-header-row">
-                    <h3 className="asset-title">{blog.title || blog.excerpt || "Untitled"}</h3>
+                    <h3 className="asset-title">
+                      {blog.title || blog.excerpt || "Untitled"}
+                    </h3>
                     <div className="asset-menu">
                       <span className="role-badge user">
-                      {blog.category 
-      ? blog.category.charAt(0).toUpperCase() + blog.category.slice(1)
-      : "General"}
+                        {blog.category
+                          ? blog.category.charAt(0).toUpperCase() +
+                            blog.category.slice(1)
+                          : "General"}
                       </span>
                     </div>
                   </div>
-                  <p className="asset-description">{blog.excerpt || ""}</p>
+                  {/* <p className="asset-description">{blog.excerpt || ""}</p> */}
                   <div className="asset-footer">
                     <span className="asset-author">
                       <FiUser className="author-icon" /> by{" "}
@@ -3416,7 +3451,9 @@ return (
                     <div>
                       <button
                         className="action-button secondary"
-                        onClick={() => onToggleStatus(blog.id || blog._id, status)}
+                        onClick={() =>
+                          onToggleStatus(blog.id || blog._id, status)
+                        }
                       >
                         {isPublished ? "Make Draft" : "Publish"}
                       </button>
@@ -3429,14 +3466,14 @@ return (
                           setShowBlogDialog(true);
                         }}
                       >
-                        <FiEye className="button-icon" /> 
+                        <FiEye className="button-icon" />
                       </button>
-                     <button
-                      className="action-button secondary"
-                      onClick={() => handleEditBlog(blog)}
-                    >
-                      <EditIcon /> 
-                    </button>
+                      <button
+                        className="action-button secondary"
+                        onClick={() => handleEditBlog(blog)}
+                      >
+                        <EditIcon />
+                      </button>
                       <button
                         className="action-button danger"
                         onClick={() => onDelete(blog.id || blog._id)}
@@ -3497,7 +3534,8 @@ const PortfolioList = ({
   formatDate,
 }) => {
   const [portfolioSearchTerm, setPortfolioSearchTerm] = useState("");
-  const [selectedPortfolioCategory, setSelectedPortfolioCategory] = useState("all");
+  const [selectedPortfolioCategory, setSelectedPortfolioCategory] =
+    useState("all");
   const [selectedPortfolioStatus, setSelectedPortfolioStatus] = useState("all");
   const [showPortfolioDialog, setShowPortfolioDialog] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState(null);
@@ -3506,14 +3544,14 @@ const PortfolioList = ({
 
   // Edit Icon Component
   const EditIcon = () => (
-    <svg 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
       strokeLinejoin="round"
     >
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -3716,7 +3754,6 @@ const PortfolioList = ({
                 {/* ACTION BUTTONS - Blog section ki tarah */}
                 <div className="table-actions">
                   <div>
-                    
                     <button
                       className="action-button secondary"
                       onClick={() =>
