@@ -10,6 +10,9 @@ const Navbar = () => {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const cartCount = cart.length;
   const currentPage = useLocation().pathname;
+  
+  // ✅ NEW: Check if current page needs "Template" button
+  const showTemplateButton = ["/", "/about", "/services", "/portfolio", "/blog", "/contact"].includes(currentPage);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,19 +25,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Navbar
-
-  function handleScroll() {
-    const bodyScroll = window.scrollY;
-    const navbar = document.querySelector(".navbar");
-
-    if (bodyScroll > 300) navbar.classList.add("nav-scroll");
-    else navbar.classList.remove("nav-scroll");
-  }
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
   function handleDropdownMouseMove(event) {
     const menu = event.currentTarget?.querySelector?.(".dropdown-menu");
     if (!menu) return;
@@ -46,18 +36,19 @@ const Navbar = () => {
     if (!menu) return;
     menu.classList.remove("show");
   }
+
   function handleToggleNav() {
     const collapse = document.querySelector(".navbar .navbar-collapse");
     if (!collapse) return;
     collapse.classList.toggle("show");
   }
+
   // If user is NOT logged in
   if (!currentUser) {
     return (
       <>
         <nav className="navbar navbar-expand-lg bord blur">
           <div className="container o-hidden">
-
             <Link to="/" className="logo site-logo-link" aria-label="Home">
               <img src="assets/imgs/logo.png" className="site-logo-img" alt="Sham Marianas logo" />
             </Link> 
@@ -115,21 +106,6 @@ const Navbar = () => {
                 >
                   <Link
                     className="nav-link"
-                    to="/stock"
-                    role="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    <span className="rolling-text">Templates</span>
-                  </Link>
-                </li>
-                <li
-                  onMouseLeave={handleDropdownMouseLeave}
-                  onMouseMove={handleDropdownMouseMove}
-                  className="nav-item dropdown"
-                >
-                  <Link
-                    className="nav-link"
                     to="/services"
                     role="button"
                     aria-haspopup="true"
@@ -152,7 +128,6 @@ const Navbar = () => {
                   >
                     <span className="rolling-text">Portfolio</span>
                   </Link>
-
                 </li>
 
                 <li
@@ -177,13 +152,23 @@ const Navbar = () => {
                 </li>
               </ul>
             </div>
-            <div className="contact-button ">
-              <Link
-                to="/login"
-                className="butn butn-sm butn-bg main-colorbg radius-5"
-              >
-                <span className="text">Sign In</span>
-              </Link>
+            {/* ✅ FIXED: Template Button Logic */}
+            <div className="contact-button">
+              {showTemplateButton ? (
+                <Link
+                  to="/stock"
+                  className="butn butn-sm butn-bg main-colorbg radius-5"
+                >
+                  <span className="text">Template</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="butn butn-sm butn-bg main-colorbg radius-5"
+                >
+                  <span className="text">Sign In</span>
+                </Link>
+              )}
             </div>
           </div>
         </nav>
@@ -278,10 +263,8 @@ const Navbar = () => {
                     </li>
                   );
                 })}
-                {/* Separate Navigation Bar */}
               </ul>
             </div>
-
             <div className="buttons"></div>
           </div>
         )}
@@ -289,12 +272,10 @@ const Navbar = () => {
     );
   }
 
+  // ✅ LOGGED IN USER - SIMPLIFIED navbar (logo + Sign In only on /stock)
   return (
     <>
-    
       <div className="navbar navbar-expand-lg bord blur">
-        {/* <nav className="navbar navbar-expand-lg bord blur"> */}
-
         <Link to="/" className="logo site-logo-link" aria-label="Home">
           <img
             src="assets/imgs/logo.png"
@@ -304,32 +285,23 @@ const Navbar = () => {
         </Link>
         
         {/* SIRF EXPLORE + SEARCH admin mein hide */}
-  {currentPage !== "/admin" && (
-    <>
-      <Link to="/stock">
-        <div className="ml-auto vi-more">
-          <span className="butn butn-sm butn-bord radius-30">
-            <span>Explore</span>
-          </span>
-          <span className="icon ti-arrow-top-right"></span>
-        </div>
-      </Link>
-      <Search />
-    </>
-  )}
+        {currentPage !== "/admin" && (
+          <>
+            <Link to="/stock">
+              <div className="ml-auto vi-more">
+                <span className="butn butn-sm butn-bord radius-30">
+                  <span>Explore</span>
+                </span>
+                <span className="icon ti-arrow-top-right"></span>
+              </div>
+            </Link>
+            <Search />
+          </>
+        )}
+        
         <div className="right">
           <div className="nav_buttons">
-            {/* <Link to="/Cart">
-              <button>
-                <i className="icon fa-solid fa-shopping-cart"></i>
-                {cartCount > 0 && (
-                  <span className="cart_count">{cartCount}</span>
-                )}
-              </button>
-            </Link> */}
             <div className="navbar_dropdown"> 
-
-              
               {currentUser?.uid ? (
                 <Link to={`/Profile/${currentUser?.uid}`}>
                   <button className="signed_in">
@@ -351,10 +323,8 @@ const Navbar = () => {
                     <Link to="/MyDownloads">My Downloads</Link>
                   </li>
                   <li>
-                    {/* <Link to="/Library">My Library</Link> */}
                     <Link to="/Favorites">My Favorites</Link>
                   </li>
-
                   <li>
                     <Link to={`/Profile/${currentUser?.uid}`}>Profile</Link>
                   </li>
@@ -368,13 +338,12 @@ const Navbar = () => {
                   </li>
                 </ul>
               </div>
-              
             </div>
           </div>
         </div>
       </div>
-   
 
+      {/* Bottom bar ONLY on non-main pages */}
       {!["/", "/Login", "/Upload", "/reset", "/admin"].includes(currentPage) && (
         <div className="bottom-bar">
           <div className="links">
@@ -465,10 +434,8 @@ const Navbar = () => {
                   </li>
                 );
               })}
-              {/* Separate Navigation Bar */}
             </ul>
           </div>
-
           <div className="buttons"></div>
         </div>
       )}

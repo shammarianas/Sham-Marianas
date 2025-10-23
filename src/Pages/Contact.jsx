@@ -9,7 +9,7 @@ function Contact() {
             <div className="col-lg-4 valign">
               <div className="sec-head info-box full-width md-mb80">
                 <div className="phone fz-22 fw-600 underline main-color">
-                  <a href="tel:+971528036012">+971 52 803 6012</a>
+                  <a href="tel:+971528036012">+971 52 803 6012  <br></br>+92 311 678 8423 </a>
                 </div>
                 <div className="morinfo mt-50 pb-30 bord-thin-bottom">
                   <h6 className="mb-15">Address</h6>
@@ -22,48 +22,64 @@ function Contact() {
 
                 <div className=" Contact-socialIcons mt-50">
                   {/* Social icon */}
-              <ul className="rest social-icon d-flex align-items-start">
-                <li className="hover-this cursor-pointer mr-10">
-                  <a
-                    href="https://www.youtube.com/c/ShamMarianasSM"
-                    target="_blank"
-                   className="hover-anim"
-                  >
-                    <i class="fa-brands fa-youtube"></i>
-                  </a>
-                </li>
-                <li className="hover-this cursor-pointer  mr-10">
-                  <a
-                    href=" https://www.facebook.com/shammarianas"
-                    className="hover-anim"
-                    target="_blank">
-                    <i className="fab fa-facebook-f"></i>
-                  </a>
-                </li>
-                <li className="hover-this cursor-pointer mr-10">
-                  <a
-                    href="https://www.behance.net/shammarianas"
-                    target="_blank"
-                    className="hover-anim"
-                  >
-                    <i className="fab fa-behance"></i>
-                  </a>
-                </li>
-                <li className="hover-this cursor-pointer mr-10">
-                  <a
-                    href="https://www.pinterest.com/shammarianas"
-                    className="hover-anim"
-                  >
-                    <i class="fa-brands fa-pinterest"></i>
-                  </a>
-                </li>
-                <li className="hover-this cursor-pointer mr-10">
-                  <a href="https://www.instagram.com/sham_marianas/" className="hover-anim">
-                    <i className="fab fa-instagram"></i>
-                  </a>
-                </li>
-                
-              </ul>
+              <div className="social-list">
+  <a href="https://www.facebook.com/shammarianas/" className="hover-this">
+    <div className="hover-anim">
+      <i className="fab fa-facebook-f"></i>
+    </div>
+  </a>
+  <a href="https://twitter.com/shammarianas" className="hover-this">
+    <div className="hover-anim">
+      <i className="fab fa-twitter"></i>
+    </div>
+  </a>
+  <a href="https://www.linkedin.com/in/shammarianas/" className="hover-this">
+    <div className="hover-anim">
+      <i className="fab fa-linkedin-in"></i>
+    </div>
+  </a>
+  <a href="https://www.instagram.com/sham_marianas/" className="hover-this">
+    <div className="hover-anim">
+      <i className="fab fa-instagram"></i>
+    </div>
+  </a>
+</div>
+
+<style jsx>{`
+  .social-list {
+    display: flex;
+    gap: 20px;
+  }
+
+  .social-list a {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    font-size: 13px;
+    border-radius: 50%;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.1);
+    position: relative;
+  }
+
+  .hover-this {
+    transition: all 0.3s ease;
+  }
+
+  .hover-this:hover {
+    transform: translateY(-5px);
+  }
+
+  .hover-this .hover-anim {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`}</style>
                 </div>
               </div>
             </div>
