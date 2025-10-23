@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import data from "../../data/team.json";
 function Team() {
   return (
@@ -15,9 +16,9 @@ function Team() {
               </h3>
             </div>
             <div className="ml-auto vi-more">
-              <a href="#about" className="butn butn-sm butn-bord radius-30">
+              <Link to="/contact" className="butn butn-sm butn-bord radius-30">
                 <span>Join to us</span>
-              </a>
+             </Link>
               <span className="icon ti-arrow-top-right"></span>
             </div>
           </div>
