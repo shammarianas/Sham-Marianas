@@ -36,6 +36,7 @@ function BlogDetails() {
     design: 0,
   });
   const [latestBlogs, setLatestBlogs] = useState([]);
+  const [allTags, setAllTags] = useState([]);
 
   // Comment form states
   const [name, setName] = useState("");
@@ -49,15 +50,16 @@ function BlogDetails() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const blogData = { id: docSnap.id, ...docSnap.data() };
-          
+
           // ✅ FIX: Map ALL possible featured image fields
-          blogData.featuredImageUrl = blogData.featuredImageUrl || 
-                                    blogData.featureImgUrl || 
-                                    blogData.coverImageUrl ||
-                                    "/assets/imgs/background/bg4.jpg";
-          
+          blogData.featuredImageUrl =
+            blogData.featuredImageUrl ||
+            blogData.featureImgUrl ||
+            blogData.coverImageUrl ||
+            "/assets/imgs/background/bg4.jpg";
+
           console.log("🔍 Blog featured image URL:", blogData.featuredImageUrl); // Debug
-          
+
           blogData.content = sanitizeHtml(blogData.content, {
             allowedTags: [
               "p",
@@ -154,18 +156,37 @@ function BlogDetails() {
           id: doc.id,
           ...doc.data(),
           // ✅ FIX: Latest blogs cover image mapping
-          coverImageUrl: doc.data().coverImageUrl || doc.data().featureImgUrl || doc.data().featuredImageUrl || "/assets/imgs/blog/c1.jpg",
+          coverImageUrl:
+            doc.data().coverImageUrl ||
+            doc.data().featureImgUrl ||
+            doc.data().featuredImageUrl ||
+            "/assets/imgs/blog/c1.jpg",
         }));
         setLatestBlogs(blogsList);
       } catch (error) {
         console.error("Error fetching latest blogs:", error);
       }
     };
-
+    const fetchAllTags = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "blogs"));
+        const tagsSet = new Set();
+        querySnapshot.forEach((doc) => {
+          const blogData = doc.data();
+          if (Array.isArray(blogData.tags)) {
+            blogData.tags.forEach((tag) => tagsSet.add(tag));
+          }
+        });
+        setAllTags([...tagsSet]);
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+      }
+    };
     fetchBlog();
     checkAdminStatus();
     fetchCategoryCounts();
     fetchLatestBlogs();
+    fetchAllTags();
     loadBackgroudImages();
   }, [id]);
 
@@ -234,7 +255,7 @@ function BlogDetails() {
         }
         .header-blog .caption {
           padding: 2rem;
-          max-width: 90%;
+          max-width: 60%;
         }
         .header-blog h1 {
           font-size: 2.5rem;
@@ -343,7 +364,8 @@ function BlogDetails() {
             <div className="col-lg-8">
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
                 <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
-                  <div target="_blank"
+                  <div
+                    target="_blank"
                     className="prose prose-blue max-w-none blog-detail-size"
                     dangerouslySetInnerHTML={{ __html: blog.content }}
                   />
@@ -460,10 +482,7 @@ function BlogDetails() {
                         <div>
                           <div className="img">
                             <Link to={`/blog/${post.id}`}>
-                              <img
-                                src={post.coverImageUrl}
-                                alt={post.title}
-                              />
+                              <img src={post.coverImageUrl} alt={post.title} />
                               {post.publishedAt && (
                                 <span className="date">
                                   <span>
@@ -500,17 +519,21 @@ function BlogDetails() {
                 </div>
 
                 {/* Tags */}
-                <div className="widget tags">
-                  <h6 className="title-widget">Tags</h6>
-                  <div>
-                    <Link to="/blogs">Creative</Link>
-                    <Link to="/blogs">Design</Link>
-                    <Link to="/blogs">Dark & Light</Link>
-                    <Link to="/blogs">Minimal</Link>
-                    <Link to="/blogs">Infolio</Link>
+                {allTags.length > 0 && (
+                  <div className="widget tags">
+                    <h6 className="title-widget">All Tags</h6>
+                    <div>
+                      {allTags.map((tag, index) => (
+                        <Link
+                          key={index}
+                          to={`/blogs?tag=${encodeURIComponent(tag)}`}
+                        >
+                          {tag}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                
+                )}
               </div>
             </div>
           </div>

@@ -4110,6 +4110,11 @@ ease;
     display: grid;
     gap: 30px;
 }
+.blog-sidebar-outdise{
+      display: grid;
+    gap: 30px;
+     padding:  0;
+}
 .sidebar .search-box {
   position: relative;
 }
@@ -4238,7 +4243,7 @@ ease;
 }
 
 .sidebar .widget.last-post-thum .item .cont h6 a {
-  font-size: 17px;
+  font-size: 15px;
    display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -8657,7 +8662,7 @@ footer.clean-footer.crev .circle-blur {
 }
 
 .blog-sidebar {
-  width: 340px;
+  width: 100% !important;
 }
 
 /* Blog Post Cards */

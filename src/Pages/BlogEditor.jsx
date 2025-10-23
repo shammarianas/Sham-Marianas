@@ -78,7 +78,7 @@ const extractPureContent = (quillHtml) => {
     }
   });
   
-  console.log("💾 Final sanitized content:", sanitizedContent);
+  console.log("Final sanitized content:", sanitizedContent);
   return sanitizedContent;
 };
 
@@ -109,7 +109,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   // **NEW**: Load content function
   const loadContent = useCallback(() => {
     if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
-      console.log("🔄 Loading content into Quill (ONCE):", blogToEdit.content);
+      console.log("Loading content into Quill (ONCE):", blogToEdit.content);
       try {
         // Clear editor completely first
         quill.setContents([]);
@@ -669,7 +669,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
               )}
             </div>
 
-            <div className="blog-form-group">
+            {/* <div className="blog-form-group">
               <label className="blog-form-label">Excerpt (Optional)</label>
               <textarea 
                 name="excerpt" 
@@ -679,7 +679,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
                 placeholder="Short description for blog preview (160 chars max)..." 
                 rows="3" 
               />
-            </div>
+            </div> */}
 
             <div className="blog-form-group">
               <label className="blog-form-label">

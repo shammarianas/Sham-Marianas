@@ -145,7 +145,7 @@ function Blogs() {
                             </Link>
                           </h3>
 
-                          <div
+                          {/* <div
                             className="blog-excerpt"
                             dangerouslySetInnerHTML={{
                               __html:
@@ -154,7 +154,7 @@ function Blogs() {
                                   ? blog.content.substring(0, 200) + "..."
                                   : ""),
                             }}
-                          />
+                          /> */}
 
                           <Link
                             to={`/blog-details/${blog.id}`}
@@ -174,7 +174,7 @@ function Blogs() {
 
               {/* Sidebar */}
               <div className="col-lg-4">
-                <div className="sidebar" style={{ width: "100%" }}>
+                <div className="sidebar blog-sidebar-outdise" style={{ width: "100%" }}>
                   <div className="widget">
                     <h6 className="title-widget">Search Here</h6>
                     <div className="search-box">
