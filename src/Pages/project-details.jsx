@@ -58,6 +58,7 @@ export default function ProjectDetails() {
         }
         .header-project .caption {
           padding-bottom: 2rem;
+          padding-right: 30rem;
         }
         .header-project h1 {
           font-size: 2.5rem;
@@ -88,22 +89,21 @@ export default function ProjectDetails() {
         }
         .project-section .content {
           display: flex;
-          flex-direction: column; /* Display content in a column */
-          align-items: center; /* Center items horizontally */
-          gap: 1rem; /* Spacing between title and description */
+          gap: 1rem; 
+          padding: 0 5rem;
         }
         .project-section h2 {
+        width:50%;
           font-size: 2rem;
           font-weight: 700;
           color: #FFFFFF;
-          margin: 0 0 1rem 0; /* Adjusted margin for column layout */
-          text-align: center; /* Center title */
+          margin: 0 0 1rem 0; 
         }
         .project-description {
           font-size: 1rem;
           line-height: 1.6;
           color: #D1D5DB;
-          max-width: 100%; /* Full width for description */
+          max-width: 50%; /* Full width for description */
           margin: 0 0 2rem 0; /* Adjusted margin, no auto for full width */
           text-align: left; /* Left-align text */
         }
@@ -176,7 +176,7 @@ export default function ProjectDetails() {
       `}</style>
       <Cursor />
       <ProgressScroll />
-      <header className="header-project bg-img d-flex align-items-end" data-background={project.coverImgUrl || "/assets/imgs/background/bg4.jpg"} data-overlay-dark="9">
+      <header className="header-project bg-img d-flex align-items-end" data-background={project.featureImgUrl || "/assets/imgs/background/bg4.jpg"} data-overlay-dark="9">
         <div className="container">
           <div className="row">
             <div className="col-12">
@@ -200,7 +200,7 @@ export default function ProjectDetails() {
               </div>
               <div className="col-md-6 col-lg-3">
                 <div className="item">
-                  <span className="opacity-8 mb-5">Client:</span>
+                  <span className="opacity-8 mb-5">Country:</span>
                   <h6>{project.client}</h6>
                 </div>
               </div>
@@ -232,15 +232,15 @@ export default function ProjectDetails() {
                     key={index}
                     src={url}
                     alt={`${project.title} image ${index + 1}`}
-                    className="gallery-image"
+                    className=""
                     onError={(e) => {
                       e.target.src = "/assets/imgs/works/2/1.jpg";
-                      e.target.className = "gallery-image fallback";
+                      e.target.className = " fallback";
                     }}
                   />
                 ))
               ) : (
-                <img src="/assets/imgs/works/2/1.jpg" alt={`${project.title} fallback`} className="gallery-image fallback" />
+                <img src="/assets/imgs/works/2/1.jpg" alt={`${project.title} fallback`} className=" fallback" />
               )}
             </div>
           </div>

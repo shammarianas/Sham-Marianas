@@ -314,21 +314,25 @@ function Header() {
                 >
                   <div className="item card-pro mb-50">
                     <SingleImage
-                      coverImgUrl={project.featureImgUrl}
+                      coverImgUrl={project.coverImgUrl}
                       title={project.title}
                     />
-                    <div className="cont d-flex align-items-end p-3">
-                      <div>
+                    <div className="cont row p-3">
+                      <div className="col-8">
                         <span className="p-color mb-5 sub-title">
                           {project.category.charAt(0).toUpperCase() +
                             project.category.slice(1)}
                         </span>
                         <h6>{project.title}</h6>
                       </div>
-                      <div className="ml-auto d-flex align-items-center">
-                        <Link to={`/project-details/${project.id}`}>
+
+                      <div className="col-4 d-flex flex-column align-items-end justify-content-between">
+                        <span>{project.client}</span>
+                        <div className="pt-3">
+                          <Link to={`/project-details/${project.id}`}>
                           <span className="ti-arrow-top-right"></span>
                         </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
