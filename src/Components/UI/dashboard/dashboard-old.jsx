@@ -3404,7 +3404,7 @@ return (
                       </span>
                     </div>
                   </div>
-                  <p className="asset-description">{blog.excerpt || ""}</p>
+                  {/* <p className="asset-description">{blog.excerpt || ""}</p> */}
                   <div className="asset-footer">
                     <span className="asset-author">
                       <FiUser className="author-icon" /> by{" "}

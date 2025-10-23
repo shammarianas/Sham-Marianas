@@ -255,7 +255,7 @@ function BlogDetails() {
         }
         .header-blog .caption {
           padding: 2rem;
-          max-width: 90%;
+          max-width: 60%;
         }
         .header-blog h1 {
           font-size: 2.5rem;

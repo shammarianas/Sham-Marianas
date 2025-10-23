@@ -145,7 +145,7 @@ function Blogs() {
                             </Link>
                           </h3>
 
-                          <div
+                          {/* <div
                             className="blog-excerpt"
                             dangerouslySetInnerHTML={{
                               __html:
@@ -154,7 +154,7 @@ function Blogs() {
                                   ? blog.content.substring(0, 200) + "..."
                                   : ""),
                             }}
-                          />
+                          /> */}
 
                           <Link
                             to={`/blog-details/${blog.id}`}

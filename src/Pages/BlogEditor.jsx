@@ -101,33 +101,12 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   const [featuredImagePreview, setFeaturedImagePreview] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [tagInput, setTagInput] = useState("");
-  const [isEditorLoaded, setIsEditorLoaded] = useState(false); // **NEW**: Track editor load
+  const [contentLoaded, setContentLoaded] = useState(false); // **NEW: FIX FOR SPACE ISSUE**
   const featuredImageInputRef = useRef(null);
   const coverImageInputRef = useRef(null);
   const tagInputRef = useRef(null);
 
-  // **NEW**: Load content function
-  const loadContent = useCallback(() => {
-    if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
-      console.log("🔄 Loading content into Quill (ONCE):", blogToEdit.content);
-      try {
-        // Clear editor completely first
-        quill.setContents([]);
-        quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
-        
-        // Load content after small delay
-        setTimeout(() => {
-          const cleanContent = extractPureContent(blogToEdit.content);
-          quill.clipboard.dangerouslyPasteHTML(0, cleanContent, 'user');
-          console.log("✅ Content loaded successfully");
-        }, 50);
-      } catch (error) {
-        console.error("Error loading content:", error);
-      }
-    }
-  }, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
-
-  // **NEW**: Handle tag addition
+  // **FIXED: Handle tag addition**
   const handleTagAdd = (e) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
@@ -152,18 +131,6 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     }));
   };
 
-  const initializeEditor = () => {
-    if (quill && isOpen && !blogToEdit) {
-      setTimeout(() => {
-        quill.setContents([]);
-        quill.format('header', false);
-        quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
-        console.log("✅ Editor initialized with NORMAL PARAGRAPH (P)");
-        setIsEditorLoaded(true);
-      }, 100);
-    }
-  };
-
   const getCurrentContent = () => {
     if (!quill) return "";
     try {
@@ -175,7 +142,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     }
   };
 
-  // **FIXED**: Load existing blog data - SEPARATED content loading
+  // **FIXED #1: Load blog data ONLY - NO quill/content loading here**
   useEffect(() => {
     if (blogToEdit && isOpen) {
       console.log("📖 Loading existing blog data:", blogToEdit);
@@ -204,6 +171,9 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       if (blogToEdit.coverImageUrl) {
         setCoverImagePreview(blogToEdit.coverImageUrl);
       }
+
+      // **NEW: Reset contentLoaded flag for new edit session**
+      setContentLoaded(false);
     } else if (!blogToEdit && isOpen) {
       // Reset form for new blog
       setBlogData({
@@ -222,27 +192,57 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       setFeaturedImagePreview(null);
       setCoverImagePreview(null);
       setTagInput("");
+      setContentLoaded(false);
       if (featuredImageInputRef.current) featuredImageInputRef.current.value = "";
       if (coverImageInputRef.current) coverImageInputRef.current.value = "";
     }
-  }, [blogToEdit, isOpen]); // **REMOVED quill dependency**
+  }, [blogToEdit?.id, isOpen]); // **FIXED: Use blogToEdit?.id to prevent unnecessary runs**
 
-  // **NEW**: Separate effect for editor initialization
+  // **FIXED #2: SINGLE content loading - ONLY when quill ready AND content not loaded**
   useEffect(() => {
-    if (quill && isOpen) {
-      setIsEditorLoaded(true);
-      if (!blogToEdit) {
-        initializeEditor();
-      }
-    }
-  }, [quill, isOpen, blogToEdit]);
+    if (quill && isOpen && blogToEdit && !contentLoaded) {
+      console.log("🔄 Loading content ONCE into Quill");
+      
+      const timeoutId = setTimeout(() => {
+        try {
+          // Clear editor completely first
+          quill.setContents([]);
+          quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
+          
+          // Load content
+          const cleanContent = extractPureContent(blogToEdit.content);
+          quill.clipboard.dangerouslyPasteHTML(0, cleanContent, 'user');
+          
+          console.log("✅ Content loaded ONCE - marking as loaded");
+          setContentLoaded(true); // **PREVENTS RELOADING**
+        } catch (error) {
+          console.error("Error loading content:", error);
+          setContentLoaded(true); // Still mark as loaded to prevent loops
+        }
+      }, 150);
 
-  // **NEW**: Separate effect for loading content (ONLY when editor is ready)
-  useEffect(() => {
-    if (isEditorLoaded && blogToEdit) {
-      loadContent();
+      return () => clearTimeout(timeoutId); // **CLEANUP**
     }
-  }, [isEditorLoaded, loadContent]);
+  }, [quill, isOpen, blogToEdit, contentLoaded]); // **contentLoaded prevents re-runs**
+
+  // **FIXED #3: New blog initialization - ONLY when needed**
+  useEffect(() => {
+    if (quill && isOpen && !blogToEdit && !contentLoaded) {
+      const timeoutId = setTimeout(() => {
+        try {
+          quill.setContents([]);
+          quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
+          console.log("✅ New editor initialized");
+          setContentLoaded(true);
+        } catch (error) {
+          console.error("Error initializing editor:", error);
+          setContentLoaded(true);
+        }
+      }, 150);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [quill, isOpen, blogToEdit, contentLoaded]);
 
   // Custom CSS for header dropdown labels
   useEffect(() => {
@@ -431,7 +431,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       setFeaturedImagePreview(null);
       setCoverImagePreview(null);
       setTagInput("");
-      setIsEditorLoaded(false);
+      setContentLoaded(false); // **NEW: Reset content loaded flag**
       if (featuredImageInputRef.current) featuredImageInputRef.current.value = "";
       if (coverImageInputRef.current) coverImageInputRef.current.value = "";
       if (quill) {
@@ -667,18 +667,6 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
                   ✅ {blogData.tags.length} tag{blogData.tags.length > 1 ? 's' : ''} added
                 </p>
               )}
-            </div>
-
-            <div className="blog-form-group">
-              <label className="blog-form-label">Excerpt (Optional)</label>
-              <textarea 
-                name="excerpt" 
-                value={blogData.excerpt} 
-                onChange={handleInputChange} 
-                className="blog-form-textarea" 
-                placeholder="Short description for blog preview (160 chars max)..." 
-                rows="3" 
-              />
             </div>
 
             <div className="blog-form-group">
