@@ -93,7 +93,7 @@ export default function ProjectDetails() {
           padding: 0 5rem;
         }
         .project-section h2 {
-        width:50%;
+        width:40%;
           font-size: 2rem;
           font-weight: 700;
           color: #FFFFFF;
@@ -103,7 +103,7 @@ export default function ProjectDetails() {
           font-size: 1rem;
           line-height: 1.6;
           color: #D1D5DB;
-          max-width: 50%; /* Full width for description */
+          max-width: 60%; /* Full width for description */
           margin: 0 0 2rem 0; /* Adjusted margin, no auto for full width */
           text-align: left; /* Left-align text */
         }
