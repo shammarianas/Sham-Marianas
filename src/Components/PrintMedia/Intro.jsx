@@ -11,7 +11,7 @@ function Intro() {
                 <div>
                   <h6 className="sub-title main-color mb-15">Description</h6>
                   <h3 className="mb-30">
-                    Print That Powers Your Brand — Creative, Strategic, and
+                    Print That Powers Your Brand, Creative, Strategic, and
                     Impactful
                   </h3>
                 </div>
@@ -27,7 +27,7 @@ function Intro() {
                     need a high-impact brochure or a sleek business card, we
                     craft print experiences that demand attention and leave a
                     lasting impression. From concept to final print, we ensure
-                    every piece is crafted with purpose — capturing your brand’s
+                    every piece is crafted with purpose, capturing your brand’s
                     essence while inspiring action. Print media isn’t just about
                     aesthetics; it’s about creating materials that move your
                     audience, and that’s exactly what we deliver just look good…

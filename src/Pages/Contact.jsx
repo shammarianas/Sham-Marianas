@@ -19,9 +19,9 @@ function Contact() {
                   <h6 className="mb-15">Email</h6>
                   <p>info@shammarians.com</p>
                 </div>
-
                 <div className=" Contact-socialIcons mt-50">
                   {/* Social icon */}
+ 
               <div className="social-list">
   <a href="https://www.facebook.com/shammarianas/" className="hover-this">
     <div className="hover-anim">
@@ -43,17 +43,27 @@ function Contact() {
       <i className="fab fa-instagram"></i>
     </div>
   </a>
+  <a href="https://www.behance.net/shammarianas" className="hover-this">
+    <div className="hover-anim">
+      <i className="fab fa-behance"></i>
+    </div>
+  </a>
+  <a href="https://www.pinterest.com/shammarianas" className="hover-this">
+    <div className="hover-anim">
+      <i className="fa-brands fa-pinterest"></i>
+    </div>
+  </a>
 </div>
 
 <style jsx>{`
   .social-list {
     display: flex;
-    gap: 20px;
+    gap: 8px;
   }
 
   .social-list a {
-    width: 40px;
-    height: 40px;
+    width: 37px;
+    height: 37px;
     line-height: 40px;
     text-align: center;
     font-size: 13px;

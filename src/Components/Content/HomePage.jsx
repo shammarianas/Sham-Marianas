@@ -53,7 +53,7 @@ const BrandingPage = () => {
     {
       question: "How Does UI Design Differ from UX Design?",
       answer:
-        "UI design focuses on the visual aspects of a product—like colors, buttons, and layout—making it look appealing and easy to interact with.UX design, on the other hand, focuses on the overall experience, ensuring the product is user-friendly, intuitive, and enjoyable to use.",
+        "UI design focuses on the visual aspects of a product like colors, buttons, and layout making it look appealing and easy to interact with.UX design, on the other hand, focuses on the overall experience, ensuring the product is user-friendly, intuitive, and enjoyable to use.",
     },
     {
       question: "How Can Good UI/UX Design Enhance My Product?",

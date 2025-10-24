@@ -12,7 +12,7 @@ function Intro() {
                   <h6 className="sub-title main-color mb-15">Description</h6>
                   <h3 className="mb-30">
                     We Don&apos;t
-                    <span className="fw-300"> Just Build Stores — </span>
+                    <span className="fw-300"> Just Build Stores, </span>
                     <span className="fw-300">We Create Online Success.</span>
                   </h3>
                 </div>
@@ -21,7 +21,7 @@ function Intro() {
                 <div className="text">
                   <p className="mb-15">
                     At Sham Marianas, we go beyond designing e-commerce websites
-                    — we create immersive digital storefronts that wow your
+                   , we create immersive digital storefronts that wow your
                     customers and turn casual clicks into loyal buyers. Whether
                     you're launching your first e-commerce venture or looking to
                     expand, our custom-built solutions are designed for growth.
