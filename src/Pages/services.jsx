@@ -3,7 +3,7 @@ import AOS from "aos"; // Import AOS (Animate On Scroll) library
 
 import Lines from "../Components/Lines";
 import ProgressScroll from "../common/ProgressScroll";
-import Cursor from "../common/cusor";
+// import Cursor from "../common/cusor";
 import Marq2 from "../Components/marq2";
 import Header from "../Components/services/Header";
 // import Numbers from "../Components/services/Numbers";
@@ -25,7 +25,7 @@ export default function PageServices() {
 
   return (
     <>
-      <Cursor />
+      {/* <Cursor /> */}
       <ProgressScroll />
       <Lines />
       <div id="smooth-wrapper" ref={main}>

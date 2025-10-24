@@ -11,7 +11,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import ProgressScroll from "../common/ProgressScroll";
-import Cursor from "../common/cusor";
+// import Cursor from "../common/cusor";
 import { Link } from "react-router-dom";
 import loadBackgroundImages from "../common/loadBackgroudImages";
 import Marq2 from "../Components/marq2";
@@ -96,7 +96,7 @@ function Header() {
 
   return (
     <>
-      <Cursor />
+      {/* <Cursor /> */}
       <ProgressScroll />
       <header
         className="page-header bg-img section-padding valign"

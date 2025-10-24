@@ -17,7 +17,7 @@ function PrintMediaSolutions() {
       <section className="container section-padding">
         <div className="col-md-6">
           <h6 className="sub-title main-color mb-15">
-            From Concept to Impact — Print That Drives Success
+            From Concept to Impact, Print That Drives Success
           </h6>
 
           <div className="text">
@@ -28,8 +28,8 @@ function PrintMediaSolutions() {
               tirelessly to elevate your brand. Whether launching a bold
               campaign or showcasing your latest product, our print solutions
               are engineered to captivate, build trust, and spark engagement. We
-              take care of everything — from initial concept and creative
-              ideation to design, production, and delivery — ensuring your print
+              take care of everything, from initial concept and creative
+              ideation to design, production, and delivery, ensuring your print
               materials are aligned with your brand&apos;s voice, laser-focused
               on your message, and optimized for maximum impact. Because great
               print isn&apos;t just a visual; it&apos;s a strategic tool that
@@ -53,7 +53,7 @@ function PrintMediaSolutions() {
                     Print That Captivates and Converts
                   </h6>
                   <p>
-                    Print isn&apos;t just paper and ink — it&apos;s your
+                    Print isn&apos;t just paper and ink, it&apos;s your
                     brand&apos;s chance to make a lasting impression. At Sham
                     Marianas, we craft more than just visually striking
                     materials; we create experiences that connect, resonate, and
@@ -64,7 +64,7 @@ function PrintMediaSolutions() {
                     standout flyer, every design is carefully tailored to leave
                     a lasting mark. We blend cutting-edge design with smart
                     marketing strategy, ensuring your print materials don&apos;t
-                    just look great — they perform and deliver measurable
+                    just look great, they perform and deliver measurable
                     results.
                   </p>
                 </div>

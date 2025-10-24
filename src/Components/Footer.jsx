@@ -1,5 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import Cursor from "../common/cusor";
+
 
 function Footer() {
   const location = useLocation();
@@ -7,8 +9,11 @@ function Footer() {
 
   // Check if the current page is /stock or a category template page
   const isTemplatePage = path === "/stock" || path.includes("/category");
-
+  
   return (
+    <>
+<Cursor /> 
+          
     <footer className="clean-footer crev">
       <div className="container pb-40 pt-40 ontop">
         <div className="row justify-content-between">
@@ -186,6 +191,8 @@ function Footer() {
         <img src="/assets/imgs/patterns/blur1.png" alt="" />
       </div>
     </footer>
+
+    </>
   );
 }
 

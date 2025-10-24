@@ -24,7 +24,7 @@ function WebDev() {
             <p className="mb-15">
               In today&apos;s fast-moving digital world, your website is your
               24/7 storefront. A well-developed website builds trust, shows
-              credibility, and gives visitors a smooth, satisfying experience —
+              credibility, and gives visitors a smooth, satisfying experience,
               no matter the device or browser. At Sham Marianas, we combine fast
               performance, modern design, and strong SEO foundations to build
               websites that attract, engage, and convert. Whether it&apos;s your
@@ -60,9 +60,9 @@ function WebDev() {
                     search engine optimized (SEO), so they&apos;re built to rank
                     higher and bring in more traffic. Our goal is to create a
                     website that&apos;s easy to use and designed to turn
-                    visitors into loyal customers. Simply put — if your website
+                    visitors into loyal customers. Simply put, if your website
                     isn&apos;t delivering results, it&apos;s holding you back.
-                    Don&apos;t let your online presence fall behind — let us
+                    Don&apos;t let your online presence fall behind, let us
                     help you stand out in today&apos;s competitive digital
                     world.
                   </p>

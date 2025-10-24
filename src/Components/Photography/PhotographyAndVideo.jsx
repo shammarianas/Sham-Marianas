@@ -17,24 +17,24 @@ function PhotographyAndVideo() {
       <section className="container section-padding">
         <div className="col-md-6">
           <h6 className="sub-title main-color mb-15">
-            From Lens to Legacy — Visuals That Resonate
+            From Lens to Legacy, Visuals That Resonate
           </h6>
 
           <div className="text">
             <p className="mb-15">
               At Sham Marianas, our photography & video production services go
-              far beyond the lens. We don&apos;t just point and shoot — we tell
+              far beyond the lens. We don&apos;t just point and shoot, we tell
               your brand&apos;s story frame by frame. Whether it&apos;s bold
               product photography, cinematic brand videos, or crisp lifestyle
               visuals, we create content that stops the scroll, sparks
               curiosity, and drives action. Every image we capture is built to
-              speak your message — loud, clear, and beautifully. From creative
+              speak your message, loud, clear, and beautifully. From creative
               planning to final edit, we deliver full-scale visual production
               tailored for digital impact. Think scroll-stopping social media
               clips, polished promo videos, striking product shots, and branded
-              storytelling — all crafted with pro-level lighting, styling,
+              storytelling, all crafted with pro-level lighting, styling,
               direction, and editing. If your brand needs to be seen and felt;
-              we&apos;re here to bring that vision to life — one unforgettable
+              we&apos;re here to bring that vision to life, one unforgettable
               visual at a time.
             </p>
           </div>
@@ -52,11 +52,11 @@ function PhotographyAndVideo() {
               <div>
                 <div className="sec-head mb-50">
                   <h6 className="sub-title main-color mb-15">
-                    Framing Brands with Purpose — Photography & Video Production
+                    Framing Brands with Purpose, Photography & Video Production
                     That Converts
                   </h6>
                   <p>
-                    At Sham Marianas, we don&apos;t just create visuals — we craft
+                    At Sham Marianas, we don&apos;t just create visuals, we craft
                     high-impact photo and video content that tells your story,
                     connects with your audience, and fuels business growth. Our
                     photography & video production services are built to elevate
@@ -90,7 +90,7 @@ function PhotographyAndVideo() {
                         We offer a wide range of visual content services,
                         including product photography, fashion shoots, lifestyle
                         photography, corporate headshots, behind-the-scenes
-                        content, promotional videos, brand films, and more — all
+                        content, promotional videos, brand films, and more, all
                         tailored to your brand&apos;s needs.
                       </p>
                     </div>
@@ -123,7 +123,7 @@ function PhotographyAndVideo() {
                       <p className="">
                         Yes. All our photo and video content is formatted and
                         optimized for platforms like Instagram, Facebook,
-                        TikTok, YouTube, and your website — ensuring
+                        TikTok, YouTube, and your website, ensuring
                         high-quality visuals across every channel.
                       </p>
                     </div>
@@ -150,7 +150,7 @@ function PhotographyAndVideo() {
                     </div>
                     <div className="accordion-info">
                       <p className="">
-                        Yes, we handle the full production cycle — from shooting
+                        Yes, we handle the full production cycle, from shooting
                         to editing, color grading, sound design, and final
                         delivery.
                       </p>
