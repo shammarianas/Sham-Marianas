@@ -126,48 +126,49 @@ function Footer() {
               {/* Social icon */}
               <ul className="rest social-icon d-flex align-items-center">
                 <li className="hover-this cursor-pointer ml-10">
-                  <a
-                    href="https://www.youtube.com/c/ShamMarianasSM"
-                    target="_blank"
-                    className="hover-anim"
-                  >
+                  <a href="https://www.youtube.com/c/ShamMarianasSM" target="_blank">
+                    <div className="hover-anim circle-a">
                     <i className="fa-brands fa-youtube"></i>
+                  </div>
                   </a>
                 </li>
                 <li className="hover-this cursor-pointer ml-10">
-                  <a
-                    href="https://www.facebook.com/shammarianas"
-                    className="hover-anim"
-                    target="_blank"
+                <a href="https://www.facebook.com/shammarianas"
+                    target="_blank">
+                    <div
+                    className="hover-anim circle-a"
                   >
                     <i className="fab fa-facebook-f"></i>
-                  </a>
+                  </div>
+                </a>
                 </li>
                 <li className="hover-this cursor-pointer ml-10">
-                  <a
-                    href="https://www.behance.net/shammarianas"
-                    target="_blank"
-                    className="hover-anim"
+                 <a  href="https://www.behance.net/shammarianas"
+                    target="_blank">
+                   <div
+                   
+                    className="hover-anim circle-a"
                   >
                     <i className="fab fa-behance"></i>
+                  </div>
+                 </a>
+                </li>
+                <li className="hover-this cursor-pointer ml-10">
+                  <a  href="https://www.pinterest.com/shammarianas"
+                    target="_blank">
+                    <div
+                      className="hover-anim circle-a"
+                    >
+                      <i className="fa-brands fa-pinterest"></i>
+                  </div>
                   </a>
                 </li>
                 <li className="hover-this cursor-pointer ml-10">
-                  <a
-                    href="https://www.pinterest.com/shammarianas"
-                    className="hover-anim"
-                    target="_blank"
-                  >
-                    <i className="fa-brands fa-pinterest"></i>
-                  </a>
-                </li>
-                <li className="hover-this cursor-pointer ml-10">
-                  <a
-                    href="https://www.instagram.com/sham_marianas"
-                    className="hover-anim"
-                    target="_blank"
-                  >
+                  <a href="https://www.instagram.com/sham_marianas"
+                    target="_blank">
+                    <div className="hover-anim circle-a" >
                     <i className="fab fa-instagram"></i>
+                  </div>
                   </a>
                 </li>
               </ul>
