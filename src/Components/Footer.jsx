@@ -9,8 +9,10 @@ function Footer() {
 
   // Check if the current page is /stock or a category template page
   const isTemplatePage = path === "/stock" || path.includes("/category");
-<Cursor /> 
+  
   return (
+    <>
+<Cursor /> 
           
     <footer className="clean-footer crev">
       <div className="container pb-40 pt-40 ontop">
@@ -189,6 +191,8 @@ function Footer() {
         <img src="/assets/imgs/patterns/blur1.png" alt="" />
       </div>
     </footer>
+
+    </>
   );
 }
 

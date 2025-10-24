@@ -3,7 +3,7 @@ import AOS from "aos"; // Import AOS (Animate On Scroll) library
 // import image from "../assets/Images/b8.jpg";
 import Lines from "../Components/Lines";
 import ProgressScroll from "../common/ProgressScroll";
-// import Cursor from "../common/cusor";
+import Cursor from "../common/cusor";
 import Marq2 from "../Components/marq2";
 import Header from "../Components/stock/Header";
 
@@ -20,7 +20,7 @@ export default function StockPage() {
 
   return (
     <>
-      {/* <Cursor /> */}
+      <Cursor />
       <ProgressScroll />
       <Lines />
       <Header />
