@@ -11,7 +11,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import loadBackgroudImages from "../common/loadBackgroudImages";
-import Cursor from "../common/cusor";
+// import Cursor from "../common/cusor";
 import ProgressScroll from "../common/ProgressScroll";
 
 function Blogs() {
@@ -89,7 +89,7 @@ function Blogs() {
 
   return (
     <>
-      <Cursor />
+      {/* <Cursor /> */}
       <ProgressScroll />
 
       <div className="main-bgs">

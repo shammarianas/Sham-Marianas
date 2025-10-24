@@ -1,6 +1,6 @@
 import Lines from '../common/Lines';
 import ProgressScroll from '../common/ProgressScroll';
-import Cursor from '../common/cusor';
+// import Cursor from '../common/cusor';
 import LoadingScreen from '../common/loader';
 // import Footer from "../Components/Footer";
 // import Navbar from '../components/Navbar';
@@ -98,7 +98,7 @@ export default function BlogClassic() {
       </Helmet> */}
       <body>
         <LoadingScreen />
-        <Cursor />
+        {/* <Cursor /> */}
         <ProgressScroll />
         <Lines />
         {/* <Navbar /> */}

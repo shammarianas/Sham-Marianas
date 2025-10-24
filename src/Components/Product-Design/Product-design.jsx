@@ -33,7 +33,7 @@ function ProductDesign() {
               of a button, or the long-lasting quality of your product, we craft
               solutions that work in harmony with the user&apos;s needs. We
               blend aesthetics with function to create products that don&apos;t
-              just stand out — they become essentials.
+              just stand out, they become essentials.
             </p>
           </div>
         </div>

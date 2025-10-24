@@ -2,19 +2,16 @@
 /* Cursor
 -----------------------------------------------------------------*/
 
-.hover-this {
-  .hover-anim {
-    transition: transform 0.2s linear;
+.hover-this,  
+.hover-this  {
+   
+    // transition: transform 0.2s linear;
   }
-  // &:hover {
-  //   .hover-anim {
-  //     transform: translateY(-5px);
-  //   }
-  // }
-}
+
+
 
 .cursor {
-    // pointer-events: none;
+    pointer-events: none;
     position: fixed;
     padding: 0.3rem;
     background-color: #fff;

@@ -28,7 +28,7 @@ function Content() {
               content that not only ranks on search engines but also builds
               emotional connections with your readers. We use proven SEO
               strategies to ensure your content appears in front of the right
-              audience — while keeping the tone natural, human, and easy to
+              audience while keeping the tone natural, human, and easy to
               understand. Whether it&apos;s a blog post or a product page, every
               word we write is focused on one goal: helping you grow.
             </p>
@@ -50,7 +50,7 @@ function Content() {
                     Content That Converts, Ranks, and Builds Trust
                   </h6>
                   <p>
-                    You don&apos;t need generic content — you need writing that
+                    You don&apos;t need generic content you need writing that
                     tells your story, matches your tone, and turns interest into
                     action. Our experienced writers combine creativity with
                     strategy to craft content that&apos;s not just informative
@@ -78,7 +78,7 @@ function Content() {
                       <p className="">
                         It helps you communicate your message clearly, attract
                         your target audience, and rank higher on search engines
-                        — all while building a strong brand identity.
+                        all while building a strong brand identity.
                       </p>
                     </div>
                   </div>
@@ -106,7 +106,7 @@ function Content() {
                       <p className="">
                         Yes! We take the time to understand your brand
                         personality and write in a tone that reflects your
-                        identity — whether it&apos;s casual, professional,
+                        identity whether it&apos;s casual, professional,
                         playful, or formal.
                       </p>
                     </div>
@@ -121,7 +121,7 @@ function Content() {
                         Not at all. Based on your company's objectives and
                         keyword analysis, we may assist in coming up with and
                         recommending content ideas. Or we can write based on
-                        your brief — whatever works for you.
+                        your brief whatever works for you.
                       </p>
                     </div>
                   </div>

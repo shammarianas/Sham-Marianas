@@ -5,7 +5,7 @@ import Intro from "../Components/landing/Intro";
 import Marq from "../Components/marq2";
 import Services from "../Components/landing/Services";
 import Team from "../Components/landing/Team";
-import Cursor from "../common/cusor";
+// import Cursor from "../common/cusor";
 import ProgressScroll from "../common/ProgressScroll";
 import Clients from "../Components/landing/Clients";
 import Contact from "../Components/landing/Contact";
@@ -24,7 +24,7 @@ const Home = () => {
 
   return (
     <>
-      <Cursor />
+      {/* <Cursor /> */}
       <ProgressScroll />
       <div id="smooth-wrapper" ref={main}>
         <main className="main-bg o-hidden">
