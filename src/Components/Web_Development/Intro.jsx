@@ -34,7 +34,7 @@ function Intro() {
                 <div className="text">
                   <p className="mb-15">
                     At Sham Marianas, we create websites that do more than just
-                    look great — they load fast, run smoothly on all devices,
+                    look great, they load fast, run smoothly on all devices,
                     and leave a strong first impression. With responsive
                     layouts, clean code, and SEO-friendly structures, your site
                     will not only look professional but also rank higher and
@@ -42,9 +42,9 @@ function Intro() {
                     experiences that grow with your business. From fully
                     customized designs that reflect your brand&apos;s voice to
                     smart features like booking systems, forms, and online
-                    stores — everything is tailored to your needs. You&apos;ll
+                    stores, everything is tailored to your needs. You&apos;ll
                     have full control to update your content easily, without any
-                    tech skills — just real results.
+                    tech skills, just real results.
                   </p>
 
                   <div className="mt-30">

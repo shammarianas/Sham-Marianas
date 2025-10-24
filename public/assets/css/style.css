@@ -401,7 +401,9 @@ figure {
   background-repeat: repeat;
 }
 
-.social-icon a {
+
+
+.social-icon .circle-a {
   width: 42px;
   height: 42px;
   line-height: 42px;
@@ -4836,7 +4838,7 @@ footer .subscribe-minimal button {
   background: transparent;
   border: 0;
 }
-footer .subscribe-minimal .social-icon a,
+footer .subscribe-minimal .social-icon .circle-a,
 .Contact-socialIcons .social-icon a {
   width: 40px;
   height: 40px;

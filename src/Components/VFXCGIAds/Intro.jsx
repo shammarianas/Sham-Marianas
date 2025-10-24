@@ -11,7 +11,7 @@ function Intro() {
                 <div>
                   <h6 className="sub-title main-color mb-15">Description</h6>
                   <h3 className="mb-30">
-                    Creating the Unreal — VFX & CGI Ads That Captivate and
+                    Creating the Unreal, VFX & CGI Ads That Captivate and
                     Convert
                   </h3>
                 </div>
@@ -19,13 +19,13 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, we turn imagination into impact — crafting
+                    At Sham Marianas, we turn imagination into impact, crafting
                     cinematic visuals that not only dazzle the eye but also
                     drive real results. Our VFX (visual effects) and CGI
                     (computer-generated imagery) services merge storytelling
                     with next-level design to create ads that demand attention
                     and inspire action. From surreal animations to lifelike 3D
-                    worlds, we breathe digital life into your ideas — building
+                    worlds, we breathe digital life into your ideas, building
                     visual experiences that break boundaries, stir emotions, and
                     amplify your brand message. Whether it’s a high-energy
                     product ad or a futuristic brand film, we bring creativity

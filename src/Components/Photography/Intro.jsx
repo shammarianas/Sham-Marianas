@@ -19,13 +19,13 @@ function Intro() {
                 <div className="text">
                   <p className="mb-15">
                     At Sham Marianas, photography & video production is where
-                    storytelling meets strategy — capturing emotion, building
+                    storytelling meets strategy, capturing emotion, building
                     connection, and elevating your brand. From stunning product
                     shoots to cinematic brand videos, we create visuals that
                     your audience won&apos;t forget. Whether you're launching
                     something new, introducing your team, or shaping your brand,
                     our creative team turns your ideas into powerful visuals. We
-                    craft every shot with purpose — to catch attention, spark
+                    craft every shot with purpose, to catch attention, spark
                     interest, and drive results. We don&apos;t just make videos; we
                     create visual stories that connect and deliver.
                   </p>

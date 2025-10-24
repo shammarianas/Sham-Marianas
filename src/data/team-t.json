@@ -2,31 +2,26 @@
   {
     "img": "/assets/imgs/patterns/about-img.png",
     "name": "Sahrish Anfal",
-    "subName": "Web Developer"
+    "subName": "Full Stack Developer"
   },
   {
     "img": "/assets/imgs/patterns/about-img.png",
-    "name": "Nurudeen Mustapha",
-    "subName": "UI/UX Designer"
+    "name": "Muhammad Ahmed",
+    "subName": "Creative Multimedia Designer"
   },
   {
     "img": "/assets/imgs/patterns/about-img.png",
-    "name": "Aman",
-    "subName": "SEO Expert"
+    "name": "Mustapha Nurudeen",
+    "subName": "Full Stack Developer"
   },
   {
     "img": "/assets/imgs/patterns/about-img.png",
-    "name": "Ahmed Khaled",
-    "subName": "SEO Marckting"
+    "name": "Aiman",
+    "subName": "SEO & Content Marketing Specialist"
   },
   {
     "img": "/assets/imgs/patterns/about-img.png",
-    "name": "Brendan Fraser",
-    "subName": "UI/UX Designer"
-  },
-  {
-    "img": "/assets/imgs/patterns/about-img.png",
-    "name": "Ahmed Khaled",
-    "subName": "Web Designer"
+    "name": " jack terry",
+    "subName": "Digital Marketing Specialist"
   }
 ]

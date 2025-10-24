@@ -20,7 +20,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, we do more than product design — we bring
+                    At Sham Marianas, we do more than product design, we bring
                     bold ideas to life. Whether it&apos;s a sleek gadget or a smart
                     everyday solution, we turn your vision into a tangible
                     product that looks incredible, feels right, and works
@@ -28,7 +28,7 @@ function Intro() {
                     crafted with purpose, precision, and people in mind. We
                     balance beauty with functionality to create market-ready
                     products that stand out on the shelf and in your customer&apos;s
-                    hands. With us, your product doesn&apos;t just exist — it makes
+                    hands. With us, your product doesn&apos;t just exist, it makes
                     an impact.
                   </p>
 
