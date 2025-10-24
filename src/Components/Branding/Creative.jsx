@@ -34,7 +34,7 @@ function Creativity() {
                   More than just looks, great branding creates emotional
                   connections. It makes your business feel relatable and
                   reliable, encouraging customer loyalty and repeat visits. A
-                  well-designed brand doesn&apos;t just attract attention — it
+                  well-designed brand doesn&apos;t just attract attention it
                   builds lasting relationships.
                 </p>
               </div>

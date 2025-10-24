@@ -11,22 +11,22 @@ function Intro() {
                 <div>
                   <h6 className="sub-title main-color mb-15">Description</h6>
                   <h3 className="mb-30">
-                    Shaping Ideas Into AI-Powered Solutions That Work for You
+                    Shaping Ideas Into AI Powered Solutions That Work for You
                   </h3>
                 </div>
               </div>
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, we turn imagination into impact — crafting
+                    At Sham Marianas, we turn imagination into impact crafting
                     cinematic visuals that not only dazzle the eye but also
                     drive real results. Our VFX (visual effects) and CGI
-                    (computer-generated imagery) services merge storytelling
+                    (computer generated imagery) services merge storytelling
                     with next-level design to create ads that demand attention
                     and inspire action. From surreal animations to lifelike 3D
-                    worlds, we breathe digital life into your ideas — building
+                    worlds, we breathe digital life into your ideas building
                     visual experiences that break boundaries, stir emotions, and
-                    amplify your brand message. Whether it’s a high-energy
+                    amplify your brand message. Whether it’s a high energy
                     product ad or a futuristic brand film, we bring creativity
                     and precision to every frame.
                   </p>

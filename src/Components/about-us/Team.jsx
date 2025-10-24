@@ -23,7 +23,7 @@ function Team() {
                 <div className="bg-blur">
                   <div className="img">
                     <img src={item.img} alt="" />
-                    <div className="social">
+                    {/* <div className="social">
                       <div className="links">
                         <a
                           href="https://www.facebook.com/shammarianas
@@ -38,7 +38,7 @@ function Team() {
                           <i className="fab fa-instagram"></i>
                         </a>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                   <div className="circle-blur">
                     <img src="/assets/imgs/patterns/blur1.png" alt="" />

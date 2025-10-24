@@ -26,7 +26,7 @@ function EcommerceDev() {
               fast-paced digital world, your e-commerce website is your most
               powerful sales tool, available 24/7 and reaching customers across
               the globe. A well-designed online store does more than just
-              display products — it builds trust, drives conversions, and
+              display products, it builds trust, drives conversions, and
               ensures your customers keep coming back for more. Speed, clarity,
               and simplicity are everything in e-commerce. From fast loading
               times to clear product listings and a seamless checkout process,
@@ -35,7 +35,7 @@ function EcommerceDev() {
               your store performs at its peak. With features like secure payment
               gateways, easy inventory management, and customized product pages,
               we create an experience that&apos;s not just smooth but memorable
-              — helping you convert visitors into loyal customers.
+             , helping you convert visitors into loyal customers.
             </p>
           </div>
         </div>
@@ -57,7 +57,7 @@ function EcommerceDev() {
                   <p>
                     E-Commerce That Delivers Results and Drives Growth In
                     today&apos;s world, simply having a website isn&apos;t
-                    enough — customers expect a seamless e-commerce experience
+                    enough, customers expect a seamless e-commerce experience
                     that&apos;s fast, secure, and easy to navigate. Our tailored
                     e-commerce solutions are designed to meet these high
                     expectations, giving your business the tools it needs to
