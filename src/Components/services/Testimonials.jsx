@@ -138,7 +138,7 @@ function Testimonials() {
                   </h6>
                   <div className="text">
                     <p>
-                      We gave Sham-Marianas a challenging task—to simplify a
+                      We gave Sham-Marianas a challenging task to simplify a
                       complex issue and engage key stakeholders. They delivered
                       an innovative, compelling solution that captured attention
                       and drove results.
@@ -201,7 +201,7 @@ function Testimonials() {
                   <div className="text">
                     <p>
                       We partnered with Sham-Marianas to elevate our brand and
-                      market positioning. They delivered exceptional results—an
+                      market positioning. They delivered exceptional results an
                       impressive brand identity, strategic campaigns, and
                       outstanding support at every step.
                     </p>
