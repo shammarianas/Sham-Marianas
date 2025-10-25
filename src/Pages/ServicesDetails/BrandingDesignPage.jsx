@@ -11,7 +11,7 @@ const BrandingDesignPage = () => {
     title: "The Importance of Effective Branding Design",
     paragraphs: [
       "Effective branding design is key to building trust and recognition. It gives your business a unique identity that helps you stand out and stay memorable in a competitive market. From your logo to your website, consistent visuals create a professional and polished image.",
-      "More than just looks, great branding creates emotional connections. It makes your business feel relatable and reliable, encouraging customer loyalty and repeat visits. A well-designed brand doesn't just attract attention — it builds lasting relationships.",
+      "More than just looks, great branding creates emotional connections. It makes your business feel relatable and reliable, encouraging customer loyalty and repeat visits. A well-designed brand doesn't just attract attention, it builds lasting relationships.",
     ],
     image: "/assets/imgs/Branding/01.png",
   };

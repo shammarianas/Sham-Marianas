@@ -10,20 +10,20 @@ const VideoProductionPage = () => {
   // const sectionOne = {
   //   title: "From Lens to Legacy Visuals That Resonate",
   //   paragraphs: [
-  //     "Our photography & video production services go far beyond the lens. We don’t just point and shoot — we tell your brand’s story frame by frame. Whether it’s bold product photography, cinematic brand videos, or crisp lifestyle visuals, we create content that stops the scroll, sparks curiosity, and drives action. Every image we capture is built to speak your message — loud, clear, and beautifully.",
+  //     "Our photography & video production services go far beyond the lens. We don’t just point and shoot,  we tell your brand’s story frame by frame. Whether it’s bold product photography, cinematic brand videos, or crisp lifestyle visuals, we create content that stops the scroll, sparks curiosity, and drives action. Every image we capture is built to speak your message,  loud, clear, and beautifully.",
 
-  //     "From creative planning to final edit, we deliver full-scale visual production tailored for digital impact. Think scroll-stopping social media clips, polished promo videos, striking product shots, and branded storytelling — all crafted with pro-level lighting, styling, direction, and editing. If your brand needs to be seen and felt, we’re here to bring that vision to life — one unforgettable visual at a time.",
+  //     "From creative planning to final edit, we deliver full-scale visual production tailored for digital impact. Think scroll-stopping social media clips, polished promo videos, striking product shots, and branded storytelling,  all crafted with pro-level lighting, styling, direction, and editing. If your brand needs to be seen and felt, we’re here to bring that vision to life,  one unforgettable visual at a time.",
   //   ],
   //   image: "/assets/imgs/PhotographyVideo/08.png",
   // };
 
   const sectionTwo = {
     title:
-      "Framing Brands with Purpose — Photography & Video Production That Converts",
+      "Framing Brands with Purpose,  Photography & Video Production That Converts",
     paragraphs: [
       <>
         At <span className="text-bold underline main-color">Sham Marianas</span>
-        , it’s more than just visuals — it’s about crafting high-impact photo
+        , it’s more than just visuals,  it’s about crafting high-impact photo
         and video content that tells your story, connects with your audience,
         and fuels business growth. Our photography & video production services
         are built to elevate your brand through clear, compelling, and
@@ -38,7 +38,7 @@ const VideoProductionPage = () => {
       question:
         "What types of photography and video production services do you offer?",
       answer:
-        "We offer a wide range of visual content services, including product photography, fashion shoots, lifestyle photography, corporate headshots, behind-the-scenes content, promotional videos, brand films, and more — all tailored to your brand’s needs.",
+        "We offer a wide range of visual content services, including product photography, fashion shoots, lifestyle photography, corporate headshots, behind-the-scenes content, promotional videos, brand films, and more,  all tailored to your brand’s needs.",
     },
     {
       question: "Do you help with concept and creative direction?",
@@ -48,7 +48,7 @@ const VideoProductionPage = () => {
     {
       question: "Will the content be optimized for social media and websites?",
       answer:
-        "Yes. All our photo and video content is formatted and optimized for platforms like Instagram, Facebook, TikTok, YouTube, and your website — ensuring high-quality visuals across every channel.",
+        "Yes. All our photo and video content is formatted and optimized for platforms like Instagram, Facebook, TikTok, YouTube, and your website,  ensuring high-quality visuals across every channel.",
     },
     {
       question: "How long does it take to complete a project?",
@@ -58,7 +58,7 @@ const VideoProductionPage = () => {
     {
       question: "Do you provide editing and post-production as well?",
       answer:
-        "Yes, we handle the full production cycle — from shooting to editing, color grading, sound design, and final delivery.",
+        "Yes, we handle the full production cycle,  from shooting to editing, color grading, sound design, and final delivery.",
     },
 
     {
@@ -86,11 +86,11 @@ const VideoProductionPage = () => {
               Sham Marianas
             </span>{" "}
             photography & video production is where storytelling meets strategy
-            — capturing emotion, building connection, and elevating your brand.
+           ,  capturing emotion, building connection, and elevating your brand.
             From stunning product shoots to cinematic brand videos, we create
             visuals that your audience won’t forget.
           </>,
-          "Whether you're launching something new, introducing your team, or shaping your brand, our creative team turns your ideas into powerful visuals. We craft every shot with purpose — to catch attention, spark interest, and drive results. We don’t just make videos; we create visual stories that connect and deliver.",
+          "Whether you're launching something new, introducing your team, or shaping your brand, our creative team turns your ideas into powerful visuals. We craft every shot with purpose,  to catch attention, spark interest, and drive results. We don’t just make videos; we create visual stories that connect and deliver.",
         ]}
         listItems={[
           "Brand & Product Photography",
@@ -123,21 +123,21 @@ const VideoProductionPage = () => {
               <div className="text">
                 <p className="mb-15 align-text">
                   Our photography & video production services go far beyond the
-                  lens. We don’t just point and shoot — we tell your brand’s
+                  lens. We don’t just point and shoot,  we tell your brand’s
                   story frame by frame. Whether it’s bold product photography,
                   cinematic brand videos, or crisp lifestyle visuals, we create
                   content that stops the scroll, sparks curiosity, and drives
                   action. Every image we capture is built to speak your message
-                  — loud, clear, and beautifully.
+                 ,  loud, clear, and beautifully.
                 </p>
                 <p className="mb-15 align-text">
                   From creative planning to final edit, we deliver full-scale
                   visual production tailored for digital impact. Think
                   scroll-stopping social media clips, polished promo videos,
-                  striking product shots, and branded storytelling — all crafted
+                  striking product shots, and branded storytelling,  all crafted
                   with pro-level lighting, styling, direction, and editing. If
                   your brand needs to be seen and felt, we’re here to bring that
-                  vision to life — one unforgettable visual at a time.
+                  vision to life,  one unforgettable visual at a time.
                 </p>
               </div>
             </div>
@@ -163,7 +163,7 @@ const VideoProductionPage = () => {
               <div>
                 <div className="sec-head mb-50 text-left">
                   <h2 className="sub-title-new main-color mb-15">
-                    Framing Brands with Purpose — Photography & Video Production
+                    Framing Brands with Purpose,  Photography & Video Production
                     That Converts
                   </h2>
                   <p className="mb-15 align-text">
@@ -171,7 +171,7 @@ const VideoProductionPage = () => {
                     <span className="text-bold underline main-color">
                       Sham Marianas
                     </span>
-                    , it’s more than just visuals — it’s about crafting
+                    , it’s more than just visuals,  it’s about crafting
                     high-impact photo and video content that tells your story,
                     connects with your audience, and fuels business growth. Our
                     photography & video production services are built to elevate

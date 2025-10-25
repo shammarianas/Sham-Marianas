@@ -8,9 +8,9 @@ import Marq2 from "../../Components/marq2";
 
 const WebDevelopmentPage = () => {
   const sectionOne = {
-    title: "Your Website is Your — Business’s Digital Powerhouse",
+    title: "Your Website is Your,  Business’s Digital Powerhouse",
     paragraphs: [
-      "In today’s fast-moving digital world, your website is your 24/7 storefront. A well-developed website builds trust, shows credibility, and gives visitors a smooth, satisfying experience — no matter the device or browser.",
+      "In today’s fast-moving digital world, your website is your 24/7 storefront. A well-developed website builds trust, shows credibility, and gives visitors a smooth, satisfying experience,  no matter the device or browser.",
       <>
         At <span className="text-bold underline main-color">Sham Marianas</span>
         , we combine fast performance, modern design, and strong SEO foundations
@@ -37,7 +37,7 @@ const WebDevelopmentPage = () => {
         create a website that’s easy to use and designed to turn visitors into
         loyal customers.
       </>,
-      "Simply put — if your website isn’t delivering results, it’s holding you back. Don’t let your online presence fall behind — let us help you stand out in today’s competitive digital world.",
+      "Simply put,  if your website isn’t delivering results, it’s holding you back. Don’t let your online presence fall behind,  let us help you stand out in today’s competitive digital world.",
     ],
     image: "/assets/imgs/WebDev/003.png",
   };
@@ -92,7 +92,7 @@ const WebDevelopmentPage = () => {
             your site will not only look professional but also rank higher and
             perform consistently across all browsers.
           </>,
-          "We build digital experiences that grow with your business. From fully customized designs that reflect your brand’s voice to smart features like booking systems, forms, and online stores — everything is tailored to your needs. You’ll have full control to update your content easily, without any tech skills just real results.",
+          "We build digital experiences that grow with your business. From fully customized designs that reflect your brand’s voice to smart features like booking systems, forms, and online stores,  everything is tailored to your needs. You’ll have full control to update your content easily, without any tech skills just real results.",
         ]}
         listItems={[
           "Ibexa DXP Development",
