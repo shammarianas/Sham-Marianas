@@ -90,7 +90,7 @@ function UiUx() {
                     <div className="accordion-info">
                       <p className="">
                         UI design focuses on the visual aspects of a
-                        product—like colors, buttons, and layout—making it look
+                        product like colors, buttons, and layout making it look
                         appealing and easy to interact with. UX design, on the
                         other hand, focuses on the overall experience, ensuring
                         the product is user-friendly, intuitive, and enjoyable

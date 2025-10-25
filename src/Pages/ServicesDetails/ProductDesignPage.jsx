@@ -11,7 +11,7 @@ const ProductDesignPage = () => {
     title: "Crafting Products That Speak to the Senses",
     paragraphs: [
       <>
-        True product design lives in the details— At{" "}
+        True product design lives in the details At{" "}
         <span className="text-bold underline main-color">Sham Marianas</span>,
         we transform bold ideas into beautifully crafted physical products that
         look stunning, feel right, and work effortlessly.
@@ -45,7 +45,7 @@ const ProductDesignPage = () => {
       <>
         With{" "}
         <span className="text-bold underline main-color">Sham Marianas</span>,
-        your product won’t just fit in—it will stand out, engage users, and make
+        your product won’t just fit in it will stand out, engage users, and make
         a lasting impact in the market.
       </>,
     ],
