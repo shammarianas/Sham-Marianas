@@ -18,7 +18,7 @@ const ContentServicePage = () => {
         we write content that not only ranks on search engines but also builds
         emotional connections with your readers.
       </>,
-      "We use proven SEO strategies to ensure your content appears in front of the right audience — while keeping the tone natural, human, and easy to understand.",
+      "We use proven SEO strategies to ensure your content appears in front of the right audience,  while keeping the tone natural, human, and easy to understand.",
       "Whether it’s a blog post or a product page, every word we write is focused on one goal: helping you grow.",
     ],
     image: "/assets/imgs/Content/05.png",
@@ -27,7 +27,7 @@ const ContentServicePage = () => {
   const sectionTwo = {
     title: "Content That Converts, Ranks, and Builds Trust",
     paragraphs: [
-      "You don’t need generic content — you need writing that tells your story, matches your tone, and turns interest into action. Our experienced writers combine creativity with strategy to craft content that’s not just informative but persuasive.",
+      "You don’t need generic content,  you need writing that tells your story, matches your tone, and turns interest into action. Our experienced writers combine creativity with strategy to craft content that’s not just informative but persuasive.",
       "We research your audience, understand your industry, and align every piece of content with your brand goals. The result? Writing that is intriguing, self-assured, and clear keeps readers interested and maintains Google ranking.",
     ],
     image: "/assets/imgs/Content/005.png",
@@ -36,7 +36,7 @@ const ContentServicePage = () => {
     {
       question: "Why is professional content writing important?",
       answer:
-        "It helps you communicate your message clearly, attract your target audience, and rank higher on search engines — all while building a strong brand identity.",
+        "It helps you communicate your message clearly, attract your target audience, and rank higher on search engines,  all while building a strong brand identity.",
     },
     {
       question: "Do you write SEO-optimized content?",
@@ -46,12 +46,12 @@ const ContentServicePage = () => {
     {
       question: "Can you match my brand’s tone and voice?",
       answer:
-        "Yes! We take the time to understand your brand personality and write in a tone that reflects your identity — whether it’s casual, professional, playful, or formal.",
+        "Yes! We take the time to understand your brand personality and write in a tone that reflects your identity,  whether it’s casual, professional, playful, or formal.",
     },
     {
       question: "Do I need to provide topics or ideas?",
       answer:
-        "Not at all. Based on your company's objectives and keyword analysis, we may assist in coming up with and recommending content ideas. Or we can write based on your brief — whatever works for you.",
+        "Not at all. Based on your company's objectives and keyword analysis, we may assist in coming up with and recommending content ideas. Or we can write based on your brief,  whatever works for you.",
     },
     {
       question: "How do I get started?",
@@ -82,8 +82,8 @@ const ContentServicePage = () => {
             attention-grabbing web copy to SEO-friendly blogs, we create content
             that builds trust, boosts traffic, and drives real results.
           </>,
-          "Whether you're building a new website or refreshing your existing one, our content writing services are designed to bring clarity, creativity, and purpose to every page. We focus on user intent, search engine visibility, and brand consistency — turning passive readers into active customers.",
-          "With us, your brand won’t just be heard — it will be remembered",
+          "Whether you're building a new website or refreshing your existing one, our content writing services are designed to bring clarity, creativity, and purpose to every page. We focus on user intent, search engine visibility, and brand consistency,  turning passive readers into active customers.",
+          "With us, your brand won’t just be heard,  it will be remembered",
         ]}
         listItems={[
           "Website Copywriting",

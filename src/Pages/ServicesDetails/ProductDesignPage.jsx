@@ -17,7 +17,7 @@ const ProductDesignPage = () => {
         look stunning, feel right, and work effortlessly.
       </>,
       "Every curve and edge is thoughtfully designed for maximum comfort and functionality. We ensure each product is user-friendly, durable, and easy to use, with materials that elevate the experience and designs that make every interaction feel intuitive. Whether it’s the seamless flow of a touch screen, the responsive feel of a button, or the long-lasting quality of your product, we craft solutions that work in harmony with the user’s needs.",
-      "We blend aesthetics with function to create products that don’t just stand out — they become essentials.",
+      "We blend aesthetics with function to create products that don’t just stand out,  they become essentials.",
     ],
 
     image: "/assets/imgs/ProductDesign/006.png",
@@ -97,13 +97,13 @@ const ProductDesignPage = () => {
             <span className="text-bold text-left underline main-color">
               Sham Marianas
             </span>{" "}
-            we do more than product design — we bring bold ideas to life.
+            we do more than product design,  we bring bold ideas to life.
             Whether it’s a sleek gadget or a smart everyday solution, we turn
             your vision into a tangible product that looks incredible, feels
             right, and works flawlessly.
           </>,
           "From concept to creation, our designs are crafted with purpose, precision, and people in mind. We balance beauty with functionality to create market-ready products that stand out on the shelf and in your customer’s hands.",
-          "With us, your product doesn’t just exist — it makes an impact."
+          "With us, your product doesn’t just exist,  it makes an impact."
         ]}
         listItems={[
           "Industrial Product Design",

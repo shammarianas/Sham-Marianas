@@ -36,7 +36,7 @@ const DigitalMaketerPage = () => {
         attention but convert it into real business results. Whether we’re
         setting your brand’s tone, launching viral campaigns, or guiding
         customers through tailored marketing funnels, we ensure your content
-        isn’t just seen — it’s remembered, trusted, and acted upon.
+        isn’t just seen,  it’s remembered, trusted, and acted upon.
       </>,
       "From product launches to re-engaging past customers, we build digital experiences that deliver not just quick wins but sustained, long-term growth.",
     ],
@@ -52,17 +52,17 @@ const DigitalMaketerPage = () => {
       question:
         "Why do I need professional social media and digital marketing?",
       answer:
-        "Because your audience is online — and so is your competition. A solid strategy helps you cut through the noise, build real connections, and drive results.",
+        "Because your audience is online,  and so is your competition. A solid strategy helps you cut through the noise, build real connections, and drive results.",
     },
     {
       question: "Which platforms do you work with?",
       answer:
-        "We manage campaigns and content across Instagram, Facebook, LinkedIn, YouTube, TikTok, and more — wherever your audience is.",
+        "We manage campaigns and content across Instagram, Facebook, LinkedIn, YouTube, TikTok, and more,  wherever your audience is.",
     },
     {
       question: "Will you create the content too?",
       answer:
-        "Yes! We handle the entire process — from planning to designing, writing, and publishing—so your brand stays consistent and professional.",
+        "Yes! We handle the entire process,  from planning to designing, writing, and publishing—so your brand stays consistent and professional.",
     },
     {
       question: "Can you run paid ads for me?",
@@ -98,11 +98,11 @@ const DigitalMaketerPage = () => {
             <span className="text-bold text-left underline main-color">
               Sham Marianas
             </span>{" "}
-            we elevate social media management into an art — creating digital
+            we elevate social media management into an art,  creating digital
             experiences that grab attention, spark conversations, and drive real
             business growth.
           </>,
-          "Whether you’re a new brand looking to build your presence or an established name aiming to scale, our social media and digital marketing solutions are tailored for results. From strategic content creation to ROI-driven ad campaigns, we help you connect, engage, and convert — all while staying true to your brand’s voice. With us, your digital success isn’t just possible — it’s inevitable.",
+          "Whether you’re a new brand looking to build your presence or an established name aiming to scale, our social media and digital marketing solutions are tailored for results. From strategic content creation to ROI-driven ad campaigns, we help you connect, engage, and convert,  all while staying true to your brand’s voice. With us, your digital success isn’t just possible,  it’s inevitable.",
         ]}
         listItems={[
           "Social Media Management",

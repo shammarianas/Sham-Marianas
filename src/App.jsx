@@ -53,6 +53,9 @@ import Success from "./Pages/Success";
 import CategoryTemplate from "./Pages/Types/CategoryTemplate";
 import PageTeam from "./Pages/Page-team";
 import Error from "./Pages/Error";
+import PrivacyPolicy from "./Pages/Get Started/PrivacyPolice";
+import TermsandCondition from "./Pages/Get Started/Terms&Condition";
+// import Community from "./Pages/Get Started/Community";
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -113,6 +116,9 @@ export const AppRoutes = () => (
     <Route path="/services/demo" element={<Demo />} />
     <Route path="/:Category" element={<CategoryTemplate />} />
     <Route path="*" element={<Error />} />
+    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+    <Route path="/terms-and-conditions" element={<TermsandCondition />} />
+    {/* <Route path="/community" element={<Community />} /> */}
   </Routes>
 );
 

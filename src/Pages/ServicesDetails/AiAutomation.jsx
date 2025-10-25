@@ -74,7 +74,7 @@ const AiAutomationPage = () => {
         overlayDark="8"
       />
       <IntroSection
-        title="Creating the Unreal — "
+        title="Creating the Unreal, "
         highlightedWords={["Shaping Ideas Into AI-Powered Solutions That Work for You"]}
         customClass="intro-webdev-section" // 👈 Custom class added here
         paragraphs={[
