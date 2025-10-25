@@ -9132,3 +9132,41 @@ footer.clean-footer.crev .circle-blur {
     word-break: break-word; 
     overflow-wrap: break-word;
 }
+
+
+
+
+
+
+
+/* Poilce style.................... */
+
+/* Add these classes if not already present */
+.mx-size {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: justify;
+}
+
+.p-color {
+  color: #c6c8c9;
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+/* Add if needed for list styling */
+.list-decimal {
+  list-style-type: decimal;
+}
+
+/* Heading styles */
+.fz-30 {
+  font-size: 30px !important;
+}
+
+.fw-600 {
+  font-weight: 600 !important;
+}
+.fotter-police-p{
+  font-size: 16px;
+}

@@ -95,13 +95,13 @@ function Footer() {
                   <h6 className="sub-title mb-30">Get Started</h6>
                   <ul className="rest fz-14 opacity-7">
                     <li className="mb-15">
-                      <a href="#">Privacy Policy</a>
+                      <Link to="/privacy-policy">Privacy Policy</Link>
                     </li>
                     <li className="mb-15">
-                      <a href="#">Terms & Conditions</a>
+                      <a href="/terms-and-conditions">Terms & Conditions</a>
                     </li>
                     <li className="mb-15">
-                      <a href="#">Community</a>
+                      <a href="/community">Community</a>
                     </li>
                     <li className="mb-15">
                       <a href="#">Help Center</a>

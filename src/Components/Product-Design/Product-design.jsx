@@ -22,7 +22,7 @@ function ProductDesign() {
 
           <div className="text">
             <p className="mb-15">
-              True product design lives in the details—at Sham Marianas, we
+              True product design lives in the details, at Sham Marianas, we
               transform bold ideas into beautifully crafted physical products
               that look stunning, feel right, and work effortlessly. Every curve
               and edge is thoughtfully designed for maximum comfort and
@@ -65,7 +65,7 @@ function ProductDesign() {
                     practical and durable. Every detail, from materials to user
                     interaction, is crafted to enhance the experience and create
                     lasting impressions. With Sham Marianas, your product
-                    won&apos;t just fit in—it will stand out, engage users, and
+                    won&apos;t just fit in, it will stand out, engage users, and
                     make a lasting impact in the market.
                   </p>
                 </div>

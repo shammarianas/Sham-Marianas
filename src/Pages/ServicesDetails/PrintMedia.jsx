@@ -19,7 +19,7 @@ const PrintMediaPage = () => {
         solutions are engineered to captivate, build trust, and spark
         engagement.
       </>,
-      "We take care of everything — from initial concept and creative ideation to design, production, and delivery — ensuring your print materials are aligned with your brand’s voice, laser-focused on your message, and optimized for maximum impact. Because great print isn’t just a visual; it’s a strategic tool that moves your brand forward.",
+      "We take care of everything,  from initial concept and creative ideation to design, production, and delivery,  ensuring your print materials are aligned with your brand’s voice, laser-focused on your message, and optimized for maximum impact. Because great print isn’t just a visual; it’s a strategic tool that moves your brand forward.",
     ],
     image: "/assets/imgs/PrintMediaSolution/010.png",
   };
@@ -28,7 +28,7 @@ const PrintMediaPage = () => {
     title: "Print That Captivates and Converts",
     paragraphs: [
       <>
-        Print isn’t just paper and ink — it’s your brand’s chance to make a
+        Print isn’t just paper and ink,  it’s your brand’s chance to make a
         lasting impression. At{" "}
         <span className="text-bold underline main-color">Sham Marianas</span>,
         we craft more than just visually striking materials; we create
@@ -36,7 +36,7 @@ const PrintMediaPage = () => {
         bold, captivating visuals to precisely crafted messaging, every piece is
         designed to stop the scroll, ignite curiosity, and inspire action.
       </>,
-      "Whether it’s a sleek brochure, a powerful business card, or a standout flyer, every design is carefully tailored to leave a lasting mark. We blend cutting-edge design with smart marketing strategy, ensuring your print materials don’t just look great — they perform and deliver measurable results.",
+      "Whether it’s a sleek brochure, a powerful business card, or a standout flyer, every design is carefully tailored to leave a lasting mark. We blend cutting-edge design with smart marketing strategy, ensuring your print materials don’t just look great,  they perform and deliver measurable results.",
     ],
     image: "/assets/imgs/PrintMediaSolution/0010.png",
   };
@@ -77,7 +77,7 @@ const PrintMediaPage = () => {
         overlayDark="8"
       />
       <IntroSection
-        title="Print That Powers Your Brand — "
+        title="Print That Powers Your Brand,  "
         highlightedWords={["Creative, Strategic, and Impactful"]}
         customClass="intro-webdev-section" // 👈 Custom class added here
         paragraphs={[
@@ -93,7 +93,7 @@ const PrintMediaPage = () => {
             need a high-impact brochure or a sleek business card, we craft print
             experiences that demand attention and leave a lasting impression.
           </>,
-          "From concept to final print, we ensure every piece is crafted with purpose — capturing your brand’s essence while inspiring action. Print media isn’t just about aesthetics; it’s about creating materials that move your audience, and that’s exactly",
+          "From concept to final print, we ensure every piece is crafted with purpose,  capturing your brand’s essence while inspiring action. Print media isn’t just about aesthetics; it’s about creating materials that move your audience, and that’s exactly",
           "what we deliver",
           "just look good… It leaves a lasting mark.",
         ]}

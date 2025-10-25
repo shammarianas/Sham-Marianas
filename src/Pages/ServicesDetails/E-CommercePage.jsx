@@ -10,7 +10,7 @@ const EcommercePage = () => {
   const sectionOne = {
     title: "Effective E-Commerce Design is Crucial for Success",
     paragraphs: [
-      "In today’s fast-paced digital world, your e-commerce website is your most powerful sales tool, available 24/7 and reaching customers across the globe. A well-designed online store does more than just display products — it builds trust, drives conversions, and ensures your customers keep coming back for more.",
+      "In today’s fast-paced digital world, your e-commerce website is your most powerful sales tool, available 24/7 and reaching customers across the globe. A well-designed online store does more than just display products,  it builds trust, drives conversions, and ensures your customers keep coming back for more.",
       <>
         Speed, clarity, and simplicity are everything in e-commerce. From fast
         loading times to clear product listings and a seamless checkout process,
@@ -20,7 +20,7 @@ const EcommercePage = () => {
         navigation to ensure your store performs at its peak. With features like
         secure payment gateways, easy inventory management, and customized
         product pages, we create an experience that’s not just smooth but
-        memorable — helping you convert visitors into loyal customers.
+        memorable,  helping you convert visitors into loyal customers.
       </>,
     ],
     image: "/assets/imgs/E-Commerce/004.png",
@@ -29,7 +29,7 @@ const EcommercePage = () => {
   const sectionTwo = {
     title: "E-Commerce That Delivers Results and Drives Growth",
     paragraphs: [
-      "In today’s world, simply having a website isn’t enough — customers expect a seamless e-commerce experience that’s fast, secure, and easy to navigate. Our tailored e-commerce solutions are designed to meet these high expectations, giving your business the tools it needs to grow and succeed online.",
+      "In today’s world, simply having a website isn’t enough,  customers expect a seamless e-commerce experience that’s fast, secure, and easy to navigate. Our tailored e-commerce solutions are designed to meet these high expectations, giving your business the tools it needs to grow and succeed online.",
       "We combine sleek design with robust functionality and cutting-edge SEO strategies to create an e-commerce store that not only looks impressive but also works tirelessly to convert visitors into loyal customers. Whether you’re selling a handful of products or scaling a large inventory, we ensure your e-commerce website is built to grow with your business, delivering results and keeping customers engaged for the long run.",
     ],
     image: "/assets/imgs/E-Commerce/04.png",
@@ -84,7 +84,7 @@ const EcommercePage = () => {
             <span className="text-bold text-left underline main-color">
               Sham Marianas
             </span>{" "}
-            we go beyond designing e-commerce websites — we create immersive
+            we go beyond designing e-commerce websites,  we create immersive
             digital storefronts that wow your customers and turn casual clicks
             into loyal buyers.
           </>,
