@@ -10,9 +10,16 @@ const Navbar = () => {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const cartCount = cart.length;
   const currentPage = useLocation().pathname;
-  
+
   // ✅ NEW: Check if current page needs "Template" button
-  const showTemplateButton = ["/", "/about", "/services", "/portfolio", "/blog", "/contact"].includes(currentPage);
+  const showTemplateButton = [
+    "/",
+    "/about",
+    "/services",
+    "/portfolio",
+    "/blog",
+    "/contact",
+  ].includes(currentPage);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,8 +57,12 @@ const Navbar = () => {
         <nav className="navbar navbar-expand-lg bord blur">
           <div className="container o-hidden">
             <Link to="/" className="logo site-logo-link" aria-label="Home">
-              <img src="assets/imgs/logo.png" className="site-logo-img" alt="Sham Marianas logo" />
-            </Link> 
+              <img
+                src="/assets/imgs/logo.png"
+                className="site-logo-img"
+                alt="Sham Marianas logo"
+              />
+            </Link>
             <button
               className="navbar-toggler"
               type="button"
@@ -230,9 +241,18 @@ const Navbar = () => {
                                 >
                                   {[
                                     { label: "Icons", href: "/stock#icons" },
-                                    { label: "Textures", href: "/stock#textures" },
-                                    { label: "Scripts", href: "/stock#scripts" },
-                                    { label: "Plugins", href: "/stock#plugins" },
+                                    {
+                                      label: "Textures",
+                                      href: "/stock#textures",
+                                    },
+                                    {
+                                      label: "Scripts",
+                                      href: "/stock#scripts",
+                                    },
+                                    {
+                                      label: "Plugins",
+                                      href: "/stock#plugins",
+                                    },
                                     { label: "HDRIs", href: "/stock#hdris" },
                                   ].map(({ label, href }) => (
                                     <li key={href}>
@@ -278,12 +298,12 @@ const Navbar = () => {
       <div className="navbar navbar-expand-lg bord blur">
         <Link to="/" className="logo site-logo-link" aria-label="Home">
           <img
-            src="assets/imgs/logo.png"
+            src="/assets/imgs/logo.png"
             className="site-logo-img"
             alt="Sham Marianas logo"
           />
         </Link>
-        
+
         {/* SIRF EXPLORE + SEARCH admin mein hide */}
         {currentPage !== "/admin" && (
           <>
@@ -298,10 +318,10 @@ const Navbar = () => {
             <Search />
           </>
         )}
-        
+
         <div className="right">
           <div className="nav_buttons">
-            <div className="navbar_dropdown"> 
+            <div className="navbar_dropdown">
               {currentUser?.uid ? (
                 <Link to={`/Profile/${currentUser?.uid}`}>
                   <button className="signed_in">
@@ -344,7 +364,9 @@ const Navbar = () => {
       </div>
 
       {/* Bottom bar ONLY on non-main pages */}
-      {!["/", "/Login", "/Upload", "/reset", "/admin"].includes(currentPage) && (
+      {!["/", "/Login", "/Upload", "/reset", "/admin"].includes(
+        currentPage
+      ) && (
         <div className="bottom-bar">
           <div className="links">
             <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
@@ -401,7 +423,10 @@ const Navbar = () => {
                               >
                                 {[
                                   { label: "Icons", href: "/stock#icons" },
-                                  { label: "Textures", href: "/stock#textures" },
+                                  {
+                                    label: "Textures",
+                                    href: "/stock#textures",
+                                  },
                                   { label: "Scripts", href: "/stock#scripts" },
                                   { label: "Plugins", href: "/stock#plugins" },
                                   { label: "HDRIs", href: "/stock#hdris" },
