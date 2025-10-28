@@ -11,6 +11,7 @@ import Intro2 from "../Components/services/Intro2";
 // import Services from "../Components/landing/Services";
 import Services from "./../Components/services/Services";
 import Testimonials from "../Components/services/Testimonials";
+import WhatsAppButton from "../Components/whatsappButton";
 
 export default function PageServices() {
   const main = useRef();
@@ -38,6 +39,7 @@ export default function PageServices() {
           <Marq2 />
         </main>
       </div>
+       <WhatsAppButton />
     </>
   );
 }

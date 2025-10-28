@@ -10,6 +10,7 @@ import ProgressScroll from "../common/ProgressScroll";
 import Clients from "../Components/landing/Clients";
 import Contact from "../Components/landing/Contact";
 import Marq2 from "../Components/marq2";
+import WhatsAppButton from "../Components/whatsappButton";
 
 const Home = () => {
   const main = useRef();
@@ -38,6 +39,7 @@ const Home = () => {
           <Marq2 />
         </main>
       </div>
+      <WhatsAppButton />
     </>
   );
 };

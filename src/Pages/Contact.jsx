@@ -1,4 +1,5 @@
 import React from "react";
+import WhatsAppButton from "../Components/whatsappButton";
 
 function Contact() {
   return (
@@ -179,6 +180,7 @@ function Contact() {
           src="https://www.google.com/maps/embed?pb=!1m23!1m12!1m3!1d109241.94327058276!2d72.62731335962093!3d31.170526945982616!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m8!3e0!4m0!4m5!1s0x38df948974419acb%3A0x3a9e3018d24eeca0!2sPunjab%2C%20Pakistan!3m2!1d31.1704063!2d72.7097161!5e0!3m2!1sen!2s!4v1760521308547!5m2!1sen!2s"
         ></iframe>
       </div>
+      <WhatsAppButton />
     </>
   );
 }

@@ -85,7 +85,7 @@ const Login = () => {
       setSuccess("Login successful!");
 
       setTimeout(() => {
-        navigate("/");
+         navigate("/stock", { replace: true });
       }, 3000);
     } catch (error) {
       setError("Login failed: " + error.message);
@@ -131,7 +131,7 @@ const Login = () => {
       );
 
       setTimeout(() => {
-        navigate("/");
+        navigate("/stock", { replace: true });
       }, 3000);
     } catch (error) {
       setError("Sign-up failed: " + error.message);
@@ -225,7 +225,7 @@ const Login = () => {
                     setError("");
                   }}
                 >
-                  <span> Forgot password? </span>
+                  <span role="button"> Forgot password? </span>
                 </span>
               }
 
@@ -414,37 +414,53 @@ const Login = () => {
           </div>
         )}
 
-        {page === "forgot" && (
-          <div className="login_tab">
-            <div className="title">
-              <span>Forgot Password</span>
-              <span className="link" onClick={() => setPage("login")}>
-                Login <i className="icon fas fa-arrow-right"></i>
-              </span>
-            </div>
-            <form onSubmit={handlePasswordReset}>
-              <label htmlFor="email">Email</label>
-              <div className="input">
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  placeholder="example@mail.com "
-                  value={email}
-                  onChange={handleEmailChange}
-                />
-              </div>
+     {page === "forgot" && (
+  <>
 
-              {error && <span className="error">{error}</span>}
-              {success && <span className="success">{success}</span>}
 
-              <button className="login_btn" type="submit">
-                Submit
-              </button>
-            </form>
+    <div className="login forgot-password-section">
+      <div className="login_tab">
+        <div className="title">
+          <span>Forgot Password</span>
+          <span className="link" onClick={() => setPage("login")}>
+            Login <i className="icon fas fa-arrow-right"></i>
+          </span>
+        </div>
+
+        <form onSubmit={handlePasswordReset}>
+          <label htmlFor="email">Email</label>
+          <div className="input">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              placeholder="example@mail.com"
+              value={email}
+              onChange={handleEmailChange}
+            />
           </div>
-        )}
+
+          {error && <span className="error">{error}</span>}
+          {success && <span className="success">{success}</span>}
+
+          <button className="login_btn" type="submit">
+            Send Reset Link
+          </button>
+        </form>
+
+        <div className="info_text">
+          <p>
+            Enter your registered email address, and we’ll send you a link to
+            reset your password.
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+  </>
+)}
       </div>
     </>
   );
