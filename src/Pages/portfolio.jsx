@@ -198,7 +198,7 @@ function Header() {
                   }}
                   title="Search projects"
                 >
-                 <i class="icon fa-solid fa-magnifying-glass" style={{ color: "#000" }}></i>
+                 <i class="icon fa-solid fa-magnifying-glass" style={{ color: "#fff" }}></i>
                 </div>
 
                 {/* **Search Bar - Direct Under Icon** */}
@@ -226,13 +226,15 @@ function Header() {
                         style={{
                           width: "100%",
                           padding: "12px 16px 12px 45px",
-                              border: "none",
+                          border: "none",
                           borderRadius: "8px",
                           fontSize: "15px",
                           outline: "none",
                           fontFamily: "inherit",
                           transition: "all 0.2s ease",
-                          background: "transparent"
+                          background: "transparent",
+                          color: "#fff",           // text color white
+                          caretColor: "#fff",      // cursor (caret) color white
                         }}
                         onFocus={(e) => {
                           e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
