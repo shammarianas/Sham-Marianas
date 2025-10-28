@@ -5132,14 +5132,14 @@ div.hidden.none {
 }
 
 .login {
-  margin-top: 4rem;
+  /* margin-top: 4rem; */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  height: 90vh;
-  padding: 3rem 0rem;
+  /* height: 90vh; */
+  padding: 5rem 0rem;
 }
 .login .login_tab {
   display: flex;
@@ -5305,6 +5305,7 @@ div.hidden.none {
 }
 .login .login_tab form .forgot_password {
   align-self: flex-end;
+  cursor: pointer;
 }
 .login .login_tab form .forgot_password a {
   color: #f5f5f5;
@@ -5320,11 +5321,11 @@ div.hidden.none {
 .login .login_tab form .login_btn {
   padding: 1rem 2rem;
   width: 100%;
-  background-color: #03a9f4;
+  background-color: #52b0b4;
   color: #f5f5f5;
   font-size: 1rem;
   font-weight: 600;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -5340,7 +5341,8 @@ div.hidden.none {
   pointer-events: none;
 }
 .login .login_tab form .login_btn:hover {
-  background-color: #0288d1;
+ background: transparent !important;
+   border-color: #fff;
 }
 .login .login_tab form .separator {
   width: 100%;
