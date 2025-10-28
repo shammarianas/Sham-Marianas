@@ -12,14 +12,18 @@ const Navbar = () => {
   const currentPage = useLocation().pathname;
 
   // ✅ NEW: Check if current page needs "Template" button
-  const showTemplateButton = [
-    "/",
-    "/about",
-    "/services",
-    "/portfolio",
-    "/blog",
-    "/contact",
-  ].includes(currentPage);
+const showTemplateButton = [
+  "/",
+  "/about",
+  "/services",
+  "/portfolio",
+  "/blog",
+  "/contact",
+  "/project-details",
+  "/Blog-details",
+].some(path => 
+  path === "/" ? currentPage === "/" : currentPage.startsWith(path)
+);
 
   useEffect(() => {
     const handleScroll = () => {
