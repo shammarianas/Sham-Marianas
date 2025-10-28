@@ -21,7 +21,9 @@ const showTemplateButton = [
   "/contact",
   "/project-details",
   "/Blog-details",
-].some(path => currentPage.startsWith(path));
+].some(path => 
+  path === "/" ? currentPage === "/" : currentPage.startsWith(path)
+);
 
   useEffect(() => {
     const handleScroll = () => {
