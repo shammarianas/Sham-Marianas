@@ -1412,7 +1412,7 @@ const AdminDashboard = () => {
     return <UnauthorizedAccess error={error} />;
   }
 
-  // Add this component after the BlogSection component in your file
+  // User Dashboard component
 
   const UserDashboard = ({
     users,
