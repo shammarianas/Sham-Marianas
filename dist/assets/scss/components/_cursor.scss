@@ -2,13 +2,13 @@
 /* Cursor
 -----------------------------------------------------------------*/
 
-.hover-this,  
-.hover-this  {
-   
-    // transition: transform 0.2s linear;
-  }
+.hover-this {
 
-
+    .hover-anim {
+        pointer-events: none;
+        transition: transform 0.2s linear;
+    }
+}
 
 .cursor {
     pointer-events: none;
