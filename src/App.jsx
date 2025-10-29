@@ -56,6 +56,8 @@ import Error from "./Pages/Error";
 import PrivacyPolicy from "./Pages/Get Started/PrivacyPolice";
 import TermsandCondition from "./Pages/Get Started/Terms&Condition";
 // import Community from "./Pages/Get Started/Community";
+import CommingSoon from "./Pages/CommingSoon";
+
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -119,6 +121,7 @@ export const AppRoutes = () => (
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     {/* <Route path="/community" element={<Community />} /> */}
+    <Route path="/comming-soon" element={<CommingSoon />} />
   </Routes>
 );
 

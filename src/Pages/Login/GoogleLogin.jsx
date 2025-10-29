@@ -27,7 +27,7 @@ export const loginWithGoogle = () => {
       ); // Use merge option to avoid overwriting existing fields
 
       alert("Login with Google successful!");
-      window.location.href = "/"; // Redirect to the home page after login
+      window.location.href = "/stock"; // Redirect to the home page after login
     })
     .catch((error) => {
       alert("Login with Google failed: " + error.message);
