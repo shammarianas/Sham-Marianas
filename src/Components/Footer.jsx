@@ -101,13 +101,7 @@ function Footer() {
                       <a href="/terms-and-conditions">Terms & Conditions</a>
                     </li>
                     <li className="mb-15">
-                      <a href="#">Community</a>
-                    </li>
-                    <li className="mb-15">
                       <a href="#">Help Center</a>
-                    </li>
-                    <li className="mb-15">
-                      <a href="#">Support</a>
                     </li>
                   </ul>
                 </>

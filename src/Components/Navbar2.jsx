@@ -167,8 +167,8 @@ const showTemplateButton = [
                 </li>
               </ul>
             </div>
-            {/* ✅ FIXED: Template Button Logic */}
-            <div className="contact-button">
+            {/* ✅ FIXED: Template Button Logic /stock */}
+            {/* <div className="contact-button">
               {showTemplateButton ? (
                 <Link
                   to="/stock"
@@ -184,6 +184,20 @@ const showTemplateButton = [
                   <span className="text">Sign In</span>
                 </Link>
               )}
+            </div> */}
+
+
+
+            {/* for coming soon */}
+             <div className="contact-button">
+              
+                <Link
+                  to="/comming-soon"
+                  className="butn butn-sm butn-bg main-colorbg radius-5"
+                >
+                  <span className="text">Template</span>
+                </Link>
+           
             </div>
           </div>
         </nav>

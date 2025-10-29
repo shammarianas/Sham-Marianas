@@ -14,7 +14,7 @@ function Contact() {
                 </div>
                 <div className="morinfo mt-50 pb-30 bord-thin-bottom">
                   <h6 className="mb-15">Address</h6>
-                  <p>Punjab, Pakistan</p>
+                  <p>Multan, Pakistan</p>
                 </div>
                 <div className="morinfo mt-30 pb-30 bord-thin-bottom">
                   <h6 className="mb-15">Email</h6>
@@ -177,7 +177,7 @@ function Contact() {
       <div className="google-map">
         <iframe
           id="gmap_canvas"
-          src="https://www.google.com/maps/embed?pb=!1m23!1m12!1m3!1d109241.94327058276!2d72.62731335962093!3d31.170526945982616!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m8!3e0!4m0!4m5!1s0x38df948974419acb%3A0x3a9e3018d24eeca0!2sPunjab%2C%20Pakistan!3m2!1d31.1704063!2d72.7097161!5e0!3m2!1sen!2s!4v1760521308547!5m2!1sen!2s"
+          src="https://www.google.com/maps/embed?pb=!1m23!1m12!1m3!1d110360.73535330701!2d71.40617851104531!3d30.18647833761359!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m8!3e0!4m5!1s0x393b315778dea7d9%3A0xbad72fc74e55d42f!2sMultan!3m2!1d30.1863557!2d71.4885808!4m0!5e0!3m2!1sen!2s!4v1761715617492!5m2!1sen!2s"
         ></iframe>
       </div>
       <WhatsAppButton />
