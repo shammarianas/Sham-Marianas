@@ -1131,6 +1131,7 @@ figure {
 .progress-wrap {
   position: fixed;
   bottom: 30px;
+  /* bottom: 90px; */
   right: 30px;
   height: 44px;
   width: 44px;
@@ -3768,6 +3769,9 @@ body.loaded {
   position: relative;
   z-index: 3;
 }
+#smooth-content{
+  opacity: 1 !important;
+}
 
 /* About Intro
 -----------------------------------------------------------------*/
@@ -4563,7 +4567,12 @@ ease;
 .contact{
   padding-left: 30px;
 }
+@media (max-width:768px) {
+  .contact{
+  padding-left: 0px;
+}
 
+}
 .call-marq .main-marq:after {
   display: none;
 }
@@ -7453,8 +7462,8 @@ footer.clean-footer.crev .circle-blur {
 .team-crev2 .item .img img {
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-  object-fit: cover;
+  -o-object-fit: contain;
+  object-fit: contain;
   -o-object-position: top center;
   object-position: top center;
 }
@@ -8005,7 +8014,8 @@ footer.clean-footer.crev .circle-blur {
   .navbar .navbar-collapse {
     max-height: 440px;
     overflow: auto;
-    background-color: #0c0d12;
+    background-color: #0f0f0f;
+            border-radius: 15px;
   }
   .navbar .navbar-collapse::-webkit-scrollbar {
     display: none;
@@ -8028,7 +8038,7 @@ footer.clean-footer.crev .circle-blur {
   }
   .navbar .navbar-collapse {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 15px;
+    margin-top: 25px;
   }
   .navbar .navbar-toggler {
     font-size: 20px;
@@ -8332,6 +8342,7 @@ footer.clean-footer.crev .circle-blur {
     letter-spacing: 5px;
   }
   .progress-wrap {
+    /* bottom: 70px; */
     bottom: 15px;
     right: 15px;
   }
@@ -9171,25 +9182,51 @@ footer.clean-footer.crev .circle-blur {
   font-size: 16px;
 }
 
-/* whatsapp Icon */
-
+/* Base floating button */
 .whatsapp-float {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  right: 30px;
   background-color: #25d366;
   border-radius: 50%;
-  padding: 12px;
+  padding: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 999;
   transition: all 0.3s ease;
 }
 
+/* Default: Page top par → bottom: 30px */
+.whatsapp-float.top {
+  bottom: 30px;
+}
+
+/* Scroll hone par → bottom: 90px */
+.whatsapp-float.scrolled {
+  bottom: 90px;
+}
+
+/* Hover effect – unchanged */
 .whatsapp-float:hover {
   transform: scale(1.1);
 }
 
+/* Icon size – unchanged */
 .whatsapp-icon {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
+}
+
+/* Mobile Responsive – unchanged values, but dynamic */
+@media (max-width: 768px) {
+  .whatsapp-float {
+    right: 15px;
+    padding: 9px;
+  }
+
+  .whatsapp-float.top {
+    bottom: 20px;    /* Mobile: top par */
+  }
+
+  .whatsapp-float.scrolled {
+    bottom: 60px;    /* Mobile: scroll par */
+  }
 }

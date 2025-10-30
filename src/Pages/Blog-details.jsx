@@ -244,6 +244,9 @@ function BlogDetails() {
   return (
     <>
       <style>{`
+      span {
+    display: inline;
+}
         .header-blog {
           min-height: 600px;
           background-size: cover;

@@ -48,7 +48,7 @@ function LoadingScreen() {
         tl.from("header", { y: 0 }, "-=1.5");
         tl.from(
           "header .container",
-          { y: 40, opacity: 0, delay: 0.3 },
+          { y: 40, opacity: 1, delay: 0.3 },
           "-=1.5"
         );
       }

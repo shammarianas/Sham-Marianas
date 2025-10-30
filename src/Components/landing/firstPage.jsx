@@ -14,7 +14,8 @@ function FirstPage() {
       data-background="/assets/imgs/background/bg5.jpg"
       data-overlay-dark="7"
     >
-      <div className="container ontop">
+      <div className="container ontop" data-aos="fade-up"
+     data-aos-duration="3000">
         <div className="row">
           <div className="col-lg-11">
             <div className="caption">
