@@ -108,7 +108,7 @@ function Contact() {
                   id="contact-form"
                   className="form2"
                   method="post"
-                  action="contact.php"
+                  action=""
                 >
                   <div className="messages"></div>
 
