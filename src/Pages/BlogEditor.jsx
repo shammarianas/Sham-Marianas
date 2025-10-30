@@ -7,6 +7,7 @@ import Quill from "quill";
 import "react-quill/dist/quill.snow.css";
 import sanitizeHtml from "sanitize-html";
 
+
 const modules = {
   toolbar: {
     container: [
@@ -50,6 +51,7 @@ const extractPureContent = (quillHtml) => {
     allowedAttributes: {
       '*': ['class', 'style'],
       a: ["href", "target", "rel"],
+      span:["class"],
       img: ["src", "alt", "width", "height", "class"],
     },
     allowedClasses: {
@@ -85,6 +87,8 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   const coverImageInputRef = useRef(null);
   const tagInputRef = useRef(null);
 
+
+  
   const loadContent = useCallback(() => {
     if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
       try {
@@ -512,6 +516,9 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   return (
     <div className="blog-modal-overlay">
       <style>{`
+      span{
+      display: inline;
+      }
   .blog-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
     display: flex; align-items: center; justify-content: center; 
@@ -654,6 +661,9 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     font-size: 0.875rem; color: #059669; font-style: italic; 
     margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
     border-radius: 0.5rem; border-left: 4px solid #10b981;
+  }
+  .ql-editor{
+  max-height: 500px; overflow-y: auto;
   }
 
   /* ---- IMAGE TOOLTIP STYLES ---- */

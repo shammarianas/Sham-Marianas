@@ -1130,7 +1130,8 @@ figure {
 
 .progress-wrap {
   position: fixed;
-  bottom: 90px;
+  bottom: 30px;
+  /* bottom: 90px; */
   right: 30px;
   height: 44px;
   width: 44px;
@@ -8338,7 +8339,8 @@ footer.clean-footer.crev .circle-blur {
     letter-spacing: 5px;
   }
   .progress-wrap {
-    bottom: 70px;
+    /* bottom: 70px; */
+    bottom: 15px;
     right: 15px;
   }
   .in-box {
@@ -9177,12 +9179,10 @@ footer.clean-footer.crev .circle-blur {
   font-size: 16px;
 }
 
-/* whatsapp Icon */
-
+/* Base floating button */
 .whatsapp-float {
   position: fixed;
-    bottom: 30px;
-    right: 30px;
+  right: 30px;
   background-color: #25d366;
   border-radius: 50%;
   padding: 10px;
@@ -9191,19 +9191,39 @@ footer.clean-footer.crev .circle-blur {
   transition: all 0.3s ease;
 }
 
-@media (max-width:768px){
-  .whatsapp-float{
-    bottom: 15px;
-    right: 15px;
-    padding: 9px;
-  }
+/* Default: Page top par → bottom: 30px */
+.whatsapp-float.top {
+  bottom: 30px;
 }
 
+/* Scroll hone par → bottom: 90px */
+.whatsapp-float.scrolled {
+  bottom: 90px;
+}
+
+/* Hover effect – unchanged */
 .whatsapp-float:hover {
   transform: scale(1.1);
 }
 
+/* Icon size – unchanged */
 .whatsapp-icon {
   width: 24px;
   height: 24px;
+}
+
+/* Mobile Responsive – unchanged values, but dynamic */
+@media (max-width: 768px) {
+  .whatsapp-float {
+    right: 15px;
+    padding: 9px;
+  }
+
+  .whatsapp-float.top {
+    bottom: 20px;    /* Mobile: top par */
+  }
+
+  .whatsapp-float.scrolled {
+    bottom: 60px;    /* Mobile: scroll par */
+  }
 }
