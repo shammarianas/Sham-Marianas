@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 function Intro() {
   return (
-    <section className="intro section-padding">
+    <section className="intro section-padding" >
       <div className="container">
         <div className="row lg-marg">
           <div className="col-lg-8 md-mb80">

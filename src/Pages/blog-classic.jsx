@@ -1,7 +1,6 @@
 import Lines from '../common/Lines';
 import ProgressScroll from '../common/ProgressScroll';
 // import Cursor from '../common/cusor';
-import LoadingScreen from '../common/loader';
 // import Footer from "../Components/Footer";
 // import Navbar from '../components/Navbar';
 // import { Helmet } from 'react-helmet';
@@ -97,7 +96,6 @@ export default function BlogClassic() {
         <script defer src="/assets/js/countdown.js"></script>
       </Helmet> */}
       <body>
-        <LoadingScreen />
         {/* <Cursor /> */}
         <ProgressScroll />
         <Lines />

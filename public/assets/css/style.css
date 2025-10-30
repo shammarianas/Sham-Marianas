@@ -3769,6 +3769,9 @@ body.loaded {
   position: relative;
   z-index: 3;
 }
+#smooth-content{
+  opacity: 1 !important;
+}
 
 /* About Intro
 -----------------------------------------------------------------*/
