@@ -86,8 +86,9 @@ const showTemplateButton = [
             >
               <ul className="navbar-nav">
                 <li className="nav-item d-lg-none">
-                  <Link to="/Login" className="nav-link">
-                    <span className="rolling-text">Sign In</span>
+                  <Link to="/comming-soon" className="nav-link">
+                  {/* Sign In  after tempalte */}
+                    <span className="rolling-text">Template</span>
                   </Link>
                 </li>
                 <li
