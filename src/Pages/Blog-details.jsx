@@ -36,7 +36,7 @@ function BlogDetails() {
     design: 0,
   });
   const [latestBlogs, setLatestBlogs] = useState([]);
-  const [allTags, setAllTags] = useState([]);
+  const [allTags, setAllTags] = useState([]); // ← Now only current blog tags
 
   // Comment form states
   const [name, setName] = useState("");
@@ -51,15 +51,16 @@ function BlogDetails() {
         if (docSnap.exists()) {
           const blogData = { id: docSnap.id, ...docSnap.data() };
 
-          // ✅ FIX: Map ALL possible featured image fields
+          // FIX: Map ALL possible featured image fields
           blogData.featuredImageUrl =
             blogData.featuredImageUrl ||
             blogData.featureImgUrl ||
             blogData.coverImageUrl ||
             "/assets/imgs/background/bg4.jpg";
 
-          console.log("🔍 Blog featured image URL:", blogData.featuredImageUrl); // Debug
+          console.log("Blog featured image URL:", blogData.featuredImageUrl);
 
+          // Sanitize content
           blogData.content = sanitizeHtml(blogData.content, {
             allowedTags: [
               "p",
@@ -91,13 +92,19 @@ function BlogDetails() {
               span: [],
             },
           });
+
           setBlog(blogData);
+
+          // SET ONLY CURRENT BLOG'S TAGS
+          setAllTags(Array.isArray(blogData.tags) ? blogData.tags : []);
         } else {
           setBlog(null);
+          setAllTags([]);
         }
       } catch (error) {
         console.error("Error fetching blog:", error);
         setBlog(null);
+        setAllTags([]);
       } finally {
         setLoading(false);
       }
@@ -155,7 +162,6 @@ function BlogDetails() {
         const blogsList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          // ✅ FIX: Latest blogs cover image mapping
           coverImageUrl:
             doc.data().coverImageUrl ||
             doc.data().featureImgUrl ||
@@ -167,26 +173,12 @@ function BlogDetails() {
         console.error("Error fetching latest blogs:", error);
       }
     };
-    const fetchAllTags = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "blogs"));
-        const tagsSet = new Set();
-        querySnapshot.forEach((doc) => {
-          const blogData = doc.data();
-          if (Array.isArray(blogData.tags)) {
-            blogData.tags.forEach((tag) => tagsSet.add(tag));
-          }
-        });
-        setAllTags([...tagsSet]);
-      } catch (error) {
-        console.error("Error fetching tags:", error);
-      }
-    };
+
+    // Run all functions
     fetchBlog();
     checkAdminStatus();
     fetchCategoryCounts();
     fetchLatestBlogs();
-    fetchAllTags();
     loadBackgroudImages();
   }, [id]);
 
@@ -244,9 +236,7 @@ function BlogDetails() {
   return (
     <>
       <style>{`
-      span {
-    display: inline;
-}
+        span { display: inline; }
         .header-blog {
           min-height: 600px;
           background-size: cover;
@@ -271,41 +261,19 @@ function BlogDetails() {
           font-size: 0.9rem;
           text-transform: uppercase;
         }
-        .info {
-          color: #D1D5DB;
-          justify-content: center;
-        }
-        .info .left-info, .info .right-info {
-          color: #D1D5DB;
-        }
-        .info .date a, .info .right-info span {
-          color: #FFFFFF;
-        }
+        .info { color: #D1D5DB; justify-content: center; }
+        .info .left-info, .info .right-info { color: #D1D5DB; }
+        .info .date a, .info .right-info span { color: #FFFFFF; }
         .info .date span.opacity-7, .info .right-info span.opacity-7 {
-          opacity: 0.7;
-          font-size: 0.9rem;
+          opacity: 0.7; font-size: 0.9rem;
         }
-        .section-padding {
-          padding: 80px 0;
-        }
-        body {
-          background: #000000;
-          color: #FFFFFF;
-        }
+        .section-padding { padding: 80px 0; }
+        body { background: #000000; color: #FFFFFF; }
         @media (max-width: 768px) {
-          .header-blog {
-            min-height: 200px;
-          }
-          .header-blog h1 {
-            font-size: 1.2rem;
-            max-width: 100%;
-          }
-          .header-blog .caption {
-            max-width: 90%;
-          }
-          .section-padding {
-            padding: 40px 0;
-          }
+          .header-blog { min-height: 200px; }
+          .header-blog h1 { font-size: 1.2rem; max-width: 100%; }
+          .header-blog .caption { max-width: 90%; }
+          .section-padding { padding: 40px 0; }
         }
       `}</style>
 
@@ -323,8 +291,7 @@ function BlogDetails() {
               <div className="caption">
                 <div className="sub-title fz-12">
                   {blog.category
-                    ? blog.category.charAt(0).toUpperCase() +
-                      blog.category.slice(1)
+                    ? blog.category.charAt(0).toUpperCase() + blog.category.slice(1)
                     : "Uncategorized"}
                 </div>
                 <h1 className="blog-inside-title">{blog.title}</h1>
@@ -336,9 +303,7 @@ function BlogDetails() {
                           <span className="opacity-7">Published</span>
                           <h6 className="fz-14">
                             {blog.publishedAt
-                              ? new Date(
-                                  blog.publishedAt.toDate()
-                                ).toDateString()
+                              ? new Date(blog.publishedAt.toDate()).toDateString()
                               : "—"}
                           </h6>
                         </a>
@@ -368,11 +333,11 @@ function BlogDetails() {
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
                 <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
                   <div
-                    target="_blank"
                     className="prose prose-blue max-w-none blog-detail-size"
                     dangerouslySetInnerHTML={{ __html: blog.content }}
                   />
                 </article>
+
                 <Link
                   to="/blogs"
                   className="d-flex align-items-center main-color mt-40"
@@ -489,9 +454,7 @@ function BlogDetails() {
                               {post.publishedAt && (
                                 <span className="date">
                                   <span>
-                                    {new Date(
-                                      post.publishedAt.toDate()
-                                    ).toLocaleDateString("en-US", {
+                                    {new Date(post.publishedAt.toDate()).toLocaleDateString("en-US", {
                                       day: "2-digit",
                                       month: "short",
                                     })}
@@ -505,8 +468,7 @@ function BlogDetails() {
                           <span className="tag">
                             <Link to={`/blogs?category=${post.category}`}>
                               {post.category
-                                ? post.category.charAt(0).toUpperCase() +
-                                  post.category.slice(1)
+                                ? post.category.charAt(0).toUpperCase() + post.category.slice(1)
                                 : "Uncategorized"}
                             </Link>
                           </span>
@@ -521,15 +483,16 @@ function BlogDetails() {
                   )}
                 </div>
 
-                {/* Tags */}
+                {/* CURRENT BLOG TAGS ONLY */}
                 {allTags.length > 0 && (
                   <div className="widget tags">
-                    <h6 className="title-widget">All Tags</h6>
-                    <div>
+                    <h6 className="title-widget">Tags</h6>
+                    <div className="flex flex-wrap gap-2">
                       {allTags.map((tag, index) => (
                         <Link
                           key={index}
                           to={`/blogs?tag=${encodeURIComponent(tag)}`}
+                          className="inline-block px-3 py-2 text-xs bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition"
                         >
                           {tag}
                         </Link>
