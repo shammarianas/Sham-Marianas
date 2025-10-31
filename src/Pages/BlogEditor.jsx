@@ -92,19 +92,22 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       .slice(0, 100);
   };
 
-  const loadContent = useCallback(() => {
-    if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
-      try {
-        quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'silent');
-        setTimeout(() => {
-          const cleanContent = extractPureContent(blogToEdit.content);
-          quill.clipboard.dangerouslyPasteHTML(0, cleanContent, 'user');
-        }, 100);
-      } catch (error) {
-        console.error("Error loading content:", error);
-      }
+ const loadContent = useCallback(() => {
+  if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
+    try {
+      // Clear editor first
+      quill.setContents([]);
+      
+      setTimeout(() => {
+        const cleanContent = extractPureContent(blogToEdit.content);
+        quill.clipboard.dangerouslyPasteHTML(cleanContent);
+        quill.setSelection(quill.getLength(), 0); // Cursor at end
+      }, 50);
+    } catch (error) {
+      console.error("Error loading content:", error);
     }
-  }, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
+  }
+}, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
 
   const initializeEditor = () => {
     if (quill && isOpen && !blogToEdit) {
