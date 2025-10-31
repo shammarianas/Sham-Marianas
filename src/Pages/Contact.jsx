@@ -10,7 +10,7 @@ function Contact() {
             <div className="col-lg-4 valign">
               <div className="sec-head info-box full-width md-mb80">
                 <div className="phone fz-22 fw-600 underline main-color">
-                  <a href="tel:+971528036012">+92 311 678 8423 </a>
+                  <a href="tel:+923116788423">+92 311 678 8423 </a>
                 </div>
                 <div className="morinfo mt-50 pb-30 bord-thin-bottom">
                   <h6 className="mb-15">Address</h6>
@@ -108,7 +108,7 @@ function Contact() {
                   id="contact-form"
                   className="form2"
                   method="post"
-                  action="contact.php"
+                  action=""
                 >
                   <div className="messages"></div>
 

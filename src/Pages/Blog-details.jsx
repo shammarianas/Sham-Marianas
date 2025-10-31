@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
   limit,
+  where,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import loadBackgroudImages from "../common/loadBackgroudImages";
@@ -27,18 +28,21 @@ function BlogDetails() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Updated to match BlogEditorModal
   const [categoryCounts, setCategoryCounts] = useState({
     all: 0,
     business: 0,
-    lifestyle: 0,
-    creative: 0,
-    wordpress: 0,
+    technology: 0,
     design: 0,
+    lifestyle: 0,
+    ai: 0,
+    marketing: 0,
   });
-  const [latestBlogs, setLatestBlogs] = useState([]);
-  const [allTags, setAllTags] = useState([]); // ← Now only current blog tags
 
-  // Comment form states
+  const [latestBlogs, setLatestBlogs] = useState([]);
+  const [allTags, setAllTags] = useState([]);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -47,39 +51,34 @@ function BlogDetails() {
     const fetchBlog = async () => {
       try {
         const docRef = doc(db, "blogs", id);
-        const docSnap = await getDoc(docRef);
+        let docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          const q = query(collection(db, "blogs"), where("slug", "==", id));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            docSnap = querySnapshot.docs[0];
+          }
+        }
+
         if (docSnap.exists()) {
           const blogData = { id: docSnap.id, ...docSnap.data() };
 
-          // FIX: Map ALL possible featured image fields
+          // Ensure category is lowercase & valid (same as editor)
+          const validCategories = ["business", "technology", "design", "lifestyle", "ai", "marketing"];
+          const rawCategory = blogData.category?.toString().toLowerCase();
+          blogData.category = validCategories.includes(rawCategory) ? rawCategory : "business";
+
           blogData.featuredImageUrl =
             blogData.featuredImageUrl ||
             blogData.featureImgUrl ||
             blogData.coverImageUrl ||
             "/assets/imgs/background/bg4.jpg";
 
-          console.log("Blog featured image URL:", blogData.featuredImageUrl);
-
-          // Sanitize content
           blogData.content = sanitizeHtml(blogData.content, {
             allowedTags: [
-              "p",
-              "h1",
-              "h2",
-              "h3",
-              "h4",
-              "h5",
-              "h6",
-              "strong",
-              "em",
-              "ul",
-              "ol",
-              "li",
-              "a",
-              "img",
-              "div",
-              "span",
-              "br",
+              "p", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "ul", "ol", "li",
+              "a", "img", "div", "span", "br", "blockquote", "code", "pre"
             ],
             allowedAttributes: {
               a: ["href", "target", "rel"],
@@ -94,8 +93,6 @@ function BlogDetails() {
           });
 
           setBlog(blogData);
-
-          // SET ONLY CURRENT BLOG'S TAGS
           setAllTags(Array.isArray(blogData.tags) ? blogData.tags : []);
         } else {
           setBlog(null);
@@ -117,17 +114,11 @@ function BlogDetails() {
           const userProfileRef = doc(db, "Profiles", currentUser.uid);
           const userDoc = await getDoc(userProfileRef);
           if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setIsAdmin(userData.role === "admin");
-          } else {
-            setIsAdmin(false);
+            setIsAdmin(userDoc.data().role === "admin");
           }
         } catch (error) {
-          console.error("Error fetching user profile:", error);
-          setIsAdmin(false);
+          console.error("Error:", error);
         }
-      } else {
-        setIsAdmin(false);
       }
     };
 
@@ -137,50 +128,62 @@ function BlogDetails() {
         const counts = {
           all: querySnapshot.size,
           business: 0,
-          lifestyle: 0,
-          creative: 0,
-          wordpress: 0,
+          technology: 0,
           design: 0,
+          lifestyle: 0,
+          ai: 0,
+          marketing: 0,
         };
+
         querySnapshot.forEach((doc) => {
-          const category = doc.data().category || "uncategorized";
-          if (counts.hasOwnProperty(category)) {
-            counts[category]++;
+          const cat = doc.data().category?.toString().toLowerCase();
+          if (counts.hasOwnProperty(cat)) {
+            counts[cat]++;
           }
         });
+
         setCategoryCounts(counts);
       } catch (error) {
-        console.error("Error fetching category counts:", error);
+        console.error("Error:", error);
       }
     };
 
     const fetchLatestBlogs = async () => {
       try {
-        const blogsRef = collection(db, "blogs");
-        const q = query(blogsRef, orderBy("publishedAt", "desc"), limit(3));
+        const q = query(collection(db, "blogs"), orderBy("publishedAt", "desc"), limit(3));
         const querySnapshot = await getDocs(q);
-        const blogsList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          coverImageUrl:
-            doc.data().coverImageUrl ||
-            doc.data().featureImgUrl ||
-            doc.data().featuredImageUrl ||
-            "/assets/imgs/blog/c1.jpg",
-        }));
+        const blogsList = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          const cat = data.category?.toString().toLowerCase();
+          const validCat = ["business", "technology", "design", "lifestyle", "ai", "marketing"].includes(cat)
+            ? cat
+            : "business";
+
+          return {
+            id: doc.id,
+            slug: data.slug || doc.id,
+            title: data.title || "Untitled",
+            category: validCat,
+            coverImageUrl:
+              data.coverImageUrl ||
+              data.featureImgUrl ||
+              data.featuredImageUrl ||
+              "/assets/imgs/blog/c1.jpg",
+            publishedAt: data.publishedAt,
+          };
+        });
         setLatestBlogs(blogsList);
       } catch (error) {
-        console.error("Error fetching latest blogs:", error);
+        console.error("Error:", error);
       }
     };
 
-    // Run all functions
     fetchBlog();
     checkAdminStatus();
     fetchCategoryCounts();
     fetchLatestBlogs();
     loadBackgroudImages();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -195,7 +198,6 @@ function BlogDetails() {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-
     if (!name || !email || !message) {
       alert("Please fill all fields!");
       return;
@@ -208,65 +210,34 @@ function BlogDetails() {
         message,
         createdAt: serverTimestamp(),
       });
-
-      alert("Comment posted successfully!");
+      alert("Comment posted!");
       setName("");
       setEmail("");
       setMessage("");
     } catch (error) {
-      console.error("Error posting comment:", error);
-      alert("Failed to post comment. Try again.");
+      console.error("Error:", error);
+      alert("Failed to post comment.");
     }
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">
-        Loading blog...
-      </div>
-    );
-
-  if (!blog)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-lg text-red-500">
-        Blog not found
-      </div>
-    );
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">Loading blog...</div>;
+  if (!blog) return <div className="min-h-screen flex items-center justify-center text-lg text-red-500">Blog not found</div>;
 
   return (
     <>
       <style>{`
         span { display: inline; }
         .header-blog {
-          min-height: 600px;
-          background-size: cover;
-          background-position: center;
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          min-height: 600px; background-size: cover; background-position: center;
+          position: relative; display: flex; align-items: center; justify-content: center;
         }
-        .header-blog .caption {
-          padding: 2rem;
-          max-width: 60%;
-        }
-        .header-blog h1 {
-          font-size: 2.5rem;
-          font-weight: 700;
-          color: #FFFFFF;
-          margin: 0.5rem 0;
-        }
-        .header-blog .sub-title {
-          color: #D1D5DB;
-          font-size: 0.9rem;
-          text-transform: uppercase;
-        }
+        .header-blog .caption { padding: 2rem; max-width: 60%; }
+        .header-blog h1 { font-size: 2.5rem; font-weight: 700; color: #FFFFFF; margin: 0.5rem 0; }
+        .header-blog .sub-title { color: #D1D5DB; font-size: 0.9rem; text-transform: uppercase; }
         .info { color: #D1D5DB; justify-content: center; }
         .info .left-info, .info .right-info { color: #D1D5DB; }
         .info .date a, .info .right-info span { color: #FFFFFF; }
-        .info .date span.opacity-7, .info .right-info span.opacity-7 {
-          opacity: 0.7; font-size: 0.9rem;
-        }
+        .info .date span.opacity-7, .info .right-info span.opacity-7 { opacity: 0.7; font-size: 0.9rem; }
         .section-padding { padding: 80px 0; }
         body { background: #000000; color: #FFFFFF; }
         @media (max-width: 768px) {
@@ -292,7 +263,7 @@ function BlogDetails() {
                 <div className="sub-title fz-12">
                   {blog.category
                     ? blog.category.charAt(0).toUpperCase() + blog.category.slice(1)
-                    : "Uncategorized"}
+                    : "Business"}
                 </div>
                 <h1 className="blog-inside-title">{blog.title}</h1>
                 <div className="info d-flex mt-40 align-items-center">
@@ -328,7 +299,6 @@ function BlogDetails() {
       <section className="blog section-padding">
         <div className="container">
           <div className="row xlg-marg">
-            {/* Blog Content */}
             <div className="col-lg-8">
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
                 <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
@@ -346,7 +316,6 @@ function BlogDetails() {
                   <span className="ti-arrow-left"></span>
                 </Link>
 
-                {/* Comment Form */}
                 <div className="comments-from mt-80">
                   <div className="mb-60">
                     <h3>Leave a comment</h3>
@@ -357,7 +326,6 @@ function BlogDetails() {
                         <div className="form-group mb-30">
                           <input
                             type="text"
-                            name="name"
                             placeholder="Name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -369,7 +337,6 @@ function BlogDetails() {
                         <div className="form-group mb-30">
                           <input
                             type="email"
-                            name="email"
                             placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -380,7 +347,6 @@ function BlogDetails() {
                       <div className="col-12">
                         <div className="form-group">
                           <textarea
-                            name="message"
                             placeholder="Message"
                             rows="4"
                             value={message}
@@ -402,16 +368,13 @@ function BlogDetails() {
               </div>
             </div>
 
-            {/* Sidebar */}
             <div className="col-lg-4">
               <div className="sidebar blog-sidebar">
-                {/* Search */}
                 <div className="widget">
                   <h6 className="title-widget">Search Here</h6>
                   <form onSubmit={handleSearch} className="search-box">
                     <input
                       type="text"
-                      name="search-post"
                       placeholder="Search"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -420,36 +383,33 @@ function BlogDetails() {
                   </form>
                 </div>
 
-                {/* Categories */}
                 <div className="widget catogry">
                   <h6 className="title-widget">Categories</h6>
                   <ul className="rest">
-                    {Object.entries(categoryCounts).map(([key, value]) => (
-                      <li key={key}>
-                        <span
-                          onClick={() => handleCategoryClick(key)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          {key.charAt(0).toUpperCase() + key.slice(1)}
-                        </span>
-                        <span className="ml-auto">{value}</span>
-                      </li>
-                    ))}
+                    {Object.entries(categoryCounts)
+                      .filter(([key]) => key !== "all")
+                      .map(([key, value]) => (
+                        <li key={key}>
+                          <span
+                            onClick={() => handleCategoryClick(key)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            {key === "ai" ? "AI" : key.charAt(0).toUpperCase() + key.slice(1)}
+                          </span>
+                          <span className="ml-auto">{value}</span>
+                        </li>
+                      ))}
                   </ul>
                 </div>
 
-                {/* Latest Posts */}
                 <div className="widget last-post-thum">
                   <h6 className="title-widget">Latest Posts</h6>
                   {latestBlogs.length > 0 ? (
                     latestBlogs.map((post) => (
-                      <div
-                        key={post.id}
-                        className="item d-flex align-items-center mb-20"
-                      >
+                      <div key={post.id} className="item d-flex align-items-center mb-20">
                         <div>
                           <div className="img">
-                            <Link to={`/blog/${post.id}`}>
+                            <Link to={`/blog/${post.slug || post.id}`}>
                               <img src={post.coverImageUrl} alt={post.title} />
                               {post.publishedAt && (
                                 <span className="date">
@@ -467,13 +427,13 @@ function BlogDetails() {
                         <div className="cont">
                           <span className="tag">
                             <Link to={`/blogs?category=${post.category}`}>
-                              {post.category
-                                ? post.category.charAt(0).toUpperCase() + post.category.slice(1)
-                                : "Uncategorized"}
+                              {post.category === "ai"
+                                ? "AI"
+                                : post.category.charAt(0).toUpperCase() + post.category.slice(1)}
                             </Link>
                           </span>
                           <h6>
-                            <Link to={`/blog/${post.id}`}>{post.title}</Link>
+                            <Link to={`/blog/${post.slug || post.id}`}>{post.title}</Link>
                           </h6>
                         </div>
                       </div>
@@ -483,7 +443,6 @@ function BlogDetails() {
                   )}
                 </div>
 
-                {/* CURRENT BLOG TAGS ONLY */}
                 {allTags.length > 0 && (
                   <div className="widget tags">
                     <h6 className="title-widget">Tags</h6>

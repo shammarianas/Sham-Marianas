@@ -3,17 +3,17 @@ import React from 'react';
 function Marq() {
   const marquee = [
     'Branding Desgin',
-    'AI Automation',
-    'Web Developement',
-    'Seo and Content',
-    'Digital Marckting',
-    'UI/UX Desgin',
-    'Booth Design',
-    'VFX Animation',
+    'AI-Automation',
+    'Web Development',
+    'Content Writing',
+    'Social Media & Digital Marketing',
+    'UI-UX Design',
+    'Exhibition Booth Design',
+    'VFX & CGI ADs',
      'Product Design',
      'Print Media',
      'Photography',
-     'Ecommerce Solutions',
+     'E-commerce Solutions',
   ];
   return (
     <section className="opacity-7">
