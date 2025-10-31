@@ -39,6 +39,7 @@ function Blogs() {
 
           return {
             id: doc.id,
+            slug: data.slug || doc.id, // ensure slug present
             ...data,
             category,
             coverImageUrl: data.coverImageUrl || data.featuredImageUrl || data.featureImgUrl || "/assets/imgs/blog/default-cover.jpg",
@@ -144,13 +145,13 @@ function Blogs() {
                           </div>
 
                           <h3 className="mb-15 fz-30">
-                            <Link to={`/blog-details/${blog.id}`}>
+                            <Link to={`/blog/${blog.slug || blog.id}`}>
                               {blog.title}
                             </Link>
                           </h3>
 
                           <Link
-                            to={`/blog-details/${blog.id}`}
+                            to={`/blog/${blog.slug || blog.id}`}
                             className="d-flex align-items-center main-color mt-20"
                           >
                             <span className="text mr-15">Read More</span>
