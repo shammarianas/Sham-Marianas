@@ -401,10 +401,16 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     setBlogData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+ const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  // If title changes, also update slug in state
+  if (name === "title") {
+    const newSlug = generateSlug(value);
+    setBlogData(prev => ({ ...prev, title: value, slug: newSlug }));
+  } else {
     setBlogData(prev => ({ ...prev, [name]: value }));
-  };
+  }
+};
 
   const handleFeaturedImageChange = (e) => {
     const file = e.target.files[0];
