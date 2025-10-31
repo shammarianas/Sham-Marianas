@@ -21,25 +21,28 @@ import Marq2 from "../Components/marq2";
 import sanitizeHtml from "sanitize-html";
 
 function BlogDetails() {
-  const { id } = useParams(); // Keep id for fetching
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Updated to match BlogEditorModal
   const [categoryCounts, setCategoryCounts] = useState({
     all: 0,
     business: 0,
-    lifestyle: 0,
-    creative: 0,
-    wordpress: 0,
+    technology: 0,
     design: 0,
+    lifestyle: 0,
+    ai: 0,
+    marketing: 0,
   });
+
   const [latestBlogs, setLatestBlogs] = useState([]);
   const [allTags, setAllTags] = useState([]);
 
-  // Comment form
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -47,15 +50,12 @@ function BlogDetails() {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        // First try to fetch by ID
         const docRef = doc(db, "blogs", id);
         let docSnap = await getDoc(docRef);
 
-        // If not found by ID, try to fetch by slug
         if (!docSnap.exists()) {
           const q = query(collection(db, "blogs"), where("slug", "==", id));
           const querySnapshot = await getDocs(q);
-
           if (!querySnapshot.empty) {
             docSnap = querySnapshot.docs[0];
           }
@@ -64,14 +64,17 @@ function BlogDetails() {
         if (docSnap.exists()) {
           const blogData = { id: docSnap.id, ...docSnap.data() };
 
-          // Featured image fallback
+          // Ensure category is lowercase & valid (same as editor)
+          const validCategories = ["business", "technology", "design", "lifestyle", "ai", "marketing"];
+          const rawCategory = blogData.category?.toString().toLowerCase();
+          blogData.category = validCategories.includes(rawCategory) ? rawCategory : "business";
+
           blogData.featuredImageUrl =
             blogData.featuredImageUrl ||
             blogData.featureImgUrl ||
             blogData.coverImageUrl ||
             "/assets/imgs/background/bg4.jpg";
 
-          // Sanitize content
           blogData.content = sanitizeHtml(blogData.content, {
             allowedTags: [
               "p", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "ul", "ol", "li",
@@ -92,7 +95,6 @@ function BlogDetails() {
           setBlog(blogData);
           setAllTags(Array.isArray(blogData.tags) ? blogData.tags : []);
         } else {
-          console.log("Blog not found");
           setBlog(null);
           setAllTags([]);
         }
@@ -126,15 +128,20 @@ function BlogDetails() {
         const counts = {
           all: querySnapshot.size,
           business: 0,
-          lifestyle: 0,
-          creative: 0,
-          wordpress: 0,
+          technology: 0,
           design: 0,
+          lifestyle: 0,
+          ai: 0,
+          marketing: 0,
         };
+
         querySnapshot.forEach((doc) => {
-          const category = doc.data().category || "uncategorized";
-          if (counts.hasOwnProperty(category)) counts[category]++;
+          const cat = doc.data().category?.toString().toLowerCase();
+          if (counts.hasOwnProperty(cat)) {
+            counts[cat]++;
+          }
         });
+
         setCategoryCounts(counts);
       } catch (error) {
         console.error("Error:", error);
@@ -145,16 +152,26 @@ function BlogDetails() {
       try {
         const q = query(collection(db, "blogs"), orderBy("publishedAt", "desc"), limit(3));
         const querySnapshot = await getDocs(q);
-        const blogsList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          slug: doc.data().slug,
-          ...doc.data(),
-          coverImageUrl:
-            doc.data().coverImageUrl ||
-            doc.data().featureImgUrl ||
-            doc.data().featuredImageUrl ||
-            "/assets/imgs/blog/c1.jpg",
-        }));
+        const blogsList = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          const cat = data.category?.toString().toLowerCase();
+          const validCat = ["business", "technology", "design", "lifestyle", "ai", "marketing"].includes(cat)
+            ? cat
+            : "business";
+
+          return {
+            id: doc.id,
+            slug: data.slug || doc.id,
+            title: data.title || "Untitled",
+            category: validCat,
+            coverImageUrl:
+              data.coverImageUrl ||
+              data.featureImgUrl ||
+              data.featuredImageUrl ||
+              "/assets/imgs/blog/c1.jpg",
+            publishedAt: data.publishedAt,
+          };
+        });
         setLatestBlogs(blogsList);
       } catch (error) {
         console.error("Error:", error);
@@ -246,7 +263,7 @@ function BlogDetails() {
                 <div className="sub-title fz-12">
                   {blog.category
                     ? blog.category.charAt(0).toUpperCase() + blog.category.slice(1)
-                    : "Uncategorized"}
+                    : "Business"}
                 </div>
                 <h1 className="blog-inside-title">{blog.title}</h1>
                 <div className="info d-flex mt-40 align-items-center">
@@ -282,7 +299,6 @@ function BlogDetails() {
       <section className="blog section-padding">
         <div className="container">
           <div className="row xlg-marg">
-            {/* Blog Content */}
             <div className="col-lg-8">
               <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-poppins align-text">
                 <article className="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-2xl shadow-md align-text">
@@ -300,7 +316,6 @@ function BlogDetails() {
                   <span className="ti-arrow-left"></span>
                 </Link>
 
-                {/* Comment Form */}
                 <div className="comments-from mt-80">
                   <div className="mb-60">
                     <h3>Leave a comment</h3>
@@ -353,10 +368,8 @@ function BlogDetails() {
               </div>
             </div>
 
-            {/* Sidebar */}
             <div className="col-lg-4">
               <div className="sidebar blog-sidebar">
-                {/* Search */}
                 <div className="widget">
                   <h6 className="title-widget">Search Here</h6>
                   <form onSubmit={handleSearch} className="search-box">
@@ -370,25 +383,25 @@ function BlogDetails() {
                   </form>
                 </div>
 
-                {/* Categories */}
                 <div className="widget catogry">
                   <h6 className="title-widget">Categories</h6>
                   <ul className="rest">
-                    {Object.entries(categoryCounts).map(([key, value]) => (
-                      <li key={key}>
-                        <span
-                          onClick={() => handleCategoryClick(key)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          {key.charAt(0).toUpperCase() + key.slice(1)}
-                        </span>
-                        <span className="ml-auto">{value}</span>
-                      </li>
-                    ))}
+                    {Object.entries(categoryCounts)
+                      .filter(([key]) => key !== "all")
+                      .map(([key, value]) => (
+                        <li key={key}>
+                          <span
+                            onClick={() => handleCategoryClick(key)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            {key === "ai" ? "AI" : key.charAt(0).toUpperCase() + key.slice(1)}
+                          </span>
+                          <span className="ml-auto">{value}</span>
+                        </li>
+                      ))}
                   </ul>
                 </div>
 
-                {/* Latest Posts */}
                 <div className="widget last-post-thum">
                   <h6 className="title-widget">Latest Posts</h6>
                   {latestBlogs.length > 0 ? (
@@ -414,9 +427,9 @@ function BlogDetails() {
                         <div className="cont">
                           <span className="tag">
                             <Link to={`/blogs?category=${post.category}`}>
-                              {post.category
-                                ? post.category.charAt(0).toUpperCase() + post.category.slice(1)
-                                : "Uncategorized"}
+                              {post.category === "ai"
+                                ? "AI"
+                                : post.category.charAt(0).toUpperCase() + post.category.slice(1)}
                             </Link>
                           </span>
                           <h6>
@@ -430,7 +443,6 @@ function BlogDetails() {
                   )}
                 </div>
 
-                {/* Current Blog Tags */}
                 {allTags.length > 0 && (
                   <div className="widget tags">
                     <h6 className="title-widget">Tags</h6>

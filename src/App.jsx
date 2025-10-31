@@ -57,6 +57,7 @@ import PrivacyPolicy from "./Pages/Get Started/PrivacyPolice";
 import TermsandCondition from "./Pages/Get Started/Terms&Condition";
 // import Community from "./Pages/Get Started/Community";
 import CommingSoon from "./Pages/CommingSoon";
+import BlogCategory from "./Pages/Blog-Category";
 
 
 const ScrollToTop = () => {
@@ -122,6 +123,8 @@ export const AppRoutes = () => (
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     {/* <Route path="/community" element={<Community />} /> */}
     <Route path="/comming-soon" element={<CommingSoon />} />
+    <Route path="/blogs" element={<BlogCategory />} />               {/* supports /blogs?category=business */}
+<Route path="/blog-category/:category" element={<BlogCategory />} /> {/* supports /blog-category/business */}
   </Routes>
 );
 
