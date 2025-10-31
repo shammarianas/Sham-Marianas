@@ -476,7 +476,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         title: blogData.title.trim(),
         slug, // SAVED
         category: blogData.category,
-        excerpt: blogData.excerpt || content.replace(/<[^>]*>/g, "").substring(0, 160) + "...",
+        excerpt: blogData.excerpt || content.replace(/<[^>]*>/g, "").substring(0, 200) + "...",
         tags: blogData.tags,
         content,
         featureImgUrl,
@@ -683,11 +683,11 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
 
             {/* SLUG DISPLAY */}
             <div className="blog-form-group">
-              <label className="blog-form-label">URL Slug</label>
               <div className="flex items-center gap-2">
+              <label className="blog-form-label">URL Slug</label>
                 <span className="text-sm text-gray-600">yoursite.com/blog/</span>
-                <input type="text" value={blogData.slug} readOnly className="blog-form-input text-sm bg-gray-50" placeholder="auto-generated" />
               </div>
+                <input type="text" value={blogData.slug} readOnly className="blog-form-input text-sm bg-gray-50" placeholder="auto-generated" />
               <p className="blog-form-hint">Auto-generated from title. Clean & SEO-friendly.</p>
             </div>
 

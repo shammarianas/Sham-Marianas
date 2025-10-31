@@ -11,7 +11,6 @@ import {
   getDoc,
 } from "firebase/firestore";
 import loadBackgroudImages from "../common/loadBackgroudImages";
-// import Cursor from "../common/cusor";
 import ProgressScroll from "../common/ProgressScroll";
 
 function Blogs() {
@@ -25,21 +24,27 @@ function Blogs() {
     const fetchBlogs = async () => {
       try {
         const blogsRef = collection(db, "blogs");
-        // ✅ Only get published blogs
         const publishedQuery = query(
           blogsRef,
           where("status", "==", "PUBLISHED")
         );
         const querySnapshot = await getDocs(publishedQuery);
 
-        const blogsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          // ✅ Fix cover image URL mapping
-          coverImageUrl: doc.data().coverImageUrl || doc.data().featuredImageUrl || doc.data().featureImgUrl || "/assets/imgs/blog/default-cover.jpg",
-        }));
+        const blogsData = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          // Normalize category to lowercase
+          const normalizedCat = data.category?.toString().toLowerCase();
+          const validCategories = ["business", "technology", "design", "lifestyle", "ai", "marketing"];
+          const category = validCategories.includes(normalizedCat) ? normalizedCat : "business";
 
-        console.log("Fetched published blogs:", blogsData); // Debug log
+          return {
+            id: doc.id,
+            ...data,
+            category,
+            coverImageUrl: data.coverImageUrl || data.featuredImageUrl || data.featureImgUrl || "/assets/imgs/blog/default-cover.jpg",
+          };
+        });
+
         setBlogs(blogsData);
       } catch (error) {
         console.error("Error fetching published blogs:", error);
@@ -78,7 +83,7 @@ function Blogs() {
     setFilter(filterValue);
   };
 
-  // ✅ Filter blogs by search term and category
+  // Filter blogs by search term and category
   const filteredBlogs = blogs
     .filter((blog) =>
       blog.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -89,7 +94,6 @@ function Blogs() {
 
   return (
     <>
-      {/* <Cursor /> */}
       <ProgressScroll />
 
       <div className="main-bgs">
@@ -145,17 +149,6 @@ function Blogs() {
                             </Link>
                           </h3>
 
-                          {/* <div
-                            className="blog-excerpt"
-                            dangerouslySetInnerHTML={{
-                              __html:
-                                blog.excerpt ||
-                                (blog.content
-                                  ? blog.content.substring(0, 200) + "..."
-                                  : ""),
-                            }}
-                          /> */}
-
                           <Link
                             to={`/blog-details/${blog.id}`}
                             className="d-flex align-items-center main-color mt-20"
@@ -194,10 +187,11 @@ function Blogs() {
                       {[
                         "*",
                         "business",
-                        "lifestyle",
-                        "creative",
-                        "wordpress",
+                        "technology",
                         "design",
+                        "lifestyle",
+                        "ai",
+                        "marketing",
                       ].map((cat) => (
                         <li key={cat}>
                           <span
@@ -207,6 +201,8 @@ function Blogs() {
                           >
                             {cat === "*"
                               ? "All"
+                              : cat === "ai"
+                              ? "AI"
                               : cat.charAt(0).toUpperCase() + cat.slice(1)}
                           </span>
                           <span className="ml-auto">
