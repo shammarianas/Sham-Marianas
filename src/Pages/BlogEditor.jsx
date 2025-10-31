@@ -7,7 +7,6 @@ import Quill from "quill";
 import "react-quill/dist/quill.snow.css";
 import sanitizeHtml from "sanitize-html";
 
-
 const modules = {
   toolbar: {
     container: [
@@ -22,9 +21,7 @@ const modules = {
       ["clean"],
       ["link", "image", "video"],
     ],
-    handlers: {
-      image: null,
-    },
+    handlers: { image: null },
   },
 };
 
@@ -36,7 +33,6 @@ const formats = [
 
 const extractPureContent = (quillHtml) => {
   if (!quillHtml) return "";
-
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = quillHtml;
   const qlEditor = tempDiv.querySelector(".ql-editor");
@@ -45,18 +41,15 @@ const extractPureContent = (quillHtml) => {
   return sanitizeHtml(content, {
     allowedTags: [
       "p", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "b", "i",
-      "ul", "ol", "li", "a", "img", "div", "span", "br", "blockquote",
-      "code", "pre"
+      "ul", "ol", "li", "a", "img", "div", "span", "br", "blockquote", "code", "pre"
     ],
     allowedAttributes: {
       '*': ['class', 'style'],
       a: ["href", "target", "rel"],
-      span:["class"],
+      span: ["class"],
       img: ["src", "alt", "width", "height", "class"],
     },
-    allowedClasses: {
-      '*': ['ql-align-*', 'ql-indent-*'],
-    },
+    allowedClasses: { '*': ['ql-align-*', 'ql-indent-*'] },
     allowedStyles: {
       '*': {
         'color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/],
@@ -87,8 +80,18 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   const coverImageInputRef = useRef(null);
   const tagInputRef = useRef(null);
 
+  // Generate clean slug
+  const generateSlug = (title) => {
+    if (!title) return "";
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim()
+      .slice(0, 100);
+  };
 
-  
   const loadContent = useCallback(() => {
     if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
       try {
@@ -122,11 +125,11 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     if (blogToEdit && isOpen) {
       const existingTags = Array.isArray(blogToEdit.tags)
         ? blogToEdit.tags
-        : blogToEdit.tags ? blogToEdit.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
+        : blogToEdit.tags?.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) || [];
 
       setBlogData({
         title: blogToEdit.title || "",
-        slug: blogToEdit.slug || "",
+        slug: blogToEdit.slug || generateSlug(blogToEdit.title || ""),
         category: blogToEdit.category || "business",
         excerpt: blogToEdit.excerpt || "",
         tags: existingTags,
@@ -201,12 +204,11 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     }
   }, [quill]);
 
-  // IMAGE TOOLTIP + UPLOAD HANDLER
+  // IMAGE TOOLTIP + UPLOAD
   useEffect(() => {
     if (!quill) return;
 
     const ImageBlot = Quill.import("formats/image");
-
     class CustomImage extends ImageBlot {
       static create(value) {
         const node = super.create();
@@ -269,9 +271,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           if (img && img.closest(".ql-editor") === this.quill.root) {
             e.preventDefault(); e.stopPropagation();
             this.show(img);
-          } else {
-            this.hide();
-          }
+          } else this.hide();
         };
         this.quill.root.addEventListener("click", handleClick);
         this.quill.root.style.cursor = "pointer";
@@ -359,11 +359,9 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           const imageUrl = await getDownloadURL(storageRef);
           const range = quill.getSelection() || { index: 0 };
 
-          // INSERT STRING ONLY
           quill.insertEmbed(range.index, "image", imageUrl);
           quill.setSelection(range.index + 1);
 
-          // SET ALT + SHOW TOOLTIP
           setTimeout(() => {
             const img = quill.root.querySelector(`img[src="${imageUrl}"]`);
             if (img) {
@@ -371,7 +369,6 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
               imageTooltip.show(img);
             }
           }, 100);
-
         } catch (error) {
           console.error("Upload error:", error);
           alert("Failed to upload image.");
@@ -381,7 +378,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
 
     return () => {
       if (imageTooltip.cleanup) imageTooltip.cleanup();
-      if (imageTooltip.tooltip && imageTooltip.tooltip.parentNode) {
+      if (imageTooltip.tooltip?.parentNode) {
         imageTooltip.tooltip.parentNode.removeChild(imageTooltip.tooltip);
       }
     };
@@ -433,15 +430,16 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     }
   };
 
-  const generateSlug = (title) => {
-    return title.toLowerCase().replace(/[^\w\s]/gi, "").replace(/\s+/g, "-").slice(0, 50);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     const content = getCurrentContent();
+    if (!blogData.title.trim()) {
+      alert("Title is required!");
+      setIsSubmitting(false);
+      return;
+    }
     if (!content.trim()) {
       alert("Please add some content!");
       setIsSubmitting(false);
@@ -449,7 +447,16 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     }
 
     try {
-      const slug = blogToEdit ? blogData.slug : generateSlug(blogData.title);
+      // SLUG LOGIC
+      let slug = blogData.slug;
+      if (!slug || blogData.title !== blogToEdit?.title) {
+        slug = generateSlug(blogData.title);
+      }
+      if (!slug) {
+        alert("Invalid title for slug. Use letters/numbers.");
+        setIsSubmitting(false);
+        return;
+      }
 
       let featureImgUrl = blogData.featureImgUrl;
       if (blogData.featuredImage) {
@@ -467,7 +474,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
 
       const blogDataToSave = {
         title: blogData.title.trim(),
-        slug,
+        slug, // SAVED
         category: blogData.category,
         excerpt: blogData.excerpt || content.replace(/<[^>]*>/g, "").substring(0, 160) + "...",
         tags: blogData.tags,
@@ -494,7 +501,10 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       }
 
       // Reset
-      setBlogData({ title: "", slug: "", category: "business", excerpt: "", tags: [], status: "DRAFT", featuredImage: null, featureImgUrl: "", coverImage: null, coverImageUrl: "", content: "" });
+      setBlogData({
+        title: "", slug: "", category: "business", excerpt: "", tags: [], status: "DRAFT",
+        featuredImage: null, featureImgUrl: "", coverImage: null, coverImageUrl: "", content: ""
+      });
       setFeaturedImagePreview(null);
       setCoverImagePreview(null);
       setTagInput("");
@@ -503,6 +513,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       if (coverImageInputRef.current) coverImageInputRef.current.value = "";
       if (quill) quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
       onClose();
+
     } catch (error) {
       console.error("Error:", error);
       alert(`Error: ${error.message}`);
@@ -516,201 +527,143 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   return (
     <div className="blog-modal-overlay">
       <style>{`
-      span{
-      display: inline;
-      }
-  .blog-modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
-    display: flex; align-items: center; justify-content: center; 
-    z-index: 9999; padding: 1rem;
-  }
-  .blog-modal-container {
-    background: #fff; border-radius: 1.25rem; box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-    width: 100%; max-width: 1100px; max-height: 90vh; overflow: hidden;
-  }
-  .blog-modal-content { padding: 2rem; height: 90vh; overflow-y: auto; }
-  .blog-modal-header {
-    display: flex; justify-content: space-between; align-items: center; 
-    margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;
-  }
-  .blog-modal-title { 
-    font-size: 1.5rem; font-weight: 700; color: #1f2937; 
-    margin: 0; 
-  }
-  .blog-modal-close {
-    background: none; border: none; color: #6b7280; cursor: pointer; 
-    padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s;
-  }
-  .blog-modal-close:hover { 
-    background: #fee2e2; color: #dc2626; 
-  }
-  .blog-form-group { margin-bottom: 1.75rem; }
-  .blog-form-label {
-    display: block; font-size: 0.95rem; font-weight: 600; 
-    color: #374151; margin-bottom: 0.5rem;
-  }
-  .blog-form-required { color: #dc2626; }
-  .blog-form-input, .blog-form-select, .blog-form-textarea {
-    width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
-    border-radius: 0.75rem; font-size: 1rem; outline: none; 
-    transition: all 0.2s; background: #fafafa;
-    font-family: inherit;
-  }
-  .blog-form-input:focus, .blog-form-select:focus, .blog-form-textarea:focus {
-    border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    background: #fff;
-  }
-  
-  .blog-tags-container {
-    display: flex; flex-wrap: wrap; gap: 0.5rem; 
-    padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
-    border-radius: 0.75rem; background: #fafafa;
-    min-height: 48px; align-items: center;
-  }
-  .blog-tags-container:focus-within {
-    border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    background: #fff;
-  }
-  .blog-tag-input {
-    flex: 1; border: none; outline: none; 
-    background: transparent; font-size: 1rem;
-    min-width: 100px;
-  }
-  .blog-tag-input::placeholder {
-    color: #9ca3af;
-  }
-  .blog-tag {
-    display: flex; align-items: center; gap: 0.375rem;
-    padding: 0.375rem 0.75rem; border-radius: 9999px;
-    font-size: 0.875rem; font-weight: 500;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    color: white; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
-    animation: tagSlideIn 0.2s ease-out;
-  }
-  .blog-tag:hover {
-    transform: translateY(-1px); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
-  }
-  .blog-tag-remove {
-    background: rgba(255,255,255,0.3); width: 16px; height: 16px;
-    border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; font-size: 10px; font-weight: bold;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .blog-tag-remove:hover {
-    background: rgba(255,255,255,0.5); transform: scale(1.1);
-  }
-  @keyframes tagSlideIn {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  
-  .blog-form-file {
-    color:#000;
-    width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db; 
-    border-radius: 0.75rem; padding: 2rem; text-align: center; 
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    transition: all 0.2s; cursor: pointer;
-  }
-  .blog-form-file:hover { border-color: #3b82f6; background: #eff6ff; }
-  .blog-form-hint { 
-    font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; 
-    font-style: italic;
-  }
-  .blog-form-buttons {
-    display: flex; justify-content: flex-end; gap: 1rem; 
-    padding-top: 2rem; border-top: 1px solid #e5e7eb; margin-top: 2rem;
-  }
-  .blog-btn {
-    padding: 0.75rem 2rem; border-radius: 0.75rem; border: none; 
-    font-size: 1rem; font-weight: 600; cursor: pointer; 
-    transition: all 0.2s;
-  }
-  .blog-btn-cancel { 
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); 
-    color: #374151; 
-  }
-  .blog-btn-cancel:hover { 
-    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); 
-    transform: translateY(-1px);
-  }
-  .blog-btn-submit { 
-    background: #52b0b4; 
-    color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
-  }
-  .blog-btn-submit:hover:not(:disabled) { 
-    background: #52b0b4; 
-    transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
-  }
-  .blog-btn-submit:disabled { 
-    opacity: 0.6; cursor: not-allowed; transform: none; 
-  }
-  .blog-quill-editor .ql-container {
-    min-height: 400px; background: #fff; border-radius: 1rem; 
-    border: 2px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-  }
-  .blog-quill-editor .ql-toolbar {
-    border-radius: 1rem 1rem 0 0; border-color: #e5e7eb; 
-    background: #fafafa;
-  }
-  .blog-image-preview {
-    margin-top: 1rem; max-width: 250px; max-height: 150px; 
-    object-fit: cover; border-radius: 0.75rem; 
-    border: 2px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  }
-  .current-image-note {
-    font-size: 0.875rem; color: #059669; font-style: italic; 
-    margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem; border-left: 4px solid #10b981;
-  }
-  .ql-editor{
-  max-height: 500px; overflow-y: auto;
-  }
+        span { display: inline; }
+        .blog-modal-overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
+          display: flex; align-items: center; justify-content: center; 
+          z-index: 9999; padding: 1rem;
+        }
+        .blog-modal-container {
+          background: #fff; border-radius: 1.25rem; box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+          width: 100%; max-width: 1100px; max-height: 90vh; overflow: hidden;
+        }
+        .blog-modal-content { padding: 2rem; height: 90vh; overflow-y: auto; }
+        .blog-modal-header {
+          display: flex; justify-content: space-between; align-items: center; 
+          margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;
+        }
+        .blog-modal-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0; }
+        .blog-modal-close {
+          background: none; border: none; color: #6b7280; cursor: pointer; 
+          padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s;
+        }
+        .blog-modal-close:hover { background: #fee2e2; color: #dc2626; }
+        .blog-form-group { margin-bottom: 1.75rem; }
+        .blog-form-label {
+          display: block; font-size: 0.95rem; font-weight: 600; 
+          color: #374151; margin-bottom: 0.5rem;
+        }
+        .blog-form-required { color: #dc2626; }
+        .blog-form-input, .blog-form-select, .blog-form-textarea {
+          width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
+          border-radius: 0.75rem; font-size: 1rem; outline: none; 
+          transition: all 0.2s; background: #fafafa; font-family: inherit;
+        }
+        .blog-form-input:focus, .blog-form-select:focus, .blog-form-textarea:focus {
+          border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          background: #fff;
+        }
+        .blog-tags-container {
+          display: flex; flex-wrap: wrap; gap: 0.5rem; 
+          padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
+          border-radius: 0.75rem; background: #fafafa;
+          min-height: 48px; align-items: center;
+        }
+        .blog-tags-container:focus-within {
+          border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          background: #fff;
+        }
+        .blog-tag-input {
+          flex: 1; border: none; outline: none; background: transparent; 
+          font-size: 1rem; min-width: 100px;
+        }
+        .blog-tag-input::placeholder { color: #9ca3af; }
+        .blog-tag {
+          display: flex; align-items: center; gap: 0.375rem;
+          padding: 0.375rem 0.75rem; border-radius: 9999px;
+          font-size: 0.875rem; font-weight: 500;
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          color: white; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+          animation: tagSlideIn 0.2s ease-out;
+        }
+        .blog-tag:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4); }
+        .blog-tag-remove {
+          background: rgba(255,255,255,0.3); width: 16px; height: 16px;
+          border-radius: 50%; display: flex; align-items: center;
+          justify-content: center; font-size: 10px; font-weight: bold;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .blog-tag-remove:hover { background: rgba(255,255,255,0.5); transform: scale(1.1); }
+        @keyframes tagSlideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .blog-form-file {
+          color:#000; width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db; 
+          border-radius: 0.75rem; padding: 2rem; text-align: center; 
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          transition: all 0.2s; cursor: pointer;
+        }
+        .blog-form-file:hover { border-color: #3b82f6; background: #eff6ff; }
+        .blog-form-hint { font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; font-style: italic; }
+        .blog-form-buttons {
+          display: flex; justify-content: flex-end; gap: 1rem; 
+          padding-top: 2rem; border-top: 1px solid #e5e7eb; margin-top: 2rem;
+        }
+        .blog-btn {
+          padding: 0.75rem 2rem; border-radius: 0.75rem; border: none; 
+          font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .blog-btn-cancel { 
+          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); color: #374151; 
+        }
+        .blog-btn-cancel:hover { background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); transform: translateY(-1px); }
+        .blog-btn-submit { 
+          background: #52b0b4; color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+        .blog-btn-submit:hover:not(:disabled) { 
+          background: #52b0b4; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+        .blog-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .blog-quill-editor .ql-container {
+          min-height: 400px; background: #fff; border-radius: 1rem; 
+          border: 2px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .blog-quill-editor .ql-toolbar {
+          border-radius: 1rem 1rem 0 0; border-color: #e5e7eb; background: #fafafa;
+        }
+        .blog-image-preview {
+          margin-top: 1rem; max-width: 250px; max-height: 150px; 
+          object-fit: cover; border-radius: 0.75rem; 
+          border: 2px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .current-image-note {
+          font-size: 0.875rem; color: #059669; font-style: italic; 
+          margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
+          border-radius: 0.5rem; border-left: 4px solid #10b981;
+        }
+        .ql-editor { max-height: 500px; overflow-y: auto; }
+        .ql-image-tooltip {
+          position: absolute; background: white; border: 1px solid #ccc;
+          border-radius: 8px; padding: 10px; box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+          z-index: 999999; font-family: inherit; font-size: 13px; min-width: 220px;
+          pointer-events: auto; transform: translateX(-50%); transition: none !important;
+        }
+        .ql-image-tooltip button {
+          padding: 6px 10px; border: none; background: #f3f4f6;
+          border-radius: 4px; font-size: 12px; font-weight: 500;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .ql-image-tooltip button:hover { background: #e5e7eb; }
+        .ql-image-tooltip .ql-save, .ql-image-tooltip .ql-remove { font-weight: 600; }
+        .ql-image-tooltip .ql-save:hover { background: #059669 !important; }
+        .ql-image-tooltip .ql-remove:hover { background: #dc2626 !important; }
+        .ql-snow .ql-editor img { cursor: pointer; }
+        @media (max-width: 768px) {
+          .blog-modal-content { padding: 1.5rem; }
+          .blog-modal-title { font-size: 1.25rem; }
+          .blog-quill-editor .ql-container { min-height: 300px; }
+          .blog-tags-container { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+        }
+      `}</style>
 
-  /* ---- IMAGE TOOLTIP STYLES ---- */
-  .ql-image-tooltip {
-    position: absolute;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-    z-index: 999999;
-    font-family: inherit;
-    font-size: 13px;
-    min-width: 220px;
-    pointer-events: auto;
-    transform: translateX(-50%);
-    transition: none !important;
-  }
-  .ql-image-tooltip button {
-    padding: 6px 10px;
-    border: none;
-    background: #f3f4f6;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .ql-image-tooltip button:hover { background: #e5e7eb; }
-  .ql-image-tooltip .ql-save,
-  .ql-image-tooltip .ql-remove {
-    font-weight: 600;
-  }
-  .ql-image-tooltip .ql-save:hover { background: #059669 !important; }
-  .ql-image-tooltip .ql-remove:hover { background: #dc2626 !important; }
-
-  .ql-snow .ql-editor img {
-    cursor: pointer;
-  }
-
-  @media (max-width: 768px) {
-    .blog-modal-content { padding: 1.5rem; }
-    .blog-modal-title { font-size: 1.25rem; }
-    .blog-quill-editor .ql-container { min-height: 300px; }
-    .blog-tags-container { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
-  }
-`}</style>
       <div className="blog-modal-container">
         <div className="blog-modal-content">
           <div className="blog-modal-header">
@@ -724,151 +677,92 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
 
           <form onSubmit={handleSubmit}>
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Title <span className="blog-form-required">*</span>
-              </label>
-              <input 
-                type="text" 
-                name="title" 
-                value={blogData.title} 
-                onChange={handleInputChange} 
-                required 
-                className="blog-form-input" 
-                placeholder="Enter an engaging blog title..."
-              />
+              <label className="blog-form-label">Title <span className="blog-form-required">*</span></label>
+              <input type="text" name="title" value={blogData.title} onChange={handleInputChange} required className="blog-form-input" placeholder="Enter an engaging blog title..." />
             </div>
 
+            {/* SLUG DISPLAY */}
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Tags (Max 10)
-              </label>
+              <label className="blog-form-label">URL Slug</label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">yoursite.com/blog/</span>
+                <input type="text" value={blogData.slug} readOnly className="blog-form-input text-sm bg-gray-50" placeholder="auto-generated" />
+              </div>
+              <p className="blog-form-hint">Auto-generated from title. Clean & SEO-friendly.</p>
+            </div>
+
+            {/* Rest of form */}
+            <div className="blog-form-group">
+              <label className="blog-form-label">Tags (Max 10)</label>
               <div className="blog-tags-container" tabIndex="0">
                 {blogData.tags.map((tag, index) => (
                   <div key={index} className="blog-tag">
                     #{tag}
-                    <span 
-                      className="blog-tag-remove"
-                      onClick={() => handleTagRemove(tag)}
-                    >
-                      ×
-                    </span>
+                    <span className="blog-tag-remove" onClick={() => handleTagRemove(tag)}>×</span>
                   </div>
                 ))}
-                <input
-                  ref={tagInputRef}
-                  type="text"
-                  className="blog-tag-input"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagAdd}
-                  placeholder={blogData.tags.length === 0 ? "Type tag and press Enter (e.g., business, tech, ai)..." : "Press Enter to add tag..."}
-                  maxLength={20}
-                />
+                <input ref={tagInputRef} type="text" className="blog-tag-input" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleTagAdd} placeholder={blogData.tags.length === 0 ? "Type tag and press Enter..." : "Press Enter to add tag..."} maxLength={20} />
               </div>
-               <p className="blog-form-hint">
-                🏷️ Type tag name and press Enter. Max 10 tags. Click × to remove.
-              </p>
+              <p className="blog-form-hint">Type tag name and press Enter. Max 10 tags. Click × to remove.</p>
               {blogData.tags.length > 0 && (
-                <p className="current-image-note" style={{marginTop: '0.5rem'}}>
-                  ✅ {blogData.tags.length} tag{blogData.tags.length > 1 ? 's' : ''} added
+                <p className="current-image-note" style={{ marginTop: '0.5rem' }}>
+                  {blogData.tags.length} tag{blogData.tags.length > 1 ? 's' : ''} added
                 </p>
               )}
             </div>
 
+            {/* Featured & Cover Image */}
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Featured Image <span className="blog-form-required">*</span>
-              </label>
-              <input 
-                type="file" 
-                ref={featuredImageInputRef} 
-                onChange={handleFeaturedImageChange} 
-                accept="image/*" 
-                className="blog-form-file" 
-              />
-              <p className="blog-form-hint">📸 JPG, PNG, WebP • Max 1.25MB • 1200x630px recommended</p>
+              <label className="blog-form-label">Featured Image <span className="blog-form-required">*</span></label>
+              <input type="file" ref={featuredImageInputRef} onChange={handleFeaturedImageChange} accept="image/*" className="blog-form-file" />
+              <p className="blog-form-hint">JPG, PNG, WebP • Max 1.25MB • 1200x630px recommended</p>
               {blogData.featureImgUrl && !blogData.featuredImage && (
-                <p className="current-image-note">
-                  ✅ Current featured image will be retained
-                </p>
+                <p className="current-image-note">Current featured image will be retained</p>
               )}
-              {featuredImagePreview && (
-                <img src={featuredImagePreview} alt="Featured preview" className="blog-image-preview" />
-              )}
+              {featuredImagePreview && <img src={featuredImagePreview} alt="Preview" className="blog-image-preview" />}
             </div>
 
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Cover Image <span className="blog-form-required">*</span>
-              </label>
-              <input 
-                type="file" 
-                ref={coverImageInputRef} 
-                onChange={handleCoverImageChange} 
-                accept="image/*" 
-                className="blog-form-file" 
-              />
-              <p className="blog-form-hint">🖼️ JPG, PNG, WebP • Max 1.25MB • 1600x900px recommended</p>
+              <label className="blog-form-label">Cover Image <span className="blog-form-required">*</span></label>
+              <input type="file" ref={coverImageInputRef} onChange={handleCoverImageChange} accept="image/*" className="blog-form-file" />
+              <p className="blog-form-hint">JPG, PNG, WebP • Max 1.25MB • 1600x900px recommended</p>
               {blogData.coverImageUrl && !blogData.coverImage && (
-                <p className="current-image-note">
-                  ✅ Current cover image will be retained
-                </p>
+                <p className="current-image-note">Current cover image will be retained</p>
               )}
-              {coverImagePreview && (
-                <img src={coverImagePreview} alt="Cover preview" className="blog-image-preview" />
-              )}
+              {coverImagePreview && <img src={coverImagePreview} alt="Preview" className="blog-image-preview" />}
             </div>
 
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Category <span className="blog-form-required">*</span>
-              </label>
+              <label className="blog-form-label">Category <span className="blog-form-required">*</span></label>
               <select name="category" value={blogData.category} onChange={handleInputChange} required className="blog-form-select">
-                <option value="business">💼 Business</option>
-                <option value="technology">🚀 Technology</option>
-                <option value="design">🎨 Design</option>
-                <option value="lifestyle">🌟 Lifestyle</option>
-                <option value="ai">🤖 Artificial Intelligence</option>
-                <option value="marketing">📈 Marketing</option>
+                <option value="business">Business</option>
+                <option value="technology">Technology</option>
+                <option value="design">Design</option>
+                <option value="lifestyle">Lifestyle</option>
+                <option value="ai">Artificial Intelligence</option>
+                <option value="marketing">Marketing</option>
               </select>
             </div>
 
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Status <span className="blog-form-required">*</span>
-              </label>
+              <label className="blog-form-label">Status <span className="blog-form-required">*</span></label>
               <select name="status" value={blogData.status} onChange={handleInputChange} required className="blog-form-select">
-                <option value="DRAFT">📝 Draft</option>
-                <option value="PUBLISHED">✅ Published</option>
-                <option value="ARCHIVED">📦 Archived</option>
+                <option value="DRAFT">Draft</option>
+                <option value="PUBLISHED">Published</option>
+                <option value="ARCHIVED">Archived</option>
               </select>
             </div>
 
             <div className="blog-form-group">
-              <label className="blog-form-label">
-                Content <span className="blog-form-required">*</span>
-              </label>
+              <label className="blog-form-label">Content <span className="blog-form-required">*</span></label>
               <div ref={quillRef} className="blog-quill-editor" />
-              <p className="blog-form-hint">
-                ✏️ Use the toolbar above to format your content. 
-                All formatting (P, H1-H6, colors, alignment) will be preserved exactly.
-              </p>
+              <p className="blog-form-hint">Use the toolbar to format your content. All formatting will be preserved.</p>
             </div>
 
             <div className="blog-form-buttons">
-              <button type="button" onClick={onClose} className="blog-btn blog-btn-cancel">
-                Cancel
-              </button>
+              <button type="button" onClick={onClose} className="blog-btn blog-btn-cancel">Cancel</button>
               <button type="submit" disabled={isSubmitting} className="blog-btn blog-btn-submit">
-                {isSubmitting ? (
-                  <>
-                    {blogToEdit ? "Updating..." : "Publishing..."}
-                  </>
-                ) : blogToEdit ? (
-                  "Update Blog"
-                ) : (
-                  "Publish Blog"
-                )}
+                {isSubmitting ? (blogToEdit ? "Updating..." : "Publishing...") : blogToEdit ? "Update Blog" : "Publish Blog"}
               </button>
             </div>
           </form>

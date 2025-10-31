@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
   limit,
+  where,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import loadBackgroudImages from "../common/loadBackgroudImages";
@@ -20,7 +21,7 @@ import Marq2 from "../Components/marq2";
 import sanitizeHtml from "sanitize-html";
 
 function BlogDetails() {
-  const { id } = useParams();
+  const { id } = useParams(); // Keep id for fetching
   const navigate = useNavigate();
 
   const [blog, setBlog] = useState(null);
@@ -36,9 +37,9 @@ function BlogDetails() {
     design: 0,
   });
   const [latestBlogs, setLatestBlogs] = useState([]);
-  const [allTags, setAllTags] = useState([]); // ← Now only current blog tags
+  const [allTags, setAllTags] = useState([]);
 
-  // Comment form states
+  // Comment form
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -46,40 +47,35 @@ function BlogDetails() {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
+        // First try to fetch by ID
         const docRef = doc(db, "blogs", id);
-        const docSnap = await getDoc(docRef);
+        let docSnap = await getDoc(docRef);
+
+        // If not found by ID, try to fetch by slug
+        if (!docSnap.exists()) {
+          const q = query(collection(db, "blogs"), where("slug", "==", id));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            docSnap = querySnapshot.docs[0];
+          }
+        }
+
         if (docSnap.exists()) {
           const blogData = { id: docSnap.id, ...docSnap.data() };
 
-          // FIX: Map ALL possible featured image fields
+          // Featured image fallback
           blogData.featuredImageUrl =
             blogData.featuredImageUrl ||
             blogData.featureImgUrl ||
             blogData.coverImageUrl ||
             "/assets/imgs/background/bg4.jpg";
 
-          console.log("Blog featured image URL:", blogData.featuredImageUrl);
-
           // Sanitize content
           blogData.content = sanitizeHtml(blogData.content, {
             allowedTags: [
-              "p",
-              "h1",
-              "h2",
-              "h3",
-              "h4",
-              "h5",
-              "h6",
-              "strong",
-              "em",
-              "ul",
-              "ol",
-              "li",
-              "a",
-              "img",
-              "div",
-              "span",
-              "br",
+              "p", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "ul", "ol", "li",
+              "a", "img", "div", "span", "br", "blockquote", "code", "pre"
             ],
             allowedAttributes: {
               a: ["href", "target", "rel"],
@@ -94,10 +90,9 @@ function BlogDetails() {
           });
 
           setBlog(blogData);
-
-          // SET ONLY CURRENT BLOG'S TAGS
           setAllTags(Array.isArray(blogData.tags) ? blogData.tags : []);
         } else {
+          console.log("Blog not found");
           setBlog(null);
           setAllTags([]);
         }
@@ -117,17 +112,11 @@ function BlogDetails() {
           const userProfileRef = doc(db, "Profiles", currentUser.uid);
           const userDoc = await getDoc(userProfileRef);
           if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setIsAdmin(userData.role === "admin");
-          } else {
-            setIsAdmin(false);
+            setIsAdmin(userDoc.data().role === "admin");
           }
         } catch (error) {
-          console.error("Error fetching user profile:", error);
-          setIsAdmin(false);
+          console.error("Error:", error);
         }
-      } else {
-        setIsAdmin(false);
       }
     };
 
@@ -144,23 +133,21 @@ function BlogDetails() {
         };
         querySnapshot.forEach((doc) => {
           const category = doc.data().category || "uncategorized";
-          if (counts.hasOwnProperty(category)) {
-            counts[category]++;
-          }
+          if (counts.hasOwnProperty(category)) counts[category]++;
         });
         setCategoryCounts(counts);
       } catch (error) {
-        console.error("Error fetching category counts:", error);
+        console.error("Error:", error);
       }
     };
 
     const fetchLatestBlogs = async () => {
       try {
-        const blogsRef = collection(db, "blogs");
-        const q = query(blogsRef, orderBy("publishedAt", "desc"), limit(3));
+        const q = query(collection(db, "blogs"), orderBy("publishedAt", "desc"), limit(3));
         const querySnapshot = await getDocs(q);
         const blogsList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
+          slug: doc.data().slug,
           ...doc.data(),
           coverImageUrl:
             doc.data().coverImageUrl ||
@@ -170,17 +157,16 @@ function BlogDetails() {
         }));
         setLatestBlogs(blogsList);
       } catch (error) {
-        console.error("Error fetching latest blogs:", error);
+        console.error("Error:", error);
       }
     };
 
-    // Run all functions
     fetchBlog();
     checkAdminStatus();
     fetchCategoryCounts();
     fetchLatestBlogs();
     loadBackgroudImages();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -195,7 +181,6 @@ function BlogDetails() {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-
     if (!name || !email || !message) {
       alert("Please fill all fields!");
       return;
@@ -208,65 +193,34 @@ function BlogDetails() {
         message,
         createdAt: serverTimestamp(),
       });
-
-      alert("Comment posted successfully!");
+      alert("Comment posted!");
       setName("");
       setEmail("");
       setMessage("");
     } catch (error) {
-      console.error("Error posting comment:", error);
-      alert("Failed to post comment. Try again.");
+      console.error("Error:", error);
+      alert("Failed to post comment.");
     }
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">
-        Loading blog...
-      </div>
-    );
-
-  if (!blog)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-lg text-red-500">
-        Blog not found
-      </div>
-    );
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">Loading blog...</div>;
+  if (!blog) return <div className="min-h-screen flex items-center justify-center text-lg text-red-500">Blog not found</div>;
 
   return (
     <>
       <style>{`
         span { display: inline; }
         .header-blog {
-          min-height: 600px;
-          background-size: cover;
-          background-position: center;
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          min-height: 600px; background-size: cover; background-position: center;
+          position: relative; display: flex; align-items: center; justify-content: center;
         }
-        .header-blog .caption {
-          padding: 2rem;
-          max-width: 60%;
-        }
-        .header-blog h1 {
-          font-size: 2.5rem;
-          font-weight: 700;
-          color: #FFFFFF;
-          margin: 0.5rem 0;
-        }
-        .header-blog .sub-title {
-          color: #D1D5DB;
-          font-size: 0.9rem;
-          text-transform: uppercase;
-        }
+        .header-blog .caption { padding: 2rem; max-width: 60%; }
+        .header-blog h1 { font-size: 2.5rem; font-weight: 700; color: #FFFFFF; margin: 0.5rem 0; }
+        .header-blog .sub-title { color: #D1D5DB; font-size: 0.9rem; text-transform: uppercase; }
         .info { color: #D1D5DB; justify-content: center; }
         .info .left-info, .info .right-info { color: #D1D5DB; }
         .info .date a, .info .right-info span { color: #FFFFFF; }
-        .info .date span.opacity-7, .info .right-info span.opacity-7 {
-          opacity: 0.7; font-size: 0.9rem;
-        }
+        .info .date span.opacity-7, .info .right-info span.opacity-7 { opacity: 0.7; font-size: 0.9rem; }
         .section-padding { padding: 80px 0; }
         body { background: #000000; color: #FFFFFF; }
         @media (max-width: 768px) {
@@ -357,7 +311,6 @@ function BlogDetails() {
                         <div className="form-group mb-30">
                           <input
                             type="text"
-                            name="name"
                             placeholder="Name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -369,7 +322,6 @@ function BlogDetails() {
                         <div className="form-group mb-30">
                           <input
                             type="email"
-                            name="email"
                             placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -380,7 +332,6 @@ function BlogDetails() {
                       <div className="col-12">
                         <div className="form-group">
                           <textarea
-                            name="message"
                             placeholder="Message"
                             rows="4"
                             value={message}
@@ -411,7 +362,6 @@ function BlogDetails() {
                   <form onSubmit={handleSearch} className="search-box">
                     <input
                       type="text"
-                      name="search-post"
                       placeholder="Search"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -443,13 +393,10 @@ function BlogDetails() {
                   <h6 className="title-widget">Latest Posts</h6>
                   {latestBlogs.length > 0 ? (
                     latestBlogs.map((post) => (
-                      <div
-                        key={post.id}
-                        className="item d-flex align-items-center mb-20"
-                      >
+                      <div key={post.id} className="item d-flex align-items-center mb-20">
                         <div>
                           <div className="img">
-                            <Link to={`/blog/${post.id}`}>
+                            <Link to={`/blog/${post.slug || post.id}`}>
                               <img src={post.coverImageUrl} alt={post.title} />
                               {post.publishedAt && (
                                 <span className="date">
@@ -473,7 +420,7 @@ function BlogDetails() {
                             </Link>
                           </span>
                           <h6>
-                            <Link to={`/blog/${post.id}`}>{post.title}</Link>
+                            <Link to={`/blog/${post.slug || post.id}`}>{post.title}</Link>
                           </h6>
                         </div>
                       </div>
@@ -483,7 +430,7 @@ function BlogDetails() {
                   )}
                 </div>
 
-                {/* CURRENT BLOG TAGS ONLY */}
+                {/* Current Blog Tags */}
                 {allTags.length > 0 && (
                   <div className="widget tags">
                     <h6 className="title-widget">Tags</h6>
