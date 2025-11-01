@@ -9109,6 +9109,9 @@ footer.clean-footer.crev .circle-blur {
   color: #52b0b4;
   text-decoration: underline;
 }
+.blog-detail-size ul li{
+  list-style: disc;
+}
 
 @media (max-width:768px) {
   .blog-detail-size h1{
