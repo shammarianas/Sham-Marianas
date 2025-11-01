@@ -124,8 +124,9 @@ export const AppRoutes = () => (
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     {/* <Route path="/community" element={<Community />} /> */}
     <Route path="/comming-soon" element={<CommingSoon />} />
-    <Route path="/blogs" element={<BlogCategory />} />               {/* supports /blogs?category=business */}
-<Route path="/blog-category/:category" element={<BlogCategory />} /> {/* supports /blog-category/business */}
+    <Route path="/blogs" element={<BlogCategory />} />               
+<Route path="/blog-category/:category" element={<BlogCategory />} /> 
+
   </Routes>
 );
 
