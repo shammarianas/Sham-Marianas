@@ -11,7 +11,6 @@ import {
   getDoc,
 } from "firebase/firestore";
 import ProgressScroll from "../common/ProgressScroll";
-// import Cursor from "../common/cusor";
 import { Link } from "react-router-dom";
 import loadBackgroundImages from "../common/loadBackgroudImages";
 import Marq2 from "../Components/marq2";
@@ -49,7 +48,19 @@ function Header() {
           ...doc.data(),
         }));
 
-        setProjects(projectsData);
+        // Sort: Featured first, then by date (newest first)
+        const sortedProjects = projectsData.sort((a, b) => {
+          // Featured projects first
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+
+          // Then sort by createdAt (latest first)
+          const dateA = a.createdAt?.toDate?.() || new Date(0);
+          const dateB = b.createdAt?.toDate?.() || new Date(0);
+          return dateB - dateA;
+        });
+
+        setProjects(sortedProjects);
       } catch (error) {
         console.error("Error fetching projects:", error);
       }
@@ -89,14 +100,14 @@ function Header() {
 
   const filteredProjects = projects.filter((project) => {
     const matchesCategory = filter === "*" || project.category === filter.slice(1);
-    const matchesSearch = !searchQuery || 
+    const matchesSearch =
+      !searchQuery ||
       project.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   return (
     <>
-      {/* <Cursor /> */}
       <ProgressScroll />
       <header
         className="page-header bg-img section-padding valign"
@@ -133,55 +144,44 @@ function Header() {
                   <span
                     data-filter="*"
                     className={filter === "*" ? "active" : ""}
-                    data-count={projects.length}
                     onClick={() => handleFilterChange("*")}
                     style={{ cursor: "pointer" }}
                   >
-                    All
+                    All ({projects.length})
                   </span>
                   <span
                     data-filter=".design"
                     className={filter === ".design" ? "active" : ""}
-                    data-count={
-                      projects.filter((p) => p.category === "design").length
-                    }
                     onClick={() => handleFilterChange(".design")}
                     style={{ cursor: "pointer" }}
                   >
-                    Design
+                    Design ({projects.filter((p) => p.category === "design").length})
                   </span>
                   <span
                     data-filter=".development"
                     className={filter === ".development" ? "active" : ""}
-                    data-count={
-                      projects.filter((p) => p.category === "development")
-                        .length
-                    }
                     onClick={() => handleFilterChange(".development")}
                     style={{ cursor: "pointer" }}
                   >
-                    Development
+                    Development ({projects.filter((p) => p.category === "development").length})
                   </span>
                   <span
                     data-filter=".marketing"
                     className={filter === ".marketing" ? "active" : ""}
-                    data-count={
-                      projects.filter((p) => p.category === "marketing").length
-                    }
                     onClick={() => handleFilterChange(".marketing")}
                     style={{ cursor: "pointer" }}
                   >
-                    Marketing
+                    Marketing ({projects.filter((p) => p.category === "marketing").length})
                   </span>
                 </div>
 
-                {/* **SVG Search Icon - ALWAYS VISIBLE** */}
-                <div 
+                {/* Search Icon - Always Visible */}
+                <div
                   className="search-icon-container"
                   onClick={toggleSearch}
-                  style={{ 
-                    position: "absolute", 
-                    top: "50%", 
+                  style={{
+                    position: "absolute",
+                    top: "50%",
                     right: "-45px",
                     transform: "translateY(-50%)",
                     width: "36px",
@@ -194,16 +194,16 @@ function Header() {
                     cursor: "pointer",
                     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                     transition: "all 0.3s ease",
-                    zIndex: 10
+                    zIndex: 10,
                   }}
                   title="Search projects"
                 >
-                 <i class="icon fa-solid fa-magnifying-glass" style={{ color: "#fff" }}></i>
+                  <i className="fa-solid fa-magnifying-glass" style={{ color: "#fff" }}></i>
                 </div>
 
-                {/* **Search Bar - Direct Under Icon** */}
+                {/* Search Bar - Dropdown */}
                 {showSearch && (
-                  <div 
+                  <div
                     className="search-bar-container"
                     style={{
                       position: "absolute",
@@ -211,13 +211,14 @@ function Header() {
                       right: "-45px",
                       minWidth: "280px",
                       borderRadius: "8px",
-                      background:"#0f0f0f",
+                      background: "#0f0f0f",
                       border: "1px solid rgba(255, 255, 255, 0.1)",
-                      zIndex: 1,
-
+                      zIndex: 1000,
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+                      padding: "12px",
                     }}
                   >
-                    <div style={{ position: "relative", width: "100%" }}>
+                    <div style={{ position: "relative" }}>
                       <input
                         type="text"
                         value={searchQuery}
@@ -230,40 +231,35 @@ function Header() {
                           borderRadius: "8px",
                           fontSize: "15px",
                           outline: "none",
-                          fontFamily: "inherit",
-                          transition: "all 0.2s ease",
                           background: "transparent",
-                          color: "#fff",           // text color white
-                          caretColor: "#fff",      // cursor (caret) color white
+                          color: "#fff",
+                          caretColor: "#fff",
+                          fontFamily: "inherit",
                         }}
                         onFocus={(e) => {
                           e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
-                          e.target.style.background = "#0f0f0f";
+                          e.target.style.background = "#1a1a1a";
                         }}
                         onBlur={(e) => {
                           e.target.style.boxShadow = "none";
-                          e.target.style.background = "#fafbfc";
+                          e.target.style.background = "transparent";
                         }}
                       />
-                      {/* **Search Icon INSIDE Input** */}
-                      <div 
+                      <i
+                        className="fa-solid fa-magnifying-glass"
                         style={{
                           position: "absolute",
                           left: "16px",
                           top: "50%",
                           transform: "translateY(-50%)",
-                          pointerEvents: "none"
+                          color: "#6b7280",
+                          pointerEvents: "none",
                         }}
-                      >
-                      <i class="icon fa-solid fa-magnifying-glass" style={{ color: "#6b7280" }}></i>
-                      </div>
-                      
-                      {/* **Clear Button** */}
+                      ></i>
+
                       {searchQuery && (
                         <button
-                          onClick={() => {
-                            setSearchQuery("");
-                          }}
+                          onClick={() => setSearchQuery("")}
                           style={{
                             position: "absolute",
                             right: "16px",
@@ -281,23 +277,25 @@ function Header() {
                             fontSize: "18px",
                             fontWeight: "bold",
                             borderRadius: "50%",
-                            transition: "all 0.2s ease"
                           }}
-                          onMouseEnter={(e) => e.target.style.background = "#f3f4f6"}
-                          onMouseLeave={(e) => e.target.style.background = "none"}
+                          onMouseEnter={(e) => (e.target.style.background = "#f3f4f6")}
+                          onMouseLeave={(e) => (e.target.style.background = "none")}
                         >
                           ×
                         </button>
                       )}
                     </div>
+
                     {searchQuery && (
-                      <div style={{
-                        fontSize: "12px",
-                        color: "#6b7280",
-                        marginTop: "8px",
-                        textAlign: "center"
-                      }}>
-                        {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} found
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#6b7280",
+                          marginTop: "8px",
+                          textAlign: "center",
+                        }}
+                      >
+                        {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""} found
                       </div>
                     )}
                   </div>
@@ -306,6 +304,7 @@ function Header() {
             </div>
           </div>
         </div>
+
         <div className="container">
           <div className="gallery row md-marg">
             {filteredProjects.length > 0 ? (
@@ -327,13 +326,12 @@ function Header() {
                         </span>
                         <h6>{project.title}</h6>
                       </div>
-
                       <div className="col-4 d-flex flex-column align-items-end justify-content-between">
-                        <span>{project.client}</span>
+                        <span>{project.client || "Client"}</span>
                         <div className="pt-3">
                           <Link to={`/project-details/${project.id}`}>
-                          <span className="ti-arrow-top-right"></span>
-                        </Link>
+                            <span className="ti-arrow-top-right"></span>
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -341,12 +339,11 @@ function Header() {
                 </div>
               ))
             ) : (
-              <div className="col-12 text-center">
-                <p>
-                  {searchQuery 
-                    ? `No projects found matching "${searchQuery}"` 
-                    : "No projects found for this category."
-                  }
+              <div className="col-12 text-center py-5">
+                <p className="text-light">
+                  {searchQuery
+                    ? `No projects found matching "${searchQuery}"`
+                    : "No projects found for this category."}
                 </p>
               </div>
             )}
@@ -355,14 +352,11 @@ function Header() {
       </section>
 
       <Marq2 />
-      
+
       <style jsx>{`
         .search-icon-container:hover {
           transform: translateY(-50%) scale(1.05) !important;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
-        }
-        .search-icon-container:hover svg {
-          color: #3b82f6 !important;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
         }
         .search-bar-container {
           animation: slideDown 0.3s ease-out;
@@ -376,6 +370,16 @@ function Header() {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+        .filter span {
+          margin-right: 20px;
+          font-size: 15px;
+          color: #aaa;
+          transition: color 0.3s;
+        }
+        .filter span.active,
+        .filter span:hover {
+          color: #52b0b4;
         }
       `}</style>
     </>
