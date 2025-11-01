@@ -4,7 +4,7 @@ import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/fi
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useQuill } from "react-quilljs";
 import Quill from "quill";
-import "react-quill/dist/quill.snow.css";
+import "quill/dist/quill.snow.css";
 import sanitizeHtml from "sanitize-html";
 
 const modules = {
@@ -27,8 +27,9 @@ const modules = {
 
 const formats = [
   "header", "bold", "italic", "underline", "strike",
-  "blockquote", "list", "bullet", "indent", "script", "link", "image",
-  "video", "color", "background", "align", "code-block",
+  "blockquote", "code-block",
+  "list", "bullet", "indent", "script", "link", "image",
+  "video", "color", "background", "align",
 ];
 
 const extractPureContent = (quillHtml) => {
@@ -44,7 +45,7 @@ const extractPureContent = (quillHtml) => {
       "ul", "ol", "li", "a", "img", "div", "span", "br", "blockquote", "code", "pre"
     ],
     allowedAttributes: {
-      '*': ['class', 'style'],
+      '*': ['class', 'style', 'data-list'],
       a: ["href", "target", "rel"],
       span: ["class"],
       img: ["src", "alt", "width", "height", "class"],
@@ -92,19 +93,17 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       .slice(0, 100);
   };
 
-  const loadContent = useCallback(() => {
-    if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
-      try {
-        quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'silent');
-        setTimeout(() => {
-          const cleanContent = extractPureContent(blogToEdit.content);
-          quill.clipboard.dangerouslyPasteHTML(0, cleanContent, 'user');
-        }, 100);
-      } catch (error) {
-        console.error("Error loading content:", error);
-      }
+ const loadContent = useCallback(() => {
+  if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
+    try {
+      const cleanContent = extractPureContent(blogToEdit.content);
+      quill.clipboard.dangerouslyPasteHTML(cleanContent);
+      quill.setSelection(quill.getLength(), 0);
+    } catch (error) {
+      console.error("Error loading content:", error);
     }
-  }, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
+  }
+}, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
 
   const initializeEditor = () => {
     if (quill && isOpen && !blogToEdit) {
@@ -384,6 +383,53 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     };
   }, [quill]);
 
+
+useEffect(() => {
+  if (!quill) return;
+
+  const List = Quill.import('formats/list');
+
+  class CustomList extends List {
+    static create(value) {
+      const node = super.create(value);
+      if (value === 'bullet') {
+        node.setAttribute('data-list', 'bullet');
+      } else if (value === 'ordered') {
+        node.setAttribute('data-list', 'ordered');
+      }
+      return node;
+    }
+
+    static formats(node) {
+      const list = node.getAttribute('data-list');
+      if (node.tagName === 'UL' && !list) return 'bullet'; // ← Force bullet for plain <ul>
+      return list || 'bullet';
+    }
+  }
+
+  Quill.register('formats/list', CustomList, true);
+
+  // Force style on load
+  const applyStyles = () => {
+    quill.root.querySelectorAll('ul').forEach(ul => {
+      if (!ul.hasAttribute('data-list')) {
+        ul.setAttribute('data-list', 'bullet');
+      }
+      ul.style.listStyleType = 'disc';
+      ul.style.paddingLeft = '1.5em';
+    });
+    quill.root.querySelectorAll('ol').forEach(ol => {
+      ol.style.listStyleType = 'decimal';
+    });
+  };
+
+  setTimeout(applyStyles, 100);
+  const handler = () => setTimeout(applyStyles, 0);
+  quill.on('text-change', handler);
+
+  return () => quill.off('text-change', handler);
+}, [quill]);
+
   // Handlers
   const handleTagAdd = (e) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -401,10 +447,16 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     setBlogData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+ const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  // If title changes, also update slug in state
+  if (name === "title") {
+    const newSlug = generateSlug(value);
+    setBlogData(prev => ({ ...prev, title: value, slug: newSlug }));
+  } else {
     setBlogData(prev => ({ ...prev, [name]: value }));
-  };
+  }
+};
 
   const handleFeaturedImageChange = (e) => {
     const file = e.target.files[0];
@@ -629,6 +681,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         .blog-quill-editor .ql-toolbar {
           border-radius: 1rem 1rem 0 0; border-color: #e5e7eb; background: #fafafa;
         }
+        .blog-quill-editor .ql-editor { max-height: 500px; overflow-y: auto; }
         .blog-image-preview {
           margin-top: 1rem; max-width: 250px; max-height: 150px; 
           object-fit: cover; border-radius: 0.75rem; 
@@ -662,6 +715,8 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           .blog-quill-editor .ql-container { min-height: 300px; }
           .blog-tags-container { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
         }
+
+
       `}</style>
 
       <div className="blog-modal-container">

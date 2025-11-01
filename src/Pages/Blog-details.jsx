@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   doc,
@@ -85,10 +85,16 @@ function BlogDetails() {
               img: ["src", "alt", "width", "height"],
               div: ["class"],
               span: ["class"],
+              ul: ["data-list"],
+              ol: ["data-list"],
+              li: ["class", "data-list"],
             },
             allowedClasses: {
               div: ["prose", "prose-blue", "max-w-none"],
               span: [],
+              ul: ["ql-indent-*"],
+              ol: ["ql-indent-*"],
+              li: ["ql-indent-*"],
             },
           });
 
@@ -245,6 +251,36 @@ function BlogDetails() {
           .header-blog h1 { font-size: 1.2rem; max-width: 100%; }
           .header-blog .caption { max-width: 90%; }
           .section-padding { padding: 40px 0; }
+        }
+        .prose ol > li[data-list="bullet"] {
+          list-style-type: disc !important;
+        }
+        .prose ol > li[data-list="ordered"] {
+          list-style-type: decimal !important;
+        }
+        .prose ol {
+          padding-left: 2.5em !important;
+          margin: 1em 0 !important;
+        }
+        .prose li {
+          margin-bottom: 0.5em !important;
+          padding-left: 0.25em !important;
+          list-style-position: outside !important;
+        }
+        .prose ol ol > li[data-list="bullet"] {
+          list-style-type: circle !important;
+        }
+        .prose ol ol ol > li[data-list="bullet"] {
+          list-style-type: square !important;
+        }
+        .prose ol ol > li[data-list="ordered"] {
+          list-style-type: lower-alpha !important;
+        }
+        .prose ol ol ol > li[data-list="ordered"] {
+          list-style-type: lower-roman !important;
+        }
+        .prose li::marker {
+          color: inherit !important;
         }
       `}</style>
 
