@@ -1,9 +1,11 @@
 import React from "react";
 import WhatsAppButton from "../Components/whatsappButton";
+import ProgressScroll from "../common/ProgressScroll";
 
 function Contact() {
   return (
     <>
+    <ProgressScroll />
       <section className="contact section-padding">
         <div className="container">
           <div className="row">
