@@ -8,6 +8,27 @@ function Footer() {
 
   // Check if the current page is /stock or a category template page
   const isTemplatePage = path === "/stock" || path.includes("/category");
+  
+  // Check if current page is any dashboard page - ALL POSSIBLE DASHBOARD ROUTES
+  const isDashboardPage = 
+    path.includes('/dashboard') || 
+    path.includes('/admin-dashboard') || 
+    path.includes('/admin/dashboard') ||
+    path.includes('/company-dashboard') ||
+    path.includes('/company/dashboard') ||
+    path === '/dashboard' ||
+    path === '/admin' ||
+    path === '/company';
+
+  // Debug: Console log to check what's happening
+  console.log('Current path:', path);
+  console.log('Is dashboard page:', isDashboardPage);
+
+  // Agar dashboard page hai to footer show nahi karo
+  if (isDashboardPage) {
+    console.log('Footer hidden for dashboard page');
+    return null;
+  }
 
   return (
     <>
@@ -46,22 +67,6 @@ function Footer() {
               {/* Conditional: Company OR Partner/Seller */}
               {isTemplatePage ? (
                 <>
-                  {/* Become a Partner
-                  <div className="column md-mb50">
-                    <h6 className="sub-title mb-30">Become a Partner</h6>
-                    <ul className="rest fz-14 opacity-7">
-                      <li className="mb-15">
-                        <a href="/partner-program">Partner Program</a>
-                      </li>
-                      <li className="mb-15">
-                        <a href="/affiliates">Affiliate Program</a>
-                      </li>
-                      <li className="mb-15">
-                        <a href="/integrations">Integrations</a>
-                      </li>
-                    </ul>
-                  </div> */}
-
                   {/* Become a Seller */}
                   <div className="column md-mb50">
                     <h6 className="sub-title mb-30">Become a Seller</h6>
