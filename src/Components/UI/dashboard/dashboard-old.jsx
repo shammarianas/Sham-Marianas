@@ -1,3 +1,4 @@
+
 import { auth, db, storage } from "../../../../firebase";
 // import React, { useEffect, useState, useCallback } from "react";
 import React, { useEffect, useState, useCallback, useRef } from "react";
@@ -133,9 +134,6 @@ const AdminDashboard = () => {
   const [selectedDashboard, setSelectedDashboard] = useState("admin");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const [usersDropdownOpen, setUsersDropdownOpen] = useState(false);
-  const [sellersDropdownOpen, setSellersDropdownOpen] = useState(false);
-  const [advancedDropdownOpen, setAdvancedDropdownOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [blogToEdit, setBlogToEdit] = useState(null);
 
@@ -143,48 +141,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (selectedDashboard === "admin") {
       setActiveTab(1); // Users menu
-      setUsersDropdownOpen(true); // Users dropdown open
     } else {
       setActiveTab(1); // Blogs menu
     }
   }, [selectedDashboard]);
-
-  const handleUsersDropdown = () => {
-    setUsersDropdownOpen(!usersDropdownOpen);
-    setSellersDropdownOpen(false);
-    setAdvancedDropdownOpen(false);
-  };
-
-  const handleSellersDropdown = () => {
-    setSellersDropdownOpen(!sellersDropdownOpen);
-    setUsersDropdownOpen(false);
-    setAdvancedDropdownOpen(false);
-  };
-
-  const handleAdvancedDropdown = () => {
-    setAdvancedDropdownOpen(!advancedDropdownOpen);
-    setUsersDropdownOpen(false);
-    setSellersDropdownOpen(false);
-  };
-
-  const handleDashboardChange = (type) => {
-    setSelectedDashboard(type);
-
-    // Set appropriate active tab based on dashboard type
-    if (type === "admin") {
-      setActiveTab(1); // Users menu open karo
-      setUsersDropdownOpen(true); // Users dropdown automatically open karo
-      setSellersDropdownOpen(false);
-      setAdvancedDropdownOpen(false);
-    } else {
-      setActiveTab(1); // Blogs menu open karo (Company dashboard)
-      setUsersDropdownOpen(false);
-      setSellersDropdownOpen(false);
-      setAdvancedDropdownOpen(false);
-    }
-
-    setIsDropdownOpen(false);
-  };
 
   const toggleDropdown = () => {
     console.log("Dropdown clicked, current state:", isDropdownOpen);
@@ -204,23 +164,6 @@ const AdminDashboard = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  // Jab activeTab change ho, automatically parent dropdown open karo
-  useEffect(() => {
-    if ([1, 2, 3].includes(activeTab)) {
-      setUsersDropdownOpen(true);
-      setSellersDropdownOpen(false);
-      setAdvancedDropdownOpen(false);
-    } else if ([4, 5, 6, 7, 8, 9].includes(activeTab)) {
-      setSellersDropdownOpen(true);
-      setUsersDropdownOpen(false);
-      setAdvancedDropdownOpen(false);
-    } else if ([10, 11, 12, 13].includes(activeTab)) {
-      setAdvancedDropdownOpen(true);
-      setUsersDropdownOpen(false);
-      setSellersDropdownOpen(false);
-    }
-  }, [activeTab]);
 
   // Asset categories
   const ASSET_CATEGORIES = [
@@ -1752,20 +1695,6 @@ const AdminDashboard = () => {
             )}
           </div>
         </div>
-
-        {/* User Details Modal */}
-        {showUserDialog && selectedUser && (
-          <UserDetailsModal
-            user={selectedUser}
-            onClose={() => setShowUserDialog(false)}
-            onStatusToggle={handleUserStatusToggle}
-            onRoleChange={handleUserRoleChange}
-            onDelete={onDelete}
-            formatCurrency={formatCurrency}
-            formatDate={formatDate}
-            getRoleColor={getRoleColor}
-          />
-        )}
       </div>
     );
   };
@@ -1867,8 +1796,8 @@ const AdminDashboard = () => {
 
   // MEnu Design
   return (
-    <div className="admin-dashboard">
-      <div className="sidebar">
+    <div className="admin-dashboard" style={{display: 'flex'}}>
+      <div className="sidebar" style={{position: 'fixed', width: '260px', overflowY: 'auto'}}>
         {/* Dropdown with ref added */}
         <div className="custom-dropdown" ref={dropdownRef}>
           <button
@@ -1899,253 +1828,195 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        {/* Conditional Sidebar Menu based on selected dashboard */}
+       <div className="d-flex flex-column">
+        <div>
+         {/* Conditional Sidebar Menu based on selected dashboard */}
         {selectedDashboard === "admin" ? (
           <ul className="sidebar-menu">
-            {/* Users Dropdown */}
-            <li
-              className={`menu-item dropdown-parent ${
-                usersDropdownOpen || [1, 2, 3].includes(activeTab)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <div
-                className={`dropdown-header ${
-                  usersDropdownOpen || [1, 2, 3].includes(activeTab)
-                    ? "active"
-                    : ""
-                }`}
-                onClick={handleUsersDropdown}
-              >
+            {/* Users Section - Always Open */}
+            <li className="menu-item dropdown-parent active">
+              <div className="dropdown-header active">
                 <FiUsers className="menu-icon" />
                 <span className="nav-label">Users</span>
-                <FiChevronDown
-                  className={`dropdown-arrow ${
-                    usersDropdownOpen ? "open" : ""
-                  }`}
-                />
               </div>
-              {usersDropdownOpen && (
-                <ul className="submenu">
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 1 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(1);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="User Information"
-                  >
-                    User Information
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 2 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(2);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="User Report"
-                  >
-                    User Report
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 3 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(3);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Payment & Plan"
-                  >
-                    Payment & Plan
-                  </li>
-                </ul>
-              )}
+              <ul className="submenu">
+                <li
+                  className={`submenu-item ${
+                    activeTab === 1 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(1);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="User Information"
+                >
+                  User Information
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 2 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(2);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="User Report"
+                >
+                  User Report
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 3 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(3);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Payment & Plan"
+                >
+                  Payment & Plan
+                </li>
+              </ul>
             </li>
 
-            {/* Sellers Dropdown */}
-            <li
-              className={`menu-item dropdown-parent ${
-                sellersDropdownOpen || [4, 5, 6, 7, 8, 9].includes(activeTab)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <div
-                className={`dropdown-header ${
-                  sellersDropdownOpen || [4, 5, 6, 7, 8, 9].includes(activeTab)
-                    ? "active"
-                    : ""
-                }`}
-                onClick={handleSellersDropdown}
-              >
+            {/* Sellers Section - Always Open */}
+            <li className="menu-item dropdown-parent active">
+              <div className="dropdown-header active">
                 <FiUser className="menu-icon" />
                 <span className="nav-label">Sellers</span>
-                <FiChevronDown
-                  className={`dropdown-arrow ${
-                    sellersDropdownOpen ? "open" : ""
-                  }`}
-                />
               </div>
-              {sellersDropdownOpen && (
-                <ul className="submenu">
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 4 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(4);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Seller Account Verify"
-                  >
-                    Seller Account Verify
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 5 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(5);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Asset Request"
-                  >
-                    Asset Request
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 6 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(6);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Seller Earning"
-                  >
-                    Seller Earning
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 7 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(7);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Seller Report"
-                  >
-                    Seller Report
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 8 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(8);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Seller Analytic"
-                  >
-                    Seller Analytic
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 9 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(9);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Seller Complains"
-                  >
-                    Seller Complains
-                  </li>
-                </ul>
-              )}
+              <ul className="submenu">
+                <li
+                  className={`submenu-item ${
+                    activeTab === 4 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(4);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Seller Account Verify"
+                >
+                  Seller Account Verify
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 5 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(5);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Asset Request"
+                >
+                  Asset Request
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 6 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(6);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Seller Earning"
+                >
+                  Seller Earning
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 7 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(7);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Seller Report"
+                >
+                  Seller Report
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 8 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(8);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Seller Analytic"
+                >
+                  Seller Analytic
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 9 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(9);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Seller Complains"
+                >
+                  Seller Complains
+                </li>
+              </ul>
             </li>
 
-            {/* Advanced Dropdown */}
-            <li
-              className={`menu-item dropdown-parent ${
-                advancedDropdownOpen || [10, 11, 12, 13].includes(activeTab)
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <div
-                className={`dropdown-header ${
-                  advancedDropdownOpen || [10, 11, 12, 13].includes(activeTab)
-                    ? "active"
-                    : ""
-                }`}
-                onClick={handleAdvancedDropdown}
-              >
+            {/* Advanced Section - Always Open */}
+            <li className="menu-item dropdown-parent active">
+              <div className="dropdown-header active">
                 <FiSettings className="menu-icon" />
                 <span className="nav-label">Advanced</span>
-                <FiChevronDown
-                  className={`dropdown-arrow ${
-                    advancedDropdownOpen ? "open" : ""
-                  }`}
-                />
               </div>
-              {advancedDropdownOpen && (
-                <ul className="submenu">
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 10 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(10);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Download"
-                  >
-                    Download
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 11 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(11);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Earning"
-                  >
-                    Earning
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 12 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(12);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Analytic"
-                  >
-                    Analytic
-                  </li>
-                  <li
-                    className={`submenu-item ${
-                      activeTab === 13 ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setActiveTab(13);
-                      setIsSidebarOpen(false);
-                    }}
-                    title="Asset"
-                  >
-                    Asset
-                  </li>
-                </ul>
-              )}
+              <ul className="submenu">
+                <li
+                  className={`submenu-item ${
+                    activeTab === 10 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(10);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Download"
+                >
+                  Download
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 11 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(11);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Earning"
+                >
+                  Earning
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 12 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(12);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Analytic"
+                >
+                  Analytic
+                </li>
+                <li
+                  className={`submenu-item ${
+                    activeTab === 13 ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setActiveTab(13);
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Asset"
+                >
+                  Asset
+                </li>
+              </ul>
             </li>
           </ul>
         ) : (
@@ -2178,8 +2049,10 @@ const AdminDashboard = () => {
             </li>
           </ul>
         )}
+       </div>
 
-        <div className="sidebar-footer">
+        <div className="footer-sidebar">
+<div className="sidebar-footer">
           <button className="menu-item compact" title="Settings">
             <FiSettings className="menu-icon" />
             <span className="nav-label">Settings</span>
@@ -2198,9 +2071,11 @@ const AdminDashboard = () => {
             <span className="nav-label">Logout</span>
           </button>
         </div>
+          </div>
+       </div>
       </div>
 
-      <div className="main-content">
+      <div className="main-content" style={{marginLeft: '250px', overflowY: 'auto'}}>
         <div className="header">
           <h1 className="page-title">
             {/* Admin Dashboard Titles */}
@@ -2602,6 +2477,8 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
+// ... (rest of the code remains exactly the same, no changes needed below this point)
 
 const PreviewGrid = ({ assets }) => {
   return (
@@ -3046,7 +2923,7 @@ const SupportList = ({
 
 //  ------------------------------Blog Section------------------------------
 
-const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
+const BlogDetailsModal = ({ blog, onClose }) => {
   if (!blog) return null;
 
   const status = (blog.status || "draft").toLowerCase();
@@ -5037,7 +4914,7 @@ const UserProfileDrawer = ({ user, onClose, onUpdateStatus, onRoleChange }) => {
                 <li className="activity-item">
                   <span className="activity-type">Login</span>
                   <span className="activity-label">Signed in</span>
-                  <span className="activity-time">��</span>
+                  <span className="activity-time">2h ago</span>
                 </li>
               </ul>
             </div>
