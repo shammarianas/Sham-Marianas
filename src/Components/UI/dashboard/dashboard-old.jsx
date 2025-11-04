@@ -1355,6 +1355,11 @@ const AdminDashboard = () => {
     return <UnauthorizedAccess error={error} />;
   }
 
+
+
+  /* ==========================================
+   USER MANAGEMENT DASHBOARD - Start
+   ========================================== */
   // User Dashboard component
 
   const UserDashboard = ({
@@ -1718,9 +1723,6 @@ const AdminDashboard = () => {
     return (
       <div className={`user-card ${isSelected ? "selected" : ""}`}>
         <div className="user-card-header">
-          <div className="user-checkbox">
-            <input type="checkbox" checked={isSelected} onChange={onSelect} />
-          </div>
           <div className="user-avatar">
             {user.photoURL ? (
               <img src={user.photoURL} alt={name} className="avatar-img" />
@@ -1739,6 +1741,9 @@ const AdminDashboard = () => {
             <span className={`role-badge ${user.role || "user"}`}>
               {user.role || "User"}
             </span>
+          </div>
+          <div className="user-checkbox">
+            <input type="checkbox" checked={isSelected} onChange={onSelect} />
           </div>
         </div>
 
@@ -1794,7 +1799,16 @@ const AdminDashboard = () => {
     );
   };
 
-  // MEnu Design
+/* ==========================================
+   USER MANAGEMENT DASHBOARD - End
+   ========================================== */
+
+
+
+   /* ==========================================
+   Company & Admin Dashboard Selection Menu - Start
+   ========================================== */
+
   return (
     <div className="admin-dashboard" style={{display: 'flex'}}>
       <div className="sidebar" style={{position: 'fixed', width: '260px', overflowY: 'auto'}}>
@@ -2052,7 +2066,7 @@ const AdminDashboard = () => {
        </div>
 
         <div className="footer-sidebar">
-<div className="sidebar-footer">
+          <div className="sidebar-footer">
           <button className="menu-item compact" title="Settings">
             <FiSettings className="menu-icon" />
             <span className="nav-label">Settings</span>
@@ -2075,6 +2089,9 @@ const AdminDashboard = () => {
        </div>
       </div>
 
+      {/* Sidebar end */}
+
+      {/* Dashboard sidebar component start */}
       <div className="main-content" style={{marginLeft: '250px', overflowY: 'auto'}}>
         <div className="header">
           <h1 className="page-title">
@@ -2112,7 +2129,7 @@ const AdminDashboard = () => {
         {/* Admin Dashboard Content */}
         {selectedDashboard === "admin" && (
           <>
-            {activeTab === 0 && (
+            {/* {activeTab === 0 && (
               <div className="overview-grid">
                 <WelcomeBanner
                   name={
@@ -2242,7 +2259,7 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/*User Dashbord laout-----------------------------------------*/}
             {activeTab === 1 && (
@@ -2478,7 +2495,9 @@ const AdminDashboard = () => {
   );
 };
 
-// ... (rest of the code remains exactly the same, no changes needed below this point)
+   /* ==========================================
+   Company & Admin Dashboard Selection Menu - End
+   ========================================== */
 
 const PreviewGrid = ({ assets }) => {
   return (

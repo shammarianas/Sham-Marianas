@@ -6,7 +6,7 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../../../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore"; // ✅ serverTimestamp import karein
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
@@ -74,6 +74,7 @@ const Login = () => {
     }
   };
 
+  // ✅ UPDATED FUNCTION - Join date added
   const signUpwithEmailPassword = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -93,6 +94,10 @@ const Login = () => {
         profilePic: user.photoURL,
         uid: user.uid,
         role: "user",
+        // ✅ YE 3 LINES ADD KAREIN - Join Date ke liye
+        createdAt: serverTimestamp(), // Firestore server time
+        joinDate: serverTimestamp(), // Alternative field
+        lastLogin: serverTimestamp(), // First login time
       }, { merge: true });
 
       setSuccess("Sign-up successful! Redirecting...");
@@ -324,7 +329,7 @@ const Login = () => {
 
               <div className="info_text">
                 <p>
-                  Enter your registered email address, and we’ll send you a link to reset your password.
+                  Enter your registered email address, and we'll send you a link to reset your password.
                 </p>
               </div>
             </div>
