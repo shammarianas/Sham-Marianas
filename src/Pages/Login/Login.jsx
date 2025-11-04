@@ -6,13 +6,13 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../../../firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"; // ✅ serverTimestamp import karein
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import eye_icon from "../../assets/Icons/eye.png";
 import { loginWithGoogle } from "./GoogleLogin";
-import { loginWithApple } from "./AppleLogin"; // NEW: Apple Login
+import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 
 const Login = () => {
@@ -26,6 +26,11 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  
+  // ✅ NEW FIELDS
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birthday, setBirthday] = useState("");
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,6 +51,10 @@ const Login = () => {
 
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handleUsernameChange = (e) => setUsername(e.target.value);
+  // ✅ NEW HANDLERS
+  const handleNameChange = (e) => setName(e.target.value);
+  const handlePhoneChange = (e) => setPhone(e.target.value);
+  const handleBirthdayChange = (e) => setBirthday(e.target.value);
 
   useEffect(() => {
     if (page === "signup") {
@@ -74,7 +83,7 @@ const Login = () => {
     }
   };
 
-  // ✅ UPDATED FUNCTION - Join date added
+  // ✅ UPDATED SIGNUP FUNCTION WITH NEW FIELDS
   const signUpwithEmailPassword = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -85,7 +94,9 @@ const Login = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      await updateProfile(user, { displayName: username });
+      await updateProfile(user, { 
+        displayName: username 
+      });
 
       const userProfileRef = doc(db, "Profiles", user.uid);
       await setDoc(userProfileRef, {
@@ -94,10 +105,14 @@ const Login = () => {
         profilePic: user.photoURL,
         uid: user.uid,
         role: "user",
-        // ✅ YE 3 LINES ADD KAREIN - Join Date ke liye
-        createdAt: serverTimestamp(), // Firestore server time
-        joinDate: serverTimestamp(), // Alternative field
-        lastLogin: serverTimestamp(), // First login time
+        // ✅ NEW FIELDS ADDED
+        name: name,
+        phone: phone,
+        birthday: birthday,
+        // ✅ JOIN DATE FIELDS
+        createdAt: serverTimestamp(),
+        joinDate: serverTimestamp(),
+        lastLogin: serverTimestamp(),
       }, { merge: true });
 
       setSuccess("Sign-up successful! Redirecting...");
@@ -184,7 +199,6 @@ const Login = () => {
                 <button className="google" type="button" onClick={loginWithGoogle}>
                   <i className="fab fa-google"></i>
                 </button>
-                {/* Apple Button (Replaced GitHub) */}
                 <button className="apple" type="button" onClick={loginWithApple}>
                   <i className="fab fa-apple"></i>
                 </button>
@@ -203,16 +217,34 @@ const Login = () => {
               </span>
             </div>
             <form onSubmit={signUpwithEmailPassword}>
-              <label htmlFor="username">Username</label>
-              <div className="input">
-                <input
-                  type="text"
-                  id="username"
-                  required
-                  placeholder="Username"
-                  value={username}
-                  onChange={handleUsernameChange}
-                />
+              {/* ✅ NAME & USERNAME IN ONE ROW */}
+              <div className="form-row-1">
+                <div className="width-50">
+                  <label htmlFor="name" class="mb-2">Full Name</label>
+                  <div className="input">
+                    <input
+                      type="text"
+                      id="name"
+                      required
+                      placeholder="John Doe"
+                      value={name}
+                      onChange={handleNameChange}
+                    />
+                  </div>
+                </div>
+                <div className="width-50">
+                  <label htmlFor="username" class="mb-2">Username</label>
+                  <div className="input">
+                    <input
+                      type="text"
+                      id="username"
+                      required
+                      placeholder="johndoe"
+                      value={username}
+                      onChange={handleUsernameChange}
+                    />
+                  </div>
+                </div>
               </div>
 
               <label htmlFor="email">Email</label>
@@ -225,6 +257,33 @@ const Login = () => {
                   value={email}
                   onChange={handleEmailChange}
                 />
+              </div>
+
+              {/* ✅ PHONE & BIRTHDAY IN ONE ROW */}
+              <div className="form-row-1">
+                <div className="width-50">
+                  <label htmlFor="phone" class="mb-2">Phone Number</label>
+                  <div className="input">
+                    <input
+                      type="tel"
+                      id="phone"
+                      placeholder="+1 234 567 8900"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                    />
+                  </div>
+                </div>
+                <div className="width-50">
+                  <label htmlFor="birthday" class="mb-2">Birthday</label>
+                  <div className="input">
+                    <input
+                      type="date"
+                      id="birthday"
+                      value={birthday}
+                      onChange={handleBirthdayChange}
+                    />
+                  </div>
+                </div>
               </div>
 
               <label htmlFor="password">Password</label>
@@ -288,7 +347,6 @@ const Login = () => {
                 <button className="google" type="button" onClick={loginWithGoogle}>
                   <i className="fab fa-google"></i>
                 </button>
-                {/* Apple Button (Replaced GitHub) */}
                 <button className="apple" type="button" onClick={loginWithApple}>
                   <i className="fab fa-apple"></i>
                 </button>
@@ -336,6 +394,66 @@ const Login = () => {
           </div>
         )}
       </div>
+
+     <style jsx>{`
+  .form-row-1 {
+    display: flex !important;
+    justify-content: space-between;
+    width: 100%;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .width-50 {
+    width: 48%;
+  }
+  
+  .width-50 label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .width-50 .input {
+    width: 100%;
+  }
+  
+  /* Date input specific styling */
+  .width-50 .input input[type="date"] {
+    background-color: #fff;
+    color: #333;
+    font-family: inherit;
+  }
+  
+  .width-50 .input input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+    padding: 4px;
+  }
+  
+  .width-50 .input input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(0.3);
+  }
+  
+  /* Phone input styling */
+  .width-50 .input input[type="tel"] {
+    background-color: #fff;
+    color: #333;
+  }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .form-row-1 {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .width-50 {
+      width: 100%;
+    }
+  }
+`}</style>
     </>
   );
 };
