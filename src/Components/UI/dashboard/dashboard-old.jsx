@@ -1703,24 +1703,27 @@ const AdminDashboard = () => {
       </div>
     );
   };
+// User Card Component
+const UserCard = ({
+  user,
+  onSelect,
+  isSelected,
+  onViewDetails,
+  onStatusToggle,
+  onRoleChange,
+  formatCurrency,
+  formatDate,
+}) => {
+  const name =
+    user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
+  const status = (user.status || "active").toLowerCase();
+  const isActive = status === "active";
+  
+  // ✅ State for modal
+  const [showUserModal, setShowUserModal] = useState(false);
 
-  // User Card Component
-  const UserCard = ({
-    user,
-    onSelect,
-    isSelected,
-    onViewDetails,
-    onStatusToggle,
-    onRoleChange,
-    formatCurrency,
-    formatDate,
-  }) => {
-    const name =
-      user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
-    const status = (user.status || "active").toLowerCase();
-    const isActive = status === "active";
-
-    return (
+  return (
+    <>
       <div className={`user-card ${isSelected ? "selected" : ""}`}>
         <div className="user-card-header">
           <div className="user-avatar">
@@ -1783,7 +1786,8 @@ const AdminDashboard = () => {
         </div>
 
         <div className="user-card-actions">
-          <button className="action-button secondary" onClick={onViewDetails}>
+          {/* ✅ Updated onClick to open modal */}
+          <button className="action-button secondary" onClick={() => setShowUserModal(true)}>
             <FiEye className="button-icon" />
             View Details
           </button>
@@ -1796,8 +1800,182 @@ const AdminDashboard = () => {
           </button>
         </div>
       </div>
-    );
-  };
+
+      {/* ✅ User Details Modal */}
+      {showUserModal && (
+        <div className="modal-overlay">
+          <div className="modal user-details-modal">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                <FiUser className="modal-icon" />
+                User Profile Details
+              </h3>
+              <button onClick={() => setShowUserModal(false)} className="close-button">
+                <FiX />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* Profile Header */}
+              <div className="user-profile-header">
+                <div className="profile-avatar-large">
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt={name} className="avatar-img-large" />
+                  ) : (
+                    <div className="avatar-initials-large">
+                      {(name[0] || "").toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="profile-main-info">
+                  <h2 className="profile-name">{name}</h2>
+                  <p className="profile-username">@{user.username || "username"}</p>
+                </div>
+              </div>
+
+              {/* User Details Grid */}
+              <div className="user-details-grid">
+                <div className="detail-section">
+                  <h4 className="section-title">
+                    <FiUser className="section-icon" />
+                    Personal Information
+                  </h4>
+                  <div className="detail-items">
+                    <div className="detail-item">
+                      <span className="detail-label">Full Name:</span>
+                      <span className="detail-value">{user.name || "Not provided"}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Email:</span>
+                      <span className="detail-value">{user.email || "Not provided"}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Phone:</span>
+                      <span className="detail-value">{user.phone || "Not provided"}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Birthday:</span>
+                      <span className="detail-value">
+                        {user.birthday ? formatDate(user.birthday) : "Not provided"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4 className="section-title">
+                    <FiShield className="section-icon" />
+                    Account Information
+                  </h4>
+                  <div className="detail-items">
+                    <div className="detail-item">
+                      <span className="detail-label">User ID:</span>
+                      <span className="detail-value uid">{user.uid || user.id}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Password:</span>
+                      <span className="detail-value password-masked">••••••••</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Join Date:</span>
+                      <span className="detail-value">
+                        {formatDate(user.createdAt || user.joinDate)}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Last Login:</span>
+                      <span className="detail-value">
+                        {user.lastLogin ? formatDate(user.lastLogin) : "Never"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4 className="section-title">
+                    <FiActivity className="section-icon" />
+                    Account Status & Role
+                  </h4>
+                  <div className="role-status-section">
+                    <div className="status-badge-large">
+                      <span className={`status-indicator ${isActive ? "active" : "inactive"}`}></span>
+                      <span className="status-text">
+                        {isActive ? "Active" : "Inactive"} Account
+                      </span>
+                    </div>
+                    
+                    <div className="role-selector">
+                      <label className="role-label">User Role:</label>
+                      <select 
+                        className="role-select"
+                        value={user.role || "user"}
+                        onChange={(e) => onRoleChange(user.id, e.target.value)}
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="moderator">Moderator</option>
+                      </select>
+                    </div>
+
+                    <div className="verification-badge">
+                      <FiCheckCircle className="verify-icon" />
+                      <span>Email Verified: {user.emailVerified ? "Yes" : "No"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* User Statistics */}
+              <div className="user-stats-modal">
+                <h4 className="section-title">
+                  <FiTrendingUp className="section-icon" />
+                  User Statistics
+                </h4>
+                <div className="stats-grid-modal">
+                  <div className="stat-card-modal">
+                    <div className="stat-value">{user.totalPurchases || 0}</div>
+                    <div className="stat-label">Total Purchases</div>
+                  </div>
+                  <div className="stat-card-modal">
+                    <div className="stat-value currency">
+                      {formatCurrency(user.totalSpent || 0)}
+                    </div>
+                    <div className="stat-label">Total Spent</div>
+                  </div>
+                  <div className="stat-card-modal">
+                    <div className="stat-value">{user.totalDownloads || 0}</div>
+                    <div className="stat-label">Downloads</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                className="action-button secondary"
+                onClick={() => setShowUserModal(false)}
+              >
+                Close
+              </button>
+              <button 
+                className="action-button danger"
+                onClick={() => {
+                  if (window.confirm(`Are you sure you want to delete ${name}'s account?`)) {
+                    // Delete function call here
+                    setShowUserModal(false);
+                  }
+                }}
+              >
+                <FiTrash2 className="button-icon" />
+                Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 /* ==========================================
    USER MANAGEMENT DASHBOARD - End

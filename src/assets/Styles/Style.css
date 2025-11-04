@@ -5196,7 +5196,7 @@ div.hidden.none {
 .login .login_tab form .accept_terms {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  width: 100%;
   gap: 0.5rem;
   font-size: 0.8rem;
   font-weight: 500;
@@ -5335,7 +5335,7 @@ div.hidden.none {
   margin-top: 0.5rem;
 }
 .login .login_tab form .login_btn.disabled {
-  background-color: #01405d;
+  background-color: #52b0b4;
   color: #f0f0f0;
   cursor: not-allowed;
   pointer-events: none;
@@ -5369,6 +5369,51 @@ div.hidden.none {
 .login .login_tab form .buttons button:hover {
   background-color: #0f0f0f;
 }
+.form-row-1 {
+    display: flex !important;
+    justify-content: space-between;
+    width: 100%;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .width-50 {
+    width: 48%;
+  }
+  
+  .width-50 label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .width-50 .input {
+    width: 100%;
+  }
+  
+  /* Date input specific styling */
+  .width-50 .input input[type="date"] {
+    background-color: #fff;
+    color: #333;
+    font-family: inherit;
+  }
+  
+  .width-50 .input input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+    padding: 4px;
+  }
+  
+  .width-50 .input input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(0.3);
+  }
+  
+  /* Phone input styling */
+  .width-50 .input input[type="tel"] {
+    background-color: #fff;
+    color: #333;
+  }
 @media screen and (max-width: 768px) {
   .login {
     justify-content: flex-start;
@@ -5391,6 +5436,15 @@ div.hidden.none {
     padding: 0.7rem;
     font-size: 0.9rem;
   }
+    .form-row-1 {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .width-50 {
+      width: 100%;
+    }
+  
 }
 
 .markdown-preview {

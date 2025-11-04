@@ -269,7 +269,7 @@ const Login = () => {
                       id="phone"
                       placeholder="+1 234 567 8900"
                       value={phone}
-                      onChange={handlePhoneChange}
+                      onChange={handlePhoneChange} required
                     />
                   </div>
                 </div>
@@ -280,7 +280,7 @@ const Login = () => {
                       type="date"
                       id="birthday"
                       value={birthday}
-                      onChange={handleBirthdayChange}
+                      onChange={handleBirthdayChange}  required
                     />
                   </div>
                 </div>
@@ -394,66 +394,6 @@ const Login = () => {
           </div>
         )}
       </div>
-
-     <style jsx>{`
-  .form-row-1 {
-    display: flex !important;
-    justify-content: space-between;
-    width: 100%;
-    gap: 15px;
-    margin-bottom: 15px;
-  }
-  
-  .width-50 {
-    width: 48%;
-  }
-  
-  .width-50 label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-    color: #333;
-  }
-  
-  .width-50 .input {
-    width: 100%;
-  }
-  
-  /* Date input specific styling */
-  .width-50 .input input[type="date"] {
-    background-color: #fff;
-    color: #333;
-    font-family: inherit;
-  }
-  
-  .width-50 .input input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.5);
-    cursor: pointer;
-    padding: 4px;
-  }
-  
-  .width-50 .input input[type="date"]::-webkit-calendar-picker-indicator:hover {
-    filter: invert(0.3);
-  }
-  
-  /* Phone input styling */
-  .width-50 .input input[type="tel"] {
-    background-color: #fff;
-    color: #333;
-  }
-  
-  /* Mobile responsive */
-  @media (max-width: 768px) {
-    .form-row-1 {
-      flex-direction: column;
-      gap: 10px;
-    }
-    
-    .width-50 {
-      width: 100%;
-    }
-  }
-`}</style>
     </>
   );
 };
