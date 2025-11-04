@@ -145,6 +145,19 @@ const AdminDashboard = () => {
       setActiveTab(1); // Blogs menu
     }
   }, [selectedDashboard]);
+  
+ const handleDashboardChange = (dashboard) => {
+    console.log("Changing dashboard to:", dashboard);
+    setSelectedDashboard(dashboard);
+    setIsDropdownOpen(false);
+    
+    // Reset active tab based on selected dashboard
+    if (dashboard === "admin") {
+      setActiveTab(1); // Users menu for admin
+    } else {
+      setActiveTab(1); // Blogs menu for company
+    }
+  };
 
   const toggleDropdown = () => {
     console.log("Dropdown clicked, current state:", isDropdownOpen);
@@ -1719,7 +1732,6 @@ const UserCard = ({
   const status = (user.status || "active").toLowerCase();
   const isActive = status === "active";
   
-  // ✅ State for modal
   const [showUserModal, setShowUserModal] = useState(false);
 
   return (

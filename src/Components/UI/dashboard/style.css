@@ -91,7 +91,6 @@ ul {
 }
 
 .footer-sidebar{
-
   border-top: 1px solid var(--border-color);
 }
 .sidebar-footer {
@@ -101,7 +100,9 @@ ul {
   margin-top: auto;
   padding: 0.2rem 0;
   display: grid;
-  /* gap: 0.5rem; */
+  position: fixed;
+    bottom: 0;
+    /* border-top: 1px solid var(--border-color); */
 }
 
 .menu-item.compact {
