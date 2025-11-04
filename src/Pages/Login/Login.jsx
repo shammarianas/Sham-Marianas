@@ -6,13 +6,13 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../../../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import eye_icon from "../../assets/Icons/eye.png";
 import { loginWithGoogle } from "./GoogleLogin";
-import { loginWithApple } from "./AppleLogin"; // NEW: Apple Login
+import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 
 const Login = () => {
@@ -26,6 +26,11 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  
+  // ✅ NEW FIELDS
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birthday, setBirthday] = useState("");
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,6 +51,10 @@ const Login = () => {
 
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handleUsernameChange = (e) => setUsername(e.target.value);
+  // ✅ NEW HANDLERS
+  const handleNameChange = (e) => setName(e.target.value);
+  const handlePhoneChange = (e) => setPhone(e.target.value);
+  const handleBirthdayChange = (e) => setBirthday(e.target.value);
 
   useEffect(() => {
     if (page === "signup") {
@@ -74,6 +83,7 @@ const Login = () => {
     }
   };
 
+  // ✅ UPDATED SIGNUP FUNCTION WITH NEW FIELDS
   const signUpwithEmailPassword = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -84,7 +94,9 @@ const Login = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      await updateProfile(user, { displayName: username });
+      await updateProfile(user, { 
+        displayName: username 
+      });
 
       const userProfileRef = doc(db, "Profiles", user.uid);
       await setDoc(userProfileRef, {
@@ -93,6 +105,14 @@ const Login = () => {
         profilePic: user.photoURL,
         uid: user.uid,
         role: "user",
+        // ✅ NEW FIELDS ADDED
+        name: name,
+        phone: phone,
+        birthday: birthday,
+        // ✅ JOIN DATE FIELDS
+        createdAt: serverTimestamp(),
+        joinDate: serverTimestamp(),
+        lastLogin: serverTimestamp(),
       }, { merge: true });
 
       setSuccess("Sign-up successful! Redirecting...");
@@ -179,7 +199,6 @@ const Login = () => {
                 <button className="google" type="button" onClick={loginWithGoogle}>
                   <i className="fab fa-google"></i>
                 </button>
-                {/* Apple Button (Replaced GitHub) */}
                 <button className="apple" type="button" onClick={loginWithApple}>
                   <i className="fab fa-apple"></i>
                 </button>
@@ -198,16 +217,34 @@ const Login = () => {
               </span>
             </div>
             <form onSubmit={signUpwithEmailPassword}>
-              <label htmlFor="username">Username</label>
-              <div className="input">
-                <input
-                  type="text"
-                  id="username"
-                  required
-                  placeholder="Username"
-                  value={username}
-                  onChange={handleUsernameChange}
-                />
+              {/* ✅ NAME & USERNAME IN ONE ROW */}
+              <div className="form-row-1">
+                <div className="width-50">
+                  <label htmlFor="name" class="mb-2">Full Name</label>
+                  <div className="input">
+                    <input
+                      type="text"
+                      id="name"
+                      required
+                      placeholder="John Doe"
+                      value={name}
+                      onChange={handleNameChange}
+                    />
+                  </div>
+                </div>
+                <div className="width-50">
+                  <label htmlFor="username" class="mb-2">Username</label>
+                  <div className="input">
+                    <input
+                      type="text"
+                      id="username"
+                      required
+                      placeholder="johndoe"
+                      value={username}
+                      onChange={handleUsernameChange}
+                    />
+                  </div>
+                </div>
               </div>
 
               <label htmlFor="email">Email</label>
@@ -220,6 +257,33 @@ const Login = () => {
                   value={email}
                   onChange={handleEmailChange}
                 />
+              </div>
+
+              {/* ✅ PHONE & BIRTHDAY IN ONE ROW */}
+              <div className="form-row-1">
+                <div className="width-50">
+                  <label htmlFor="phone" class="mb-2">Phone Number</label>
+                  <div className="input">
+                    <input
+                      type="tel"
+                      id="phone"
+                      placeholder="+1 234 567 8900"
+                      value={phone}
+                      onChange={handlePhoneChange} required
+                    />
+                  </div>
+                </div>
+                <div className="width-50">
+                  <label htmlFor="birthday" class="mb-2">Birthday</label>
+                  <div className="input">
+                    <input
+                      type="date"
+                      id="birthday"
+                      value={birthday}
+                      onChange={handleBirthdayChange}  required
+                    />
+                  </div>
+                </div>
               </div>
 
               <label htmlFor="password">Password</label>
@@ -283,7 +347,6 @@ const Login = () => {
                 <button className="google" type="button" onClick={loginWithGoogle}>
                   <i className="fab fa-google"></i>
                 </button>
-                {/* Apple Button (Replaced GitHub) */}
                 <button className="apple" type="button" onClick={loginWithApple}>
                   <i className="fab fa-apple"></i>
                 </button>
@@ -324,7 +387,7 @@ const Login = () => {
 
               <div className="info_text">
                 <p>
-                  Enter your registered email address, and we’ll send you a link to reset your password.
+                  Enter your registered email address, and we'll send you a link to reset your password.
                 </p>
               </div>
             </div>
