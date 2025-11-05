@@ -569,7 +569,7 @@ const AdminDashboard = () => {
             {activeTab === 10 && "Download"}
             {activeTab === 11 && "Earning"}
             {activeTab === 12 && "Analytic"}
-            {activeTab === 13 && "Asset"}
+            {activeTab === 13 && ""}
             {activeTab === 1 && selectedDashboard === "company" && "Blog Management"}
             {activeTab === 2 && selectedDashboard === "company" && "Portfolio Management"}
           </h1>
