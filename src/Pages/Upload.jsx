@@ -1,45 +1,19 @@
-import React, { useState } from "react";
-import { db } from "../../firebase";
-import { collection, addDoc } from "firebase/firestore";
-import { storage } from "../../firebase";
-import PageTitle from "../Components/UI/PageTitle";
+import React, { useState, useRef, useEffect } from "react";
+import { db, storage } from "../../firebase";
+import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUser } from "../Context/UserProvider";
 import { Helmet } from "react-helmet-async";
-import plus_icon from "../assets/Icons/plus.png";
-import DescriptionBox from "../Components/DescriptionBox";
+import { FiUpload, FiX, FiPlus, FiImage, FiVideo, FiFile, FiCode, FiMusic, FiBox } from "react-icons/fi";
 
 const filterData = {
   Videos: {
     categories: {
       label: "Categories",
       options: [
-        "Buildings",
-        "Business, Corporate",
-        "Cartoons",
-        "City",
-        "Construction",
-        "Education",
-        "Food",
-        "Holidays",
-        "Industrial",
-        "Kids",
-        "Lifestyle",
-        "Medical",
-        "Military",
-        "Nature",
-        "Overhead",
-        "People",
-        "Religious",
-        "Science",
-        "Slow Motion",
-        "Special Events",
-        "Sports",
-        "Stop Motion",
-        "Technology",
-        "Time Lapse",
-        "Vehicles",
-        "Weather",
+        "Buildings", "Business, Corporate", "Cartoons", "City", "Construction", "Education", "Food", "Holidays",
+        "Industrial", "Kids", "Lifestyle", "Medical", "Military", "Nature", "Overhead", "People", "Religious",
+        "Science", "Slow Motion", "Special Events", "Sports", "Stop Motion", "Technology", "Time Lapse", "Vehicles", "Weather",
       ],
     },
     aiGenerated: {
@@ -77,20 +51,9 @@ const filterData = {
     categories: {
       label: "Category / Subject",
       options: [
-        "People",
-        "Business & Office",
-        "Technology",
-        "Nature / Landscape",
-        "Architecture / Interior",
-        "Fashion / Lifestyle",
-        "Fitness / Sports",
-        "Food & Drink",
-        "Health / Medical",
-        "Education",
-        "Travel",
-        "Art & Culture",
-        "Holidays / Events",
-        "Abstract / Textures",
+        "People", "Business & Office", "Technology", "Nature / Landscape", "Architecture / Interior",
+        "Fashion / Lifestyle", "Fitness / Sports", "Food & Drink", "Health / Medical", "Education",
+        "Travel", "Art & Culture", "Holidays / Events", "Abstract / Textures",
       ],
     },
     orientation: {
@@ -156,21 +119,9 @@ const filterData = {
     objectType: {
       label: "Object Type",
       options: [
-        "Characters",
-        "Vehicles",
-        "Architecture / Buildings",
-        "Furniture",
-        "Weapons / Military",
-        "Clothing / Accessories",
-        "Electronics / Gadgets",
-        "Nature / Plants / Trees",
-        "Animals / Creatures",
-        "Food & Drink",
-        "Household Items",
-        "Fantasy / Sci-fi",
-        "Medical / Anatomy",
-        "Industrial / Mechanical",
-        "Props / Miscellaneous",
+        "Characters", "Vehicles", "Architecture / Buildings", "Furniture", "Weapons / Military",
+        "Clothing / Accessories", "Electronics / Gadgets", "Nature / Plants / Trees", "Animals / Creatures",
+        "Food & Drink", "Household Items", "Fantasy / Sci-fi", "Medical / Anatomy", "Industrial / Mechanical", "Props / Miscellaneous",
       ],
     },
     fileFormat: {
@@ -206,33 +157,15 @@ const filterData = {
     environmentType: {
       label: "Environment Type",
       options: [
-        "Studio",
-        "Indoor",
-        "Outdoor",
-        "Urban / Cityscape",
-        "Nature / Forest",
-        "Desert",
-        "Mountains / Hills",
-        "Beach / Ocean",
-        "Industrial / Factory",
-        "Room / Apartment",
-        "Rooftop / Terrace",
-        "HDRI Domes / Sci-fi Rooms",
+        "Studio", "Indoor", "Outdoor", "Urban / Cityscape", "Nature / Forest", "Desert", "Mountains / Hills",
+        "Beach / Ocean", "Industrial / Factory", "Room / Apartment", "Rooftop / Terrace", "HDRI Domes / Sci-fi Rooms",
       ],
     },
     lightingCondition: {
       label: "Lighting Condition",
       options: [
-        "Daylight",
-        "Golden Hour",
-        "Night",
-        "Sunset / Sunrise",
-        "Overcast",
-        "Dramatic / Moody Light",
-        "High Contrast / Harsh Light",
-        "Soft Light / Diffused",
-        "Artificial Light / Lamp-lit",
-        "Colored Lighting / Stylized",
+        "Daylight", "Golden Hour", "Night", "Sunset / Sunrise", "Overcast", "Dramatic / Moody Light",
+        "High Contrast / Harsh Light", "Soft Light / Diffused", "Artificial Light / Lamp-lit", "Colored Lighting / Stylized",
       ],
     },
     resolution: {
@@ -248,18 +181,9 @@ const filterData = {
     scriptType: {
       label: "Script Type",
       options: [
-        "Frontend Scripts",
-        "Backend Scripts",
-        "Automation Scripts",
-        "API Integration Scripts",
-        "Form Validation Scripts",
-        "Animation Scripts",
-        "Payment Gateway Scripts",
-        "Email / Newsletter Scripts",
-        "Database Scripts",
-        "AI/ML Scripts",
-        "Authentication Scripts",
-        "Chatbot Scripts",
+        "Frontend Scripts", "Backend Scripts", "Automation Scripts", "API Integration Scripts", "Form Validation Scripts",
+        "Animation Scripts", "Payment Gateway Scripts", "Email / Newsletter Scripts", "Database Scripts", "AI/ML Scripts",
+        "Authentication Scripts", "Chatbot Scripts",
       ],
     },
     programmingLanguage: {
@@ -297,7 +221,7 @@ const assetTypeToFilterData = {
   other: null,
 };
 
-const Upload = () => {
+const Upload = ({ onUploadSuccess, onClose, compactView = false }) => {
   const { currentUser } = useUser();
   const [formData, setFormData] = useState({
     title: "",
@@ -375,6 +299,9 @@ const Upload = () => {
 
   const [tags, setTags] = useState([]);
   const [loadingState, setLoadingState] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const tagInputRef = useRef(null);
 
   const handleTagInputChange = (e) => {
     const value = e.target.value;
@@ -391,6 +318,10 @@ const Upload = () => {
     } else {
       setFormData({ ...formData, tags: value });
     }
+  };
+
+  const handleTagRemove = (tag) => {
+    setTags(tags.filter(t => t !== tag));
   };
 
   const uploadFile = async (file, fileType) => {
@@ -437,7 +368,18 @@ const Upload = () => {
     let value = target.type === "checkbox" ? target.checked : target.value;
 
     if (target.type === "file") {
-      if (name === "images" || name === "icons") {
+      if (name === "thumbnail") {
+        const file = target.files[0];
+        if (file) {
+          setFormData({
+            ...formData,
+            [name]: file,
+          });
+          const reader = new FileReader();
+          reader.onloadend = () => setThumbnailPreview(reader.result);
+          reader.readAsDataURL(file);
+        }
+      } else if (name === "images" || name === "icons") {
         const files = target.files;
         setFormData({
           ...formData,
@@ -476,6 +418,7 @@ const Upload = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     setLoadingState("Uploading asset...");
 
     try {
@@ -511,6 +454,7 @@ const Upload = () => {
         fileFormat: formData.fileFormat,
       };
 
+      // Handle different asset types
       if (formData.type === "models") {
         docData = {
           ...docData,
@@ -650,9 +594,33 @@ const Upload = () => {
 
       await addDoc(collection(db, "Assets"), docData);
       setLoadingState("success");
+      
+      if (onUploadSuccess) {
+        onUploadSuccess();
+      }
+      
+      // Reset form
+      setFormData({
+        title: "", thumbnail: "", description: "", is3d: false, price: "", discount: "", tags: "",
+        date: new Date().toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" }).replace(/ /g, ", "),
+        category: "", type: "", model: "", images: "", video: "", icons: "", script: "", scriptSize: "",
+        hdri: "", hdriSize: "", graphicsTemplate: "", graphicsTemplateSize: "", mockupFile: "", mockupFileSize: "",
+        fontFile: "", fontFileSize: "", videoTemplateFile: "", videoTemplateFileSize: "", sound: "", soundSize: "",
+        other: "", otherSize: "", ambientOcclusion: "", baseColor: "", displacement: "", normal: "", roughness: "",
+        metallic: "", bump: "", idmap: "", resolution: "", physicalSize: "", lods: "", vertices: "", textures: "",
+        materials: "", uvMapping: false, rigged: false, animated: false, vrArLowPoly: false, aiGenerated: "",
+        frameRate: "", properties: [], applicationsSupported: [], orientation: "", licenseType: "", surfaceMaterial: "",
+        style: "", environmentType: "", lightingCondition: "", scriptType: "", programmingLanguage: "", framework: "",
+        integrationReady: [], colorSpace: "", objectType: "", fileFormat: "",
+      });
+      setTags([]);
+      setThumbnailPreview(null);
+
     } catch (error) {
       console.error("Error adding document: ", error);
       setLoadingState("Error uploading asset");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -676,473 +644,480 @@ const Upload = () => {
     const options = getFilterOptions(filterKey);
     if (options.length === 0) return null;
     return (
-      <div className="select-wrapper">
-        <label htmlFor={`${name}_select`}>{label}</label>
+      <div className="blog-form-group">
+        <label className="blog-form-label">{label} <span className="blog-form-required">*</span></label>
         <select
           name={name}
-          id={`${name}_select`}
-          className="filter-select"
+          className="blog-form-select"
           onChange={handleChange}
           multiple={isMulti}
           value={isMulti ? formData[name] : formData[name] || ""}
-          required={!isMulti} // Multi-select fields are optional
+          required={!isMulti}
         >
-          <option value="" disabled>
-            Select {label}
-          </option>
+          <option value="" disabled>Select {label}</option>
           {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
+            <option key={option} value={option}>{option}</option>
           ))}
         </select>
       </div>
     );
   };
 
+  const getAssetTypeIcon = (type) => {
+    switch (type) {
+      case 'models': return <FiBox />;
+      case 'videos': return <FiVideo />;
+      case 'images': return <FiImage />;
+      case 'scripts': return <FiCode />;
+      case 'sounds': return <FiMusic />;
+      default: return <FiFile />;
+    }
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="blog-modal-overlay">
+        <div className="blog-modal-container">
+          <div className="blog-modal-content">
+            <div className="blog-modal-header">
+              <h1 className="blog-modal-title">Upload Asset</h1>
+              {onClose && (
+                <button onClick={onClose} className="blog-modal-close" aria-label="Close">
+                  <FiX />
+                </button>
+              )}
+            </div>
+            <div className="not-logged-in-message">
+              <h3>Please log in to upload assets</h3>
+              <p>You need to be logged in to upload assets to the marketplace.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Helmet>
-        <title>Upload | Shammarianas</title>
+        <title>Upload Asset | Shammarianas</title>
         <meta name="description" content="Upload your assets to Shammarianas" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Upload | Shammarianas" />
-        <meta property="og:description" content="Upload your assets to Shammarianas" />
       </Helmet>
 
       <style>
         {`
-          .select-wrapper {
-            margin-bottom: 1rem;
+          .blog-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 9999; padding: 1rem;
           }
-          .select-wrapper label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
+          .blog-modal-container {
+            background: #fff; border-radius: 1.25rem; box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            width: 100%; max-width: 1100px; max-height: 90vh; overflow: hidden;
           }
-          .filter-select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
-            background-color: #fff;
-            color: #333;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            cursor: pointer;
+          .blog-modal-content { padding: 2rem; height: 90vh; overflow-y: auto; }
+          .blog-modal-header {
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;
           }
-          .filter-select[multiple] {
-            height: 100px;
-            padding: 0.5rem;
+          .blog-modal-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0; }
+          .blog-modal-close {
+            background: none; border: none; color: #6b7280; cursor: pointer; 
+            padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s;
           }
-          .filter-select:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+          .blog-modal-close:hover { background: #fee2e2; color: #dc2626; }
+          .blog-form-group { margin-bottom: 1.75rem; }
+          .blog-form-label {
+              text-align: left;
+            display: block; font-size: 0.95rem; font-weight: 600; 
+            color: #374151; margin-bottom: 0.5rem;
           }
-          .filter-select option {
-            padding: 0.5rem;
+          .blog-form-required { color: #dc2626; }
+          .blog-form-input, .blog-form-select, .blog-form-textarea {
+            width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
+            border-radius: 0.75rem; font-size: 1rem; outline: none; 
+            transition: all 0.2s; background: #fafafa; font-family: inherit;
+          }
+          .blog-form-input:focus, .blog-form-select:focus, .blog-form-textarea:focus {
+            border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #fff;
+          }
+          .blog-tags-container {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; 
+            padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
+            border-radius: 0.75rem; background: #fafafa;
+            min-height: 48px; align-items: center;
+          }
+          .blog-tags-container:focus-within {
+            border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #fff;
+          }
+          .blog-tag-input {
+            flex: 1; border: none; outline: none; background: transparent; 
+            font-size: 1rem; min-width: 100px;
+          }
+          .blog-tag-input::placeholder { color: #9ca3af; }
+          .blog-tag {
+            display: flex; align-items: center; gap: 0.375rem;
+            padding: 0.375rem 0.75rem; border-radius: 9999px;
+            font-size: 0.875rem; font-weight: 500;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            animation: tagSlideIn 0.2s ease-out;
+          }
+          .blog-tag:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4); }
+          .blog-tag-remove {
+            background: rgba(255,255,255,0.3); width: 16px; height: 16px;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 10px; font-weight: bold;
+            cursor: pointer; transition: all 0.2s;
+          }
+          .blog-tag-remove:hover { background: rgba(255,255,255,0.5); transform: scale(1.1); }
+          @keyframes tagSlideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+          .blog-form-file {
+            width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db; 
+            border-radius: 0.75rem; padding: 2rem; text-align: center; 
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            transition: all 0.2s; cursor: pointer; color: #374151;
+          }
+          .blog-form-file:hover { border-color: #3b82f6; background: #eff6ff; }
+          .blog-form-hint { text-align: left; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; font-style: italic; }
+          .blog-form-buttons {
+            display: flex; justify-content: flex-end; gap: 1rem; 
+            padding-top: 2rem; border-top: 1px solid #e5e7eb; margin-top: 2rem;
+          }
+          .blog-btn {
+            padding: 0.75rem 2rem; border-radius: 0.75rem; border: none; 
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+          }
+          .blog-btn-cancel { 
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); color: #374151; 
+          }
+          .blog-btn-cancel:hover { background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); transform: translateY(-1px); }
+          .blog-btn-submit { 
+            background: #52b0b4; color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+          }
+          .blog-btn-submit:hover:not(:disabled) { 
+            background: #52b0b4; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+          }
+          .blog-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+          .blog-image-preview {
+            margin-top: 1rem; max-width: 250px; max-height: 150px; 
+            object-fit: cover; border-radius: 0.75rem; 
+            border: 2px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          }
+          .current-image-note {
+            font-size: 0.875rem; color: #059669; font-style: italic; 
+            margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem; border-left: 4px solid #10b981;
+          }
+          .not-logged-in-message {
+            text-align: center; padding: 3rem 2rem;
+          }
+          .not-logged-in-message h3 {
+            color: #374151; margin-bottom: 1rem;
+          }
+          .not-logged-in-message p {
+            color: #6b7280;
+          }
+          .file-preview-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem; margin-top: 1rem;
+          }
+          .file-preview-item {
+            border: 2px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem;
+            text-align: center; background: #f9fafb;
+          }
+          .file-preview-item img, .file-preview-item video {
+            max-width: 100%; height: 60px; object-fit: cover; border-radius: 0.25rem;
+          }
+          .file-preview-name {
+            font-size: 0.75rem; color: #374151; margin-top: 0.5rem; word-break: break-all;
+          }
+          .asset-type-icon {
+            font-size: 1.5rem; margin-right: 0.5rem; color: #3b82f6;
+          }
+          @media (max-width: 768px) {
+            .blog-modal-content { padding: 1.5rem; }
+            .blog-modal-title { font-size: 1.25rem; }
+            .blog-tags-container { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+            .blog-form-buttons { flex-direction: column; }
           }
         `}
       </style>
 
-      {currentUser ? (
-        <div className="page_content">
-          <div className="upload_section">
-            {loadingState && (
-              <div className="uploading_overlay">
-                <div className={`spinner ${loadingState === "success" ? "success" : ""}`}>{loadingState === "success" && <i className="icon fas fa-check"></i>}</div>
-                <span>{loadingState}</span>
-              </div>
-            )}
+      <div className="blog-modal-overlay">
+        <div className="blog-modal-container">
+          <div className="blog-modal-content">
+            <div className="blog-modal-header">
+              <h1 className="blog-modal-title">
+                <FiUpload className="asset-type-icon" />
+                Upload New Asset
+              </h1>
+              {onClose && (
+                <button onClick={onClose} className="blog-modal-close" aria-label="Close">
+                  <FiX />
+                </button>
+              )}
+            </div>
+
             <form onSubmit={handleSubmit}>
-              <PageTitle title="Upload Asset">Upload</PageTitle>
-
-              <div className="content">
-                <div className="left">
-                  <label htmlFor="thumbnail_input">Thumbnail</label>
-                  <input type="file" required name="thumbnail" id="thumbnail_input" accept="image/*" onChange={handleChange} />
-                  <label htmlFor="thumbnail_input" className="thumbnail_input_label">
-                    {formData.thumbnail ? (
-                      <div className="thumbnail_preview">
-                        <img className="image" src={URL.createObjectURL(formData.thumbnail)} alt="thumbnail" />
-                        <span className="file_name">{formData.thumbnail.name}</span>
-                      </div>
-                    ) : (
-                      <>
-                        <img className="upload_icon" src={plus_icon} alt="Add Thumbnail" />
-                        <span className="placeholder">Choose Thumbnail</span>
-                      </>
-                    )}
-                  </label>
-
-                  <input name="title" value={formData.title} onChange={handleChange} placeholder="Title" required />
-                </div>
-
-                <div className="right">
-                  <DescriptionBox name="description" value={formData.description} onChange={handleChange} />
-                  <div className="select-wrapper">
-                    <label htmlFor="type_select">Asset Type</label>
-                    <select name="type" id="type_select" className="filter-select" onChange={handleChange} required>
-                      <option value="" disabled selected>
-                        Select Asset Type
-                      </option>
-                      <option value="models">3D Model</option>
-                      <option value="textures">Texture</option>
-                      <option value="sounds">Sound</option>
-                      <option value="scripts">Script</option>
-                      <option value="images">Image</option>
-                      <option value="graphics">Graphics Templates</option>
-                      <option value="mockups">Mockups</option>
-                      <option value="fonts">Fonts</option>
-                      <option value="videos">Video</option>
-                      <option value="video-templates">Video Templates</option>
-                      <option value="icons">Icons</option>
-                      <option value="hdris">HDRIs</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div className="select-wrapper">
-                    <label htmlFor="category_select">Category</label>
-                    <select name="category" id="category_select" className="filter-select" onChange={handleChange} required value={formData.category}>
-                      <option value="" disabled>
-                        Select Category
-                      </option>
-                      {getCategoryOptions().map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {renderFilterSelect("aiGenerated", "AI-Generated", "aiGenerated")}
-                  {renderFilterSelect("resolution", "Resolution", "resolution")}
-                  {renderFilterSelect("frameRate", "Frame Rate", "frameRate")}
-                  {renderFilterSelect("properties", "Properties", "properties")}
-                  {renderFilterSelect("applicationsSupported", "Applications Supported", "applicationsSupported")}
-                  {renderFilterSelect("orientation", "Orientation", "orientation")}
-                  {renderFilterSelect("licenseType", "License Type", "licenseType")}
-                  {renderFilterSelect("surfaceMaterial", "Surface Material", "surfaceMaterial")}
-                  {renderFilterSelect("style", "Style", "style")}
-                  {renderFilterSelect("environmentType", "Environment Type", "environmentType")}
-                  {renderFilterSelect("lightingCondition", "Lighting Condition", "lightingCondition")}
-                  {renderFilterSelect("scriptType", "Script Type", "scriptType")}
-                  {renderFilterSelect("programmingLanguage", "Programming Language", "programmingLanguage")}
-                  {renderFilterSelect("framework", "Framework", "framework")}
-                  {renderFilterSelect("integrationReady", "Integration Ready", "integrationReady")}
-                  {renderFilterSelect("colorSpace", "Color Space", "colorSpace")}
-                  {renderFilterSelect("objectType", "Object Type", "objectType")}
-                  {renderFilterSelect("fileFormat", "File Format", "fileFormat")}
-                  <input name="price" value={formData.price} onChange={handleChange} placeholder="Price" type="number" maxLength={3} max={999} required />
-                  {formData.price && formData.price > 0 && <input name="discount" value={formData.discount} onChange={handleChange} placeholder="Discount" type="number" required />}
-                  <div className="tags_input">
-                    {tags.map((tag) => (
-                      <span key={tag} className="tag">
-                        {tag}
-                      </span>
-                    ))}
-                    <input name="tags" value={formData.tags} onChange={handleTagInputChange} placeholder="Tags (space-separated)" required />
-                  </div>
-                  {formData.type === "models" && (
-                    <>
-                      <label>Is 3D</label>
-                      <label>
-                        <input name="is3d" type="checkbox" checked={true} disabled />
-                        Is 3D
-                      </label>
-                      <label htmlFor="model_input">Model File</label>
-                      <input name="model" id="model_input" type="file" accept=".glb,.gltf,.stl,.obj,.fbx,.blend" onChange={handleChange} required />
-                      <label htmlFor="model_input" className="custom-file-input">
-                        {formData.model ? (
-                          <div className="file_preview">
-                            <span className="file_name">{formData.model.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Model" />
-                            <span className="placeholder">Choose Model File</span>
-                          </>
-                        )}
-                      </label>
-                      <input name="vertices" type="number" placeholder="Vertices" onChange={handleChange} required />
-                      <input name="physicalSize" type="text" placeholder="Physical Size" onChange={handleChange} required />
-                      <input name="lods" type="number" placeholder="LODs" onChange={handleChange} required />
-                      <div className="checkboxes">
-                        {["textures", "materials", "rigged", "animated", "uvMapping", "vrArLowPoly"].map((prop) => (
-                          <label key={prop}>
-                            <input type="checkbox" name={prop} checked={formData[prop]} onChange={handleChange} />
-                            {prop
-                              .split(/(?=[A-Z])/)
-                              .join(" ")
-                              .replace(/\b\w/g, (c) => c.toUpperCase())}
-                          </label>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {formData.type === "textures" && (
-                    <>
-                      {["ambientOcclusion", "baseColor", "displacement", "normal", "roughness", "metallic", "bump", "idmap"].map((map) => (
-                        <div key={map}>
-                          <label htmlFor={`${map}_input`}>
-                            {map
-                              .split(/(?=[A-Z])/)
-                              .join(" ")
-                              .replace(/\b\w/g, (c) => c.toUpperCase())}
-                          </label>
-                          <input type="file" name={map} id={`${map}_input`} accept=".png,.jpg,.jpeg" onChange={handleChange} />
-                          <label htmlFor={`${map}_input`} className="custom-file-input">
-                            {formData[map] ? (
-                              <div className="file_preview">
-                                <img className="image" src={URL.createObjectURL(formData[map])} alt={map} />
-                                <span className="file_name">{formData[map].name}</span>
-                              </div>
-                            ) : (
-                              <>
-                                <img className="upload_icon" src={plus_icon} alt={`Add ${map}`} />
-                                <span className="placeholder">
-                                  Choose{" "}
-                                  {map
-                                    .split(/(?=[A-Z])/)
-                                    .join(" ")
-                                    .replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
-                                  File
-                                </span>
-                              </>
-                            )}
-                          </label>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                  {formData.type === "sounds" && (
-                    <>
-                      <label htmlFor="sound_input">Sound File</label>
-                      <input name="sound" id="sound_input" type="file" accept="audio/*" onChange={handleChange} required />
-                      <label htmlFor="sound_input" className="custom-file-input">
-                        {formData.sound ? (
-                          <div className="file_preview">
-                            <span className="file_name">{formData.sound.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Sound" />
-                            <span className="placeholder">Choose Sound File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "scripts" && (
-                    <>
-                      <label htmlFor="script_input">Script File</label>
-                      <input name="script" id="script_input" type="file" accept=".js,.cs,.py,.lua,.cpp" onChange={handleChange} required />
-                      <label htmlFor="script_input" className="custom-file-input">
-                        {formData.script ? (
-                          <div className="file_preview">
-                            <span className="file_name">{formData.script.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Script" />
-                            <span className="placeholder">Choose Script File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "images" && (
-                    <>
-                      <label htmlFor="images_input">Images</label>
-                      <input name="images" id="images_input" type="file" accept="image/*" multiple onChange={handleChange} required />
-                      <label htmlFor="images_input" className="custom-file-input">
-                        {formData.images && formData.images.length > 0 ? (
-                          <div className="file_preview">
-                            {Array.from(formData.images).map((image) => (
-                              <div key={image.name} className="image-preview">
-                                <img src={URL.createObjectURL(image)} alt={image.name} width="50" height="50" />
-                                <span className="file_name">{image.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Images" />
-                            <span className="placeholder">Choose Image Files</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "graphics" && (
-                    <>
-                      <label htmlFor="graphicsTemplate_input">Graphics Template File</label>
-                      <input name="graphicsTemplate" id="graphicsTemplate_input" type="file" accept=".psd,.ai,.svg,.png,.jpg" onChange={handleChange} required />
-                      <label htmlFor="graphicsTemplate_input" className="custom-file-input">
-                        {formData.graphicsTemplate ? (
-                          <div className="file_preview">
-                            <span className="file_name">{formData.graphicsTemplate.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Graphics Template" />
-                            <span className="placeholder">Choose Graphics Template File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "mockups" && (
-                    <>
-                      <label htmlFor="mockupFile_input">Mockup File</label>
-                      <input name="mockupFile" id="mockupFile_input" type="file" accept=".psd,.png,.jpg,.jpeg" onChange={handleChange} required />
-                      <label htmlFor="mockupFile_input" className="custom-file-input">
-                        {formData.mockupFile ? (
-                          <div className="file_preview">
-                            <img className="image" src={URL.createObjectURL(formData.mockupFile)} alt="mockup" />
-                            <span className="file_name">{formData.mockupFile.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Mockup" />
-                            <span className="placeholder">Choose Mockup File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "fonts" && (
-                    <>
-                      <label htmlFor="fontFile_input">Font File</label>
-                      <input name="fontFile" id="fontFile_input" type="file" accept=".ttf,.otf,.woff,.woff2" onChange={handleChange} required />
-                      <label htmlFor="fontFile_input" className="custom-file-input">
-                        {formData.fontFile ? (
-                          <div className="file_preview">
-                            <span className="file_name">{formData.fontFile.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Font" />
-                            <span className="placeholder">Choose Font File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "video-templates" && (
-                    <>
-                      <label htmlFor="videoTemplateFile_input">Video Template File</label>
-                      <input name="videoTemplateFile" id="videoTemplateFile_input" type="file" accept=".prproj,.aep,.mp4,.mov" onChange={handleChange} required />
-                      <label htmlFor="videoTemplateFile_input" className="custom-file-input">
-                        {formData.videoTemplateFile ? (
-                          <div className="file_preview">
-                            <span className="file_name">{formData.videoTemplateFile.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Video Template" />
-                            <span className="placeholder">Choose Video Template File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "videos" && (
-                    <>
-                      <label htmlFor="video_input">Video File</label>
-                      <input name="video" id="video_input" type="file" accept="video/*" onChange={handleChange} required />
-                      <label htmlFor="video_input" className="custom-file-input">
-                        {formData.video ? (
-                          <div className="file_preview">
-                            <video controls width="300">
-                              <source src={URL.createObjectURL(formData.video)} type={formData.video.type} />
-                              Your browser does not support the video tag.
-                            </video>
-                            <span className="file_name">{formData.video.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Video" />
-                            <span className="placeholder">Choose Video File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "icons" && (
-                    <>
-                      <label htmlFor="icons_input">Icons</label>
-                      <input name="icons" id="icons_input" type="file" accept="image/*" multiple onChange={handleChange} required />
-                      <label htmlFor="icons_input" className="custom-file-input">
-                        {formData.icons && formData.icons.length > 0 ? (
-                          <div className="file_preview">
-                            {Array.from(formData.icons).map((icon) => (
-                              <div key={icon.name} className="icon-preview">
-                                <img src={URL.createObjectURL(icon)} alt={icon.name} width="50" height="50" />
-                                <span className="file_name">{icon.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Icons" />
-                            <span className="placeholder">Choose Icon Files</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "hdris" && (
-                    <>
-                      <label htmlFor="hdri_input">HDRI File</label>
-                      <input name="hdri" id="hdri_input" type="file" accept=".hdr,.exr" onChange={handleChange} required />
-                      <label htmlFor="hdri_input" className="custom-file-input">
-                        {formData.hdri ? (
-                          <div className="file_preview">
-                            <span className="file_name">{formData.hdri.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add HDRI" />
-                            <span className="placeholder">Choose HDRI File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                  {formData.type === "other" && (
-                    <>
-                      <label htmlFor="other_input">Other File</label>
-                      <input name="other" id="other_input" type="file" onChange={handleChange} required />
-                      <label htmlFor="other_input" className="custom-file-input">
-                        {formData.other ? (
-                          <div className="file_preview">
-                            <span className="file_name">{formData.other.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <img className="upload_icon" src={plus_icon} alt="Add Other" />
-                            <span className="placeholder">Choose Other File</span>
-                          </>
-                        )}
-                      </label>
-                    </>
-                  )}
-                </div>
+              <div className="blog-form-group">
+                <label className="blog-form-label">Title <span className="blog-form-required">*</span></label>
+                <input 
+                  type="text" 
+                  name="title" 
+                  value={formData.title} 
+                  onChange={handleChange} 
+                  required 
+                  className="blog-form-input" 
+                  placeholder="Enter asset title..." 
+                />
               </div>
-              <button type="submit">Upload</button>
+
+              <div className="blog-form-group">
+                <label className="blog-form-label">Thumbnail <span className="blog-form-required">*</span></label>
+                <input 
+                  type="file" 
+                  name="thumbnail" 
+                  onChange={handleChange} 
+                  accept="image/*" 
+                  className="blog-form-file" 
+                />
+                <p className="blog-form-hint">JPG, PNG, WebP • Max 1.25MB • 1200x630px recommended</p>
+                {thumbnailPreview && <img src={thumbnailPreview} alt="Preview" className="blog-image-preview" />}
+              </div>
+
+              <div className="blog-form-group">
+                <label className="blog-form-label">Description <span className="blog-form-required">*</span></label>
+                <textarea 
+                  name="description" 
+                  value={formData.description} 
+                  onChange={handleChange} 
+                  required 
+                  className="blog-form-textarea" 
+                  placeholder="Describe your asset..." 
+                  rows="4"
+                />
+              </div>
+
+              <div className="blog-form-group">
+                <label className="blog-form-label">Asset Type <span className="blog-form-required">*</span></label>
+                <select 
+                  name="type" 
+                  value={formData.type} 
+                  onChange={handleChange} 
+                  required 
+                  className="blog-form-select"
+                >
+                  <option value="" disabled>Select Asset Type</option>
+                  <option value="models">3D Model</option>
+                  <option value="textures">Texture</option>
+                  <option value="sounds">Sound</option>
+                  <option value="scripts">Script</option>
+                  <option value="images">Image</option>
+                  <option value="graphics">Graphics Templates</option>
+                  <option value="mockups">Mockups</option>
+                  <option value="fonts">Fonts</option>
+                  <option value="videos">Video</option>
+                  <option value="video-templates">Video Templates</option>
+                  <option value="icons">Icons</option>
+                  <option value="hdris">HDRIs</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div className="blog-form-group">
+                <label className="blog-form-label">Category <span className="blog-form-required">*</span></label>
+                <select 
+                  name="category" 
+                  value={formData.category} 
+                  onChange={handleChange} 
+                  required 
+                  className="blog-form-select"
+                >
+                  <option value="" disabled>Select Category</option>
+                  {getCategoryOptions().map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="blog-form-group">
+                <label className="blog-form-label">Price <span className="blog-form-required">*</span></label>
+                <input 
+                  type="number" 
+                  name="price" 
+                  value={formData.price} 
+                  onChange={handleChange} 
+                  required 
+                  className="blog-form-input" 
+                  placeholder="0.00" 
+                  step="0.01" 
+                  min="0" 
+                />
+                {formData.price && formData.price > 0 && (
+                  <input 
+                    type="number" 
+                    name="discount" 
+                    value={formData.discount} 
+                    onChange={handleChange} 
+                    className="blog-form-input" 
+                    placeholder="Discount" 
+                    style={{ marginTop: '0.5rem' }}
+                  />
+                )}
+              </div>
+
+              <div className="blog-form-group">
+                <label className="blog-form-label">Tags (Max 10)</label>
+                <div className="blog-tags-container" tabIndex="0">
+                  {tags.map((tag, index) => (
+                    <div key={index} className="blog-tag">
+                      #{tag}
+                      <span className="blog-tag-remove" onClick={() => handleTagRemove(tag)}>×</span>
+                    </div>
+                  ))}
+                  <input 
+                    ref={tagInputRef} 
+                    type="text" 
+                    className="blog-tag-input" 
+                    value={formData.tags} 
+                    onChange={handleTagInputChange} 
+                    placeholder={tags.length === 0 ? "Type tag and press Space..." : "Press Space to add tag..."} 
+                    maxLength={20} 
+                  />
+                </div>
+                <p className="blog-form-hint">Type tag name and press Space. Max 10 tags. Click × to remove.</p>
+                {tags.length > 0 && (
+                  <p className="current-image-note" style={{ marginTop: '0.5rem' }}>
+                    {tags.length} tag{tags.length > 1 ? 's' : ''} added
+                  </p>
+                )}
+              </div>
+
+              {/* Additional filters based on asset type */}
+              {renderFilterSelect("aiGenerated", "AI-Generated", "aiGenerated")}
+              {renderFilterSelect("resolution", "Resolution", "resolution")}
+              {renderFilterSelect("frameRate", "Frame Rate", "frameRate")}
+              {renderFilterSelect("properties", "Properties", "properties", true)}
+              {renderFilterSelect("applicationsSupported", "Applications Supported", "applicationsSupported", true)}
+              {renderFilterSelect("orientation", "Orientation", "orientation")}
+              {renderFilterSelect("licenseType", "License Type", "licenseType")}
+              {renderFilterSelect("surfaceMaterial", "Surface Material", "surfaceMaterial")}
+              {renderFilterSelect("style", "Style", "style")}
+              {renderFilterSelect("environmentType", "Environment Type", "environmentType")}
+              {renderFilterSelect("lightingCondition", "Lighting Condition", "lightingCondition")}
+              {renderFilterSelect("scriptType", "Script Type", "scriptType")}
+              {renderFilterSelect("programmingLanguage", "Programming Language", "programmingLanguage")}
+              {renderFilterSelect("framework", "Framework", "framework")}
+              {renderFilterSelect("integrationReady", "Integration Ready", "integrationReady", true)}
+              {renderFilterSelect("colorSpace", "Color Space", "colorSpace")}
+              {renderFilterSelect("objectType", "Object Type", "objectType")}
+              {renderFilterSelect("fileFormat", "File Format", "fileFormat")}
+
+              {/* File upload sections based on asset type */}
+              {formData.type === "models" && (
+                <>
+                  <div className="blog-form-group">
+                    <label className="blog-form-label">3D Model File <span className="blog-form-required">*</span></label>
+                    <input 
+                      type="file" 
+                      name="model" 
+                      onChange={handleChange} 
+                      accept=".glb,.gltf,.stl,.obj,.fbx,.blend" 
+                      className="blog-form-file" 
+                    />
+                    <p className="blog-form-hint">Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend</p>
+                  </div>
+                  
+                  <div className="blog-form-group">
+                    <label className="blog-form-label">Vertices</label>
+                    <input 
+                      type="number" 
+                      name="vertices" 
+                      value={formData.vertices} 
+                      onChange={handleChange} 
+                      className="blog-form-input" 
+                      placeholder="Number of vertices" 
+                    />
+                  </div>
+
+                  <div className="blog-form-group">
+                    <label className="blog-form-label">Physical Size</label>
+                    <input 
+                      type="text" 
+                      name="physicalSize" 
+                      value={formData.physicalSize} 
+                      onChange={handleChange} 
+                      className="blog-form-input" 
+                      placeholder="e.g., 10x10x10 cm" 
+                    />
+                  </div>
+
+                  <div className="blog-form-group">
+                    <div className="checkboxes" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+                      {["textures", "materials", "rigged", "animated", "uvMapping", "vrArLowPoly"].map((prop) => (
+                        <label key={prop} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <input 
+                            type="checkbox" 
+                            name={prop} 
+                            checked={formData[prop]} 
+                            onChange={handleChange} 
+                          />
+                          {prop.split(/(?=[A-Z])/).join(' ').replace(/\b\w/g, c => c.toUpperCase())}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {formData.type === "images" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Image Files <span className="blog-form-required">*</span></label>
+                  <input 
+                    type="file" 
+                    name="images" 
+                    onChange={handleChange} 
+                    accept="image/*" 
+                    multiple 
+                    className="blog-form-file" 
+                  />
+                  <p className="blog-form-hint">Select multiple image files</p>
+                </div>
+              )}
+
+              {formData.type === "videos" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Video File <span className="blog-form-required">*</span></label>
+                  <input 
+                    type="file" 
+                    name="video" 
+                    onChange={handleChange} 
+                    accept="video/*" 
+                    className="blog-form-file" 
+                  />
+                  <p className="blog-form-hint">Supported video formats</p>
+                </div>
+              )}
+
+              {/* Add similar sections for other asset types as needed */}
+
+              <div className="blog-form-buttons">
+                {onClose && (
+                  <button type="button" onClick={onClose} className="blog-btn blog-btn-cancel">
+                    Cancel
+                  </button>
+                )}
+                <button type="submit" disabled={isSubmitting} className="blog-btn blog-btn-submit">
+                  {isSubmitting ? "Uploading..." : "Upload Asset"}
+                </button>
+              </div>
             </form>
           </div>
         </div>
-      ) : (
-        <div className="page_content">
-          <div className="not_logged_in">
-            <h2>Log in to upload assets</h2>
-          </div>
-        </div>
-      )}
+      </div>
     </>
   );
 };
