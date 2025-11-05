@@ -50,7 +50,7 @@ const UnauthorizedAccess = ({ error }) => {
 };
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(1);
   const [users, setUsers] = useState([]);
   const [supportMessages, setSupportMessages] = useState([]);
   const [blogs, setBlogs] = useState([]);
@@ -557,9 +557,8 @@ const AdminDashboard = () => {
       <div className="main-content" style={{marginLeft: '250px', overflowY: 'auto'}}>
         <div className="header">
           <h1 className="page-title">
-            {activeTab === 0 && "Dashboard Overview"}
-            {activeTab === 1 && selectedDashboard === "admin" && "User Information"}
-            {activeTab === 2 && "User Report"}
+            {activeTab === 1 && selectedDashboard === "admin" && ""}
+            {activeTab === 2 && ""}
             {activeTab === 3 && "Payment & Plan"}
             {activeTab === 4 && "Seller Account Verify"}
             {activeTab === 5 && "Asset Request"}

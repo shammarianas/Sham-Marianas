@@ -15,6 +15,51 @@ import { loginWithGoogle } from "./GoogleLogin";
 import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 
+// Country code data
+const countryCodes = [
+  { code: "+1", country: "United States" },
+  { code: "+44", country: "United Kingdom" },
+  { code: "+91", country: "India" },
+  { code: "+92", country: "Pakistan" },
+  { code: "+86", country: "China" },
+  { code: "+49", country: "Germany" },
+  { code: "+33", country: "France" },
+  { code: "+39", country: "Italy" },
+  { code: "+34", country: "Spain" },
+  { code: "+81", country: "Japan" },
+  { code: "+82", country: "South Korea" },
+  { code: "+7", country: "Russia" },
+  { code: "+55", country: "Brazil" },
+  { code: "+61", country: "Australia" },
+  { code: "+64", country: "New Zealand" },
+  { code: "+27", country: "South Africa" },
+  { code: "+20", country: "Egypt" },
+  { code: "+971", country: "UAE" },
+  { code: "+966", country: "Saudi Arabia" },
+  { code: "+65", country: "Singapore" },
+  { code: "+60", country: "Malaysia" },
+  { code: "+63", country: "Philippines" },
+  { code: "+66", country: "Thailand" },
+  { code: "+84", country: "Vietnam" },
+  { code: "+62", country: "Indonesia" },
+  { code: "+90", country: "Turkey" },
+  { code: "+31", country: "Netherlands" },
+  { code: "+32", country: "Belgium" },
+  { code: "+41", country: "Switzerland" },
+  { code: "+46", country: "Sweden" },
+  { code: "+47", country: "Norway" },
+  { code: "+45", country: "Denmark" },
+  { code: "+358", country: "Finland" },
+  { code: "+353", country: "Ireland" },
+  { code: "+351", country: "Portugal" },
+  { code: "+30", country: "Greece" },
+  { code: "+48", country: "Poland" },
+  { code: "+36", country: "Hungary" },
+  { code: "+40", country: "Romania" },
+  { code: "+420", country: "Czech Republic" },
+  { code: "+43", country: "Austria" },
+];
+
 const Login = () => {
   const [page, setPage] = useState("login");
   const passwordRef = useRef(null);
@@ -31,6 +76,7 @@ const Login = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [birthday, setBirthday] = useState("");
+  const [countryCode, setCountryCode] = useState("+1"); // Default country code
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,6 +101,7 @@ const Login = () => {
   const handleNameChange = (e) => setName(e.target.value);
   const handlePhoneChange = (e) => setPhone(e.target.value);
   const handleBirthdayChange = (e) => setBirthday(e.target.value);
+  const handleCountryCodeChange = (e) => setCountryCode(e.target.value);
 
   useEffect(() => {
     if (page === "signup") {
@@ -107,8 +154,9 @@ const Login = () => {
         role: "user",
         // ✅ NEW FIELDS ADDED
         name: name,
-        phone: phone,
+        phone: `${countryCode} ${phone}`, // Save with country code
         birthday: birthday,
+        countryCode: countryCode, // Save country code separately if needed
         // ✅ JOIN DATE FIELDS
         createdAt: serverTimestamp(),
         joinDate: serverTimestamp(),
@@ -218,9 +266,9 @@ const Login = () => {
             </div>
             <form onSubmit={signUpwithEmailPassword}>
               {/* ✅ NAME & USERNAME IN ONE ROW */}
-              <div className="form-row-1">
+              <div className="form-row-1 mb-0">
                 <div className="width-50">
-                  <label htmlFor="name" class="mb-2">Full Name</label>
+                  <label htmlFor="name" className="mb-2">Full Name</label>
                   <div className="input">
                     <input
                       type="text"
@@ -233,7 +281,7 @@ const Login = () => {
                   </div>
                 </div>
                 <div className="width-50">
-                  <label htmlFor="username" class="mb-2">Username</label>
+                  <label htmlFor="username" className="mb-2">Username</label>
                   <div className="input">
                     <input
                       type="text"
@@ -260,27 +308,41 @@ const Login = () => {
               </div>
 
               {/* ✅ PHONE & BIRTHDAY IN ONE ROW */}
-              <div className="form-row-1">
+              <div className="form-row-1 mb-0">
                 <div className="width-50">
-                  <label htmlFor="phone" class="mb-2">Phone Number</label>
-                  <div className="input">
+                  <label htmlFor="phone" className="mb-2">Phone Number</label>
+                  <div className="input phone-input-container">
+                    <select 
+                      className="country-code-select"
+                      value={countryCode}
+                      onChange={handleCountryCodeChange}
+                    >
+                      {countryCodes.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.code} ({country.country})
+                        </option>
+                      ))}
+                    </select>
                     <input
                       type="tel"
                       id="phone"
-                      placeholder="+1 234 567 8900"
+                      placeholder="234 567 8900"
                       value={phone}
-                      onChange={handlePhoneChange} required
+                      onChange={handlePhoneChange}
+                      required
+                      className="phone-number-input"
                     />
                   </div>
                 </div>
                 <div className="width-50">
-                  <label htmlFor="birthday" class="mb-2">Birthday</label>
+                  <label htmlFor="birthday" className="mb-2">Birthday</label>
                   <div className="input">
                     <input
                       type="date"
                       id="birthday"
                       value={birthday}
-                      onChange={handleBirthdayChange}  required
+                      onChange={handleBirthdayChange}
+                      required
                     />
                   </div>
                 </div>
@@ -394,6 +456,35 @@ const Login = () => {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .phone-input-container {
+          display: flex;
+          gap: 8px;
+        }
+        
+        .country-code-select {
+          width: 50px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          background-color: white;
+          font-size: 14px;
+        }
+        
+        .phone-number-input {
+          flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+          .phone-input-container {
+            flex-direction: column;
+          }
+          
+          .country-code-select {
+            width: 100%;
+          }
+        }
+      `}</style>
     </>
   );
 };
