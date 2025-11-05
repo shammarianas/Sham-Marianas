@@ -3629,6 +3629,7 @@ ul {
   border-top: 1px solid #e2e8f0;
 }
 
+
 /* Responsive */
 @media (max-width: 768px) {
   .user-profile-header {
@@ -3658,7 +3659,7 @@ ul {
 
 
 
-/* User Reports Dashboard Styles */
+/*------- User Reports Dashboard Styles -----*/
 .user-reports-dashboard {
   padding: 20px;
 }

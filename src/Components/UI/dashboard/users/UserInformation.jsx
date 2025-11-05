@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiUsers, FiShield, FiMapPin, FiSearch, FiFilter, FiEye, FiX, FiUserCheck, FiTrash2, FiUser, FiActivity, FiTrendingUp, FiShoppingCart, FiDollarSign, FiDownload, FiCalendar } from "react-icons/fi";
+import { FiUsers,FiCheckCircle, FiShield, FiMapPin, FiSearch, FiFilter, FiEye, FiX, FiUserCheck, FiTrash2, FiUser, FiActivity, FiTrendingUp, FiShoppingCart, FiDollarSign, FiDownload, FiCalendar } from "react-icons/fi";
 
 const UserInformation = ({ 
   users, 
@@ -451,8 +451,122 @@ const UserCard = ({
                 </div>
               </div>
 
-              {/* Rest of the user details modal content */}
-              {/* ... (include all the user details modal content from the original) */}
+             {/* User Details Grid */}
+                           <div className="user-details-grid">
+                             <div className="detail-section">
+                               <h4 className="section-title">
+                                 <FiUser className="section-icon" />
+                                 Personal Information
+                               </h4>
+                               <div className="detail-items">
+                                 <div className="detail-item">
+                                   <span className="detail-label">Full Name:</span>
+                                   <span className="detail-value">{user.name || "Not provided"}</span>
+                                 </div>
+                                 <div className="detail-item">
+                                   <span className="detail-label">Email:</span>
+                                   <span className="detail-value">{user.email || "Not provided"}</span>
+                                 </div>
+                                 <div className="detail-item">
+                                   <span className="detail-label">Phone:</span>
+                                   <span className="detail-value">{user.phone || "Not provided"}</span>
+                                 </div>
+                                 <div className="detail-item">
+                                   <span className="detail-label">Birthday:</span>
+                                   <span className="detail-value">
+                                     {user.birthday ? formatDate(user.birthday) : "Not provided"}
+                                   </span>
+                                 </div>
+                               </div>
+                             </div>
+             
+                             <div className="detail-section">
+                               <h4 className="section-title">
+                                 <FiShield className="section-icon" />
+                                 Account Information
+                               </h4>
+                               <div className="detail-items">
+                                 <div className="detail-item">
+                                   <span className="detail-label">User ID:</span>
+                                   <span className="detail-value uid">{user.uid || user.id}</span>
+                                 </div>
+                                 <div className="detail-item">
+                                   <span className="detail-label">Password:</span>
+                                   <span className="detail-value password-masked">••••••••</span>
+                                 </div>
+                                 <div className="detail-item">
+                                   <span className="detail-label">Join Date:</span>
+                                   <span className="detail-value">
+                                     {formatDate(user.createdAt || user.joinDate)}
+                                   </span>
+                                 </div>
+                                 <div className="detail-item">
+                                   <span className="detail-label">Last Login:</span>
+                                   <span className="detail-value">
+                                     {user.lastLogin ? formatDate(user.lastLogin) : "Never"}
+                                   </span>
+                                 </div>
+                               </div>
+                             </div>
+             
+                             <div className="detail-section">
+                               <h4 className="section-title">
+                                 <FiActivity className="section-icon" />
+                                 Account Status & Role
+                               </h4>
+                               <div className="role-status-section">
+                                 <div className="status-badge-large">
+                                   <span className={`status-indicator ${isActive ? "active" : "inactive"}`}></span>
+                                   <span className="status-text">
+                                     {isActive ? "Active" : "Inactive"} Account
+                                   </span>
+                                 </div>
+                                 
+                                 <div className="role-selector">
+                                   <label className="role-label">User Role:</label>
+                                   <select 
+                                     className="role-select"
+                                     value={user.role || "user"}
+                                     onChange={(e) => onRoleChange(user.id, e.target.value)}
+                                   >
+                                     <option value="user">User</option>
+                                     <option value="admin">Admin</option>
+                                     <option value="moderator">Moderator</option>
+                                   </select>
+                                 </div>
+             
+                                 <div className="verification-badge">
+                                   <FiCheckCircle className="verify-icon" />
+                                   <span>Email Verified: {user.emailVerified ? "Yes" : "No"}</span>
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+             
+                           {/* User Statistics */}
+                           <div className="user-stats-modal">
+                             <h4 className="section-title">
+                               <FiTrendingUp className="section-icon" />
+                               User Statistics
+                             </h4>
+                             <div className="stats-grid-modal">
+                               <div className="stat-card-modal">
+                                 <div className="stat-value">{user.totalPurchases || 0}</div>
+                                 <div className="stat-label">Total Purchases</div>
+                               </div>
+                               <div className="stat-card-modal">
+                                 <div className="stat-value currency">
+                                   {formatCurrency(user.totalSpent || 0)}
+                                 </div>
+                                 <div className="stat-label">Total Spent</div>
+                               </div>
+                               <div className="stat-card-modal">
+                                 <div className="stat-value">{user.totalDownloads || 0}</div>
+                                 <div className="stat-label">Downloads</div>
+                               </div>
+                             </div>
+                           </div>
+
             </div>
 
             <div className="modal-footer">
@@ -515,6 +629,50 @@ const UserDetailsModal = ({ user, onClose, onStatusToggle, onRoleChange, onDelet
                   {isActive ? "Active" : "Inactive"}
                 </span>
               </div>
+            </div>
+          </div>
+
+          {/* Location & Phone Section */}
+          <div className="location-section">
+            <h4 className="section-title">
+              <FiMapPin className="section-icon" />
+              Location Information
+            </h4>
+            <div className="location-details">
+              <div className="location-item">
+                <span className="location-label">Detected Country:</span>
+                <span className="location-value">
+                  <span className="country-flag-large">{getCountryFlag(detectedCountry)}</span>
+                  {detectedCountry}
+                </span>
+              </div>
+              
+              {user.phoneNumber && (
+                <div className="location-item">
+                  <span className="location-label">Phone Number:</span>
+                  <span className="location-value">
+                    <FiPhone className="phone-icon" />
+                    {user.phoneNumber}
+                    <span className="phone-country-detected">
+                      (Detected: {detectCountryFromPhone(user.phoneNumber)})
+                    </span>
+                  </span>
+                </div>
+              )}
+              
+              {user.country && (
+                <div className="location-item">
+                  <span className="location-label">Manual Country:</span>
+                  <span className="location-value">{user.country}</span>
+                </div>
+              )}
+              
+              {user.location && (
+                <div className="location-item">
+                  <span className="location-label">Location:</span>
+                  <span className="location-value">{user.location}</span>
+                </div>
+              )}
             </div>
           </div>
 
