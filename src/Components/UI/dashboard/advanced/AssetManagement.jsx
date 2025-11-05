@@ -1,144 +1,202 @@
-import React, { useState } from "react";
-import { FiBox, FiTrendingUp, FiDownload, FiUsers, FiDollarSign, FiSearch, FiFilter, FiEye, FiEdit, FiTrash2, FiPlus } from "react-icons/fi";
+import React, { useState, useEffect, useCallback } from "react";
+import { 
+  FiBox, 
+  FiTrendingUp, 
+  FiDownload, 
+  FiUsers, 
+  FiDollarSign, 
+  FiSearch, 
+  FiFilter, 
+  FiEye, 
+  FiEdit,
+  FiUpload,  
+  FiTrash2, 
+  FiPlus,
+  FiStar,
+  FiTag,
+  FiUser,
+  FiCalendar,
+  FiImage,
+  FiMoreHorizontal,
+  FiX
+} from "react-icons/fi";
+import { 
+  collection, 
+  query, 
+  getDocs, 
+  doc, 
+  updateDoc, 
+  deleteDoc, 
+  serverTimestamp 
+} from "firebase/firestore";
+import { db } from "../../../../../firebase";
+import Upload from "../../../../Pages/Upload";
 
 const AssetManagement = () => {
-  const [assets, setAssets] = useState([
-    {
-      id: 1,
-      name: "Modern 3D Car Model",
-      type: "3D Model",
-      category: "Vehicles",
-      price: 49.99,
-      downloads: 125,
-      rating: 4.8,
-      status: "published",
-      featured: true,
-      trending: true,
-      createdAt: "2024-01-15",
-      seller: "Ali Designs"
-    },
-    {
-      id: 2,
-      name: "Business Presentation Template",
-      type: "Template",
-      category: "Business",
-      price: 24.99,
-      downloads: 89,
-      rating: 4.6,
-      status: "published",
-      featured: false,
-      trending: true,
-      createdAt: "2024-01-20",
-      seller: "Sara Creations"
-    },
-    {
-      id: 3,
-      name: "Premium Icon Pack",
-      type: "Icons",
-      category: "UI/UX",
-      price: 14.99,
-      downloads: 203,
-      rating: 4.9,
-      status: "published",
-      featured: true,
-      trending: false,
-      createdAt: "2024-01-10",
-      seller: "UR Designs"
-    },
-    {
-      id: 4,
-      name: "4K HDRI Environment",
-      type: "HDRI",
-      category: "Environments",
-      price: 39.99,
-      downloads: 67,
-      rating: 4.7,
-      status: "draft",
-      featured: false,
-      trending: false,
-      createdAt: "2024-02-01",
-      seller: "Digital Assets Co"
-    }
-  ]);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [assetSearchTerm, setAssetSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [showAssetDialog, setShowAssetDialog] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateAssetDialog, setShowCreateAssetDialog] = useState(false);
 
-  const filteredAssets = assets.filter(asset => {
-    const matchesSearch = 
-      asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.seller.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || asset.status === statusFilter;
-    const matchesCategory = categoryFilter === "all" || asset.category === categoryFilter;
-    
-    return matchesSearch && matchesStatus && matchesCategory;
+  // Asset categories
+  const ASSET_CATEGORIES = [
+    "3D Models",
+    "Textures",
+    "HDRIs",
+    "Videos",
+    "Images",
+    "Graphics",
+    "Icons",
+    "Fonts",
+    "Scripts",
+    "Mockups",
+    "Audio",
+    "Templates",
+  ];
+
+  // Helper functions
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount || 0);
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    const d = normalizeDate(date);
+    return d ? d.toLocaleDateString() : "N/A";
+  };
+
+  const normalizeDate = (value) => {
+    if (!value) return null;
+    if (value.toDate) {
+      try {
+        return value.toDate();
+      } catch {
+        return null;
+      }
+    }
+    if (value.seconds) return new Date(value.seconds * 1000);
+    if (typeof value === "number") return new Date(value);
+    if (value instanceof Date) return value;
+    return null;
+  };
+
+  // Fetch All Assets
+  const fetchAssets = useCallback(async () => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, "Assets"));
+      const querySnapshot = await getDocs(q);
+      const assetsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAssets(assetsData);
+    } catch (error) {
+      setError(`Failed to load assets: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAssets();
+  }, [fetchAssets]);
+
+  // Asset management handlers
+  const handleToggleAssetFeatured = async (assetId) => {
+    const asset = assets.find((a) => a.id === assetId);
+    if (asset) {
+      try {
+        await updateDoc(doc(db, "Assets", assetId), {
+          isFeatured: !asset.isFeatured,
+          updatedAt: serverTimestamp(),
+        });
+        setAssets((prev) =>
+          prev.map((a) =>
+            a.id === assetId ? { ...a, isFeatured: !a.isFeatured } : a
+          )
+        );
+      } catch (error) {
+        setError(`Failed to update asset: ${error.message}`);
+      }
+    }
+  };
+
+  const handleToggleAssetTrending = async (assetId) => {
+    const asset = assets.find((a) => a.id === assetId);
+    if (asset) {
+      try {
+        await updateDoc(doc(db, "Assets", assetId), {
+          isTrending: !asset.isTrending,
+          updatedAt: serverTimestamp(),
+        });
+        setAssets((prev) =>
+          prev.map((a) =>
+            a.id === assetId ? { ...a, isTrending: !a.isTrending } : a
+          )
+        );
+      } catch (error) {
+        setError(`Failed to update asset: ${error.message}`);
+      }
+    }
+  };
+
+  const handleDeleteAsset = async (assetId) => {
+    if (window.confirm("Are you sure you want to delete this asset?")) {
+      try {
+        await deleteDoc(doc(db, "Assets", assetId));
+        setAssets(assets.filter((asset) => asset.id !== assetId));
+        setShowAssetDialog(false);
+      } catch (error) {
+        setError(`Failed to delete asset: ${error.message}`);
+      }
+    }
+  };
+
+  // Filter assets
+  const filteredAssets = assets.filter((asset) => {
+    const matchesText =
+      (asset.name || asset.title || "")
+        .toLowerCase()
+        .includes(assetSearchTerm.toLowerCase()) ||
+      (asset.description || "")
+        .toLowerCase()
+        .includes(assetSearchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || !selectedCategory
+        ? true
+        : (asset.category || asset.type || "").toLowerCase() ===
+          selectedCategory.toLowerCase();
+
+    return matchesText && matchesCategory;
   });
 
+  // Statistics
   const stats = {
     total: assets.length,
-    published: assets.filter(a => a.status === "published").length,
-    draft: assets.filter(a => a.status === "draft").length,
-    featured: assets.filter(a => a.featured).length,
-    totalDownloads: assets.reduce((sum, a) => sum + a.downloads, 0),
-    totalRevenue: assets.reduce((sum, a) => sum + (a.price * a.downloads), 0)
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "published":
-        return <span className="status-badge success">Published</span>;
-      case "draft":
-        return <span className="status-badge warning">Draft</span>;
-      case "archived":
-        return <span className="status-badge">Archived</span>;
-      default:
-        return <span className="status-badge">Unknown</span>;
-    }
-  };
-
-  const handleToggleFeatured = (assetId) => {
-    setAssets(assets.map(asset => 
-      asset.id === assetId ? { ...asset, featured: !asset.featured } : asset
-    ));
-  };
-
-  const handleToggleTrending = (assetId) => {
-    setAssets(assets.map(asset => 
-      asset.id === assetId ? { ...asset, trending: !asset.trending } : asset
-    ));
-  };
-
-  const handleStatusChange = (assetId, newStatus) => {
-    setAssets(assets.map(asset => 
-      asset.id === assetId ? { ...asset, status: newStatus } : asset
-    ));
-  };
-
-  const handleDeleteAsset = (assetId) => {
-    if (window.confirm("Are you sure you want to delete this asset?")) {
-      setAssets(assets.filter(asset => asset.id !== assetId));
-    }
+    featured: assets.filter((a) => a.isFeatured).length,
+    trending: assets.filter((a) => a.isTrending).length,
+    totalDownloads: assets.reduce((sum, a) => sum + (a.downloads || 0), 0),
+    totalRevenue: assets.reduce(
+      (sum, a) => sum + (a.price || 0) * (a.downloads || 0),
+      0
+    ),
   };
 
   return (
-    <div className="asset-management-dashboard">
+    <div className="asset-management-enhanced">
       {/* Header */}
-      <div className="dashboard-header">
+      <div className="asset-header">
         <div className="header-content">
           <h2 className="header-title">
-            <FiBox className="header-icon" />
+            <FiBox className="header-icon asset-icon" />
             Asset Management
           </h2>
           <p className="header-subtitle">
@@ -146,12 +204,27 @@ const AssetManagement = () => {
           </p>
         </div>
         <div className="header-actions">
-          <button className="action-button">
+          <span className="asset-badge-count">
+            {filteredAssets.length} assets
+          </span>
+          <button
+            className="action-button upload-button"
+            onClick={() => setShowCreateAssetDialog(true)}
+          >
             <FiPlus className="button-icon" />
-            Add Asset
+            Upload Asset
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="error-alert">
+          {error}
+          <button onClick={() => setError(null)} className="close-error">
+            <FiX />
+          </button>
+        </div>
+      )}
 
       {/* Statistics Cards */}
       <div className="stats-grid">
@@ -162,10 +235,6 @@ const AssetManagement = () => {
           <div className="stat-content">
             <div className="stat-value">{stats.total}</div>
             <div className="stat-label">Total Assets</div>
-            <div className="stat-trend positive">
-              <FiTrendingUp />
-              +8.3%
-            </div>
           </div>
         </div>
 
@@ -176,10 +245,6 @@ const AssetManagement = () => {
           <div className="stat-content">
             <div className="stat-value">{stats.totalDownloads}</div>
             <div className="stat-label">Total Downloads</div>
-            <div className="stat-trend positive">
-              <FiTrendingUp />
-              +15.7%
-            </div>
           </div>
         </div>
 
@@ -190,10 +255,6 @@ const AssetManagement = () => {
           <div className="stat-content">
             <div className="stat-value">{formatCurrency(stats.totalRevenue)}</div>
             <div className="stat-label">Total Revenue</div>
-            <div className="stat-trend positive">
-              <FiTrendingUp />
-              +22.1%
-            </div>
           </div>
         </div>
 
@@ -204,10 +265,6 @@ const AssetManagement = () => {
           <div className="stat-content">
             <div className="stat-value">{stats.featured}</div>
             <div className="stat-label">Featured Assets</div>
-            <div className="stat-trend positive">
-              <FiTrendingUp />
-              +5.2%
-            </div>
           </div>
         </div>
       </div>
@@ -215,41 +272,29 @@ const AssetManagement = () => {
       {/* Filters */}
       <div className="content-card filters-card">
         <div className="card-body">
-          <div className="filters-grid">
+          <div className="asset-filters-grid">
             <div className="search-input-wrapper">
               <FiSearch className="search-icon" />
               <input
                 type="text"
                 placeholder="Search assets..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={assetSearchTerm}
+                onChange={(e) => setAssetSearchTerm(e.target.value)}
                 className="search-input"
               />
             </div>
-
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Status</option>
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-              <option value="archived">Archived</option>
-            </select>
-
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               className="filter-select"
             >
               <option value="all">All Categories</option>
-              <option value="Vehicles">Vehicles</option>
-              <option value="Business">Business</option>
-              <option value="UI/UX">UI/UX</option>
-              <option value="Environments">Environments</option>
+              {ASSET_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
             </select>
-
             <div className="filter-result">
               <FiFilter className="filter-icon" />
               <span className="filter-text">
@@ -261,105 +306,144 @@ const AssetManagement = () => {
       </div>
 
       {/* Assets Grid */}
-      <div className="assets-grid">
-        {filteredAssets.map((asset) => (
-          <div key={asset.id} className="asset-card">
-            <div className="asset-header">
-              <div className="asset-image">
-                <div className="image-placeholder">
-                  {asset.type.charAt(0)}
-                </div>
-                <div className="asset-badges">
-                  {asset.featured && <span className="badge featured">Featured</span>}
-                  {asset.trending && <span className="badge trending">Trending</span>}
-                  {getStatusBadge(asset.status)}
-                </div>
-              </div>
-            </div>
-
-            <div className="asset-body">
-              <h3 className="asset-name">{asset.name}</h3>
-              <div className="asset-meta">
-                <span className="asset-type">{asset.type}</span>
-                <span className="asset-category">{asset.category}</span>
-              </div>
-              
-              <div className="asset-stats">
-                <div className="stat">
-                  <FiDownload className="stat-icon" />
-                  <span>{asset.downloads} downloads</span>
-                </div>
-                <div className="stat">
-                  <span className="rating">⭐ {asset.rating}</span>
-                </div>
-              </div>
-
-              <div className="asset-seller">
-                <span>By {asset.seller}</span>
-              </div>
-
-              <div className="asset-price">
-                {formatCurrency(asset.price)}
-              </div>
-            </div>
-
-            <div className="asset-actions">
-              <button
-                className="action-button secondary small"
-                onClick={() => {
-                  setSelectedAsset(asset);
-                  setShowDetailsModal(true);
-                }}
-              >
-                <FiEye />
-                View
-              </button>
-              <button
-                className="action-button secondary small"
-                onClick={() => handleToggleFeatured(asset.id)}
-              >
-                {asset.featured ? 'Unfeature' : 'Feature'}
-              </button>
-              <button
-                className="action-button danger small"
-                onClick={() => handleDeleteAsset(asset.id)}
-              >
-                <FiTrash2 />
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredAssets.length === 0 && (
+      {filteredAssets.length === 0 ? (
         <div className="content-card">
           <div className="card-body empty-state">
             <FiBox className="empty-icon" />
             <h3 className="empty-title">No assets found</h3>
             <p className="empty-text">
-              {searchTerm 
-                ? "No assets match your search criteria." 
+              {assetSearchTerm
+                ? "No assets match your search criteria."
                 : "No assets are currently available."}
             </p>
-            <button className="action-button">
-              <FiPlus className="button-icon" />
-              Add First Asset
+            <button
+              className="action-button upload-button"
+              onClick={() => setShowCreateAssetDialog(true)}
+            >
+              <FiUpload className="button-icon" />
+              Upload First Asset
             </button>
           </div>
         </div>
+      ) : (
+        <div className="assets-grid">
+          {filteredAssets.map((asset) => (
+            <div key={asset.id} className="asset-card">
+              <div className="asset-image-wrapper">
+                {asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
+                  <img
+                    src={
+                      asset.thumbnail ||
+                      (Array.isArray(asset.images) && asset.images[0]) ||
+                      (Array.isArray(asset.icons) && asset.icons[0]) ||
+                      ""
+                    }
+                    alt={asset.title || asset.name || "Asset"}
+                    className="asset-image"
+                  />
+                ) : (
+                  <div className="asset-placeholder">
+                    <FiImage className="placeholder-icon" />
+                  </div>
+                )}
+
+                {/* Asset badges */}
+                <div className="asset-badges">
+                  {asset.isFeatured && (
+                    <span className="asset-badge featured">
+                      <FiStar className="badge-icon" />
+                      Featured
+                    </span>
+                  )}
+                  {asset.isTrending && (
+                    <span className="asset-badge trending">
+                      <FiTrendingUp className="badge-icon" />
+                      Trending
+                    </span>
+                  )}
+                </div>
+
+                {/* Price badge */}
+                <div className="asset-price-badge">
+                  <span
+                    className={`price-badge ${
+                      asset.price > 0 ? "premium" : "free"
+                    }`}
+                  >
+                    {asset.price > 0 ? formatCurrency(asset.price) : "Free"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="asset-content">
+                <div className="asset-header-row">
+                  <h3 className="asset-title">
+                    {asset.title || asset.name || "Untitled"}
+                  </h3>
+                  <div className="asset-menu">
+                    <button
+                      className="menu-trigger"
+                      onClick={() => {
+                        setSelectedAsset(asset);
+                        setShowAssetDialog(true);
+                      }}
+                    >
+                      <FiMoreHorizontal />
+                    </button>
+                  </div>
+                </div>
+
+                <p className="asset-description">
+                  {asset.description || "No description available"}
+                </p>
+
+                <div className="asset-meta">
+                  <span className="meta-item">
+                    <FiTag className="meta-icon" />
+                    {asset.category || asset.type || "Uncategorized"}
+                  </span>
+                  <span className="meta-item">
+                    <FiDownload className="meta-icon" />
+                    {asset.downloads || 0} downloads
+                  </span>
+                </div>
+
+                <div className="asset-footer">
+                  <span className="asset-author">
+                    <FiUser className="author-icon" />
+                    by {asset.authorName || asset.userId || "Unknown"}
+                  </span>
+                  <span className="asset-date">
+                    {formatDate(asset.createdAt)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
+      {loading && <div className="loading-overlay">Loading...</div>}
+
       {/* Asset Details Modal */}
-      {showDetailsModal && selectedAsset && (
+      {showAssetDialog && selectedAsset && (
         <AssetDetailsModal
           asset={selectedAsset}
-          onClose={() => setShowDetailsModal(false)}
-          onToggleFeatured={handleToggleFeatured}
-          onToggleTrending={handleToggleTrending}
-          onStatusChange={handleStatusChange}
+          onClose={() => setShowAssetDialog(false)}
           onDelete={handleDeleteAsset}
+          onToggleFeatured={handleToggleAssetFeatured}
+          onToggleTrending={handleToggleAssetTrending}
           formatCurrency={formatCurrency}
+          formatDate={formatDate}
+        />
+      )}
+
+      {/* Create Asset Modal */}
+      {showCreateAssetDialog && (
+        <CreateAssetModal
+          isOpen={showCreateAssetDialog}
+          onClose={() => setShowCreateAssetDialog(false)}
+          onAssetCreated={fetchAssets}
         />
       )}
     </div>
@@ -367,119 +451,185 @@ const AssetManagement = () => {
 };
 
 // Asset Details Modal Component
-const AssetDetailsModal = ({ 
-  asset, 
-  onClose, 
-  onToggleFeatured, 
-  onToggleTrending, 
-  onStatusChange, 
+const AssetDetailsModal = ({
+  asset,
+  onClose,
   onDelete,
-  formatCurrency 
+  onToggleFeatured,
+  onToggleTrending,
+  formatCurrency,
+  formatDate,
 }) => {
   return (
     <div className="modal-overlay">
-      <div className="modal large-modal">
+      <div className="modal enhanced-modal">
         <div className="modal-header">
           <h3 className="modal-title">
             <FiBox className="modal-icon" />
             Asset Details
           </h3>
           <button onClick={onClose} className="close-button">
-            ×
+            <FiX />
           </button>
         </div>
-
-        <div className="modal-body">
-          <div className="asset-details">
-            <div className="details-grid">
-              <div className="detail-section">
-                <h4>Basic Information</h4>
-                <div className="detail-item">
-                  <strong>Name:</strong> {asset.name}
-                </div>
-                <div className="detail-item">
-                  <strong>Type:</strong> {asset.type}
-                </div>
-                <div className="detail-item">
-                  <strong>Category:</strong> {asset.category}
-                </div>
-                <div className="detail-item">
-                  <strong>Seller:</strong> {asset.seller}
-                </div>
-                <div className="detail-item">
-                  <strong>Created:</strong> {asset.createdAt}
-                </div>
+        <div className="modal-body enhanced-modal-body">
+          {/* Asset Preview */}
+          <div className="asset-preview">
+            {asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
+              <img
+                src={
+                  asset.thumbnail ||
+                  (Array.isArray(asset.images) && asset.images[0]) ||
+                  (Array.isArray(asset.icons) && asset.icons[0]) ||
+                  ""
+                }
+                alt={asset.title || asset.name || "Asset"}
+                className="preview-image"
+              />
+            ) : (
+              <div className="preview-placeholder">
+                <FiImage className="placeholder-icon large" />
               </div>
+            )}
+          </div>
 
-              <div className="detail-section">
-                <h4>Pricing & Stats</h4>
-                <div className="detail-item">
-                  <strong>Price:</strong> {formatCurrency(asset.price)}
-                </div>
-                <div className="detail-item">
-                  <strong>Downloads:</strong> {asset.downloads}
-                </div>
-                <div className="detail-item">
-                  <strong>Rating:</strong> ⭐ {asset.rating}/5
-                </div>
-                <div className="detail-item">
-                  <strong>Revenue:</strong> {formatCurrency(asset.price * asset.downloads)}
-                </div>
+          {/* Asset Info */}
+          <div className="asset-info-section">
+            <h3 className="asset-info-title">
+              {asset.title || asset.name || "Untitled"}
+            </h3>
+            <p className="asset-info-description">
+              {asset.description || "No description available"}
+            </p>
+
+            <div className="asset-info-grid">
+              <div className="info-item">
+                <span className="info-label">Category</span>
+                <span className="info-value">
+                  {asset.category || asset.type || "Uncategorized"}
+                </span>
               </div>
-
-              <div className="detail-section">
-                <h4>Status & Features</h4>
-                <div className="detail-item">
-                  <strong>Status:</strong> 
-                  <select
-                    value={asset.status}
-                    onChange={(e) => onStatusChange(asset.id, e.target.value)}
-                    className="status-select"
-                  >
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
-                    <option value="archived">Archived</option>
-                  </select>
-                </div>
-                <div className="detail-item">
-                  <strong>Featured:</strong> 
-                  <button
-                    className={`toggle-button ${asset.featured ? 'active' : ''}`}
-                    onClick={() => onToggleFeatured(asset.id)}
-                  >
-                    {asset.featured ? 'Yes' : 'No'}
-                  </button>
-                </div>
-                <div className="detail-item">
-                  <strong>Trending:</strong> 
-                  <button
-                    className={`toggle-button ${asset.trending ? 'active' : ''}`}
-                    onClick={() => onToggleTrending(asset.id)}
-                  >
-                    {asset.trending ? 'Yes' : 'No'}
-                  </button>
+              <div className="info-item">
+                <span className="info-label">Price</span>
+                <span className="info-value">
+                  {asset.price > 0 ? formatCurrency(asset.price) : "Free"}
+                </span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Downloads</span>
+                <span className="info-value">{asset.downloads || 0}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Created</span>
+                <span className="info-value">
+                  {formatDate(asset.createdAt)}
+                </span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Author</span>
+                <span className="info-value">
+                  {asset.authorName || asset.userId || "Unknown"}
+                </span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Status</span>
+                <div className="status-badges">
+                  {asset.isFeatured && (
+                    <span className="status-badge featured">Featured</span>
+                  )}
+                  {asset.isTrending && (
+                    <span className="status-badge trending">Trending</span>
+                  )}
+                  {!asset.isFeatured && !asset.isTrending && (
+                    <span className="status-badge normal">Normal</span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="modal-footer">
-          <button
-            className="action-button danger"
-            onClick={() => {
-              if (window.confirm("Are you sure you want to delete this asset?")) {
-                onDelete(asset.id);
-                onClose();
-              }
-            }}
-          >
-            <FiTrash2 className="button-icon" />
-            Delete Asset
+          {/* Action Buttons */}
+          <div className="modal-actions">
+            <button
+              className="action-button secondary"
+              onClick={() => onToggleFeatured(asset.id)}
+            >
+              <FiStar className="button-icon" />
+              {asset.isFeatured ? "Remove Featured" : "Mark Featured"}
+            </button>
+
+            <button
+              className="action-button secondary"
+              onClick={() => onToggleTrending(asset.id)}
+            >
+              <FiTrendingUp className="button-icon" />
+              {asset.isTrending ? "Remove Trending" : "Mark Trending"}
+            </button>
+
+            <button
+              className="action-button danger"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Delete asset "${
+                      asset.title || asset.name
+                    }"? This action cannot be undone.`
+                  )
+                ) {
+                  onDelete(asset.id);
+                  onClose();
+                }
+              }}
+            >
+              <FiTrash2 className="button-icon" />
+              Delete Asset
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Create Asset Modal Component
+const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
+  const [uploading, setUploading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleUpload = async () => {
+    setUploading(true);
+    // Upload logic here
+    setTimeout(() => {
+      setUploading(false);
+      onAssetCreated();
+      onClose();
+    }, 2000);
+  };
+
+  return (
+    <div className="blog-modal-overlay">
+      <div className="blog-modal-container">
+        <div className="modal-header">
+          <h3 className="modal-title">
+            <FiPlus className="modal-icon" />
+            Upload New Asset
+          </h3>
+          <button onClick={onClose} className="close-button">
+            <FiX />
           </button>
-          <button className="action-button secondary" onClick={onClose}>
-            Close
-          </button>
+        </div>
+        <div className="modal-body">
+          <div className="upload-wrapper">
+            {/* Yahan Upload component ko directly use karo */}
+            <Upload 
+              onUploadSuccess={() => {
+                onAssetCreated(); // Assets list refresh karo
+                onClose(); // Modal band karo
+              }}
+              onUploadClose={onClose} // Direct close option
+            />
+          </div>
         </div>
       </div>
     </div>
