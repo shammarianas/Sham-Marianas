@@ -41,6 +41,8 @@ const AssetManagement = () => {
   const [showAssetDialog, setShowAssetDialog] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [showCreateAssetDialog, setShowCreateAssetDialog] = useState(false);
+  const [showEditAssetDialog, setShowEditAssetDialog] = useState(false);
+  const [assetToEdit, setAssetToEdit] = useState(null);
 
   // Asset categories
   const ASSET_CATEGORIES = [
@@ -160,6 +162,11 @@ const AssetManagement = () => {
     }
   };
 
+  const handleEditAsset = (asset) => {
+    setAssetToEdit(asset);
+    setShowEditAssetDialog(true);
+  };
+
   // Filter assets
   const filteredAssets = assets.filter((asset) => {
     const matchesText =
@@ -190,6 +197,7 @@ const AssetManagement = () => {
     ),
   };
 
+  
   return (
     <div className="asset-management-enhanced">
       {/* Header */}
@@ -382,20 +390,13 @@ const AssetManagement = () => {
                   </h3>
                   <div className="asset-menu">
                     <button
-                      className="menu-trigger"
-                      onClick={() => {
-                        setSelectedAsset(asset);
-                        setShowAssetDialog(true);
-                      }}
+                      className="action-button secondary"
+                      onClick={() => handleToggleAssetFeatured(asset.id)}
                     >
-                      <FiMoreHorizontal />
+                      {asset.isFeatured ? "UnFeatured" : "Featured"}
                     </button>
                   </div>
                 </div>
-
-                <p className="asset-description">
-                  {asset.description || "No description available"}
-                </p>
 
                 <div className="asset-meta">
                   <span className="meta-item">
@@ -416,6 +417,43 @@ const AssetManagement = () => {
                   <span className="asset-date">
                     {formatDate(asset.createdAt)}
                   </span>
+                </div>
+
+                {/* Actions - Exactly like BlogSection */}
+                <div className="table-actions">
+                  <div>
+                   <button
+                      className="action-button secondary"
+                      onClick={() => handleToggleAssetTrending(asset.id)}
+                    >
+                      {asset.isTrending ? "Remove Trending" : "Mark Trending"}
+                    </button>
+                   
+                  </div>
+                  <div className="d-flex gap-2">
+                     
+                    <button
+                      className="action-button secondary"
+                      onClick={() => {
+                        setSelectedAsset(asset);
+                        setShowAssetDialog(true);
+                      }}
+                    >
+                      <FiEye className="button-icon" />
+                    </button>
+                    <button
+                      className="action-button secondary"
+                      onClick={() => handleEditAsset(asset)}
+                    >
+                      <FiEdit className="button-icon" />
+                    </button>
+                    <button
+                      className="action-button danger"
+                      onClick={() => handleDeleteAsset(asset.id)}
+                    >
+                      <FiTrash2 className="button-icon" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -446,6 +484,23 @@ const AssetManagement = () => {
           onAssetCreated={fetchAssets}
         />
       )}
+
+      {/* Edit Asset Modal - Fixed Version */}
+      {showEditAssetDialog && assetToEdit && (
+  <EditAssetModal
+    asset={assetToEdit}
+    isOpen={showEditAssetDialog}
+    onClose={() => {
+      setShowEditAssetDialog(false);
+      setAssetToEdit(null);
+    }}
+    onAssetUpdated={() => {
+      fetchAssets(); // ← YEH LINE IMPORTANT HAI
+      setShowEditAssetDialog(false);
+      setAssetToEdit(null);
+    }}
+  />
+)}
     </div>
   );
 };
@@ -621,13 +676,60 @@ const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
         </div>
         <div className="modal-body">
           <div className="upload-wrapper">
-            {/* Yahan Upload component ko directly use karo */}
             <Upload 
               onUploadSuccess={() => {
-                onAssetCreated(); // Assets list refresh karo
-                onClose(); // Modal band karo
+                onAssetCreated();
+                onClose();
               }}
-              onUploadClose={onClose} // Direct close option
+              onUploadClose={onClose}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Edit Asset Modal Component - Fixed Version
+const EditAssetModal = ({ asset, isOpen, onClose, onAssetUpdated }) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleUpdateSuccess = () => {
+    setIsUpdating(false);
+    if (onAssetUpdated) {
+      onAssetUpdated();
+    }
+    onClose();
+  };
+
+  const handleUpdateClose = () => {
+    setIsUpdating(false);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="blog-modal-overlay">
+      <div className="blog-modal-container">
+        <div className="modal-header">
+          <h3 className="modal-title">
+            <FiEdit className="modal-icon" />
+            Edit Asset
+          </h3>
+          <button onClick={handleUpdateClose} className="close-button">
+            <FiX />
+          </button>
+        </div>
+        <div className="modal-body">
+          <div className="upload-wrapper">
+            <Upload 
+              editMode={true}
+              assetToEdit={asset}
+              onUploadSuccess={handleUpdateSuccess}
+              onUploadClose={handleUpdateClose}
+              isUpdating={isUpdating}
+              setIsUpdating={setIsUpdating}
             />
           </div>
         </div>

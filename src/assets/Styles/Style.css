@@ -1264,7 +1264,6 @@ a {
   padding: 0.7rem 8rem;
   position: sticky;
   top: 4rem;
-  margin: 2rem 0;
   z-index: 9;
   /* From https://css.glass */
   background: rgba(26, 26, 26, 0.52);
@@ -1278,6 +1277,8 @@ a {
   flex-direction: row;
   gap: 1rem;
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
 .bottom-bar .links ul li a {
   color: #f5f5f5;
@@ -1286,8 +1287,8 @@ a {
   text-decoration: none;
   opacity: 0.8;
   transition: all 0.3s ease;
-  background-color: #181818;
-  padding: 0.5rem 1rem;
+  /* background-color: #181818; */
+  padding: 0rem 1rem;
   border-radius: 0.5rem;
 }
 .bottom-bar .links ul li a:hover {
@@ -1327,7 +1328,7 @@ a {
 }
 @media screen and (max-width: 1500px) {
   .bottom-bar {
-    padding: 0.7rem 2rem;
+    padding: 0rem 8rem;
   }
   .bottom-bar .links ul {
     gap: 0.5rem;
@@ -1542,8 +1543,8 @@ a {
   text-decoration: none;
   opacity: 0.8;
   transition: all 0.3s ease;
-  background-color: #181818;
-  padding: 0.5rem 1rem;
+  /* background-color: #181818; */
+  padding: 0rem 1rem;
   border-radius: 0.5rem;
   display: inline-block;
 }
