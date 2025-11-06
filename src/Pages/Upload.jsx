@@ -257,7 +257,18 @@ const filterData = {
     },
     categories: {
       label: "Categories",
-      options: ["Static Icons", "Interface Icons", "Animated Icons", "Stickers"],
+      options: ["Frontend Scripts",
+"Backend Scripts",
+"Automation Scripts",
+"API Integration Scripts",
+"Form Validation Scripts",
+"Animation Scripts",
+"Payment Gateway Scripts",
+"Email / Newsletter Scripts",
+"Database Scripts",
+"AI/ML Scripts",
+"Authentication Scripts",
+"Chatbot Scripts"],
     },
   },
 };
@@ -1224,21 +1235,7 @@ const Upload = ({
                     />
                   </div>
 
-                  <div className="blog-form-group">
-                    <div className="checkboxes" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-                      {["textures", "materials", "rigged", "animated", "uvMapping", "vrArLowPoly"].map((prop) => (
-                        <label key={prop} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <input 
-                            type="checkbox" 
-                            name={prop} 
-                            checked={formData[prop]} 
-                            onChange={handleChange} 
-                          />
-                          {prop.split(/(?=[A-Z])/).join(' ').replace(/\b\w/g, c => c.toUpperCase())}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+              
                 </>
               )}
 
