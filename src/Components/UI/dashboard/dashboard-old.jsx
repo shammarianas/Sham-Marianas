@@ -60,6 +60,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState(null);
   const [selectedDashboard, setSelectedDashboard] = useState("admin");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
@@ -85,7 +86,26 @@ const AdminDashboard = () => {
 
         if (await checkAdminStatus(email)) {
           setIsAdmin(true);
+
+          // Primary admin can seed additional authorized admins
+          const PRIMARY_ADMIN = "admin@shammarianas.com";
+          if (email === PRIMARY_ADMIN) {
+            try {
+              await Promise.all(
+                AUTHORIZED_ADMINS.filter((e) => e && e !== PRIMARY_ADMIN).map(
+                  (e) =>
+                    setDoc(
+                      doc(db, "adminUsers", e),
+                      { createdAt: serverTimestamp(), promotedBy: email },
+                      { merge: true }
+                    )
+                )
+              );
+            } catch {}
+          }
+
           await Promise.all([fetchUsers(), fetchSupportMessages(null)]);
+          setSelectedProfileId(currentUser.uid);
         } else {
           setError("You do not have admin privileges");
           navigate("/");
@@ -98,26 +118,35 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (email) => {
-    if (!email) return false;
-    const AUTHORIZED_ADMINS = [
-      "admin@shammarianas.com",
-      "adebayour66265@gmail.com",
-      "shammarianas@gmail.com",
-    ];
-
-    if (AUTHORIZED_ADMINS.includes(email)) {
-      return true;
-    }
-
-    try {
-      const adminDoc = await getDoc(doc(db, "adminUsers", email));
-      return adminDoc.exists();
-    } catch (error) {
-      setError(`Failed to check admin status: ${error.message}`);
-      return false;
-    }
-  };
+   const checkAdminStatus = async (email) => {
+     if (!email) return false;
+ 
+     // Primary admin (must match Firestore rules)
+     const PRIMARY_ADMIN = "admin@shammarianas.com";
+     const ALSO_AUTHORIZED = ["shammarianas@gmail.com"];
+     if (email === PRIMARY_ADMIN) {
+       try {
+         await setDoc(
+           doc(db, "adminUsers", email),
+           { createdAt: serverTimestamp(), promotedBy: "system" },
+           { merge: true }
+         );
+       } catch {}
+       return true;
+     }
+ 
+     try {
+       if (!db) return false;
+       // Allow UI access for pre-authorized emails once seeded
+       const adminDoc = await getDoc(doc(db, "adminUsers", email));
+       if (adminDoc.exists()) return true;
+       if (ALSO_AUTHORIZED.includes(email)) return false; // needs seeding by primary admin
+       return false;
+     } catch (error) {
+       setError(`Failed to check admin status: ${error.message}`);
+       return false;
+     }
+   };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -136,24 +165,47 @@ const AdminDashboard = () => {
   };
 
   const fetchSupportMessages = async (profileId) => {
-    setLoading(true);
-    try {
-      if (isAdmin && !profileId) {
-        const q = query(collectionGroup(db, "Support"), orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
-        const messages = snap.docs.map((d) => ({
-          id: d.id,
-          profileId: d.ref.parent.parent?.id || "",
-          ...d.data(),
-        }));
-        setSupportMessages(messages);
-      }
-    } catch (error) {
-      setError(`Failed to load support messages: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+     setLoading(true);
+     try {
+       if (!db) throw new Error("Firebase not initialized");
+ 
+       if (isAdmin && !profileId) {
+         const q = query(
+           collectionGroup(db, "Support"),
+           orderBy("createdAt", "desc")
+         );
+         const snap = await getDocs(q);
+         const messages = snap.docs.map((d) => ({
+           id: d.id,
+           profileId: d.ref.parent.parent?.id || "",
+           ...d.data(),
+         }));
+         setSupportMessages(messages);
+       } else {
+         const uid = profileId || auth.currentUser?.uid;
+         if (!uid) {
+           setSupportMessages([]);
+           return;
+         }
+         const q = query(
+           collection(db, `Profiles/${uid}/Support`),
+           orderBy("createdAt", "desc")
+         );
+         const snap = await getDocs(q);
+         const messages = snap.docs.map((d) => ({
+           id: d.id,
+           profileId: uid,
+           ...d.data(),
+         }));
+         setSupportMessages(messages);
+       }
+     } catch (error) {
+       setError(`Failed to load support messages: ${error.message}`);
+     } finally {
+       setLoading(false);
+     }
+   };
+ 
 
   const loadBlogs = () => {
     setLoading(true);

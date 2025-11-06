@@ -3099,7 +3099,7 @@ ul {
   color: white;
 }
 
-.stat-card.primary .stat-icon   { background: #667eea; }
+.stat-card.primary .stat-icon   { background: #52b0b4; }
 .stat-card.success .stat-icon   { background: #48bb78; }
 .stat-card.warning .stat-icon   { background: #998127; }
 .stat-card.info .stat-icon      { background: #b34a32; }
@@ -3187,7 +3187,7 @@ ul {
 
 .progress-bar {
   height: 100%;
-  background: #667eea;
+  background: #52b0b4;
   border-radius: 3px;
   transition: width 0.3s ease;
 }
@@ -3260,14 +3260,16 @@ ul {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.75rem;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 0px;
+  border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
   font-size: 0.95rem;
   transition: border 0.2s ease;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #52b0b4;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -3282,7 +3284,7 @@ ul {
 
 .filter-select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #52b0b4;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -3440,7 +3442,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #667eea;
+  background: #52b0b4;
   color: white;
   font-size: 24px;
   font-weight: bold;
@@ -3480,7 +3482,7 @@ ul {
 }
 
 .section-icon {
-  color: #667eea;
+  color: #52b0b4;
 }
 
 .detail-items {
@@ -4349,3 +4351,7 @@ ul {
     overflow-x: auto;
   }
 }
+
+
+
+/* Asset Mahangement Dashboard Styles  */
