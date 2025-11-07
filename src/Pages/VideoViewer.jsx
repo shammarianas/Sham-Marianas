@@ -67,9 +67,9 @@ const VideoViewer = ({ videoUrl, videoName, previewUrl }) => {
   return (
     <div className={`video_viewer_main ${isFullscreen ? "fullscreen" : ""}`}>
       <div className="container">
-        <div className="header">
+        {/* <div className="header">
           <h2>{videoName}</h2>
-        </div>
+        </div> */}
 
         <div className="video_wrapper">
           {showPreview && previewUrl ? (

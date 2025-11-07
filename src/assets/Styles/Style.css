@@ -1544,7 +1544,7 @@ a {
   opacity: 0.8;
   transition: all 0.3s ease;
   /* background-color: #181818; */
-  padding: 0rem 1rem;
+  /* padding: 0rem 1rem; */
   border-radius: 0.5rem;
   display: inline-block;
 }
