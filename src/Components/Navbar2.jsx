@@ -208,7 +208,7 @@ const showTemplateButton = [
             <div className="links">
               <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
                 {[
-                  { path: "/hot", label: "Hot" },
+                  // { path: "/hot", label: "Hot" },
                   { path: "/Videos", label: "Videos" },
                   { path: "/Models", label: "3D Models" },
                   { path: "/templates", label: "Video Template" },
@@ -390,7 +390,6 @@ const showTemplateButton = [
           <div className="links">
             <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
               {[
-                { path: "/hot", label: "Hot" },
                 { path: "/Videos", label: "Videos" },
                 { path: "/Models", label: "3D Models" },
                 { path: "/templates", label: "Video Template" },

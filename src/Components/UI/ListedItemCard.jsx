@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import AddToBookmark from "./AddToBookmark";
+import { useUser } from "../../Context/UserProvider";
+
 
 const ListedItemCard = ({ id, data, rating }) => {
+  const { currentUser } = useUser();
   return (
     <div className="">
       <div className="item_card" key={id}>
@@ -19,13 +22,49 @@ const ListedItemCard = ({ id, data, rating }) => {
               </span>
             </div>
           ) : null}
-          <Link className="card_image" to={`/View/${id}`}>
-            <img src={data.thumbnail} alt="placeholder" />
-          </Link>
+         <Link className="card_image" to={`/View/${id}`}>
+  {(() => {
+    const src = data.thumbnail;
+
+    // Detect video
+    const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
+
+    if (isVideo) {
+      return (
+        <div
+          style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden" }}
+          onMouseEnter={(e) => {
+            const video = e.currentTarget.querySelector("video");
+            if (video) video.play();
+          }}
+          onMouseLeave={(e) => {
+            const video = e.currentTarget.querySelector("video");
+            if (video) {
+              video.pause();
+              video.currentTime = 0;
+            }
+          }}
+        >
+          <video
+            src={src}
+            muted
+            loop
+            playsInline
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+      );
+    }
+
+    // ✅ Image fallback (normal case)
+    return <img src={src} alt="placeholder" />;
+  })()}
+</Link>
+
         </div>
 
         <div className="card_content">
-          <span className="title">
+          <div className="title">
             {data.title} <br />
             <div
               style={{
@@ -34,7 +73,7 @@ const ListedItemCard = ({ id, data, rating }) => {
                 justifyContent: "space-between",
               }}
             >
-              <span className="publisher">by Servant {data.publisher}</span>
+              <span className="publisher">by {currentUser?.displayName || "User"}</span>
               <span
                 style={{
                   display: "flex",
@@ -50,7 +89,7 @@ const ListedItemCard = ({ id, data, rating }) => {
                 <AddToBookmark assetId={id} />
               </span>
             </div>
-          </span>
+          </div>
 
           <div className="details">
             <span className="price">

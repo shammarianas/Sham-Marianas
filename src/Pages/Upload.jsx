@@ -4,7 +4,7 @@ import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/fi
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUser } from "../Context/UserProvider";
 import { Helmet } from "react-helmet-async";
-import { FiUpload, FiX, FiPlus, FiImage, FiVideo, FiFile, FiCode, FiMusic, FiBox, FiChevronDown } from "react-icons/fi";
+import { FiUpload, FiX, FiPlus, FiImage, FiVideo, FiFile, FiCode, FiMusic, FiBox, FiChevronDown, FiPlay, FiPause } from "react-icons/fi";
 
 const filterData = {
   Videos: {
@@ -285,7 +285,7 @@ const assetTypeToFilterData = {
   textures: "Textures",
   hdris: "HDRIs",
   scripts: "Scripts",
-  sounds: null,
+  // sounds: null,
   other: null,
 };
 
@@ -332,8 +332,8 @@ const Upload = ({
     fontFileSize: "",
     videoTemplateFile: "",
     videoTemplateFileSize: "",
-    sound: "",
-    soundSize: "",
+    // sound: "",
+    // soundSize: "",
     other: "",
     otherSize: "",
     ambientOcclusion: "",
@@ -377,12 +377,14 @@ const Upload = ({
   const [loadingState, setLoadingState] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [thumbnailType, setThumbnailType] = useState(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const tagInputRef = useRef(null);
+  const videoRef = useRef(null);
 
   // Initialize form data with existing asset data when in edit mode
   useEffect(() => {
     if (editMode && assetToEdit) {
-      // Pre-populate form with existing asset data
       setFormData(prev => ({
         ...prev,
         title: assetToEdit.title || "",
@@ -410,24 +412,123 @@ const Upload = ({
         colorSpace: assetToEdit.colorSpace || "",
         objectType: assetToEdit.objectType || "",
         fileFormat: assetToEdit.fileFormat || "",
-        // Add other fields as needed
       }));
       
-      // Set existing tags
       if (assetToEdit.tags && Array.isArray(assetToEdit.tags)) {
         setTags(assetToEdit.tags);
       }
       
-      // Set thumbnail preview if exists
       if (assetToEdit.thumbnail) {
         setThumbnailPreview(assetToEdit.thumbnail);
+        if (assetToEdit.thumbnail.includes('.mp4') || assetToEdit.thumbnail.includes('.mov') || assetToEdit.thumbnail.includes('.webm')) {
+          setThumbnailType('video');
+        } else {
+          setThumbnailType('image');
+        }
       }
     }
   }, [editMode, assetToEdit]);
 
+  // Video playback functions
+  const handleVideoPlay = async () => {
+    if (videoRef.current) {
+      try {
+        if (isVideoPlaying) {
+          videoRef.current.pause();
+          setIsVideoPlaying(false);
+        } else {
+          if (videoRef.current.readyState < 3) {
+            videoRef.current.load();
+          }
+          
+          const playPromise = videoRef.current.play();
+          
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log("Video playing successfully");
+                setIsVideoPlaying(true);
+              })
+              .catch(error => {
+                console.error("Error playing video:", error);
+                videoRef.current.controls = true;
+              });
+          }
+        }
+      } catch (error) {
+        console.error("Video play error:", error);
+        videoRef.current.controls = true;
+      }
+    }
+  };
+
+  const handleVideoPause = () => {
+    setIsVideoPlaying(false);
+  };
+
+  const handleVideoEnded = () => {
+    setIsVideoPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
+  };
+
+  const handleVideoLoaded = () => {
+    console.log("Video loaded successfully");
+    if (videoRef.current) {
+      videoRef.current.controls = false;
+    }
+  };
+
+  const handleVideoError = (e) => {
+    console.error("Video error:", e);
+    if (videoRef.current) {
+      videoRef.current.controls = true;
+    }
+  };
+
+  // Thumbnail file handling
+  const handleThumbnailChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        thumbnail: file
+      }));
+
+      if (file.type.startsWith('video/')) {
+        setThumbnailType('video');
+        const videoURL = URL.createObjectURL(file);
+        setThumbnailPreview(videoURL);
+        setIsVideoPlaying(false);
+        
+        if (thumbnailPreview && thumbnailType === 'video') {
+          URL.revokeObjectURL(thumbnailPreview);
+        }
+      } else if (file.type.startsWith('image/')) {
+        setThumbnailType('image');
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setThumbnailPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  // Clean up URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (thumbnailPreview && thumbnailType === 'video') {
+        URL.revokeObjectURL(thumbnailPreview);
+      }
+    };
+  }, [thumbnailPreview, thumbnailType]);
+
+  // Tag handling functions
   const handleTagInputChange = (e) => {
     const value = e.target.value;
-    setFormData({ ...formData, tags: value });
+    setFormData(prev => ({ ...prev, tags: value }));
   };
 
   const handleTagKeyDown = (e) => {
@@ -436,10 +537,9 @@ const Upload = ({
       const value = e.target.value.trim();
       if (value && !tags.includes(value) && tags.length < 10) {
         setTags([...tags, value]);
-        setFormData({ ...formData, tags: "" });
+        setFormData(prev => ({ ...prev, tags: "" }));
       }
     } else if (e.key === 'Backspace' && formData.tags === '' && tags.length > 0) {
-      // Remove last tag when backspace is pressed and input is empty
       setTags(tags.slice(0, -1));
     }
   };
@@ -448,6 +548,7 @@ const Upload = ({
     setTags(tags.filter(t => t !== tag));
   };
 
+  // File upload functions
   const uploadFile = async (file, fileType) => {
     try {
       setLoadingState(`Uploading ${fileType} ${file.name}`);
@@ -486,6 +587,7 @@ const Upload = ({
     }
   };
 
+  // Main form change handler
   const handleChange = (event) => {
     const target = event.target;
     const name = target.name;
@@ -493,322 +595,127 @@ const Upload = ({
 
     if (target.type === "file") {
       if (name === "thumbnail") {
-        const file = target.files[0];
-        if (file) {
-          setFormData({
-            ...formData,
-            [name]: file,
-          });
-          const reader = new FileReader();
-          reader.onloadend = () => setThumbnailPreview(reader.result);
-          reader.readAsDataURL(file);
-        }
+        handleThumbnailChange(event);
       } else if (name === "images" || name === "icons") {
         const files = target.files;
-        setFormData({
-          ...formData,
+        setFormData(prev => ({
+          ...prev,
           [name]: files,
           [`${name}Size`]: Array.from(files).map((file) => file.size),
-        });
+        }));
       } else {
         const file = target.files[0];
         if (file) {
-          setFormData({
-            ...formData,
+          setFormData(prev => ({
+            ...prev,
             [name]: file,
             [`${name}Size`]: file.size,
-          });
+          }));
         } else {
-          setFormData({
-            ...formData,
+          setFormData(prev => ({
+            ...prev,
             [name]: "",
             [`${name}Size`]: "",
-          });
+          }));
         }
       }
     } else if (["properties", "applicationsSupported", "integrationReady"].includes(name)) {
       const options = Array.from(target.selectedOptions).map((option) => option.value);
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         [name]: options,
-      });
+      }));
     } else {
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         [name]: value,
-      });
+      }));
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (editMode) {
-      setIsUpdating(true);
-    } else {
-      setIsSubmitting(true);
-    }
-    
-    setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
+  // MAIN SUBMIT FUNCTION - THIS WAS MISSING
+ // ✅ ✅ MAIN SUBMIT FUNCTION — fixed
+const handleSubmit = async (e) => {
+e.preventDefault();
 
-    try {
-      let docData = {
-        title: formData.title,
-        description: formData.description,
-        is3d: formData.is3d,
-        price: formData.price,
-        discount: formData.discount,
-        category: formData.category,
-        type: formData.type,
-        tags: tags,
-        date: new Date(formData.date),
-        userId: currentUser?.uid ?? "anonymous",
-        aiGenerated: formData.aiGenerated,
-        resolution: formData.resolution,
-        frameRate: formData.frameRate,
-        properties: formData.properties,
-        applicationsSupported: formData.applicationsSupported,
-        orientation: formData.orientation,
-        licenseType: formData.licenseType,
-        surfaceMaterial: formData.surfaceMaterial,
-        style: formData.style,
-        environmentType: formData.environmentType,
-        lightingCondition: formData.lightingCondition,
-        scriptType: formData.scriptType,
-        programmingLanguage: formData.programmingLanguage,
-        framework: formData.framework,
-        integrationReady: formData.integrationReady,
-        colorSpace: formData.colorSpace,
-        objectType: formData.objectType,
-        fileFormat: formData.fileFormat,
-        updatedAt: serverTimestamp(),
-      };
 
-      // Upload thumbnail if a new one is selected
-      if (formData.thumbnail && typeof formData.thumbnail !== 'string') {
-        docData.thumbnail = await uploadThumbnail(formData.thumbnail);
-      } else if (editMode && assetToEdit.thumbnail) {
-        // Keep existing thumbnail if no new one is uploaded
-        docData.thumbnail = assetToEdit.thumbnail;
-      }
+if (editMode) setIsUpdating(true);
+else setIsSubmitting(true);
 
-      // Handle different asset types
-      if (formData.type === "models") {
-        if (formData.model && typeof formData.model !== 'string') {
-          docData.model = await uploadFile(formData.model, "model");
-        } else if (editMode && assetToEdit.model) {
-          docData.model = assetToEdit.model;
-        }
-        docData = {
-          ...docData,
-          resolution: formData.resolution,
-          physicalSize: formData.physicalSize,
-          lods: formData.lods,
-          vertices: formData.vertices,
-          textures: formData.textures,
-          materials: formData.materials,
-          uvMapping: formData.uvMapping,
-          rigged: formData.rigged,
-          animated: formData.animated,
-          vrArLowPoly: formData.vrArLowPoly,
-        };
-      }
 
-      if (formData.type === "scripts") {
-        if (formData.script && typeof formData.script !== 'string') {
-          docData.script = await uploadFile(formData.script, "script");
-          docData.scriptName = formData.script?.name;
-          docData.scriptSize = formData.scriptSize;
-        } else if (editMode && assetToEdit.script) {
-          docData.script = assetToEdit.script;
-          docData.scriptName = assetToEdit.scriptName;
-          docData.scriptSize = assetToEdit.scriptSize;
-        }
-      }
+setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
 
-      // Add similar logic for other asset types...
-      if (formData.type === "videos") {
-        if (formData.video && typeof formData.video !== 'string') {
-          docData.video = await uploadFile(formData.video, "video");
-          docData.videoName = formData.video?.name;
-          docData.videoSize = formData.videoSize;
-        } else if (editMode && assetToEdit.video) {
-          docData.video = assetToEdit.video;
-          docData.videoName = assetToEdit.videoName;
-          docData.videoSize = assetToEdit.videoSize;
-        }
-      }
 
-      if (formData.type === "images") {
-        if (formData.images && typeof formData.images !== 'string') {
-          const imageUrls = await uploadImages(formData.images, "images");
-          docData.images = imageUrls;
-          docData.imagesCount = imageUrls.length;
-        } else if (editMode && assetToEdit.images) {
-          docData.images = assetToEdit.images;
-          docData.imagesCount = assetToEdit.imagesCount;
-        }
-      }
+try {
+let docData = {
+title: formData.title,
+description: formData.description,
+type: formData.type,
+tags,
+category: formData.category,
+properties: formData.properties,
+applicationsSupported: formData.applicationsSupported,
+orientation: formData.orientation,
+vertices: formData.vertices,
+licenseType: formData.licenseType,
+surfaceMaterial: formData.surfaceMaterial,
+userId: currentUser?.uid ?? "anonymous",
+updatedAt: serverTimestamp(),
+};
 
-      if (formData.type === "sounds") {
-        if (formData.sound && typeof formData.sound !== 'string') {
-          docData.sound = await uploadFile(formData.sound, "sound");
-          docData.soundName = formData.sound?.name;
-          docData.soundSize = formData.soundSize;
-        } else if (editMode && assetToEdit.sound) {
-          docData.sound = assetToEdit.sound;
-          docData.soundName = assetToEdit.soundName;
-          docData.soundSize = assetToEdit.soundSize;
-        }
-      }
 
-      if (formData.type === "textures") {
-        if (formData.textures && typeof formData.textures !== 'string') {
-          docData.textures = await uploadFile(formData.textures, "textures");
-          docData.texturesName = formData.textures?.name;
-          docData.texturesSize = formData.texturesSize;
-        } else if (editMode && assetToEdit.textures) {
-          docData.textures = assetToEdit.textures;
-          docData.texturesName = assetToEdit.texturesName;
-          docData.texturesSize = assetToEdit.texturesSize;
-        }
-      }
+// ✅ thumbnail upload
+if (formData.thumbnail && typeof formData.thumbnail !== "string") {
+docData.thumbnail = await uploadThumbnail(formData.thumbnail);
+} else if (editMode && assetToEdit.thumbnail) {
+docData.thumbnail = assetToEdit.thumbnail;
+}
 
-      if (formData.type === "hdris") {
-        if (formData.hdri && typeof formData.hdri !== 'string') {
-          docData.hdri = await uploadFile(formData.hdri, "hdri");
-          docData.hdriName = formData.hdri?.name;
-          docData.hdriSize = formData.hdriSize;
-        } else if (editMode && assetToEdit.hdri) {
-          docData.hdri = assetToEdit.hdri;
-          docData.hdriName = assetToEdit.hdriName;
-          docData.hdriSize = assetToEdit.hdriSize;
-        }
-      }
 
-      if (formData.type === "icons") {
-        if (formData.icons && typeof formData.icons !== 'string') {
-          const iconUrls = await uploadImages(formData.icons, "icons");
-          docData.icons = iconUrls;
-          docData.iconsCount = iconUrls.length;
-        } else if (editMode && assetToEdit.icons) {
-          docData.icons = assetToEdit.icons;
-          docData.iconsCount = assetToEdit.iconsCount;
-        }
-      }
+// ✅ handle assets by type
+if (formData.type === "images" && formData.images) {
+docData.images = await uploadImages(formData.images, "images");
+}
 
-      if (formData.type === "graphics") {
-        if (formData.graphicsTemplate && typeof formData.graphicsTemplate !== 'string') {
-          docData.graphicsTemplate = await uploadFile(formData.graphicsTemplate, "graphics");
-          docData.graphicsTemplateName = formData.graphicsTemplate?.name;
-          docData.graphicsTemplateSize = formData.graphicsTemplateSize;
-        } else if (editMode && assetToEdit.graphicsTemplate) {
-          docData.graphicsTemplate = assetToEdit.graphicsTemplate;
-          docData.graphicsTemplateName = assetToEdit.graphicsTemplateName;
-          docData.graphicsTemplateSize = assetToEdit.graphicsTemplateSize;
-        }
-      }
 
-      if (formData.type === "mockups") {
-        if (formData.mockupFile && typeof formData.mockupFile !== 'string') {
-          docData.mockupFile = await uploadFile(formData.mockupFile, "mockups");
-          docData.mockupFileName = formData.mockupFile?.name;
-          docData.mockupFileSize = formData.mockupFileSize;
-        } else if (editMode && assetToEdit.mockupFile) {
-          docData.mockupFile = assetToEdit.mockupFile;
-          docData.mockupFileName = assetToEdit.mockupFileName;
-          docData.mockupFileSize = assetToEdit.mockupFileSize;
-        }
-      }
+if (formData.type === "videos" && formData.video) {
+docData.video = await uploadFile(formData.video, "videos");
+}
 
-      if (formData.type === "fonts") {
-        if (formData.fontFile && typeof formData.fontFile !== 'string') {
-          docData.fontFile = await uploadFile(formData.fontFile, "fonts");
-          docData.fontFileName = formData.fontFile?.name;
-          docData.fontFileSize = formData.fontFileSize;
-        } else if (editMode && assetToEdit.fontFile) {
-          docData.fontFile = assetToEdit.fontFile;
-          docData.fontFileName = assetToEdit.fontFileName;
-          docData.fontFileSize = assetToEdit.fontFileSize;
-        }
-      }
 
-      if (formData.type === "video-templates") {
-        if (formData.videoTemplateFile && typeof formData.videoTemplateFile !== 'string') {
-          docData.videoTemplateFile = await uploadFile(formData.videoTemplateFile, "video-templates");
-          docData.videoTemplateFileName = formData.videoTemplateFile?.name;
-          docData.videoTemplateFileSize = formData.videoTemplateFileSize;
-        } else if (editMode && assetToEdit.videoTemplateFile) {
-          docData.videoTemplateFile = assetToEdit.videoTemplateFile;
-          docData.videoTemplateFileName = assetToEdit.videoTemplateFileName;
-          docData.videoTemplateFileSize = assetToEdit.videoTemplateFileSize;
-        }
-      }
+if (formData.type === "models" && formData.model) {
+docData.model = await uploadFile(formData.model, "models");
+}
 
-      if (formData.type === "other") {
-        if (formData.other && typeof formData.other !== 'string') {
-          docData.other = await uploadFile(formData.other, "other");
-          docData.otherName = formData.other?.name;
-          docData.otherSize = formData.otherSize;
-        } else if (editMode && assetToEdit.other) {
-          docData.other = assetToEdit.other;
-          docData.otherName = assetToEdit.otherName;
-          docData.otherSize = assetToEdit.otherSize;
-        }
-      }
 
-      docData = Object.fromEntries(Object.entries(docData).filter(([_, v]) => v !== undefined && v !== ""));
+if (formData.type === "scripts" && formData.script) {
+docData.script = await uploadFile(formData.script, "scripts");
+}
 
-      // For edit mode, use updateDoc instead of addDoc
-      if (editMode && assetToEdit) {
-        await updateDoc(doc(db, "Assets", assetToEdit.id), docData);
-        setLoadingState("success");
-        
-        if (onUploadSuccess) {
-          onUploadSuccess();
-        }
-      } else {
-        // Original create logic
-        await addDoc(collection(db, "Assets"), docData);
-        setLoadingState("success");
-        
-        if (onUploadSuccess) {
-          onUploadSuccess();
-        }
-        
-        // Reset form only for create mode
-        if (!editMode) {
-          setFormData({
-            title: "", thumbnail: "", description: "", is3d: false, price: "", discount: "", tags: "",
-            date: new Date().toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" }).replace(/ /g, ", "),
-            category: "", type: "", model: "", images: "", video: "", icons: "", script: "", scriptSize: "",
-            hdri: "", hdriSize: "", graphicsTemplate: "", graphicsTemplateSize: "", mockupFile: "", mockupFileSize: "",
-            fontFile: "", fontFileSize: "", videoTemplateFile: "", videoTemplateFileSize: "", sound: "", soundSize: "",
-            other: "", otherSize: "", ambientOcclusion: "", baseColor: "", displacement: "", normal: "", roughness: "",
-            metallic: "", bump: "", idmap: "", resolution: "", physicalSize: "", lods: "", vertices: "", textures: "",
-            materials: "", uvMapping: false, rigged: false, animated: false, vrArLowPoly: false, aiGenerated: "",
-            frameRate: "", properties: [], applicationsSupported: [], orientation: "", licenseType: "", surfaceMaterial: "",
-            style: "", environmentType: "", lightingCondition: "", scriptType: "", programmingLanguage: "", framework: "",
-            integrationReady: [], colorSpace: "", objectType: "", fileFormat: "",
-          });
-          setTags([]);
-          setThumbnailPreview(null);
-        }
-      }
 
-    } catch (error) {
-      console.error(`Error ${editMode ? 'updating' : 'adding'} document: `, error);
-      setLoadingState(`Error ${editMode ? 'updating' : 'uploading'} asset`);
-    } finally {
-      if (editMode) {
-        setIsUpdating(false);
-      } else {
-        setIsSubmitting(false);
-      }
-    }
-  };
+// ✅ Clean empty fields
+docData = Object.fromEntries(Object.entries(docData).filter(([k, v]) => v !== undefined && v !== ""));
 
-  const getCategoryOptions = () => {
+
+// ✅ Update Mode
+if (editMode && assetToEdit?.id) {
+await updateDoc(doc(db, "Assets", assetToEdit.id), docData);
+} else {
+// ✅ Create new asset
+await addDoc(collection(db, "Assets"), docData);
+}
+
+
+setLoadingState("success");
+if (onUploadSuccess) onUploadSuccess();
+if (!editMode) setFormData({ title: "", description: "", thumbnail: "", type: "", images: "", video: "", model: "", script: "" , tags: "" , categories:"" });
+} catch (error) {
+console.error("UPLOAD ERROR →", error);
+setLoadingState("error");
+};
+};
+
+const getCategoryOptions = () => {
     const filterKey = assetTypeToFilterData[formData.type];
     if (filterKey && filterData[filterKey]?.categories?.options) {
       return filterData[filterKey].categories.options;
@@ -850,39 +757,16 @@ const Upload = ({
           </div>
         </div>
       );
-    }
-    
-    // For other filters, keep the original styling
-    return (
-      <div className="blog-form-group">
-        <label className="blog-form-label">{label} <span className="blog-form-required">*</span></label>
-        <select
-          name={name}
-          className="blog-form-select"
-          onChange={handleChange}
-          multiple={isMulti}
-          value={isMulti ? formData[name] : formData[name] || ""}
-          required={!isMulti}
-        >
-          <option value="" disabled>Select {label}</option>
-          {options.map((option) => (
-            <option key={option} value={option}>{option}</option>
-          ))}
-        </select>
-        {isMulti && (
-          <p className="blog-form-hint">Hold Ctrl/Cmd to select multiple options</p>
-        )}
-      </div>
-    );
-  };
-
+   }
+     return null;
+};
   const getAssetTypeIcon = (type) => {
     switch (type) {
       case 'models': return <FiBox />;
       case 'videos': return <FiVideo />;
       case 'images': return <FiImage />;
       case 'scripts': return <FiCode />;
-      case 'sounds': return <FiMusic />;
+      // case 'sounds': return <FiMusic />;
       default: return <FiFile />;
     }
   };
@@ -919,11 +803,12 @@ const Upload = ({
   return (
     <>
       <Helmet>
-        <title>{modalTitle} | Shammarianas</title>
+        <title>{editMode ? "Edit Asset" : "Upload New Asset"} | Shammarianas</title>
         <meta name="description" content={`${editMode ? 'Edit' : 'Upload'} your assets to Shammarianas`} />
       </Helmet>
 
-      <style>
+      {/* CSS styles remain the same */}
+       <style>
         {`
           .blog-modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
@@ -1060,6 +945,59 @@ const Upload = ({
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             transition: all 0.2s; cursor: pointer; color: #374151;
           }
+            .video-preview-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+          }
+          
+          .blog-video-preview {
+            width: 250px;
+            height: 150px;
+            border-radius: 0.75rem;
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            object-fit: cover;
+            background: #000;
+          }
+          
+          .video-play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+          }
+          
+          .video-play-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: translate(-50%, -50%) scale(1.1);
+          }
+          
+          .video-play-button svg {
+            color: white;
+            font-size: 24px;
+          }
+          
+          .video-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+          }
+
           .blog-form-file:hover { border-color: #3b82f6; background: #eff6ff; }
           .blog-form-hint { text-align: left; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; font-style: italic; }
           .modal-actions-row {
@@ -1153,7 +1091,7 @@ const Upload = ({
             <div className="blog-modal-header">
               <h1 className="blog-modal-title">
                 <FiUpload className="asset-type-icon" />
-                {modalTitle}
+                {editMode ? "Edit Asset" : "Upload New Asset"}
               </h1>
               {onUploadClose && (
                 <button onClick={onUploadClose} className="blog-modal-close" aria-label="Close">
@@ -1163,6 +1101,7 @@ const Upload = ({
             </div>
 
             <form onSubmit={handleSubmit}>
+              {/* Form fields remain the same */}
               <div className="blog-form-group">
                 <label className="blog-form-label">Title <span className="blog-form-required">*</span></label>
                 <input 
@@ -1176,23 +1115,77 @@ const Upload = ({
                 />
               </div>
 
+              {/* Thumbnail section with video playback */}
               <div className="blog-form-group">
                 <label className="blog-form-label">Thumbnail <span className="blog-form-required">*</span></label>
                 <input 
                   type="file" 
                   name="thumbnail" 
-                  onChange={handleChange} 
-                  accept="image/*" 
+                  onChange={handleThumbnailChange} 
+                  accept="image/*, video/*" 
                   className="blog-form-file" 
                 />
-                <p className="blog-form-hint">JPG, PNG, WebP • Max 1.25MB • 1200x630px recommended</p>
-                {thumbnailPreview && <img src={thumbnailPreview} alt="Preview" className="blog-image-preview" />}
-                {editMode && assetToEdit.thumbnail && !thumbnailPreview && (
+                <p className="blog-form-hint">
+                  JPG, PNG, WebP, MP4, MOV, WEBM • Max 10MB • 1200x630px recommended for images
+                </p>
+                
+                {thumbnailPreview && thumbnailType === 'image' && (
+                  <img src={thumbnailPreview} alt="Preview" className="blog-image-preview" />
+                )}
+                
+                {thumbnailPreview && thumbnailType === 'video' && (
+                  <div className="video-preview-container" onClick={handleVideoPlay}>
+                    <video 
+                      ref={videoRef}
+                      src={thumbnailPreview}
+                      className="blog-video-preview"
+                      preload="metadata"
+                      onLoadedData={handleVideoLoaded}
+                      onPlay={() => setIsVideoPlaying(true)}
+                      onPause={handleVideoPause}
+                      onEnded={handleVideoEnded}
+                      onError={handleVideoError}
+                      playsInline
+                      webkit-playsinline="true"
+                      muted
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                    
+                    {!isVideoPlaying && (
+                      <button 
+                        type="button"
+                        className="video-play-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVideoPlay();
+                        }}
+                      >
+                        <FiPlay />
+                      </button>
+                    )}
+                    
+                    {isVideoPlaying && (
+                      <button 
+                        type="button"
+                        className="video-play-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVideoPlay();
+                        }}
+                      >
+                        <FiPause />
+                      </button>
+                    )}
+                  </div>
+                )}
+                
+                {editMode && assetToEdit?.thumbnail && !thumbnailPreview && (
                   <p className="current-image-note">Current thumbnail will be kept if no new file is selected</p>
                 )}
               </div>
 
-              <div className="blog-form-group">
+             <div className="blog-form-group">
                 <label className="blog-form-label">Description <span className="blog-form-required">*</span></label>
                 <textarea 
                   name="description" 
@@ -1217,7 +1210,7 @@ const Upload = ({
                   <option value="" disabled>Select Asset Type</option>
                   <option value="models">3D Model</option>
                   <option value="textures">Texture</option>
-                  <option value="sounds">Sound</option>
+                  {/* <option value="sounds">Sound</option> */}
                   <option value="scripts">Script</option>
                   <option value="images">Image</option>
                   <option value="graphics">Graphics Templates</option>
@@ -1247,7 +1240,7 @@ const Upload = ({
                 </select>
               </div>
 
-              <div className="blog-form-group">
+              {/* <div className="blog-form-group">
                 <label className="blog-form-label">Price <span className="blog-form-required">*</span></label>
                 <input 
                   type="number" 
@@ -1271,7 +1264,7 @@ const Upload = ({
                     style={{ marginTop: '0.5rem' }}
                   />
                 )}
-              </div>
+              </div> */}
 
               <div className="blog-form-group">
                 <label className="blog-form-label">Tags (Max 10)</label>
@@ -1392,18 +1385,18 @@ const Upload = ({
                     type="file" 
                     name="video" 
                     onChange={handleChange} 
-                    accept="video/*,.zip" 
+                    accept="video/*,.zip,.mov,.mp4,.webm" 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported video formats & .zip</p>
+                  <p className="blog-form-hint">Supported video formats ,.mov,.mp4,.webm & .zip</p>
                   {editMode && assetToEdit.video && (
                     <p className="current-image-note">Current video file will be kept if no new file is selected</p>
                   )}
                 </div>
               )}
 
-              {formData.type === "sounds" && (
+              {/* {formData.type === "sounds" && (
                 <div className="blog-form-group">
                   <label className="blog-form-label">Sound File {!editMode && <span className="blog-form-required">*</span>}</label>
                   <input 
@@ -1419,7 +1412,7 @@ const Upload = ({
                     <p className="current-image-note">Current sound file will be kept if no new file is selected</p>
                   )}
                 </div>
-              )}
+              )} */}
 
               {formData.type === "scripts" && (
                 <div className="blog-form-group">
@@ -1600,7 +1593,9 @@ const Upload = ({
                   disabled={isSubmitting || isUpdating} 
                   className="blog-btn blog-btn-submit"
                 >
-                  {submitButtonText}
+                  {editMode ? 
+                    (isUpdating ? "Updating..." : "Update Asset") : 
+                    (isSubmitting ? "Uploading..." : "Upload Asset")}
                 </button>
               </div>
             </form>
@@ -1610,5 +1605,6 @@ const Upload = ({
     </>
   );
 };
+
 
 export default Upload;
