@@ -285,7 +285,7 @@ const assetTypeToFilterData = {
   textures: "Textures",
   hdris: "HDRIs",
   scripts: "Scripts",
-  sounds: null,
+  // sounds: null,
   other: null,
 };
 
@@ -332,8 +332,8 @@ const Upload = ({
     fontFileSize: "",
     videoTemplateFile: "",
     videoTemplateFileSize: "",
-    sound: "",
-    soundSize: "",
+    // sound: "",
+    // soundSize: "",
     other: "",
     otherSize: "",
     ambientOcclusion: "",
@@ -652,6 +652,13 @@ title: formData.title,
 description: formData.description,
 type: formData.type,
 tags,
+category: formData.category,
+properties: formData.properties,
+applicationsSupported: formData.applicationsSupported,
+orientation: formData.orientation,
+vertices: formData.vertices,
+licenseType: formData.licenseType,
+surfaceMaterial: formData.surfaceMaterial,
 userId: currentUser?.uid ?? "anonymous",
 updatedAt: serverTimestamp(),
 };
@@ -701,7 +708,7 @@ await addDoc(collection(db, "Assets"), docData);
 
 setLoadingState("success");
 if (onUploadSuccess) onUploadSuccess();
-if (!editMode) setFormData({ title: "", description: "", thumbnail: "", type: "" });
+if (!editMode) setFormData({ title: "", description: "", thumbnail: "", type: "", images: "", video: "", model: "", script: "" , tags: "" , categories:"" });
 } catch (error) {
 console.error("UPLOAD ERROR →", error);
 setLoadingState("error");
@@ -759,7 +766,7 @@ const getCategoryOptions = () => {
       case 'videos': return <FiVideo />;
       case 'images': return <FiImage />;
       case 'scripts': return <FiCode />;
-      case 'sounds': return <FiMusic />;
+      // case 'sounds': return <FiMusic />;
       default: return <FiFile />;
     }
   };
@@ -1203,7 +1210,7 @@ const getCategoryOptions = () => {
                   <option value="" disabled>Select Asset Type</option>
                   <option value="models">3D Model</option>
                   <option value="textures">Texture</option>
-                  <option value="sounds">Sound</option>
+                  {/* <option value="sounds">Sound</option> */}
                   <option value="scripts">Script</option>
                   <option value="images">Image</option>
                   <option value="graphics">Graphics Templates</option>
@@ -1378,18 +1385,18 @@ const getCategoryOptions = () => {
                     type="file" 
                     name="video" 
                     onChange={handleChange} 
-                    accept="video/*,.zip" 
+                    accept="video/*,.zip,.mov,.mp4,.webm" 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported video formats & .zip</p>
+                  <p className="blog-form-hint">Supported video formats ,.mov,.mp4,.webm & .zip</p>
                   {editMode && assetToEdit.video && (
                     <p className="current-image-note">Current video file will be kept if no new file is selected</p>
                   )}
                 </div>
               )}
 
-              {formData.type === "sounds" && (
+              {/* {formData.type === "sounds" && (
                 <div className="blog-form-group">
                   <label className="blog-form-label">Sound File {!editMode && <span className="blog-form-required">*</span>}</label>
                   <input 
@@ -1405,7 +1412,7 @@ const getCategoryOptions = () => {
                     <p className="current-image-note">Current sound file will be kept if no new file is selected</p>
                   )}
                 </div>
-              )}
+              )} */}
 
               {formData.type === "scripts" && (
                 <div className="blog-form-group">

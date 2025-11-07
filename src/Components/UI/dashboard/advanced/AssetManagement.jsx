@@ -339,21 +339,58 @@ const AssetManagement = () => {
             <div key={asset.id} className="asset-card">
               <div className="asset-image-wrapper">
                 {asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
-                  <img
-                    src={
-                      asset.thumbnail ||
-                      (Array.isArray(asset.images) && asset.images[0]) ||
-                      (Array.isArray(asset.icons) && asset.icons[0]) ||
-                      ""
-                    }
-                    alt={asset.title || asset.name || "Asset"}
-                    className="asset-image"
-                  />
-                ) : (
-                  <div className="asset-placeholder">
-                    <FiImage className="placeholder-icon" />
-                  </div>
-                )}
+  (() => {
+    const src =
+      asset.thumbnail ||
+      (Array.isArray(asset.images) && asset.images[0]) ||
+      (Array.isArray(asset.icons) && asset.icons[0]) ||
+      "";
+
+    const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
+
+    if (isVideo) {
+      return (
+        <div
+          className="asset-image"
+          style={{ position: "relative", overflow: "hidden" }}
+          onMouseEnter={(e) => {
+            const video = e.currentTarget.querySelector("video");
+            if (video) video.play();
+          }}
+          onMouseLeave={(e) => {
+            const video = e.currentTarget.querySelector("video");
+            if (video) {
+              video.pause();
+              video.currentTime = 0;
+            }
+          }}
+        >
+          <video
+            src={src}
+            muted
+            loop
+            playsInline
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+      );
+    }
+
+    // ✅ Image fallback
+    return (
+      <img
+        src={src}
+        alt={asset.title || asset.name || "Asset"}
+        className="asset-image"
+      />
+    );
+  })()
+) : (
+  <div className="asset-placeholder">
+    <FiImage className="placeholder-icon" />
+  </div>
+)}
+
 
                 {/* Asset badges */}
                 <div className="asset-badges">
@@ -676,13 +713,15 @@ const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
         </div>
         <div className="modal-body">
           <div className="upload-wrapper">
-            <Upload 
-              onUploadSuccess={() => {
-                onAssetCreated();
-                onClose();
-              }}
-              onUploadClose={onClose}
-            />
+           <Upload 
+  editMode={false}
+  assetToEdit={null}
+  onUploadSuccess={() => {
+    onAssetCreated();
+    onClose();
+  }}
+  onUploadClose={onClose}
+/>
           </div>
         </div>
       </div>
