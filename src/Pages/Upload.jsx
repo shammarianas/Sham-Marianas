@@ -627,6 +627,135 @@ const Upload = ({
       }
 
       // Add similar logic for other asset types...
+      if (formData.type === "videos") {
+        if (formData.video && typeof formData.video !== 'string') {
+          docData.video = await uploadFile(formData.video, "video");
+          docData.videoName = formData.video?.name;
+          docData.videoSize = formData.videoSize;
+        } else if (editMode && assetToEdit.video) {
+          docData.video = assetToEdit.video;
+          docData.videoName = assetToEdit.videoName;
+          docData.videoSize = assetToEdit.videoSize;
+        }
+      }
+
+      if (formData.type === "images") {
+        if (formData.images && typeof formData.images !== 'string') {
+          const imageUrls = await uploadImages(formData.images, "images");
+          docData.images = imageUrls;
+          docData.imagesCount = imageUrls.length;
+        } else if (editMode && assetToEdit.images) {
+          docData.images = assetToEdit.images;
+          docData.imagesCount = assetToEdit.imagesCount;
+        }
+      }
+
+      if (formData.type === "sounds") {
+        if (formData.sound && typeof formData.sound !== 'string') {
+          docData.sound = await uploadFile(formData.sound, "sound");
+          docData.soundName = formData.sound?.name;
+          docData.soundSize = formData.soundSize;
+        } else if (editMode && assetToEdit.sound) {
+          docData.sound = assetToEdit.sound;
+          docData.soundName = assetToEdit.soundName;
+          docData.soundSize = assetToEdit.soundSize;
+        }
+      }
+
+      if (formData.type === "textures") {
+        if (formData.textures && typeof formData.textures !== 'string') {
+          docData.textures = await uploadFile(formData.textures, "textures");
+          docData.texturesName = formData.textures?.name;
+          docData.texturesSize = formData.texturesSize;
+        } else if (editMode && assetToEdit.textures) {
+          docData.textures = assetToEdit.textures;
+          docData.texturesName = assetToEdit.texturesName;
+          docData.texturesSize = assetToEdit.texturesSize;
+        }
+      }
+
+      if (formData.type === "hdris") {
+        if (formData.hdri && typeof formData.hdri !== 'string') {
+          docData.hdri = await uploadFile(formData.hdri, "hdri");
+          docData.hdriName = formData.hdri?.name;
+          docData.hdriSize = formData.hdriSize;
+        } else if (editMode && assetToEdit.hdri) {
+          docData.hdri = assetToEdit.hdri;
+          docData.hdriName = assetToEdit.hdriName;
+          docData.hdriSize = assetToEdit.hdriSize;
+        }
+      }
+
+      if (formData.type === "icons") {
+        if (formData.icons && typeof formData.icons !== 'string') {
+          const iconUrls = await uploadImages(formData.icons, "icons");
+          docData.icons = iconUrls;
+          docData.iconsCount = iconUrls.length;
+        } else if (editMode && assetToEdit.icons) {
+          docData.icons = assetToEdit.icons;
+          docData.iconsCount = assetToEdit.iconsCount;
+        }
+      }
+
+      if (formData.type === "graphics") {
+        if (formData.graphicsTemplate && typeof formData.graphicsTemplate !== 'string') {
+          docData.graphicsTemplate = await uploadFile(formData.graphicsTemplate, "graphics");
+          docData.graphicsTemplateName = formData.graphicsTemplate?.name;
+          docData.graphicsTemplateSize = formData.graphicsTemplateSize;
+        } else if (editMode && assetToEdit.graphicsTemplate) {
+          docData.graphicsTemplate = assetToEdit.graphicsTemplate;
+          docData.graphicsTemplateName = assetToEdit.graphicsTemplateName;
+          docData.graphicsTemplateSize = assetToEdit.graphicsTemplateSize;
+        }
+      }
+
+      if (formData.type === "mockups") {
+        if (formData.mockupFile && typeof formData.mockupFile !== 'string') {
+          docData.mockupFile = await uploadFile(formData.mockupFile, "mockups");
+          docData.mockupFileName = formData.mockupFile?.name;
+          docData.mockupFileSize = formData.mockupFileSize;
+        } else if (editMode && assetToEdit.mockupFile) {
+          docData.mockupFile = assetToEdit.mockupFile;
+          docData.mockupFileName = assetToEdit.mockupFileName;
+          docData.mockupFileSize = assetToEdit.mockupFileSize;
+        }
+      }
+
+      if (formData.type === "fonts") {
+        if (formData.fontFile && typeof formData.fontFile !== 'string') {
+          docData.fontFile = await uploadFile(formData.fontFile, "fonts");
+          docData.fontFileName = formData.fontFile?.name;
+          docData.fontFileSize = formData.fontFileSize;
+        } else if (editMode && assetToEdit.fontFile) {
+          docData.fontFile = assetToEdit.fontFile;
+          docData.fontFileName = assetToEdit.fontFileName;
+          docData.fontFileSize = assetToEdit.fontFileSize;
+        }
+      }
+
+      if (formData.type === "video-templates") {
+        if (formData.videoTemplateFile && typeof formData.videoTemplateFile !== 'string') {
+          docData.videoTemplateFile = await uploadFile(formData.videoTemplateFile, "video-templates");
+          docData.videoTemplateFileName = formData.videoTemplateFile?.name;
+          docData.videoTemplateFileSize = formData.videoTemplateFileSize;
+        } else if (editMode && assetToEdit.videoTemplateFile) {
+          docData.videoTemplateFile = assetToEdit.videoTemplateFile;
+          docData.videoTemplateFileName = assetToEdit.videoTemplateFileName;
+          docData.videoTemplateFileSize = assetToEdit.videoTemplateFileSize;
+        }
+      }
+
+      if (formData.type === "other") {
+        if (formData.other && typeof formData.other !== 'string') {
+          docData.other = await uploadFile(formData.other, "other");
+          docData.otherName = formData.other?.name;
+          docData.otherSize = formData.otherSize;
+        } else if (editMode && assetToEdit.other) {
+          docData.other = assetToEdit.other;
+          docData.otherName = assetToEdit.otherName;
+          docData.otherSize = assetToEdit.otherSize;
+        }
+      }
 
       docData = Object.fromEntries(Object.entries(docData).filter(([_, v]) => v !== undefined && v !== ""));
 
@@ -1192,7 +1321,7 @@ const Upload = ({
               {renderFilterSelect("objectType", "Object Type", "objectType")}
               {renderFilterSelect("fileFormat", "File Format", "fileFormat")}
 
-              {/* File upload sections based on asset type */}
+              {/* File upload sections for all asset types */}
               {formData.type === "models" && (
                 <>
                   <div className="blog-form-group">
@@ -1201,11 +1330,11 @@ const Upload = ({
                       type="file" 
                       name="model" 
                       onChange={handleChange} 
-                      accept=".glb,.gltf,.stl,.obj,.fbx,.blend" 
+                      accept=".glb,.gltf,.stl,.obj,.fbx,.blend,.zip" 
                       className="blog-form-file" 
                       required={!editMode}
                     />
-                    <p className="blog-form-hint">Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend</p>
+                    <p className="blog-form-hint">Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend, .zip</p>
                     {editMode && assetToEdit.model && (
                       <p className="current-image-note">Current model file will be kept if no new file is selected</p>
                     )}
@@ -1234,8 +1363,6 @@ const Upload = ({
                       placeholder="e.g., 10x10x10 cm" 
                     />
                   </div>
-
-              
                 </>
               )}
 
@@ -1246,12 +1373,12 @@ const Upload = ({
                     type="file" 
                     name="images" 
                     onChange={handleChange} 
-                    accept="image/*" 
+                    accept="image/*,.zip" 
                     multiple 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Select multiple image files</p>
+                  <p className="blog-form-hint">Select multiple image files & .zip</p>
                   {editMode && assetToEdit.images && (
                     <p className="current-image-note">Current images will be kept if no new files are selected</p>
                   )}
@@ -1265,18 +1392,197 @@ const Upload = ({
                     type="file" 
                     name="video" 
                     onChange={handleChange} 
-                    accept="video/*" 
+                    accept="video/*,.zip" 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported video formats</p>
+                  <p className="blog-form-hint">Supported video formats & .zip</p>
                   {editMode && assetToEdit.video && (
                     <p className="current-image-note">Current video file will be kept if no new file is selected</p>
                   )}
                 </div>
               )}
 
-              {/* Add similar sections for other asset types as needed */}
+              {formData.type === "sounds" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Sound File {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="sound" 
+                    onChange={handleChange} 
+                    accept="audio/*,.zip" 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Supported audio formats: MP3, WAV, FLAC, AAC, .zip</p>
+                  {editMode && assetToEdit.sound && (
+                    <p className="current-image-note">Current sound file will be kept if no new file is selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "scripts" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Script File {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="script" 
+                    onChange={handleChange} 
+                    accept=".js,.py,.php,.html,.css,.ts,.rb,.go,.sh,.sql,.lua,.cs,.json,.xml,.zip" 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Supported formats: JS, Python, PHP, HTML, CSS, TypeScript, Ruby, Go, Shell, SQL, Lua, C#, .zip</p>
+                  {editMode && assetToEdit.script && (
+                    <p className="current-image-note">Current script file will be kept if no new file is selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "textures" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Texture Files {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="textures" 
+                    onChange={handleChange} 
+                    accept="image/*,.zip" 
+                    multiple 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Select multiple texture image files & .zip</p>
+                  {editMode && assetToEdit.textures && (
+                    <p className="current-image-note">Current texture files will be kept if no new files are selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "hdris" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">HDRI File {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="hdri" 
+                    onChange={handleChange} 
+                    accept=".hdr,.exr,.zip" 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Supported formats: .HDR, .EXR, .zip</p>
+                  {editMode && assetToEdit.hdri && (
+                    <p className="current-image-note">Current HDRI file will be kept if no new file is selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "icons" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Icon Files {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="icons" 
+                    onChange={handleChange} 
+                    accept="image/*,.svg,.zip" 
+                    multiple 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Select multiple icon files (PNG, SVG, ICO), .zip</p>
+                  {editMode && assetToEdit.icons && (
+                    <p className="current-image-note">Current icon files will be kept if no new files are selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "graphics" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Graphics Template File {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="graphicsTemplate" 
+                    onChange={handleChange} 
+                    accept=".psd,.ai,.indd,.eps,.pdf,.zip" 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Supported formats: PSD, AI, INDD, EPS, PDF, .zip</p>
+                  {editMode && assetToEdit.graphicsTemplate && (
+                    <p className="current-image-note">Current graphics template file will be kept if no new file is selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "mockups" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Mockup File {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="mockupFile" 
+                    onChange={handleChange} 
+                    accept=".psd,.zip" 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Supported formats: PSD, AI, .zip</p>
+                  {editMode && assetToEdit.mockupFile && (
+                    <p className="current-image-note">Current mockup file will be kept if no new file is selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "fonts" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Font File {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="fontFile" 
+                    onChange={handleChange} 
+                    accept=".ttf,.otf,.woff,.woff2,.zip" 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Supported formats: TTF, OTF, WOFF, WOFF2, .zip</p>
+                  {editMode && assetToEdit.fontFile && (
+                    <p className="current-image-note">Current font file will be kept if no new file is selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "video-templates" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Video Template File {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="videoTemplateFile" 
+                    onChange={handleChange} 
+                    accept=".aep,.mogrt,.mov,.mp4,.zip" 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Supported formats: AEP, MOGRT, MOV, MP4, .zip</p>
+                  {editMode && assetToEdit.videoTemplateFile && (
+                    <p className="current-image-note">Current video template file will be kept if no new file is selected</p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "other" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">Asset File {!editMode && <span className="blog-form-required">*</span>}</label>
+                  <input 
+                    type="file" 
+                    name="other" 
+                    onChange={handleChange} 
+                    className="blog-form-file" 
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">Upload your asset file</p>
+                  {editMode && assetToEdit.other && (
+                    <p className="current-image-note">Current asset file will be kept if no new file is selected</p>
+                  )}
+                </div>
+              )}
 
               <div className="modal-actions-row">
                 {onUploadClose && (
