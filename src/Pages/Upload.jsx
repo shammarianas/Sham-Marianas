@@ -5,6 +5,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUser } from "../Context/UserProvider";
 import { Helmet } from "react-helmet-async";
 import { FiUpload, FiX, FiPlus, FiImage, FiVideo, FiFile, FiCode, FiMusic, FiBox, FiChevronDown, FiPlay, FiPause } from "react-icons/fi";
+import useImageSizeConverter from '../hooks/ImageSizeConverter';
 
 const filterData = {
   Videos: {
@@ -299,6 +300,7 @@ const Upload = ({
   setIsUpdating = () => {}
 }) => {
   const { currentUser } = useUser();
+  const { converting, generateAllSizes, uploadAllSizes } = useImageSizeConverter();
   const [formData, setFormData] = useState({
     title: "",
     thumbnail: "",
@@ -586,138 +588,272 @@ const Upload = ({
     }
   };
 
-  // Main form change handler
-  const handleChange = (event) => {
-    const target = event.target;
-    const name = target.name;
-    let value = target.type === "checkbox" ? target.checked : target.value;
+ // Main form change handler - UPDATED for better file handling
+const handleChange = (event) => {
+  const target = event.target;
+  const name = target.name;
+  let value = target.type === "checkbox" ? target.checked : target.value;
 
-    if (target.type === "file") {
-      if (name === "thumbnail") {
-        handleThumbnailChange(event);
-      } else if (name === "images" || name === "icons") {
-        const files = target.files;
+  if (target.type === "file") {
+    if (name === "thumbnail") {
+      handleThumbnailChange(event);
+    } else if (name === "images" || name === "icons" || name === "textures") {
+      const files = target.files;
+      if (files && files.length > 0) {
         setFormData(prev => ({
           ...prev,
-          [name]: files,
+          [name]: Array.from(files), // Store as array
           [`${name}Size`]: Array.from(files).map((file) => file.size),
         }));
       } else {
-        const file = target.files[0];
-        if (file) {
-          setFormData(prev => ({
-            ...prev,
-            [name]: file,
-            [`${name}Size`]: file.size,
-          }));
-        } else {
-          setFormData(prev => ({
-            ...prev,
-            [name]: "",
-            [`${name}Size`]: "",
-          }));
+        // In edit mode, if files are cleared, set to empty array
+        setFormData(prev => ({
+          ...prev,
+          [name]: [],
+          [`${name}Size`]: [],
+        }));
+      }
+    } else {
+      const file = target.files[0];
+      if (file) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: file,
+          [`${name}Size`]: file.size,
+        }));
+      } else {
+        // In edit mode, if file is cleared, set to empty string
+        setFormData(prev => ({
+          ...prev,
+          [name]: "",
+          [`${name}Size`]: "",
+        }));
+      }
+    }
+  } else if (["properties", "applicationsSupported", "integrationReady"].includes(name)) {
+    const options = Array.from(target.selectedOptions).map((option) => option.value);
+    setFormData(prev => ({
+      ...prev,
+      [name]: options,
+    }));
+  } else {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+};
+
+// ✅ MAIN SUBMIT FUNCTION — fixed for edit mode
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (editMode) setIsUpdating(true);
+  else setIsSubmitting(true);
+
+  setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
+
+  try {
+    let docData = {
+      title: formData.title,
+      description: formData.description,
+      type: formData.type,
+      price: formData.price,
+      tags,
+      is3d: formData.is3d,
+      licenseType: formData.licenseType,
+      category: formData.category,
+      properties: formData.properties,
+      applicationsSupported: formData.applicationsSupported,
+      orientation: formData.orientation,
+      vertices: formData.vertices,
+      surfaceMaterial: formData.surfaceMaterial,
+      style: formData.style,
+      environmentType: formData.environmentType,
+      lightingCondition: formData.lightingCondition,
+      scriptType: formData.scriptType,
+      programmingLanguage: formData.programmingLanguage,
+      framework: formData.framework,
+      integrationReady: formData.integrationReady,
+      colorSpace: formData.colorSpace,
+      objectType: formData.objectType,
+      fileFormat: formData.fileFormat,
+      aiGenerated: formData.aiGenerated,
+      resolution: formData.resolution,
+      frameRate: formData.frameRate,
+      date: formData.date,
+      updatedBy: currentUser?.email || "anonymous",
+      userId: currentUser?.uid ?? "anonymous",
+      updatedAt: serverTimestamp(),
+    };
+
+    // ✅ thumbnail upload - FIXED for edit mode
+    if (formData.thumbnail && typeof formData.thumbnail !== "string") {
+      docData.thumbnail = await uploadThumbnail(formData.thumbnail);
+    } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
+      // Keep existing thumbnail if no new file selected
+      docData.thumbnail = assetToEdit.thumbnail;
+    }
+
+    // ✅ handle assets by type - FIXED for edit mode
+if (formData.type === "images" && formData.images) {
+  if (Array.isArray(formData.images) && formData.images.length > 0) {
+    // Generate all sizes for each image
+    const allImageUrls = [];
+    
+    for (const imageFile of formData.images) {
+      setLoadingState(`Generating sizes for ${imageFile.name}...`);
+      
+      // Generate all sizes (small, medium, large, original)
+      const imageSizes = await generateAllSizes(imageFile);
+      
+      if (imageSizes) {
+        setLoadingState(`Uploading ${imageFile.name} in all sizes...`);
+        
+        // Upload all sizes to Firebase
+        const uploadedUrls = await uploadAllSizes(
+          imageSizes, 
+          `assets/images/${currentUser?.uid || 'anonymous'}/${Date.now()}`
+        );
+        
+        if (uploadedUrls) {
+          allImageUrls.push({
+            originalName: imageFile.name,
+            sizes: uploadedUrls
+          });
         }
       }
-    } else if (["properties", "applicationsSupported", "integrationReady"].includes(name)) {
-      const options = Array.from(target.selectedOptions).map((option) => option.value);
-      setFormData(prev => ({
-        ...prev,
-        [name]: options,
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value,
-      }));
     }
-  };
+    
+    docData.images = allImageUrls;
+    docData.hasMultipleSizes = true;
+  }
+} else if (editMode && assetToEdit.images && !formData.images) {
+  // Keep existing images if no new files selected
+  docData.images = assetToEdit.images;
+}
 
-  // ✅ MAIN SUBMIT FUNCTION — fixed
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (formData.type === "videos" && formData.video) {
+      docData.video = await uploadFile(formData.video, "videos");
+    } else if (editMode && assetToEdit.video && !formData.video) {
+      // Keep existing video if no new file selected
+      docData.video = assetToEdit.video;
+    }
 
-    if (editMode) setIsUpdating(true);
-    else setIsSubmitting(true);
+    if (formData.type === "models" && formData.model) {
+      docData.model = await uploadFile(formData.model, "models");
+    } else if (editMode && assetToEdit.model && !formData.model) {
+      // Keep existing model if no new file selected
+      docData.model = assetToEdit.model;
+    }
 
-    setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
+    if (formData.type === "scripts" && formData.script) {
+      docData.script = await uploadFile(formData.script, "scripts");
+    } else if (editMode && assetToEdit.script && !formData.script) {
+      // Keep existing script if no new file selected
+      docData.script = assetToEdit.script;
+    }
 
-    try {
-      let docData = {
-        title: formData.title,
-        description: formData.description,
-        type: formData.type,
-        price: formData.price, // Now just "free" or "paid"
-        tags,
-        is3d: formData.is3d,
-        licenseType: formData.licenseType,
-        type: formData.type,
-        category: formData.category,
-        properties: formData.properties,
-        applicationsSupported: formData.applicationsSupported,
-        orientation: formData.orientation,
-        vertices: formData.vertices,
-        licenseType: formData.licenseType,
-        surfaceMaterial: formData.surfaceMaterial,
-        style: formData.style,
-        environmentType: formData.environmentType,
-        lightingCondition: formData.lightingCondition,
-        scriptType: formData.scriptType,
-        programmingLanguage: formData.programmingLanguage,
-        framework: formData.framework,
-        integrationReady: formData.integrationReady,
-        colorSpace: formData.colorSpace,
-        objectType: formData.objectType,
-        fileFormat: formData.fileFormat,
-        aiGenerated: formData.aiGenerated,
-        resolution: formData.resolution,
-        frameRate: formData.frameRate,
-        userId: currentUser?.uid ?? "anonymous",
-        updatedAt: serverTimestamp(),
-      };
+    // ✅ Handle other file types for edit mode
+    if (formData.type === "hdris" && formData.hdri) {
+      docData.hdri = await uploadFile(formData.hdri, "hdris");
+    } else if (editMode && assetToEdit.hdri && !formData.hdri) {
+      docData.hdri = assetToEdit.hdri;
+    }
 
-      // ✅ thumbnail upload
-      if (formData.thumbnail && typeof formData.thumbnail !== "string") {
-        docData.thumbnail = await uploadThumbnail(formData.thumbnail);
-      } else if (editMode && assetToEdit.thumbnail) {
-        docData.thumbnail = assetToEdit.thumbnail;
+    if (formData.type === "graphics" && formData.graphicsTemplate) {
+      docData.graphicsTemplate = await uploadFile(formData.graphicsTemplate, "graphics");
+    } else if (editMode && assetToEdit.graphicsTemplate && !formData.graphicsTemplate) {
+      docData.graphicsTemplate = assetToEdit.graphicsTemplate;
+    }
+
+    if (formData.type === "mockups" && formData.mockupFile) {
+      docData.mockupFile = await uploadFile(formData.mockupFile, "mockups");
+    } else if (editMode && assetToEdit.mockupFile && !formData.mockupFile) {
+      docData.mockupFile = assetToEdit.mockupFile;
+    }
+
+    if (formData.type === "fonts" && formData.fontFile) {
+      docData.fontFile = await uploadFile(formData.fontFile, "fonts");
+    } else if (editMode && assetToEdit.fontFile && !formData.fontFile) {
+      docData.fontFile = assetToEdit.fontFile;
+    }
+
+    if (formData.type === "video-templates" && formData.videoTemplateFile) {
+      docData.videoTemplateFile = await uploadFile(formData.videoTemplateFile, "video-templates");
+    } else if (editMode && assetToEdit.videoTemplateFile && !formData.videoTemplateFile) {
+      docData.videoTemplateFile = assetToEdit.videoTemplateFile;
+    }
+
+    if (formData.type === "icons" && formData.icons) {
+      if (Array.isArray(formData.icons) && formData.icons.length > 0) {
+        docData.icons = await uploadImages(formData.icons, "icons");
       }
+    } else if (editMode && assetToEdit.icons && !formData.icons) {
+      docData.icons = assetToEdit.icons;
+    }
 
-      // ✅ handle assets by type
-      if (formData.type === "images" && formData.images) {
-        docData.images = await uploadImages(formData.images, "images");
+    if (formData.type === "textures" && formData.textures) {
+      if (Array.isArray(formData.textures) && formData.textures.length > 0) {
+        docData.textures = await uploadImages(formData.textures, "textures");
       }
+    } else if (editMode && assetToEdit.textures && !formData.textures) {
+      docData.textures = assetToEdit.textures;
+    }
 
-      if (formData.type === "videos" && formData.video) {
-        docData.video = await uploadFile(formData.video, "videos");
-      }
+    if (formData.type === "other" && formData.other) {
+      docData.other = await uploadFile(formData.other, "other");
+    } else if (editMode && assetToEdit.other && !formData.other) {
+      docData.other = assetToEdit.other;
+    }
 
-      if (formData.type === "models" && formData.model) {
-        docData.model = await uploadFile(formData.model, "models");
-      }
+    // ✅ Clean empty fields but preserve existing data in edit mode
+    docData = Object.fromEntries(
+      Object.entries(docData).filter(([k, v]) => {
+        if (v === undefined || v === null) return false;
+        if (Array.isArray(v) && v.length === 0) return false;
+        if (typeof v === 'string' && v.trim() === '') return false;
+        return true;
+      })
+    );
 
-      if (formData.type === "scripts" && formData.script) {
-        docData.script = await uploadFile(formData.script, "scripts");
-      }
-
-      // ✅ Clean empty fields
-      docData = Object.fromEntries(Object.entries(docData).filter(([k, v]) => v !== undefined && v !== ""));
-
-      // ✅ Update Mode
-      if (editMode && assetToEdit?.id) {
-        await updateDoc(doc(db, "Assets", assetToEdit.id), docData);
-      } else {
-        // ✅ Create new asset
-        await addDoc(collection(db, "Assets"), docData);
-      }
-
+    // ✅ Update Mode
+    if (editMode && assetToEdit?.id) {
+      await updateDoc(doc(db, "Assets", assetToEdit.id), docData);
       setLoadingState("success");
       if (onUploadSuccess) onUploadSuccess();
-      if (!editMode) setFormData({ title: "", description: "", thumbnail: "", type: "", images: "", video: "", model: "", script: "" , tags: "" , categories:"" });
-    } catch (error) {
-      console.error("UPLOAD ERROR →", error);
-      setLoadingState("error");
+    } else {
+      // ✅ Create new asset
+      await addDoc(collection(db, "Assets"), docData);
+      setLoadingState("success");
+      if (onUploadSuccess) onUploadSuccess();
+      // Reset form for new upload
+      setFormData({
+        title: "", description: "", thumbnail: "", type: "", images: "", 
+        video: "", model: "", script: "", tags: "", category: "",
+        // Reset all other fields
+        is3d: false, price: "free", date: new Date().toLocaleDateString("en-US", {
+          day: "2-digit", month: "long", year: "numeric",
+        }).replace(/ /g, ", "),
+        // Reset all filter fields
+        aiGenerated: "", resolution: "", frameRate: "", properties: [],
+        applicationsSupported: [], orientation: "", licenseType: "",
+        surfaceMaterial: "", style: "", environmentType: "", lightingCondition: "",
+        scriptType: "", programmingLanguage: "", framework: "", integrationReady: [],
+        colorSpace: "", objectType: "", fileFormat: ""
+      });
+      setTags([]);
+      setThumbnailPreview(null);
     }
-  };
+  } catch (error) {
+    console.error("UPLOAD ERROR →", error);
+    setLoadingState("error");
+    alert(`Error ${editMode ? 'updating' : 'uploading'} asset: ${error.message}`);
+  } finally {
+    if (editMode) setIsUpdating(false);
+    else setIsSubmitting(false);
+  }
+};
 
   const getCategoryOptions = () => {
     const filterKey = assetTypeToFilterData[formData.type];
@@ -1004,8 +1140,9 @@ const Upload = ({
           .blog-form-hint { text-align: left; font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; font-style: italic; }
           .modal-actions-row {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
+                gap: 20px;
             padding: 1rem 0;
             border-top: 1px solid #e5e7eb;
             margin-top: 1rem;
@@ -1045,6 +1182,7 @@ const Upload = ({
             border: 2px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
           }
           .current-image-note {
+          text-align: left;
             font-size: 0.875rem; color: #059669; font-style: italic; 
             margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
             border-radius: 0.5rem; border-left: 4px solid #10b981;
@@ -1128,7 +1266,7 @@ const Upload = ({
                   className="blog-form-file" 
                 />
                 <p className="blog-form-hint">
-                  JPG, PNG, WebP, MP4, MOV, WEBM • Max 10MB • 1200x630px recommended for images
+                  JPG, PNG, MP4• Max 500KB • 705x472px recommended for images
                 </p>
                 
                 {thumbnailPreview && thumbnailType === 'image' && (
@@ -1358,12 +1496,12 @@ const Upload = ({
                     type="file" 
                     name="images" 
                     onChange={handleChange} 
-                    accept="image/*,.zip" 
+                    accept="image/*, .png, .jpg, .jpeg" 
                     multiple 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Select multiple image files & .zip</p>
+                  <p className="blog-form-hint">Select image files</p>
                   {editMode && assetToEdit.images && (
                     <p className="current-image-note">Current images will be kept if no new files are selected</p>
                   )}
@@ -1377,11 +1515,11 @@ const Upload = ({
                     type="file" 
                     name="video" 
                     onChange={handleChange} 
-                    accept="video/*,.zip,.mov,.mp4,.webm" 
+                    accept="video/*,.mp4" 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported video formats ,.mov,.mp4,.webm & .zip</p>
+                  <p className="blog-form-hint">Supported video formats .mp4, & .zip</p>
                   {editMode && assetToEdit.video && (
                     <p className="current-image-note">Current video file will be kept if no new file is selected</p>
                   )}
@@ -1431,7 +1569,7 @@ const Upload = ({
                     type="file" 
                     name="textures" 
                     onChange={handleChange} 
-                    accept="image/*,.zip" 
+                    accept="image/*, .png, .jpg, .jpeg" 
                     multiple 
                     className="blog-form-file" 
                     required={!editMode}
@@ -1468,12 +1606,12 @@ const Upload = ({
                     type="file" 
                     name="icons" 
                     onChange={handleChange} 
-                    accept="image/*,.svg,.zip" 
+                    accept="image/*,.svg,.png,.ico" 
                     multiple 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Select multiple icon files (PNG, SVG, ICO), .zip</p>
+                  <p className="blog-form-hint">Select multiple icon files PNG, SVG, ICO</p>
                   {editMode && assetToEdit.icons && (
                     <p className="current-image-note">Current icon files will be kept if no new files are selected</p>
                   )}
@@ -1487,11 +1625,11 @@ const Upload = ({
                     type="file" 
                     name="graphicsTemplate" 
                     onChange={handleChange} 
-                    accept=".psd,.ai,.indd,.eps,.pdf,.zip" 
+                    accept=".psd,.ai,.eps,.pdf" 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: PSD, AI, INDD, EPS, PDF, .zip</p>
+                  <p className="blog-form-hint">Supported formats: PSD, AI, EPS, PDF</p>
                   {editMode && assetToEdit.graphicsTemplate && (
                     <p className="current-image-note">Current graphics template file will be kept if no new file is selected</p>
                   )}
@@ -1509,7 +1647,7 @@ const Upload = ({
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: PSD, AI, .zip</p>
+                  <p className="blog-form-hint">Supported formats: PSD, .zip</p>
                   {editMode && assetToEdit.mockupFile && (
                     <p className="current-image-note">Current mockup file will be kept if no new file is selected</p>
                   )}
@@ -1541,11 +1679,11 @@ const Upload = ({
                     type="file" 
                     name="videoTemplateFile" 
                     onChange={handleChange} 
-                    accept=".aep,.mogrt,.mov,.mp4,.zip" 
+                    accept=".mp4,.zip" 
                     className="blog-form-file" 
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: AEP, MOGRT, MOV, MP4, .zip</p>
+                  <p className="blog-form-hint">Supported formats: MP4, .zip</p>
                   {editMode && assetToEdit.videoTemplateFile && (
                     <p className="current-image-note">Current video template file will be kept if no new file is selected</p>
                   )}
@@ -1581,14 +1719,15 @@ const Upload = ({
                   </button>
                 )}
                 <button 
-                  type="submit" 
-                  disabled={isSubmitting || isUpdating} 
-                  className="blog-btn blog-btn-submit"
-                >
-                  {editMode ? 
-                    (isUpdating ? "Updating..." : "Update Asset") : 
-                    (isSubmitting ? "Uploading..." : "Upload Asset")}
-                </button>
+  type="submit" 
+  disabled={isSubmitting || isUpdating || converting} 
+  className="blog-btn blog-btn-submit"
+>
+  {converting ? "Converting Images..." : 
+   editMode ? 
+    (isUpdating ? "Updating..." : "Update Asset") : 
+    (isSubmitting ? "Uploading..." : "Upload Asset")}
+</button>
               </div>
             </form>
           </div>
