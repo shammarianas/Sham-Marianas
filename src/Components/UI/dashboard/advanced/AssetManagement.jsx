@@ -31,6 +31,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../../../../firebase";
 import Upload from "../../../../Pages/Upload";
+import { useUser } from "../../../../Context/UserProvider";
 
 const AssetManagement = () => {
   const [assets, setAssets] = useState([]);
@@ -59,6 +60,8 @@ const AssetManagement = () => {
     "Audio",
     "Templates",
   ];
+  
+  const { currentUser } = useUser();
 
   // Helper functions
   const formatCurrency = (amount) => {
@@ -87,6 +90,21 @@ const AssetManagement = () => {
     if (typeof value === "number") return new Date(value);
     if (value instanceof Date) return value;
     return null;
+  };
+
+  // Get price display text
+  const getPriceDisplay = (asset) => {
+    // Check if price is string "free" or "paid"
+    if (asset.price === "free") return "Free";
+    if (asset.price === "paid") return "Paid";
+    
+    // Fallback for legacy numeric prices
+    if (typeof asset.price === "number") {
+      return asset.price > 0 ? "Paid" : "Free";
+    }
+    
+    // Default to Free if no price set
+    return "Free";
   };
 
   // Fetch All Assets
@@ -191,13 +209,14 @@ const AssetManagement = () => {
     featured: assets.filter((a) => a.isFeatured).length,
     trending: assets.filter((a) => a.isTrending).length,
     totalDownloads: assets.reduce((sum, a) => sum + (a.downloads || 0), 0),
-    totalRevenue: assets.reduce(
-      (sum, a) => sum + (a.price || 0) * (a.downloads || 0),
-      0
-    ),
+    freeAssets: assets.filter(a => 
+      a.price === "free" || (typeof a.price === "number" && a.price === 0)
+    ).length,
+    paidAssets: assets.filter(a => 
+      a.price === "paid" || (typeof a.price === "number" && a.price > 0)
+    ).length,
   };
 
-  
   return (
     <div className="asset-management-enhanced">
       {/* Header */}
@@ -261,8 +280,8 @@ const AssetManagement = () => {
             <FiDollarSign />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{formatCurrency(stats.totalRevenue)}</div>
-            <div className="stat-label">Total Revenue</div>
+            <div className="stat-value">{stats.freeAssets}</div>
+            <div className="stat-label">Free Assets</div>
           </div>
         </div>
 
@@ -271,8 +290,8 @@ const AssetManagement = () => {
             <FiUsers />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{stats.featured}</div>
-            <div className="stat-label">Featured Assets</div>
+            <div className="stat-value">{stats.paidAssets}</div>
+            <div className="stat-label">Paid Assets</div>
           </div>
         </div>
       </div>
@@ -339,58 +358,57 @@ const AssetManagement = () => {
             <div key={asset.id} className="asset-card">
               <div className="asset-image-wrapper">
                 {asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
-  (() => {
-    const src =
-      asset.thumbnail ||
-      (Array.isArray(asset.images) && asset.images[0]) ||
-      (Array.isArray(asset.icons) && asset.icons[0]) ||
-      "";
+                  (() => {
+                    const src =
+                      asset.thumbnail ||
+                      (Array.isArray(asset.images) && asset.images[0]) ||
+                      (Array.isArray(asset.icons) && asset.icons[0]) ||
+                      "";
 
-    const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
+                    const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
 
-    if (isVideo) {
-      return (
-        <div
-          className="asset-image"
-          style={{ position: "relative", overflow: "hidden" }}
-          onMouseEnter={(e) => {
-            const video = e.currentTarget.querySelector("video");
-            if (video) video.play();
-          }}
-          onMouseLeave={(e) => {
-            const video = e.currentTarget.querySelector("video");
-            if (video) {
-              video.pause();
-              video.currentTime = 0;
-            }
-          }}
-        >
-          <video
-            src={src}
-            muted
-            loop
-            playsInline
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        </div>
-      );
-    }
+                    if (isVideo) {
+                      return (
+                        <div
+                          className="asset-image"
+                          style={{ position: "relative", overflow: "hidden" }}
+                          onMouseEnter={(e) => {
+                            const video = e.currentTarget.querySelector("video");
+                            if (video) video.play();
+                          }}
+                          onMouseLeave={(e) => {
+                            const video = e.currentTarget.querySelector("video");
+                            if (video) {
+                              video.pause();
+                              video.currentTime = 0;
+                            }
+                          }}
+                        >
+                          <video
+                            src={src}
+                            muted
+                            loop
+                            playsInline
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        </div>
+                      );
+                    }
 
-    // ✅ Image fallback
-    return (
-      <img
-        src={src}
-        alt={asset.title || asset.name || "Asset"}
-        className="asset-image"
-      />
-    );
-  })()
-) : (
-  <div className="asset-placeholder">
-    <FiImage className="placeholder-icon" />
-  </div>
-)}
-
+                    // ✅ Image fallback
+                    return (
+                      <img
+                        src={src}
+                        alt={asset.title || asset.name || "Asset"}
+                        className="asset-image"
+                      />
+                    );
+                  })()
+                ) : (
+                  <div className="asset-placeholder">
+                    <FiImage className="placeholder-icon" />
+                  </div>
+                )}
 
                 {/* Asset badges */}
                 <div className="asset-badges">
@@ -408,14 +426,14 @@ const AssetManagement = () => {
                   )}
                 </div>
 
-                {/* Price badge */}
+                {/* Price badge  */}
                 <div className="asset-price-badge">
                   <span
                     className={`price-badge ${
-                      asset.price > 0 ? "premium" : "free"
+                      getPriceDisplay(asset) === "Paid" ? "premium" : "free"
                     }`}
                   >
-                    {asset.price > 0 ? formatCurrency(asset.price) : "Free"}
+                    {getPriceDisplay(asset)}
                   </span>
                 </div>
               </div>
@@ -449,7 +467,7 @@ const AssetManagement = () => {
                 <div className="asset-footer">
                   <span className="asset-author">
                     <FiUser className="author-icon" />
-                    by {asset.authorName || asset.userId || "Unknown"}
+                    by {currentUser?.displayName || "User"}
                   </span>
                   <span className="asset-date">
                     {formatDate(asset.createdAt)}
@@ -465,10 +483,8 @@ const AssetManagement = () => {
                     >
                       {asset.isTrending ? "Remove Trending" : "Mark Trending"}
                     </button>
-                   
                   </div>
                   <div className="d-flex gap-2">
-                     
                     <button
                       className="action-button secondary"
                       onClick={() => {
@@ -508,7 +524,7 @@ const AssetManagement = () => {
           onDelete={handleDeleteAsset}
           onToggleFeatured={handleToggleAssetFeatured}
           onToggleTrending={handleToggleAssetTrending}
-          formatCurrency={formatCurrency}
+          getPriceDisplay={getPriceDisplay}
           formatDate={formatDate}
         />
       )}
@@ -524,32 +540,32 @@ const AssetManagement = () => {
 
       {/* Edit Asset Modal - Fixed Version */}
       {showEditAssetDialog && assetToEdit && (
-  <EditAssetModal
-    asset={assetToEdit}
-    isOpen={showEditAssetDialog}
-    onClose={() => {
-      setShowEditAssetDialog(false);
-      setAssetToEdit(null);
-    }}
-    onAssetUpdated={() => {
-      fetchAssets(); // ← YEH LINE IMPORTANT HAI
-      setShowEditAssetDialog(false);
-      setAssetToEdit(null);
-    }}
-  />
-)}
+        <EditAssetModal
+          asset={assetToEdit}
+          isOpen={showEditAssetDialog}
+          onClose={() => {
+            setShowEditAssetDialog(false);
+            setAssetToEdit(null);
+          }}
+          onAssetUpdated={() => {
+            fetchAssets(); 
+            setShowEditAssetDialog(false);
+            setAssetToEdit(null);
+          }}
+        />
+      )}
     </div>
   );
 };
 
-// Asset Details Modal Component
+// Asset Details Modal Component 
 const AssetDetailsModal = ({
   asset,
   onClose,
   onDelete,
   onToggleFeatured,
   onToggleTrending,
-  formatCurrency,
+  getPriceDisplay,
   formatDate,
 }) => {
   return (
@@ -604,7 +620,7 @@ const AssetDetailsModal = ({
               <div className="info-item">
                 <span className="info-label">Price</span>
                 <span className="info-value">
-                  {asset.price > 0 ? formatCurrency(asset.price) : "Free"}
+                  {getPriceDisplay(asset)}
                 </span>
               </div>
               <div className="info-item">

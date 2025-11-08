@@ -633,7 +633,7 @@ a {
   background-color: #181818;
   height: 18rem;
   width: 100%;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -696,7 +696,7 @@ a {
   gap: 3rem;
   background-color: #181818;
   padding: 3rem;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background: rgb(24, 24, 24);
   background: linear-gradient(93deg, rgb(24, 24, 24) 29%, rgba(0, 30, 0, 0) 100%), url("../Images/Sections/banner.jpg");
@@ -755,7 +755,7 @@ a {
 }
 .home_main .what_we_provide .grid .top .image img {
   width: 100%;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   -o-object-fit: cover;
   object-fit: cover;
   filter: invert(1);
@@ -845,7 +845,7 @@ a {
 .home_main .what_we_provide .grid .bottom .card .image img {
   width: 100%;
   height: 100%;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   -o-object-fit: cover;
   object-fit: cover;
 }
@@ -1416,7 +1416,7 @@ a {
   align-items: center;
   padding: 3rem 1rem;
   width: 100%;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   position: relative;
   overflow: hidden;
 }
@@ -1494,7 +1494,7 @@ a {
   background-color: #181818;
   height: 18rem;
   width: 100%;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1589,7 +1589,7 @@ a {
   padding: 1rem;
   overflow-y: auto;
   background-color: #131313;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.0549019608);
 }
 .page_content .listing_section .listing_sidebar::-webkit-scrollbar-thumb {
@@ -1796,7 +1796,7 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   overflow: hidden;
   aspect-ratio: 16/9;
   position: relative;
@@ -2496,7 +2496,7 @@ a {
 .page_content .view_item_main .content .left .asset_details .description {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  /* gap: 1rem; */
 }
 .page_content .view_item_main .content .left .asset_details .description .content {
   font-size: 1rem;
@@ -2567,9 +2567,20 @@ a {
   color: #f5f5f5;
   opacity: 0.6;
 }
+.page_content .view_item_main .content .left .asset_details .keywords_section .keyword{
+      border: 1px solid #fff;
+    padding: 5px 10px;;
+        border-radius: 20px;
+}
+.page_content .view_item_main .content .left .asset_details .keywords_section .keywords {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
 @media screen and (max-width: 768px) {
   .page_content .view_item_main .content {
-    flex-direction: column-reverse;
+    flex-direction: column;
   }
   .page_content .view_item_main .content .left {
     width: 100%;
@@ -2592,7 +2603,7 @@ a {
   flex-direction: column;
   gap: 1rem;
   padding: 2rem;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   background-color: #131313;
   border: 1px solid rgba(255, 255, 255, 0.0549019608);
 }
@@ -2600,6 +2611,10 @@ a {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  word-wrap: break-word;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 .page_content .view_item_main .right .top_info .title h2 {
   font-size: 1.5rem;
@@ -2810,7 +2825,7 @@ div > button.add_to_wishlist_btn.favorited {
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  border-radius: 0.8rem;
+  border-radius: 0.5rem;
   background-color: #131313;
   border: 1px solid rgba(255, 255, 255, 0.0549019608);
 }
@@ -2824,6 +2839,7 @@ div > button.add_to_wishlist_btn.favorited {
 }
 .page_content .view_item_main .right .item_info_table .info_item:nth-child(odd) {
   background-color: rgba(255, 255, 255, 0.0196078431);
+  border-radius: 0.5rem;
 }
 .page_content .view_item_main .right .item_info_table .info_item .label {
   font-size: 0.9rem;
