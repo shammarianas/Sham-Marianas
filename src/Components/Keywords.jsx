@@ -5,7 +5,7 @@ const Keywords = (props) => {
     <div className="keywords">
       {props.keywords.map((keyword, index) => (
         <span key={index} className="keyword">
-          #{keyword}
+          {keyword}
         </span>
       ))}
     </div>
