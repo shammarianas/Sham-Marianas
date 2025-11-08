@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-const VideoViewer = ({ videoUrl, videoName, previewUrl }) => {
+const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen  }) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
