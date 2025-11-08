@@ -43,6 +43,29 @@ const View = () => {
   const [group, setGroup] = useState(null); // Define group state
   const [markdown, setMarkdown] = useState("");
 
+  // Get price display text - NEW FUNCTION
+  const getPriceDisplay = (asset) => {
+    // Check if price is string "free" or "paid"
+    if (asset.price === "free") return "Free";
+    if (asset.price === "paid") return "Paid";
+    
+    // Fallback for legacy numeric prices
+    if (typeof asset.price === "number") {
+      return asset.price > 0 ? "Paid" : "Free";
+    }
+    
+    // Handle string numbers
+    if (typeof asset.price === "string") {
+      const numPrice = parseFloat(asset.price);
+      if (!isNaN(numPrice)) {
+        return numPrice > 0 ? "Paid" : "Free";
+      }
+    }
+    
+    // Default to Free if no price set
+    return "Free";
+  };
+
   const renderers = {
     code({ node, inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
@@ -90,14 +113,6 @@ const View = () => {
       setIsItemOwned(userProfile.purchasedItems.includes(item.id));
     }
   }, [userProfile, item]);
-
-  // useEffect(() => {
-
-  // console log the group data
-
-
-  // useEffect(() => {
-  //   // fetch items whihc is also owned by one of the group members
 
   return (
     <>
@@ -164,7 +179,7 @@ const View = () => {
                     script={item.script}
                     scriptName={item.scriptName}
                     id={item.id}
-                    price={item.price - (item.price * item.discount) / 100}
+                    price={getPriceDisplay(item)} // UPDATED
                   />
                 ) : item.type === "graphics" ? (
                   <ContentViewer
@@ -197,95 +212,8 @@ const View = () => {
                 )}
 
                 <div className="asset_details">
-                  <h2 className="title">Details</h2>
-
-                  {item.type === "models" && (
-                    <>
-                      <div className="details">
-                        <div className="detail">
-                          <div className="title">
-                            <i className="icon fas fa-cube"></i> Physical Size
-                          </div>
-                          <div className="item">
-                            <span className="label">Height</span>
-                            <span className="value">1.2m</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">Width</span>
-                            <span className="value">1.5m</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">Depth</span>
-                            <span className="value">1m</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="details">
-                        <div className="detail">
-                          <div className="title">
-                            <i className="icon fa-solid fa-layer-group"></i>{" "}
-                            LODs
-                          </div>
-                          <div className="item">
-                            <span className="label">SOURCE</span>
-                            <span className="value">116,066 Polygons</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">LOD 0</span>
-                            <span className="value">116,066 Polygons</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">LOD 1</span>
-                            <span className="value">57,580 Polygons</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">LOD 2</span>
-                            <span className="value">30,778 Polygons</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">LOD 3</span>
-                            <span className="value">15,389 Polygons</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">LOD 4</span>
-                            <span className="value">7,695 Polygons</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="details">
-                        <div className="detail">
-                          <div className="title">
-                            <i className="icon fa-solid fa-image"></i> Texture
-                            Files & Formats
-                          </div>
-                          <div className="item">
-                            <span className="label">Ambient Occlusion</span>
-                            <span className="value">PNG</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">Normal</span>
-                            <span className="value">PNG</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">Roughness</span>
-                            <span className="value">PNG</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">Metallic</span>
-                            <span className="value">PNG</span>
-                          </div>
-                          <div className="item">
-                            <span className="label">Diffuse</span>
-                            <span className="value">PNG</span>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
                   <div className="description">
+                    <h2 className="title">Details</h2>
                     <div className="content" />
                     <div className="markdown-preview">
                       <ReactMarkdown
@@ -294,6 +222,12 @@ const View = () => {
                       >
                         {markdown}
                       </ReactMarkdown>
+                    </div>
+                  </div>
+                  <div className="keywords_section">
+                    <h2 className="title">Assets Tags</h2>
+                    <div>
+                      <Keywords keywords={item.tags} />
                     </div>
                   </div>
                 </div>
@@ -310,20 +244,6 @@ const View = () => {
                         profilePic={item.profilePic}
                         username={item.username}
                       />
-                      {/* <div className="rating">
-                        <span className="icons">
-                          {Array(5)
-                            .fill()
-                            .map((_, i) => (
-                              <span
-                                key={i}
-                                className="icon fa fa-star checked"
-                              ></span>
-                            ))}
-                        </span>
-
-                        <span className="rating_count">(15)</span>
-                      </div> */}
                     </div>
                   </div>
 
@@ -333,123 +253,14 @@ const View = () => {
                     ) : (
                       ""
                     )}
+                    
+                    {/* UPDATED PRICE DISPLAY */}
                     <span className="price_value">
-                      {(Number(item.price) - (Number(item.price) * Number(item.discount || 0)) / 100) == 0
-                        ? "Free"
-                        : `$${(
-                            Number(item.price) -
-                            (Number(item.price) * Number(item.discount || 0)) / 100
-                          ).toFixed(2)}`}
+                      {item.price > 0 ? "Paid" : "Free"}
                     </span>
-                    <span className="before_price">
-                      {item.discount && `$${Number(item.price).toFixed(2)}`}
-                    </span>
-
-                    {item.discount && (
-                      <span className="discount">-{Number(item.discount)}%</span>
-                    )}
                   </div>
 
                   <div className="action_buttons">
-                    {/* <button
-                      className="add_to_cart_btn"
-                      onClick={() => {
-                        if (
-                          item.price - (item.price * item.discount) / 100 ==
-                          0
-                        ) {
-                          window.open(item.model, "_blank");
-                          return;
-                        } else if (
-                          userProfile &&
-                          userProfile.purchasedItems &&
-                          userProfile.purchasedItems.includes(item.id)
-                        ) {
-                          item.type === "models" &&
-                            window.open(item.model, "_blank");
-
-                          item.type === "printables" &&
-                            window.open(item.model, "_blank");
-
-                          if (item.type === "scripts") {
-                            // Function to download the script
-                            const downloadFile = (url) => {
-                              const link = document.createElement("a");
-                              link.href = url;
-                              link.download = url.split("/").pop(); // Use the file name from the URL
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                            };
-
-                            // Check if the file is a Python, C#, or C++ file
-                            const fileExtension = "py";
-                            const validExtensions = ["py", "cs", "cpp"];
-
-                            if (validExtensions.includes(fileExtension)) {
-                              downloadFile(item.script);
-                            } else {
-                              // Force download for other file types
-                              fetch(item.script)
-                                .then((response) => response.blob())
-                                .then((blob) => {
-                                  const url = window.URL.createObjectURL(blob);
-                                  downloadFile(url);
-                                  window.URL.revokeObjectURL(url);
-                                })
-                                .catch((error) =>
-                                  console.error("Download error:", error)
-                                );
-                            }
-                          }
-
-                          return;
-                        }
-
-                        let cart = localStorage.getItem("cart")
-                          ? JSON.parse(localStorage.getItem("cart"))
-                          : [];
-
-                        if (cart.find((cartItem) => cartItem.id === item.id)) {
-                          setToastMessage("Item already in cart");
-                          setToastState("warning");
-                          setShowToast(true);
-                          setTimeout(() => {
-                            setShowToast(false);
-                          }, 4000);
-                          return;
-                        }
-
-                        cart.push(item);
-
-                        localStorage.setItem("cart", JSON.stringify(cart));
-
-                        setToastMessage("Item added to cart");
-                        setToastState("success");
-                        setShowToast(true);
-
-                        setTimeout(() => {
-                          setShowToast(false);
-                        }, 4000);
-                      }}
-                    >
-                      {item.price - (item.price * item.discount) / 100 == 0 ? (
-                        <>
-                          <i className="icon fas fa-download"></i>
-                          Download
-                        </>
-                      ) : isItemOwned ? (
-                        <>
-                          <i className="icon fas fa-download"></i>
-                          Download
-                        </>
-                      ) : (
-                        <>
-                          <i className="icon fas fa-shopping-cart"></i>
-                          Add to cart
-                        </>
-                      )}
-                    </button> */}
                     <DownloadButton
                       item={item}
                       userProfile={userProfile}
@@ -458,96 +269,13 @@ const View = () => {
                       setShowToast={setShowToast}
                     />
 
-
-                    {/* <button className="add_to_wishlist_btn">
-                      <i className="icon fas fa-heart"></i>
-                    </button> */}
                     <FavoriteButton assetId={item.id} />
                   </div>
                 </div>
-                <ItemInfoTable
-                  // if type is model show following
-                  details={
-                    item.type === "models"
-                      ? [
-                          { label: "Resolution", value: item.resolution },
-                          { label: "LODs", value: item.lods },
-                          { label: "Physical Size", value: item.physicalSize },
-                          { label: "Vertices", value: item.vertices },
-                          { label: "Textures", value: item.textures },
-                          { label: "Materials", value: item.materials },
-                          { label: "Rigged", value: item.rigged },
-                          { label: "Animated", value: item.animated },
-                          {
-                            label: "VR / AR / Low-poly",
-                            value: item.vrArLowPoly,
-                          },
-                        ]
-                      : item.type === "printables"
-                      ? [
-                          { label: "Material", value: item.material },
-                          { label: "Resolution", value: item.resolution },
-                          { label: "Physical Size", value: item.physicalSize },
-                          { label: "vertices", value: item.vertices },
-                          { label: "Volume", value: item.volume },
-                          { label: "Surface Area", value: item.surfaceArea },
-                          {
-                            label: "Supports Required",
-                            value: item.supportsRequired,
-                          },
-                          {
-                            label: "Print Time Estimate",
-                            value: item.printTimeEstimate,
-                          },
-                          { label: "Nozzle Size", value: item.nozzleSize },
-                          { label: "Manifold", value: item.manifold },
-                          { label: "Layer Height", value: item.layerHeight },
-                          {
-                            label: "Infill Percentage",
-                            value: item.infillPercentage,
-                          },
-                        ]
-                      : item.type === "scripts"
-                      ? [
-                          {
-                            label: "Language",
-                            value:
-                              item.scriptName.split(".")[1] === "py"
-                                ? "Python"
-                                : item.scriptName.split(".")[1] === "cs"
-                                ? "C#"
-                                : item.scriptName.split(".")[1] === "cpp"
-                                ? "C++"
-                                : "Unknown",
-                          },
-                          { label: "Script name", value: item.scriptName },
-                          {
-                            label: "Script Size",
-                            value:
-                              (item.scriptSize / 1024 / 1024).toFixed(2) +
-                              " KB",
-                          },
-                        ]
-                      : item.type === "hdris"
-                      ? [
-                          {
-                            label: "File Format",
-                            value: item.hdri
-                              .split(".")
-                              .pop()
-                              .toUpperCase()
-                              .split("?")[0],
-                          },
-                          {
-                            label: "File Size",
-                            value:
-                              (item.hdriSize / 1024 / 1024).toFixed(2) + " MB", // Convert to KB
-                          },
-                        ]
-                      : []
-                  }
-                />
-                <Keywords keywords={item.tags} />
+                
+                {/* UPDATED: Automatic ItemInfoTable with asset object */}
+                <ItemInfoTable asset={item} />
+                
               </div>
             </div>
           </div>
