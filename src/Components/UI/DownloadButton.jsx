@@ -8,13 +8,16 @@ const DownloadButton = ({
   setToastState,
   setShowToast,
 }) => {
-  const { isDownloaded, addToDownloads, error } = useSaveToDownloads( item.id, item, );
-
-  // console.log("DownloadButton:", { item, id:item.id, userProfile  });
+  const { isDownloaded, addToDownloads, error } = useSaveToDownloads(item.id, item);
 
   const price = Number(item.price) || 0;
   const discount = Number(item.discount ?? 0) || 0;
   const finalPrice = price - (price * discount) / 100;
+
+  // Check if asset is free or purchased
+  const isFree = finalPrice === 0;
+  const isPurchased = userProfile && userProfile.purchasedItems && userProfile.purchasedItems.includes(item.id);
+  const canDownload = isFree || isPurchased;
 
   const getAssetUrls = () => {
     const urls = [];
@@ -47,8 +50,26 @@ const DownloadButton = ({
       case 'icons':
         if (Array.isArray(item.icons)) urls.push(...item.icons);
         break;
-      case 'images':
-        if (Array.isArray(item.images)) urls.push(...item.images);
+     case 'images':
+        // ✅ ENHANCED: Handle multiple image sizes
+        if (item.images && Array.isArray(item.images)) {
+          item.images.forEach((imageData) => {
+            if (imageData.sizes && typeof imageData.sizes === 'object') {
+              // New format with multiple sizes
+              Object.values(imageData.sizes).forEach(sizeData => {
+                if (sizeData.url) {
+                  urls.push(sizeData.url);
+                }
+              });
+            } else if (typeof imageData === 'string') {
+              // Old format - single URL (backward compatibility)
+              urls.push(imageData);
+            } else if (imageData.url) {
+              // Alternative object format
+              urls.push(imageData.url);
+            }
+          });
+        }
         break;
       case 'textures':
         if (item.maps && typeof item.maps === 'object') {
@@ -67,47 +88,17 @@ const DownloadButton = ({
       const a = document.createElement('a');
       a.href = url;
       a.download = '';
-      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch (e) {
-      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Download failed for URL:', url, err);
     }
   };
 
   const handleDownload = () => {
-    const urls = getAssetUrls();
-
-    // Free items: download immediately
-    if (finalPrice === 0) {
-      addToDownloads(item);
-      if (urls.length) {
-        urls.forEach(downloadURL);
-      }
-      return;
-    }
-
-    // Purchased items: allow download
-    if (
-      userProfile &&
-      userProfile.purchasedItems &&
-      userProfile.purchasedItems.includes(item.id)
-    ) {
-      addToDownloads(item);
-      if (urls.length) {
-        urls.forEach(downloadURL);
-      }
-      return;
-    }
-
-    // Otherwise add to cart
-    let cart = localStorage.getItem('cart')
-      ? JSON.parse(localStorage.getItem('cart'))
-      : [];
-
-    if (cart.find((cartItem) => cartItem.id === item.id)) {
-      setToastMessage('Item already in cart');
+    if (!canDownload) {
+      setToastMessage('This is a paid asset. Please purchase to download.');
       setToastState('warning');
       setShowToast(true);
       setTimeout(() => {
@@ -116,9 +107,23 @@ const DownloadButton = ({
       return;
     }
 
-    cart.push(item);
-    localStorage.setItem('cart', JSON.stringify(cart));
-    setToastMessage('Item added to cart');
+    const urls = getAssetUrls();
+
+    // Add to downloads history
+    addToDownloads(item);
+    
+    // Download files
+    if (urls.length) {
+      urls.forEach(downloadURL);
+    }
+
+   // ✅ ENHANCED: Show different message for multiple sizes
+    if (item.type === 'images' && urls.length > 1) {
+      setToastMessage(`Downloading ${urls.length} image files in multiple sizes!`);
+    } else {
+      setToastMessage('Download started!');
+    }
+    
     setToastState('success');
     setShowToast(true);
     setTimeout(() => {
@@ -127,30 +132,30 @@ const DownloadButton = ({
   };
 
   return (
-    <button className="add_to_cart_btn" onClick={handleDownload}>
-      {(finalPrice === 0 || (userProfile && userProfile.purchasedItems && userProfile.purchasedItems.includes(item.id))) ? (
+    <button 
+      className="add_to_cart_btn" 
+      onClick={handleDownload}
+      disabled={!canDownload}
+      style={{
+        opacity: canDownload ? 1 : 0.6,
+        cursor: canDownload ? 'pointer' : 'not-allowed'
+      }}
+    >
+      {canDownload ? (
         <>
           <i className="icon fas fa-download"></i>
-          Download
+          {isDownloaded ? 'Download Again' : 'Download'}
         </>
       ) : (
         <>
-          {isDownloaded ? (
-            <>
-              <i className="icon fas fa-download"></i>
-              Downloaded
-            </>
-          ) : (
-            <>
-              <i className="icon fas fa-shopping-cart"></i>
-              Add to cart
-            </>
-          )}
+          <i className="icon fas fa-lock"></i>
+          Paid Asset
         </>
       )}
     </button>
   );
 };
+
 DownloadButton.propTypes = {
   item: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
