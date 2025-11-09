@@ -1,10 +1,22 @@
 import { auth, db, storage } from "../../../../firebase";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc, getDocs, collection, collectionGroup, updateDoc, setDoc, deleteDoc, orderBy, onSnapshot, query, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  getDocs,
+  collection,
+  collectionGroup,
+  updateDoc,
+  setDoc,
+  deleteDoc,
+  orderBy,
+  onSnapshot,
+  query,
+  addDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { signOut } from "firebase/auth";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "../../../../firebase";
 
 // Import components
 import UserInformation from "./users/UserInformation";
@@ -27,15 +39,52 @@ import BlogEditorModal from "../../../Pages/BlogEditor";
 import ProjectModal from "../../../Pages/PortfolioUpload";
 
 // Import icons
-import { 
-  FiUsers, FiMail, FiUpload, FiFileText, FiSearch, FiChevronDown, 
-  FiChevronUp, FiCheck, FiX, FiTrash2, FiBox, FiHome, FiBell, 
-  FiSettings, FiUser, FiShield, FiUserCheck, FiChevronLeft, FiMenu, 
-  FiLogOut, FiActivity, FiFilter, FiEye, FiMapPin, FiCalendar, 
-  FiShoppingCart, FiDollarSign, FiDownload, FiCheckCircle, FiMoreHorizontal, 
-  FiStar, FiTrendingUp, FiTag, FiImage, FiBriefcase, FiPlus, 
-  FiCornerUpLeft, FiMessageSquare, FiAlertCircle, FiPieChart, FiList, 
-  FiAlertTriangle, FiTrendingDown, FiClock, FiRefreshCw 
+import {
+  FiUsers,
+  FiMail,
+  FiUpload,
+  FiFileText,
+  FiSearch,
+  FiChevronDown,
+  FiChevronUp,
+  FiCheck,
+  FiX,
+  FiTrash2,
+  FiBox,
+  FiHome,
+  FiBell,
+  FiSettings,
+  FiUser,
+  FiShield,
+  FiUserCheck,
+  FiChevronLeft,
+  FiMenu,
+  FiLogOut,
+  FiActivity,
+  FiFilter,
+  FiEye,
+  FiMapPin,
+  FiCalendar,
+  FiShoppingCart,
+  FiDollarSign,
+  FiDownload,
+  FiCheckCircle,
+  FiMoreHorizontal,
+  FiStar,
+  FiTrendingUp,
+  FiTag,
+  FiImage,
+  FiBriefcase,
+  FiPlus,
+  FiCornerUpLeft,
+  FiMessageSquare,
+  FiAlertCircle,
+  FiPieChart,
+  FiList,
+  FiAlertTriangle,
+  FiTrendingDown,
+  FiClock,
+  FiRefreshCw,
 } from "react-icons/fi";
 
 import "./style.css";
@@ -118,36 +167,68 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-   const checkAdminStatus = async (email) => {
-     if (!email) return false;
- 
-     // Primary admin (must match Firestore rules)
-     const PRIMARY_ADMIN = "admin@shammarianas.com";
-     const ALSO_AUTHORIZED = ["shammarianas@gmail.com"];
-     if (email === PRIMARY_ADMIN) {
-       try {
-         await setDoc(
-           doc(db, "adminUsers", email),
-           { createdAt: serverTimestamp(), promotedBy: "system" },
-           { merge: true }
-         );
-       } catch {}
-       return true;
-     }
- 
-     try {
-       if (!db) return false;
-       // Allow UI access for pre-authorized emails once seeded
-       const adminDoc = await getDoc(doc(db, "adminUsers", email));
-       if (adminDoc.exists()) return true;
-       if (ALSO_AUTHORIZED.includes(email)) return false; // needs seeding by primary admin
-       return false;
-     } catch (error) {
-       setError(`Failed to check admin status: ${error.message}`);
-       return false;
-     }
-   };
+  const checkAdminStatus = async (email) => {
+    if (!email) return false;
 
+    // Primary admin (must match Firestore rules)
+    const PRIMARY_ADMIN = "admin@shammarianas.com";
+    const ALSO_AUTHORIZED = ["shammarianas@gmail.com"];
+    if (email === PRIMARY_ADMIN) {
+      try {
+        await setDoc(
+          doc(db, "adminUsers", email),
+          { createdAt: serverTimestamp(), promotedBy: "system" },
+          { merge: true }
+        );
+      } catch {}
+      return true;
+    }
+
+    try {
+      if (!db) return false;
+      // Allow UI access for pre-authorized emails once seeded
+      const adminDoc = await getDoc(doc(db, "adminUsers", email));
+      if (adminDoc.exists()) return true;
+      if (ALSO_AUTHORIZED.includes(email)) return false; // needs seeding by primary admin
+      return false;
+    } catch (error) {
+      setError(`Failed to check admin status: ${error.message}`);
+      return false;
+    }
+  };
+  // Paste yeh functions AdminDashboard ke andar (kisi bhi jagah, upar ya neeche)
+  const changeUserRole = async (userId, newRole, email) => {
+    try {
+      await updateDoc(doc(db, "Profiles", userId), {
+        role: newRole,
+        admin: newRole === "admin",
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Role change error:", error);
+      return { success: false, error };
+    }
+  };
+
+  const changeUserStatus = async (userId, newStatus) => {
+    try {
+      await updateDoc(doc(db, "Profiles", userId), { status: newStatus });
+      return { success: true };
+    } catch (error) {
+      console.error("Status change error:", error);
+      return { success: false, error };
+    }
+  };
+
+  const deleteUserAccount = async (userId) => {
+    try {
+      await deleteDoc(doc(db, "Profiles", userId));
+      return { success: true };
+    } catch (error) {
+      console.error("Delete error:", error);
+      return { success: false, error };
+    }
+  };
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -165,47 +246,46 @@ const AdminDashboard = () => {
   };
 
   const fetchSupportMessages = async (profileId) => {
-     setLoading(true);
-     try {
-       if (!db) throw new Error("Firebase not initialized");
- 
-       if (isAdmin && !profileId) {
-         const q = query(
-           collectionGroup(db, "Support"),
-           orderBy("createdAt", "desc")
-         );
-         const snap = await getDocs(q);
-         const messages = snap.docs.map((d) => ({
-           id: d.id,
-           profileId: d.ref.parent.parent?.id || "",
-           ...d.data(),
-         }));
-         setSupportMessages(messages);
-       } else {
-         const uid = profileId || auth.currentUser?.uid;
-         if (!uid) {
-           setSupportMessages([]);
-           return;
-         }
-         const q = query(
-           collection(db, `Profiles/${uid}/Support`),
-           orderBy("createdAt", "desc")
-         );
-         const snap = await getDocs(q);
-         const messages = snap.docs.map((d) => ({
-           id: d.id,
-           profileId: uid,
-           ...d.data(),
-         }));
-         setSupportMessages(messages);
-       }
-     } catch (error) {
-       setError(`Failed to load support messages: ${error.message}`);
-     } finally {
-       setLoading(false);
-     }
-   };
- 
+    setLoading(true);
+    try {
+      if (!db) throw new Error("Firebase not initialized");
+
+      if (isAdmin && !profileId) {
+        const q = query(
+          collectionGroup(db, "Support"),
+          orderBy("createdAt", "desc")
+        );
+        const snap = await getDocs(q);
+        const messages = snap.docs.map((d) => ({
+          id: d.id,
+          profileId: d.ref.parent.parent?.id || "",
+          ...d.data(),
+        }));
+        setSupportMessages(messages);
+      } else {
+        const uid = profileId || auth.currentUser?.uid;
+        if (!uid) {
+          setSupportMessages([]);
+          return;
+        }
+        const q = query(
+          collection(db, `Profiles/${uid}/Support`),
+          orderBy("createdAt", "desc")
+        );
+        const snap = await getDocs(q);
+        const messages = snap.docs.map((d) => ({
+          id: d.id,
+          profileId: uid,
+          ...d.data(),
+        }));
+        setSupportMessages(messages);
+      }
+    } catch (error) {
+      setError(`Failed to load support messages: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadBlogs = () => {
     setLoading(true);
@@ -239,29 +319,35 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    if (activeTab === 4 || (selectedDashboard === "company" && activeTab === 1)) {
+    if (
+      activeTab === 4 ||
+      (selectedDashboard === "company" && activeTab === 1)
+    ) {
       loadBlogs();
     }
   }, [activeTab, selectedDashboard]);
 
- const loadProjects = async () => {
-  setLoading(true);
-  try {
-    const querySnapshot = await getDocs(collection(db, "projects"));
-    const projectsData = [];
-    querySnapshot.forEach((doc) => {
-      projectsData.push({ id: doc.id, ...doc.data() });
-    });
-    setPortfolios(projectsData);
-  } catch (error) {
-    setError(`Failed to load portfolios: ${error.message}`);
-  } finally {
-    setLoading(false);
-  }
-};
+  const loadProjects = async () => {
+    setLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, "projects"));
+      const projectsData = [];
+      querySnapshot.forEach((doc) => {
+        projectsData.push({ id: doc.id, ...doc.data() });
+      });
+      setPortfolios(projectsData);
+    } catch (error) {
+      setError(`Failed to load portfolios: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (activeTab === 5 || (selectedDashboard === "company" && activeTab === 2)) {
+    if (
+      activeTab === 5 ||
+      (selectedDashboard === "company" && activeTab === 2)
+    ) {
       loadProjects();
     }
   }, [activeTab, selectedDashboard]);
@@ -292,7 +378,7 @@ const AdminDashboard = () => {
   const handleDashboardChange = (dashboard) => {
     setSelectedDashboard(dashboard);
     setIsDropdownOpen(false);
-    
+
     if (dashboard === "admin") {
       setActiveTab(1);
     } else {
@@ -351,7 +437,11 @@ const AdminDashboard = () => {
       setError("Only admins can change user roles");
       return;
     }
-    if (window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to change this user's role to ${newRole}?`
+      )
+    ) {
       try {
         const lowerCaseEmail = (userEmail || "").toLowerCase();
         const setUserRoleFn = httpsCallable(functions, "setUserRole");
@@ -360,7 +450,11 @@ const AdminDashboard = () => {
           userId,
           role: newRole,
         });
-        setUsers(users.map((user) => user.id === userId ? { ...user, role: newRole } : user));
+        setUsers(
+          users.map((user) =>
+            user.id === userId ? { ...user, role: newRole } : user
+          )
+        );
       } catch (error) {
         setError(`Failed to update role: ${error.message}`);
       }
@@ -375,7 +469,9 @@ const AdminDashboard = () => {
     try {
       const setUserStatusFn = httpsCallable(functions, "setUserStatus");
       await setUserStatusFn({ userId, status: newStatus });
-      setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, status: newStatus } : u));
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
+      );
     } catch (error) {
       setError(`Failed to update status: ${error.message}`);
     }
@@ -396,7 +492,8 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteBlog = async (blogId) => {
-    if (!window.confirm("Are you sure you want to delete this blog post?")) return;
+    if (!window.confirm("Are you sure you want to delete this blog post?"))
+      return;
     try {
       await deleteDoc(doc(db, "blogs", blogId));
       loadBlogs();
@@ -417,7 +514,11 @@ const AdminDashboard = () => {
         ...(newStatus === "PUBLISHED" && { publishedAt: serverTimestamp() }),
       });
       loadBlogs();
-      alert(`Blog ${newStatus === "PUBLISHED" ? "published" : "drafted"} successfully!`);
+      alert(
+        `Blog ${
+          newStatus === "PUBLISHED" ? "published" : "drafted"
+        } successfully!`
+      );
     } catch (error) {
       console.error("Update blog status error:", error);
       setError("Failed to update blog post status");
@@ -429,10 +530,14 @@ const AdminDashboard = () => {
       setError("Only admins can delete portfolio items");
       return;
     }
-    if (window.confirm("Are you sure you want to delete this portfolio item?")) {
+    if (
+      window.confirm("Are you sure you want to delete this portfolio item?")
+    ) {
       try {
         await deleteDoc(doc(db, "projects", portfolioId));
-        setPortfolios(portfolios.filter((portfolio) => portfolio.id !== portfolioId));
+        setPortfolios(
+          portfolios.filter((portfolio) => portfolio.id !== portfolioId)
+        );
       } catch (error) {
         setError(`Failed to delete portfolio item: ${error.message}`);
       }
@@ -449,7 +554,11 @@ const AdminDashboard = () => {
         status: newStatus,
         updatedAt: serverTimestamp(),
       });
-      setPortfolios((prev) => prev.map((p) => p.id === portfolioId ? { ...p, status: newStatus } : p));
+      setPortfolios((prev) =>
+        prev.map((p) =>
+          p.id === portfolioId ? { ...p, status: newStatus } : p
+        )
+      );
     } catch (error) {
       setError(`Failed to update portfolio status: ${error.message}`);
     }
@@ -467,7 +576,11 @@ const AdminDashboard = () => {
         featured: !current,
         updatedAt: serverTimestamp(),
       });
-      setPortfolios((prev) => prev.map((p) => p.id === portfolioId ? { ...p, featured: !current } : p));
+      setPortfolios((prev) =>
+        prev.map((p) =>
+          p.id === portfolioId ? { ...p, featured: !current } : p
+        )
+      );
     } catch (error) {
       setError(`Failed to update portfolio: ${error.message}`);
     }
@@ -478,20 +591,35 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="admin-dashboard" style={{display: 'flex'}}>
+    <div className="admin-dashboard" style={{ display: "flex" }}>
       {/* Sidebar */}
-      <div className="sidebar" style={{position: 'fixed', width: '260px', overflowY: 'auto'}}>
+      <div
+        className="sidebar"
+        style={{ position: "fixed", width: "260px", overflowY: "auto" }}
+      >
         <div className="custom-dropdown" ref={dropdownRef}>
-          <button className="dashboard-dropdown" onClick={toggleDropdown} title="Select Dashboard">
-            {selectedDashboard === "admin" ? "Admin Dashboard" : "Company Dashboard"}
+          <button
+            className="dashboard-dropdown"
+            onClick={toggleDropdown}
+            title="Select Dashboard"
+          >
+            {selectedDashboard === "admin"
+              ? "Admin Dashboard"
+              : "Company Dashboard"}
             <FiChevronDown className="dropdown-icon" />
           </button>
           {isDropdownOpen && (
             <ul className="dropdown-menu">
-              <li className={selectedDashboard === "admin" ? "selected" : ""} onClick={() => handleDashboardChange("admin")}>
+              <li
+                className={selectedDashboard === "admin" ? "selected" : ""}
+                onClick={() => handleDashboardChange("admin")}
+              >
                 Admin Dashboard
               </li>
-              <li className={selectedDashboard === "company" ? "selected" : ""} onClick={() => handleDashboardChange("company")}>
+              <li
+                className={selectedDashboard === "company" ? "selected" : ""}
+                onClick={() => handleDashboardChange("company")}
+              >
                 Company Dashboard
               </li>
             </ul>
@@ -509,13 +637,28 @@ const AdminDashboard = () => {
                     <span className="nav-label">Users</span>
                   </div>
                   <ul className="submenu">
-                    <li className={`submenu-item ${activeTab === 1 ? "active" : ""}`} onClick={() => setActiveTab(1)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 1 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(1)}
+                    >
                       User Information
                     </li>
-                    <li className={`submenu-item ${activeTab === 2 ? "active" : ""}`} onClick={() => setActiveTab(2)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 2 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(2)}
+                    >
                       User Report
                     </li>
-                    <li className={`submenu-item ${activeTab === 3 ? "active" : ""}`} onClick={() => setActiveTab(3)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 3 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(3)}
+                    >
                       Payment & Plan
                     </li>
                   </ul>
@@ -528,22 +671,52 @@ const AdminDashboard = () => {
                     <span className="nav-label">Sellers</span>
                   </div>
                   <ul className="submenu">
-                    <li className={`submenu-item ${activeTab === 4 ? "active" : ""}`} onClick={() => setActiveTab(4)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 4 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(4)}
+                    >
                       Seller Account Verify
                     </li>
-                    <li className={`submenu-item ${activeTab === 5 ? "active" : ""}`} onClick={() => setActiveTab(5)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 5 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(5)}
+                    >
                       Asset Request
                     </li>
-                    <li className={`submenu-item ${activeTab === 6 ? "active" : ""}`} onClick={() => setActiveTab(6)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 6 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(6)}
+                    >
                       Seller Earning
                     </li>
-                    <li className={`submenu-item ${activeTab === 7 ? "active" : ""}`} onClick={() => setActiveTab(7)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 7 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(7)}
+                    >
                       Seller Report
                     </li>
-                    <li className={`submenu-item ${activeTab === 8 ? "active" : ""}`} onClick={() => setActiveTab(8)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 8 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(8)}
+                    >
                       Seller Analytic
                     </li>
-                    <li className={`submenu-item ${activeTab === 9 ? "active" : ""}`} onClick={() => setActiveTab(9)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 9 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(9)}
+                    >
                       Seller Complains
                     </li>
                   </ul>
@@ -556,16 +729,36 @@ const AdminDashboard = () => {
                     <span className="nav-label">Advanced</span>
                   </div>
                   <ul className="submenu">
-                    <li className={`submenu-item ${activeTab === 10 ? "active" : ""}`} onClick={() => setActiveTab(10)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 10 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(10)}
+                    >
                       Download
                     </li>
-                    <li className={`submenu-item ${activeTab === 11 ? "active" : ""}`} onClick={() => setActiveTab(11)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 11 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(11)}
+                    >
                       Earning
                     </li>
-                    <li className={`submenu-item ${activeTab === 12 ? "active" : ""}`} onClick={() => setActiveTab(12)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 12 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(12)}
+                    >
                       Analytic
                     </li>
-                    <li className={`submenu-item ${activeTab === 13 ? "active" : ""}`} onClick={() => setActiveTab(13)}>
+                    <li
+                      className={`submenu-item ${
+                        activeTab === 13 ? "active" : ""
+                      }`}
+                      onClick={() => setActiveTab(13)}
+                    >
                       Asset
                     </li>
                   </ul>
@@ -573,11 +766,21 @@ const AdminDashboard = () => {
               </ul>
             ) : (
               <ul className="sidebar-menu">
-                <li className={`menu-item dropdown-header comp-menu ${activeTab === 1 ? "active" : ""}`} onClick={() => setActiveTab(1)}>
+                <li
+                  className={`menu-item dropdown-header comp-menu ${
+                    activeTab === 1 ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab(1)}
+                >
                   <FiFileText className="menu-icon" />
                   <span className="nav-label">Blogs</span>
                 </li>
-                <li className={`menu-item dropdown-header comp-menu ${activeTab === 2 ? "active" : ""}`} onClick={() => setActiveTab(2)}>
+                <li
+                  className={`menu-item dropdown-header comp-menu ${
+                    activeTab === 2 ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab(2)}
+                >
                   <FiBriefcase className="menu-icon" />
                   <span className="nav-label">Portfolio</span>
                 </li>
@@ -591,12 +794,16 @@ const AdminDashboard = () => {
                 <FiSettings className="menu-icon" />
                 <span className="nav-label">Settings</span>
               </button>
-              <button className="menu-item compact" title="Logout" onClick={async () => {
-                try {
-                  await signOut(auth);
-                  navigate("/");
-                } catch {}
-              }}>
+              <button
+                className="menu-item compact"
+                title="Logout"
+                onClick={async () => {
+                  try {
+                    await signOut(auth);
+                    navigate("/");
+                  } catch {}
+                }}
+              >
                 <FiLogOut className="menu-icon" />
                 <span className="nav-label">Logout</span>
               </button>
@@ -606,7 +813,10 @@ const AdminDashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="main-content" style={{marginLeft: '250px', overflowY: 'auto'}}>
+      <div
+        className="main-content"
+        style={{ marginLeft: "250px", overflowY: "auto" }}
+      >
         <div className="header">
           <h1 className="page-title">
             {activeTab === 1 && selectedDashboard === "admin" && ""}
@@ -622,8 +832,12 @@ const AdminDashboard = () => {
             {activeTab === 11 && "Earning"}
             {activeTab === 12 && "Analytic"}
             {activeTab === 13 && ""}
-            {activeTab === 1 && selectedDashboard === "company" && "Blog Management"}
-            {activeTab === 2 && selectedDashboard === "company" && "Portfolio Management"}
+            {activeTab === 1 &&
+              selectedDashboard === "company" &&
+              "Blog Management"}
+            {activeTab === 2 &&
+              selectedDashboard === "company" &&
+              "Portfolio Management"}
           </h1>
         </div>
 
@@ -642,6 +856,7 @@ const AdminDashboard = () => {
             {activeTab === 1 && (
               <UserInformation
                 users={users}
+                setUsers={setUsers} // <-- YE ADD KARO
                 onRoleChange={handleRoleChange}
                 onUpdateStatus={handleUpdateUserStatus}
                 onDelete={handleDeleteUser}
@@ -650,58 +865,38 @@ const AdminDashboard = () => {
               />
             )}
 
-            {activeTab === 2 && (
-              <UserReport />
-            )}
+            {activeTab === 2 && <UserReport />}
 
-            {activeTab === 3 && (
-              <PaymentPlan />
-            )}
+            {activeTab === 3 && <PaymentPlan />}
 
-            {activeTab === 4 && (
-              <SellerAccountVerify />
-            )}
+            {activeTab === 4 && <SellerAccountVerify />}
 
             {activeTab === 5 && (
               <div className="content-card">
                 <div className="card-body">
                   <h3>Asset Requests</h3>
-                  <p>Asset request management dashboard will be implemented here.</p>
+                  <p>
+                    Asset request management dashboard will be implemented here.
+                  </p>
                 </div>
               </div>
             )}
 
-            {activeTab === 6 && (
-              <SellerEarning />
-            )}
+            {activeTab === 6 && <SellerEarning />}
 
-            {activeTab === 7 && (
-              <SellerReports />
-            )}
+            {activeTab === 7 && <SellerReports />}
 
-            {activeTab === 8 && (
-              <SellerAnalytics />
-            )}
+            {activeTab === 8 && <SellerAnalytics />}
 
-            {activeTab === 9 && (
-              <SellerComplaints />
-            )}
+            {activeTab === 9 && <SellerComplaints />}
 
-            {activeTab === 10 && (
-              <Downloads />
-            )}
+            {activeTab === 10 && <Downloads />}
 
-            {activeTab === 11 && (
-              <Earnings />
-            )}
+            {activeTab === 11 && <Earnings />}
 
-            {activeTab === 12 && (
-              <Analytics />
-            )}
+            {activeTab === 12 && <Analytics />}
 
-            {activeTab === 13 && (
-              <AssetManagement />
-            )}
+            {activeTab === 13 && <AssetManagement />}
           </>
         )}
 
@@ -721,11 +916,11 @@ const AdminDashboard = () => {
             {activeTab === 2 && (
               <PortfolioList
                 portfolios={portfolios}
-    onDelete={handleDeletePortfolio}
-    onCreate={loadProjects} // Yeh refresh ka kaam karega
-    onToggleFeatured={handleTogglePortfolioFeatured}
-    onUpdateStatus={handleUpdatePortfolioStatus}
-    formatDate={formatDate}
+                onDelete={handleDeletePortfolio}
+                onCreate={loadProjects} // Yeh refresh ka kaam karega
+                onToggleFeatured={handleTogglePortfolioFeatured}
+                onUpdateStatus={handleUpdatePortfolioStatus}
+                formatDate={formatDate}
               />
             )}
           </>

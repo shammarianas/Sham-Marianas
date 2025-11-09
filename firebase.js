@@ -11,7 +11,7 @@ const firebaseConfig = {
   storageBucket: "sham-marianas.firebasestorage.app",
   messagingSenderId: "607689609153",
   appId: "1:607689609153:web:3d76a1c337979a691a6940",
-  measurementId: "G-Y0VR1HQNCG"
+  measurementId: "G-Y0VR1HQNCG",
 };
 
 // Initialize Firebase
