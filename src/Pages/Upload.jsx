@@ -1,20 +1,63 @@
 import React, { useState, useRef, useEffect } from "react";
 import { db, storage } from "../../firebase";
-import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUser } from "../Context/UserProvider";
 import { Helmet } from "react-helmet-async";
-import { FiUpload, FiX, FiPlus, FiImage, FiVideo, FiFile, FiCode, FiMusic, FiBox, FiChevronDown, FiPlay, FiPause } from "react-icons/fi";
-import useImageSizeConverter from '../hooks/ImageSizeConverter';
+import {
+  FiUpload,
+  FiX,
+  FiPlus,
+  FiImage,
+  FiVideo,
+  FiFile,
+  FiCode,
+  FiMusic,
+  FiBox,
+  FiChevronDown,
+  FiPlay,
+  FiPause,
+  FiFileText,
+} from "react-icons/fi";
+import useImageSizeConverter from "../hooks/ImageSizeConverter";
 
 const filterData = {
   Videos: {
     categories: {
       label: "Categories",
       options: [
-        "Buildings", "Business, Corporate", "Cartoons", "City", "Construction", "Education", "Food", "Holidays",
-        "Industrial", "Kids", "Lifestyle", "Medical", "Military", "Nature", "Overhead", "People", "Religious",
-        "Science", "Slow Motion", "Special Events", "Sports", "Stop Motion", "Technology", "Time Lapse", "Vehicles", "Weather",
+        "Buildings",
+        "Business, Corporate",
+        "Cartoons",
+        "City",
+        "Construction",
+        "Education",
+        "Food",
+        "Holidays",
+        "Industrial",
+        "Kids",
+        "Lifestyle",
+        "Medical",
+        "Military",
+        "Nature",
+        "Overhead",
+        "People",
+        "Religious",
+        "Science",
+        "Slow Motion",
+        "Special Events",
+        "Sports",
+        "Stop Motion",
+        "Technology",
+        "Time Lapse",
+        "Vehicles",
+        "Weather",
       ],
     },
     aiGenerated: {
@@ -27,7 +70,15 @@ const filterData = {
     },
     frameRate: {
       label: "Frame Rate",
-      options: ["23.98 fps", "24 fps", "25 fps", "29.97 fps", "30 fps", "50 fps", "60 fps"],
+      options: [
+        "23.98 fps",
+        "24 fps",
+        "25 fps",
+        "29.97 fps",
+        "30 fps",
+        "50 fps",
+        "60 fps",
+      ],
     },
     properties: {
       label: "Properties",
@@ -37,11 +88,26 @@ const filterData = {
   VideoTemplates: {
     categories: {
       label: "Categories",
-      options: ["Broadcast Packages", "Elements", "Infographics", "Logo Stings", "Openers", "Product Promo", "Titles", "Video Displays"],
+      options: [
+        "Broadcast Packages",
+        "Elements",
+        "Infographics",
+        "Logo Stings",
+        "Openers",
+        "Product Promo",
+        "Titles",
+        "Video Displays",
+      ],
     },
     applicationsSupported: {
       label: "Applications Supported",
-      options: ["After Effects", "Premiere Pro", "Apple Motion", "Final Cut Pro", "DaVinci Resolve"],
+      options: [
+        "After Effects",
+        "Premiere Pro",
+        "Apple Motion",
+        "Final Cut Pro",
+        "DaVinci Resolve",
+      ],
     },
     resolution: {
       label: "Resolution",
@@ -52,9 +118,20 @@ const filterData = {
     categories: {
       label: "Category / Subject",
       options: [
-        "People", "Business & Office", "Technology", "Nature / Landscape", "Architecture / Interior",
-        "Fashion / Lifestyle", "Fitness / Sports", "Food & Drink", "Health / Medical", "Education",
-        "Travel", "Art & Culture", "Holidays / Events", "Abstract / Textures",
+        "People",
+        "Business & Office",
+        "Technology",
+        "Nature / Landscape",
+        "Architecture / Interior",
+        "Fashion / Lifestyle",
+        "Fitness / Sports",
+        "Food & Drink",
+        "Health / Medical",
+        "Education",
+        "Travel",
+        "Art & Culture",
+        "Holidays / Events",
+        "Abstract / Textures",
       ],
     },
     orientation: {
@@ -67,13 +144,28 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: ["Free for Personal Use", "Free for Commercial Use", "Editorial Use Only", "Extended License"],
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
+        "Extended License",
+      ],
     },
   },
   GraphicTemplates: {
     categories: {
       label: "Categories",
-      options: ["Print Templates", "Packaging", "Logo", "Social Media", "Letterheads", "Business Cards", "Banners", "Infographics", "Other"],
+      options: [
+        "Print Templates",
+        "Packaging",
+        "Logo",
+        "Social Media",
+        "Letterheads",
+        "Business Cards",
+        "Banners",
+        "Infographics",
+        "Other",
+      ],
     },
     colorSpace: {
       label: "Color Space",
@@ -95,7 +187,15 @@ const filterData = {
   Mockups: {
     categories: {
       label: "Categories",
-      options: ["Products", "Advertising", "Social Media", "Stationary", "Places", "Vehicles", "Website / UI Display"],
+      options: [
+        "Products",
+        "Advertising",
+        "Social Media",
+        "Stationary",
+        "Places",
+        "Vehicles",
+        "Website / UI Display",
+      ],
     },
     fileFormat: {
       label: "File Format",
@@ -103,7 +203,12 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: ["Free Use", "Commercial Use", "Extended License", "Personal Use Only"],
+      options: [
+        "Free Use",
+        "Commercial Use",
+        "Extended License",
+        "Personal Use Only",
+      ],
     },
   },
   Fonts: {
@@ -113,7 +218,15 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: ["Free for Personal Use", "Free for Commercial Use", "Paid / Premium License", "Extended / Unlimited Use", "Desktop License", "Webfont License", "App / eBook License"],
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Paid / Premium License",
+        "Extended / Unlimited Use",
+        "Desktop License",
+        "Webfont License",
+        "App / eBook License",
+      ],
     },
     categories: {
       label: "Categories",
@@ -124,14 +237,35 @@ const filterData = {
     objectType: {
       label: "Object Type",
       options: [
-        "Characters", "Vehicles", "Architecture / Buildings", "Furniture", "Weapons / Military",
-        "Clothing / Accessories", "Electronics / Gadgets", "Nature / Plants / Trees", "Animals / Creatures",
-        "Food & Drink", "Household Items", "Fantasy / Sci-fi", "Medical / Anatomy", "Industrial / Mechanical", "Props / Miscellaneous",
+        "Characters",
+        "Vehicles",
+        "Architecture / Buildings",
+        "Furniture",
+        "Weapons / Military",
+        "Clothing / Accessories",
+        "Electronics / Gadgets",
+        "Nature / Plants / Trees",
+        "Animals / Creatures",
+        "Food & Drink",
+        "Household Items",
+        "Fantasy / Sci-fi",
+        "Medical / Anatomy",
+        "Industrial / Mechanical",
+        "Props / Miscellaneous",
       ],
     },
     fileFormat: {
       label: "File Format",
-      options: [".FBX", ".OBJ", ".BLEND (Blender)", ".MAX (3ds Max)", ".MA / .MB (Maya)", ".GLTF / .GLB", ".STL (3D Print)", ".C4D (Cinema 4D)"],
+      options: [
+        ".FBX",
+        ".OBJ",
+        ".BLEND (Blender)",
+        ".MAX (3ds Max)",
+        ".MA / .MB (Maya)",
+        ".GLTF / .GLB",
+        ".STL (3D Print)",
+        ".C4D (Cinema 4D)",
+      ],
     },
     properties: {
       label: "Properties",
@@ -139,33 +273,54 @@ const filterData = {
     },
     categories: {
       label: "Categories",
-      options: ["Characters",
-"Vehicles",
-"Architecture / Buildings",
-"Furniture",
-"Weapons / Military",
-"Clothing / Accessories",
-"Electronics / Gadgets",
-"Nature / Plants / Trees",
-"Animals / Creatures",
-"Food & Drink",
-"Household Items",
-"Fantasy / Sci-fi",
-"Medical / Anatomy",
-"Industrial / Mechanical",
-"Props / Miscellaneous"],
+      options: [
+        "Characters",
+        "Vehicles",
+        "Architecture / Buildings",
+        "Furniture",
+        "Weapons / Military",
+        "Clothing / Accessories",
+        "Electronics / Gadgets",
+        "Nature / Plants / Trees",
+        "Animals / Creatures",
+        "Food & Drink",
+        "Household Items",
+        "Fantasy / Sci-fi",
+        "Medical / Anatomy",
+        "Industrial / Mechanical",
+        "Props / Miscellaneous",
+      ],
     },
   },
   Icons: {
     categories: {
       label: "Categories",
-      options: ["Static Icons", "Interface Icons", "Animated Icons", "Stickers"],
+      options: [
+        "Static Icons",
+        "Interface Icons",
+        "Animated Icons",
+        "Stickers",
+      ],
     },
   },
   Textures: {
     surfaceMaterial: {
       label: "Surface Material",
-      options: ["Wood", "Metal", "Concrete", "Brick", "Fabric / Cloth", "Leather", "Stone / Rock", "Plastic", "Glass", "Water", "Sand / Soil", "Paper / Cardboard", "Asphalt / Road"],
+      options: [
+        "Wood",
+        "Metal",
+        "Concrete",
+        "Brick",
+        "Fabric / Cloth",
+        "Leather",
+        "Stone / Rock",
+        "Plastic",
+        "Glass",
+        "Water",
+        "Sand / Soil",
+        "Paper / Cardboard",
+        "Asphalt / Road",
+      ],
     },
     resolution: {
       label: "Resolution",
@@ -173,38 +328,67 @@ const filterData = {
     },
     style: {
       label: "Style / Look",
-      options: ["Realistic", "Cartoon / Stylized", "Minimal", "Abstract", "Vintage", "Futuristic", "Sci-fi", "Fantasy"],
+      options: [
+        "Realistic",
+        "Cartoon / Stylized",
+        "Minimal",
+        "Abstract",
+        "Vintage",
+        "Futuristic",
+        "Sci-fi",
+        "Fantasy",
+      ],
     },
     categories: {
       label: "Surface Material",
-      options: ["Wood",
-"Metal",
-"Concrete",
-"Brick",
-"Fabric / Cloth",
-"Leather",
-"Stone / Rock",
-"Plastic",
-"Glass",
-"Water",
-"Sand / Soil",
-"Paper / Cardboard",
-"Asphalt / Road"],
+      options: [
+        "Wood",
+        "Metal",
+        "Concrete",
+        "Brick",
+        "Fabric / Cloth",
+        "Leather",
+        "Stone / Rock",
+        "Plastic",
+        "Glass",
+        "Water",
+        "Sand / Soil",
+        "Paper / Cardboard",
+        "Asphalt / Road",
+      ],
     },
   },
   HDRIs: {
     environmentType: {
       label: "Environment Type",
       options: [
-        "Studio", "Indoor", "Outdoor", "Urban / Cityscape", "Nature / Forest", "Desert", "Mountains / Hills",
-        "Beach / Ocean", "Industrial / Factory", "Room / Apartment", "Rooftop / Terrace", "HDRI Domes / Sci-fi Rooms",
+        "Studio",
+        "Indoor",
+        "Outdoor",
+        "Urban / Cityscape",
+        "Nature / Forest",
+        "Desert",
+        "Mountains / Hills",
+        "Beach / Ocean",
+        "Industrial / Factory",
+        "Room / Apartment",
+        "Rooftop / Terrace",
+        "HDRI Domes / Sci-fi Rooms",
       ],
     },
     lightingCondition: {
       label: "Lighting Condition",
       options: [
-        "Daylight", "Golden Hour", "Night", "Sunset / Sunrise", "Overcast", "Dramatic / Moody Light",
-        "High Contrast / Harsh Light", "Soft Light / Diffused", "Artificial Light / Lamp-lit", "Colored Lighting / Stylized",
+        "Daylight",
+        "Golden Hour",
+        "Night",
+        "Sunset / Sunrise",
+        "Overcast",
+        "Dramatic / Moody Light",
+        "High Contrast / Harsh Light",
+        "Soft Light / Diffused",
+        "Artificial Light / Lamp-lit",
+        "Colored Lighting / Stylized",
       ],
     },
     resolution: {
@@ -217,59 +401,109 @@ const filterData = {
     },
     categories: {
       label: "Environment Type",
-      options: ["Studio",
-"Indoor",
-"Outdoor",
-"Urban / Cityscape",
-"Nature / Forest",
-"Desert",
-"Mountains / Hills",
-"Beach / Ocean",
-"Industrial / Factory",
-"Room / Apartment",
-"Rooftop / Terrace",
-"HDRI Domes / Sci-fi Rooms"],
+      options: [
+        "Studio",
+        "Indoor",
+        "Outdoor",
+        "Urban / Cityscape",
+        "Nature / Forest",
+        "Desert",
+        "Mountains / Hills",
+        "Beach / Ocean",
+        "Industrial / Factory",
+        "Room / Apartment",
+        "Rooftop / Terrace",
+        "HDRI Domes / Sci-fi Rooms",
+      ],
     },
   },
   Scripts: {
     scriptType: {
       label: "Script Type",
       options: [
-        "Frontend Scripts", "Backend Scripts", "Automation Scripts", "API Integration Scripts", "Form Validation Scripts",
-        "Animation Scripts", "Payment Gateway Scripts", "Email / Newsletter Scripts", "Database Scripts", "AI/ML Scripts",
-        "Authentication Scripts", "Chatbot Scripts",
+        "Frontend Scripts",
+        "Backend Scripts",
+        "Automation Scripts",
+        "API Integration Scripts",
+        "Form Validation Scripts",
+        "Animation Scripts",
+        "Payment Gateway Scripts",
+        "Email / Newsletter Scripts",
+        "Database Scripts",
+        "AI/ML Scripts",
+        "Authentication Scripts",
+        "Chatbot Scripts",
       ],
     },
     programmingLanguage: {
       label: "Programming Language",
-      options: ["JavaScript", "Python", "PHP", "HTML / CSS", "TypeScript", "Node.js", "Ruby", "Go", "Shell / Bash", "SQL", "Lua", "C# (Unity)"],
+      options: [
+        "JavaScript",
+        "Python",
+        "PHP",
+        "HTML / CSS",
+        "TypeScript",
+        "Node.js",
+        "Ruby",
+        "Go",
+        "Shell / Bash",
+        "SQL",
+        "Lua",
+        "C# (Unity)",
+      ],
     },
     framework: {
       label: "Framework / Library",
-      options: ["React", "Vue.js", "Next.js / Nuxt.js", "jQuery", "Laravel", "Express.js", "Flask / Django", "Tailwind / Bootstrap", "Three.js / Babylon.js (3D)", "TensorFlow.js / ML5.js (AI)"],
+      options: [
+        "React",
+        "Vue.js",
+        "Next.js / Nuxt.js",
+        "jQuery",
+        "Laravel",
+        "Express.js",
+        "Flask / Django",
+        "Tailwind / Bootstrap",
+        "Three.js / Babylon.js (3D)",
+        "TensorFlow.js / ML5.js (AI)",
+      ],
     },
     licenseType: {
       label: "License Type",
-      options: ["Free", "Commercial Use", "Extended License", "Open Source (MIT / GPL)"],
+      options: [
+        "Free",
+        "Commercial Use",
+        "Extended License",
+        "Open Source (MIT / GPL)",
+      ],
     },
     integrationReady: {
       label: "Integration Ready",
-      options: ["Stripe / PayPal", "Firebase", "MongoDB / MySQL / PostgreSQL", "Mailchimp / SendGrid", "Google Maps / APIs", "Auth0 / Firebase Auth", "ChatGPT / OpenAI API"],
+      options: [
+        "Stripe / PayPal",
+        "Firebase",
+        "MongoDB / MySQL / PostgreSQL",
+        "Mailchimp / SendGrid",
+        "Google Maps / APIs",
+        "Auth0 / Firebase Auth",
+        "ChatGPT / OpenAI API",
+      ],
     },
     categories: {
       label: "Categories",
-      options: ["Frontend Scripts",
-"Backend Scripts",
-"Automation Scripts",
-"API Integration Scripts",
-"Form Validation Scripts",
-"Animation Scripts",
-"Payment Gateway Scripts",
-"Email / Newsletter Scripts",
-"Database Scripts",
-"AI/ML Scripts",
-"Authentication Scripts",
-"Chatbot Scripts"],
+      options: [
+        "Frontend Scripts",
+        "Backend Scripts",
+        "Automation Scripts",
+        "API Integration Scripts",
+        "Form Validation Scripts",
+        "Animation Scripts",
+        "Payment Gateway Scripts",
+        "Email / Newsletter Scripts",
+        "Database Scripts",
+        "AI/ML Scripts",
+        "Authentication Scripts",
+        "Chatbot Scripts",
+      ],
     },
   },
 };
@@ -286,27 +520,27 @@ const assetTypeToFilterData = {
   textures: "Textures",
   hdris: "HDRIs",
   scripts: "Scripts",
-  // sounds: null,
   other: null,
 };
 
-const Upload = ({ 
-  onUploadSuccess, 
-  onUploadClose, 
-  compactView = false, 
-  editMode = false, 
+const Upload = ({
+ onUploadSuccess,
+  onUploadClose,
+  compactView = false,
+  editMode = false,
   assetToEdit = null,
   isUpdating = false,
-  setIsUpdating = () => {}
+  setIsUpdating = () => {},
 }) => {
   const { currentUser } = useUser();
-  const { converting, generateAllSizes, uploadAllSizes } = useImageSizeConverter();
+  const { converting, generateAllSizes, uploadAllSizes } =
+    useImageSizeConverter();
   const [formData, setFormData] = useState({
     title: "",
     thumbnail: "",
     description: "",
     is3d: false,
-    price: "free", // Changed to string with "free" as default
+    price: "free",
     tags: "",
     date: new Date()
       .toLocaleDateString("en-US", {
@@ -333,8 +567,6 @@ const Upload = ({
     fontFileSize: "",
     videoTemplateFile: "",
     videoTemplateFileSize: "",
-    // sound: "",
-    // soundSize: "",
     other: "",
     otherSize: "",
     ambientOcclusion: "",
@@ -380,17 +612,46 @@ const Upload = ({
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [thumbnailType, setThumbnailType] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  
+  // File preview states
+  const [filePreviews, setFilePreviews] = useState({
+    model: null,
+    video: null,
+    script: null,
+    hdri: null,
+    graphicsTemplate: null,
+    mockupFile: null,
+    fontFile: null,
+    videoTemplateFile: null,
+    other: null,
+    images: [],
+    icons: [],
+    textures: [],
+  });
+
+  const [filePreviewTypes, setFilePreviewTypes] = useState({
+    model: null,
+    video: null,
+    script: null,
+    hdri: null,
+    graphicsTemplate: null,
+    mockupFile: null,
+    fontFile: null,
+    videoTemplateFile: null,
+    other: null,
+  });
+
   const tagInputRef = useRef(null);
   const videoRef = useRef(null);
 
   // Initialize form data with existing asset data when in edit mode
   useEffect(() => {
     if (editMode && assetToEdit) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         title: assetToEdit.title || "",
         description: assetToEdit.description || "",
-        price: assetToEdit.price || "free", // Default to "free" if not set
+        price: assetToEdit.price || "free",
         category: assetToEdit.category || "",
         type: assetToEdit.type || "",
         is3d: assetToEdit.is3d || false,
@@ -412,23 +673,92 @@ const Upload = ({
         colorSpace: assetToEdit.colorSpace || "",
         objectType: assetToEdit.objectType || "",
         fileFormat: assetToEdit.fileFormat || "",
-
       }));
-      
+
       if (assetToEdit.tags && Array.isArray(assetToEdit.tags)) {
         setTags(assetToEdit.tags);
       }
-      
+
       if (assetToEdit.thumbnail) {
         setThumbnailPreview(assetToEdit.thumbnail);
-        if (assetToEdit.thumbnail.includes('.mp4') || assetToEdit.thumbnail.includes('.mov') || assetToEdit.thumbnail.includes('.webm')) {
-          setThumbnailType('video');
+        if (
+          assetToEdit.thumbnail.includes(".mp4") ||
+          assetToEdit.thumbnail.includes(".mov") ||
+          assetToEdit.thumbnail.includes(".webm")
+        ) {
+          setThumbnailType("video");
         } else {
-          setThumbnailType('image');
+          setThumbnailType("image");
         }
       }
     }
   }, [editMode, assetToEdit]);
+
+  // File preview handling function
+  const handleFilePreview = (file, fileType) => {
+    if (!file) return;
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreviews(prev => ({
+          ...prev,
+          [fileType]: reader.result
+        }));
+        setFilePreviewTypes(prev => ({
+          ...prev,
+          [fileType]: "image"
+        }));
+      };
+      reader.readAsDataURL(file);
+    } else if (file.type.startsWith("video/")) {
+      const videoURL = URL.createObjectURL(file);
+      setFilePreviews(prev => ({
+        ...prev,
+        [fileType]: videoURL
+      }));
+      setFilePreviewTypes(prev => ({
+        ...prev,
+        [fileType]: "video"
+      }));
+    } else {
+      // For other file types, show file info
+      setFilePreviews(prev => ({
+        ...prev,
+        [fileType]: {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        }
+      }));
+      setFilePreviewTypes(prev => ({
+        ...prev,
+        [fileType]: "file"
+      }));
+    }
+  };
+
+  // Handle multiple files preview (for images, icons, textures)
+  const handleMultipleFilesPreview = (files, fileType) => {
+    if (!files || files.length === 0) return;
+
+    const previews = [];
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          previews.push(reader.result);
+          if (previews.length === files.length) {
+            setFilePreviews(prev => ({
+              ...prev,
+              [fileType]: previews
+            }));
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  };
 
   // Video playback functions
   const handleVideoPlay = async () => {
@@ -441,16 +771,16 @@ const Upload = ({
           if (videoRef.current.readyState < 3) {
             videoRef.current.load();
           }
-          
+
           const playPromise = videoRef.current.play();
-          
+
           if (playPromise !== undefined) {
             playPromise
               .then(() => {
                 console.log("Video playing successfully");
                 setIsVideoPlaying(true);
               })
-              .catch(error => {
+              .catch((error) => {
                 console.error("Error playing video:", error);
                 videoRef.current.controls = true;
               });
@@ -492,22 +822,22 @@ const Upload = ({
   const handleThumbnailChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        thumbnail: file
+        thumbnail: file,
       }));
 
-      if (file.type.startsWith('video/')) {
-        setThumbnailType('video');
+      if (file.type.startsWith("video/")) {
+        setThumbnailType("video");
         const videoURL = URL.createObjectURL(file);
         setThumbnailPreview(videoURL);
         setIsVideoPlaying(false);
-        
-        if (thumbnailPreview && thumbnailType === 'video') {
+
+        if (thumbnailPreview && thumbnailType === "video") {
           URL.revokeObjectURL(thumbnailPreview);
         }
-      } else if (file.type.startsWith('image/')) {
-        setThumbnailType('image');
+      } else if (file.type.startsWith("image/")) {
+        setThumbnailType("image");
         const reader = new FileReader();
         reader.onloadend = () => {
           setThumbnailPreview(reader.result);
@@ -520,7 +850,7 @@ const Upload = ({
   // Clean up URL when component unmounts
   useEffect(() => {
     return () => {
-      if (thumbnailPreview && thumbnailType === 'video') {
+      if (thumbnailPreview && thumbnailType === "video") {
         URL.revokeObjectURL(thumbnailPreview);
       }
     };
@@ -529,24 +859,28 @@ const Upload = ({
   // Tag handling functions
   const handleTagInputChange = (e) => {
     const value = e.target.value;
-    setFormData(prev => ({ ...prev, tags: value }));
+    setFormData((prev) => ({ ...prev, tags: value }));
   };
 
   const handleTagKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       const value = e.target.value.trim();
       if (value && !tags.includes(value) && tags.length < 10) {
         setTags([...tags, value]);
-        setFormData(prev => ({ ...prev, tags: "" }));
+        setFormData((prev) => ({ ...prev, tags: "" }));
       }
-    } else if (e.key === 'Backspace' && formData.tags === '' && tags.length > 0) {
+    } else if (
+      e.key === "Backspace" &&
+      formData.tags === "" &&
+      tags.length > 0
+    ) {
       setTags(tags.slice(0, -1));
     }
   };
 
   const handleTagRemove = (tag) => {
-    setTags(tags.filter(t => t !== tag));
+    setTags(tags.filter((t) => t !== tag));
   };
 
   // File upload functions
@@ -580,7 +914,9 @@ const Upload = ({
   const uploadImages = async (files, fileType) => {
     try {
       setLoadingState(`Uploading ${fileType} (${files.length} files)`);
-      const urls = await Promise.all(Array.from(files).map((file) => uploadFile(file, fileType)));
+      const urls = await Promise.all(
+        Array.from(files).map((file) => uploadFile(file, fileType))
+      );
       return urls.filter((url) => url !== null);
     } catch (error) {
       console.error(`Error uploading ${fileType}:`, error);
@@ -588,272 +924,432 @@ const Upload = ({
     }
   };
 
- // Main form change handler - UPDATED for better file handling
-const handleChange = (event) => {
-  const target = event.target;
-  const name = target.name;
-  let value = target.type === "checkbox" ? target.checked : target.value;
+  // Main form change handler - UPDATED for file previews
+  const handleChange = (event) => {
+    const target = event.target;
+    const name = target.name;
+    let value = target.type === "checkbox" ? target.checked : target.value;
 
-  if (target.type === "file") {
-    if (name === "thumbnail") {
-      handleThumbnailChange(event);
-    } else if (name === "images" || name === "icons" || name === "textures") {
-      const files = target.files;
-      if (files && files.length > 0) {
-        setFormData(prev => ({
-          ...prev,
-          [name]: Array.from(files), // Store as array
-          [`${name}Size`]: Array.from(files).map((file) => file.size),
-        }));
+    if (target.type === "file") {
+      if (name === "thumbnail") {
+        handleThumbnailChange(event);
+      } else if (name === "images" || name === "icons" || name === "textures") {
+        const files = target.files;
+        if (files && files.length > 0) {
+          setFormData((prev) => ({
+            ...prev,
+            [name]: Array.from(files),
+            [`${name}Size`]: Array.from(files).map((file) => file.size),
+          }));
+          handleMultipleFilesPreview(files, name);
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            [name]: [],
+            [`${name}Size`]: [],
+          }));
+          setFilePreviews(prev => ({ ...prev, [name]: [] }));
+        }
       } else {
-        // In edit mode, if files are cleared, set to empty array
-        setFormData(prev => ({
-          ...prev,
-          [name]: [],
-          [`${name}Size`]: [],
-        }));
-      }
-    } else {
-      const file = target.files[0];
-      if (file) {
-        setFormData(prev => ({
-          ...prev,
-          [name]: file,
-          [`${name}Size`]: file.size,
-        }));
-      } else {
-        // In edit mode, if file is cleared, set to empty string
-        setFormData(prev => ({
-          ...prev,
-          [name]: "",
-          [`${name}Size`]: "",
-        }));
-      }
-    }
-  } else if (["properties", "applicationsSupported", "integrationReady"].includes(name)) {
-    const options = Array.from(target.selectedOptions).map((option) => option.value);
-    setFormData(prev => ({
-      ...prev,
-      [name]: options,
-    }));
-  } else {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  }
-};
-
-// ✅ MAIN SUBMIT FUNCTION — fixed for edit mode
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (editMode) setIsUpdating(true);
-  else setIsSubmitting(true);
-
-  setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
-
-  try {
-    let docData = {
-      title: formData.title,
-      description: formData.description,
-      type: formData.type,
-      price: formData.price,
-      tags,
-      is3d: formData.is3d,
-      licenseType: formData.licenseType,
-      category: formData.category,
-      properties: formData.properties,
-      applicationsSupported: formData.applicationsSupported,
-      orientation: formData.orientation,
-      vertices: formData.vertices,
-      surfaceMaterial: formData.surfaceMaterial,
-      style: formData.style,
-      environmentType: formData.environmentType,
-      lightingCondition: formData.lightingCondition,
-      scriptType: formData.scriptType,
-      programmingLanguage: formData.programmingLanguage,
-      framework: formData.framework,
-      integrationReady: formData.integrationReady,
-      colorSpace: formData.colorSpace,
-      objectType: formData.objectType,
-      fileFormat: formData.fileFormat,
-      aiGenerated: formData.aiGenerated,
-      resolution: formData.resolution,
-      frameRate: formData.frameRate,
-      date: formData.date,
-      updatedBy: currentUser?.email || "anonymous",
-      userId: currentUser?.uid ?? "anonymous",
-      updatedAt: serverTimestamp(),
-    };
-
-    // ✅ thumbnail upload - FIXED for edit mode
-    if (formData.thumbnail && typeof formData.thumbnail !== "string") {
-      docData.thumbnail = await uploadThumbnail(formData.thumbnail);
-    } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
-      // Keep existing thumbnail if no new file selected
-      docData.thumbnail = assetToEdit.thumbnail;
-    }
-
-    // ✅ handle assets by type - FIXED for edit mode
-if (formData.type === "images" && formData.images) {
-  if (Array.isArray(formData.images) && formData.images.length > 0) {
-    // Generate all sizes for each image
-    const allImageUrls = [];
-    
-    for (const imageFile of formData.images) {
-      setLoadingState(`Generating sizes for ${imageFile.name}...`);
-      
-      // Generate all sizes (small, medium, large, original)
-      const imageSizes = await generateAllSizes(imageFile);
-      
-      if (imageSizes) {
-        setLoadingState(`Uploading ${imageFile.name} in all sizes...`);
-        
-        // Upload all sizes to Firebase
-        const uploadedUrls = await uploadAllSizes(
-          imageSizes, 
-          `assets/images/${currentUser?.uid || 'anonymous'}/${Date.now()}`
-        );
-        
-        if (uploadedUrls) {
-          allImageUrls.push({
-            originalName: imageFile.name,
-            sizes: uploadedUrls
-          });
+        const file = target.files[0];
+        if (file) {
+          setFormData((prev) => ({
+            ...prev,
+            [name]: file,
+            [`${name}Size`]: file.size,
+          }));
+          handleFilePreview(file, name);
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            [name]: "",
+            [`${name}Size`]: "",
+          }));
+          setFilePreviews(prev => ({ ...prev, [name]: null }));
+          setFilePreviewTypes(prev => ({ ...prev, [name]: null }));
         }
       }
-    }
-    
-    docData.images = allImageUrls;
-    docData.hasMultipleSizes = true;
-  }
-} else if (editMode && assetToEdit.images && !formData.images) {
-  // Keep existing images if no new files selected
-  docData.images = assetToEdit.images;
-}
-
-    if (formData.type === "videos" && formData.video) {
-      docData.video = await uploadFile(formData.video, "videos");
-    } else if (editMode && assetToEdit.video && !formData.video) {
-      // Keep existing video if no new file selected
-      docData.video = assetToEdit.video;
-    }
-
-    if (formData.type === "models" && formData.model) {
-      docData.model = await uploadFile(formData.model, "models");
-    } else if (editMode && assetToEdit.model && !formData.model) {
-      // Keep existing model if no new file selected
-      docData.model = assetToEdit.model;
-    }
-
-    if (formData.type === "scripts" && formData.script) {
-      docData.script = await uploadFile(formData.script, "scripts");
-    } else if (editMode && assetToEdit.script && !formData.script) {
-      // Keep existing script if no new file selected
-      docData.script = assetToEdit.script;
-    }
-
-    // ✅ Handle other file types for edit mode
-    if (formData.type === "hdris" && formData.hdri) {
-      docData.hdri = await uploadFile(formData.hdri, "hdris");
-    } else if (editMode && assetToEdit.hdri && !formData.hdri) {
-      docData.hdri = assetToEdit.hdri;
-    }
-
-    if (formData.type === "graphics" && formData.graphicsTemplate) {
-      docData.graphicsTemplate = await uploadFile(formData.graphicsTemplate, "graphics");
-    } else if (editMode && assetToEdit.graphicsTemplate && !formData.graphicsTemplate) {
-      docData.graphicsTemplate = assetToEdit.graphicsTemplate;
-    }
-
-    if (formData.type === "mockups" && formData.mockupFile) {
-      docData.mockupFile = await uploadFile(formData.mockupFile, "mockups");
-    } else if (editMode && assetToEdit.mockupFile && !formData.mockupFile) {
-      docData.mockupFile = assetToEdit.mockupFile;
-    }
-
-    if (formData.type === "fonts" && formData.fontFile) {
-      docData.fontFile = await uploadFile(formData.fontFile, "fonts");
-    } else if (editMode && assetToEdit.fontFile && !formData.fontFile) {
-      docData.fontFile = assetToEdit.fontFile;
-    }
-
-    if (formData.type === "video-templates" && formData.videoTemplateFile) {
-      docData.videoTemplateFile = await uploadFile(formData.videoTemplateFile, "video-templates");
-    } else if (editMode && assetToEdit.videoTemplateFile && !formData.videoTemplateFile) {
-      docData.videoTemplateFile = assetToEdit.videoTemplateFile;
-    }
-
-    if (formData.type === "icons" && formData.icons) {
-      if (Array.isArray(formData.icons) && formData.icons.length > 0) {
-        docData.icons = await uploadImages(formData.icons, "icons");
-      }
-    } else if (editMode && assetToEdit.icons && !formData.icons) {
-      docData.icons = assetToEdit.icons;
-    }
-
-    if (formData.type === "textures" && formData.textures) {
-      if (Array.isArray(formData.textures) && formData.textures.length > 0) {
-        docData.textures = await uploadImages(formData.textures, "textures");
-      }
-    } else if (editMode && assetToEdit.textures && !formData.textures) {
-      docData.textures = assetToEdit.textures;
-    }
-
-    if (formData.type === "other" && formData.other) {
-      docData.other = await uploadFile(formData.other, "other");
-    } else if (editMode && assetToEdit.other && !formData.other) {
-      docData.other = assetToEdit.other;
-    }
-
-    // ✅ Clean empty fields but preserve existing data in edit mode
-    docData = Object.fromEntries(
-      Object.entries(docData).filter(([k, v]) => {
-        if (v === undefined || v === null) return false;
-        if (Array.isArray(v) && v.length === 0) return false;
-        if (typeof v === 'string' && v.trim() === '') return false;
-        return true;
-      })
-    );
-
-    // ✅ Update Mode
-    if (editMode && assetToEdit?.id) {
-      await updateDoc(doc(db, "Assets", assetToEdit.id), docData);
-      setLoadingState("success");
-      if (onUploadSuccess) onUploadSuccess();
+    } else if (
+      ["properties", "applicationsSupported", "integrationReady"].includes(name)
+    ) {
+      const options = Array.from(target.selectedOptions).map(
+        (option) => option.value
+      );
+      setFormData((prev) => ({
+        ...prev,
+        [name]: options,
+      }));
     } else {
-      // ✅ Create new asset
-      await addDoc(collection(db, "Assets"), docData);
-      setLoadingState("success");
-      if (onUploadSuccess) onUploadSuccess();
-      // Reset form for new upload
-      setFormData({
-        title: "", description: "", thumbnail: "", type: "", images: "", 
-        video: "", model: "", script: "", tags: "", category: "",
-        // Reset all other fields
-        is3d: false, price: "free", date: new Date().toLocaleDateString("en-US", {
-          day: "2-digit", month: "long", year: "numeric",
-        }).replace(/ /g, ", "),
-        // Reset all filter fields
-        aiGenerated: "", resolution: "", frameRate: "", properties: [],
-        applicationsSupported: [], orientation: "", licenseType: "",
-        surfaceMaterial: "", style: "", environmentType: "", lightingCondition: "",
-        scriptType: "", programmingLanguage: "", framework: "", integrationReady: [],
-        colorSpace: "", objectType: "", fileFormat: ""
-      });
-      setTags([]);
-      setThumbnailPreview(null);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
-  } catch (error) {
-    console.error("UPLOAD ERROR →", error);
-    setLoadingState("error");
-    alert(`Error ${editMode ? 'updating' : 'uploading'} asset: ${error.message}`);
-  } finally {
-    if (editMode) setIsUpdating(false);
-    else setIsSubmitting(false);
-  }
-};
+  };
+
+  // File Preview Component
+  const renderFilePreview = (fileType, label) => {
+    const preview = filePreviews[fileType];
+    const previewType = filePreviewTypes[fileType];
+
+    if (!preview) return null;
+
+    if (previewType === "image") {
+      return (
+        <div className="file-preview-container">
+          <h4>{label} Preview:</h4>
+          <img src={preview} alt={`${label} preview`} className="file-preview-image" />
+        </div>
+      );
+    } else if (previewType === "video") {
+      return (
+        <div className="file-preview-container">
+          <h4>{label} Preview:</h4>
+          <video 
+            src={preview} 
+            className="file-preview-video"
+            controls
+            muted
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    } else if (previewType === "file") {
+      return (
+        <div className="file-preview-container">
+          <h4>{label} Info:</h4>
+          <div className="file-info-preview">
+            <FiFileText className="file-icon" />
+            <div className="file-info">
+              <strong>{preview.name}</strong>
+              <span>Size: {(preview.size / 1024 / 1024).toFixed(2)} MB</span>
+              <span>Type: {preview.type}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // Multiple Files Preview Component
+  const renderMultipleFilesPreview = (fileType, label) => {
+    const previews = filePreviews[fileType];
+
+    if (!previews || previews.length === 0) return null;
+
+    return (
+      <div className="file-preview-container">
+        <h4>{label} Previews ({previews.length} files):</h4>
+        <div className="file-preview-grid">
+          {previews.map((preview, index) => (
+            <div key={index} className="file-preview-item">
+              <img src={preview} alt={`${label} ${index + 1}`} className="file-preview-image" />
+              <span className="file-preview-index">#{index + 1}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ✅ MAIN SUBMIT FUNCTION
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (editMode) setIsUpdating(true);
+    else setIsSubmitting(true);
+
+    setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
+
+    try {
+      let docData = {
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        price: formData.price,
+        tags,
+        is3d: formData.is3d,
+        licenseType: formData.licenseType,
+        category: formData.category,
+        properties: formData.properties,
+        applicationsSupported: formData.applicationsSupported,
+        orientation: formData.orientation,
+        vertices: formData.vertices,
+        surfaceMaterial: formData.surfaceMaterial,
+        style: formData.style,
+        environmentType: formData.environmentType,
+        lightingCondition: formData.lightingCondition,
+        scriptType: formData.scriptType,
+        programmingLanguage: formData.programmingLanguage,
+        framework: formData.framework,
+        integrationReady: formData.integrationReady,
+        colorSpace: formData.colorSpace,
+        objectType: formData.objectType,
+        fileFormat: formData.fileFormat,
+        aiGenerated: formData.aiGenerated,
+        resolution: formData.resolution,
+        frameRate: formData.frameRate,
+        date: formData.date,
+        updatedBy: currentUser?.email || "anonymous",
+        userId: currentUser?.uid ?? "anonymous",
+        updatedAt: serverTimestamp(),
+      };
+
+      
+      // ✅ thumbnail upload
+      if (formData.thumbnail && typeof formData.thumbnail !== "string") {
+        docData.thumbnail = await uploadThumbnail(formData.thumbnail);
+      } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
+        docData.thumbnail = assetToEdit.thumbnail;
+      }
+
+      // ✅ FIXED: handle assets by type
+      if (formData.type === "images") {
+        console.log("🖼️ Processing images...", {
+          hasImages: !!formData.images,
+          isArray: Array.isArray(formData.images),
+          length: Array.isArray(formData.images) ? formData.images.length : 0,
+          firstItem: Array.isArray(formData.images) ? formData.images[0] : null
+        });
+
+        if (Array.isArray(formData.images) && formData.images.length > 0 && formData.images[0] instanceof File) {
+          console.log("🖼️ Uploading NEW images");
+          const allImageUrls = [];
+
+          for (const imageFile of formData.images) {
+            setLoadingState(`Generating sizes for ${imageFile.name}...`);
+
+            const imageSizes = await generateAllSizes(imageFile);
+
+            if (imageSizes) {
+              setLoadingState(`Uploading ${imageFile.name} in all sizes...`);
+
+              const uploadedUrls = await uploadAllSizes(
+                imageSizes,
+                `assets/images/${currentUser?.uid || "anonymous"}/${Date.now()}`
+              );
+
+              if (uploadedUrls) {
+                allImageUrls.push({
+                  originalName: imageFile.name,
+                  sizes: uploadedUrls,
+                });
+              }
+            }
+          }
+
+          docData.images = allImageUrls;
+          docData.hasMultipleSizes = true;
+        } else if (editMode && assetToEdit.images) {
+          console.log("🖼️ Keeping EXISTING images");
+          docData.images = assetToEdit.images;
+        }
+      }
+
+      if (formData.type === "videos") {
+        console.log("🎥 Processing video...", {
+          hasVideo: !!formData.video,
+          isFile: formData.video instanceof File
+        });
+        
+        if (formData.video && formData.video instanceof File) {
+          console.log("🎥 Uploading NEW video");
+          docData.video = await uploadFile(formData.video, "videos");
+        } else if (editMode && assetToEdit.video) {
+          console.log("🎥 Keeping EXISTING video");
+          docData.video = assetToEdit.video;
+        }
+      }
+
+      if (formData.type === "models") {
+        console.log("📦 Processing model...", {
+          hasModel: !!formData.model,
+          isFile: formData.model instanceof File
+        });
+        
+        if (formData.model && formData.model instanceof File) {
+          console.log("📦 Uploading NEW model");
+          docData.model = await uploadFile(formData.model, "models");
+        } else if (editMode && assetToEdit.model) {
+          console.log("📦 Keeping EXISTING model");
+          docData.model = assetToEdit.model;
+        }
+      }
+
+      if (formData.type === "scripts" && formData.script) {
+        docData.script = await uploadFile(formData.script, "scripts");
+      } else if (editMode && assetToEdit.script && !formData.script) {
+        docData.script = assetToEdit.script;
+      }
+
+      if (formData.type === "hdris" && formData.hdri) {
+        docData.hdri = await uploadFile(formData.hdri, "hdris");
+      } else if (editMode && assetToEdit.hdri && !formData.hdri) {
+        docData.hdri = assetToEdit.hdri;
+      }
+
+      if (formData.type === "graphics" && formData.graphicsTemplate) {
+        docData.graphicsTemplate = await uploadFile(
+          formData.graphicsTemplate,
+          "graphics"
+        );
+      } else if (
+        editMode &&
+        assetToEdit.graphicsTemplate &&
+        !formData.graphicsTemplate
+      ) {
+        docData.graphicsTemplate = assetToEdit.graphicsTemplate;
+      }
+
+      if (formData.type === "mockups" && formData.mockupFile) {
+        docData.mockupFile = await uploadFile(formData.mockupFile, "mockups");
+      } else if (editMode && assetToEdit.mockupFile && !formData.mockupFile) {
+        docData.mockupFile = assetToEdit.mockupFile;
+      }
+
+      if (formData.type === "fonts" && formData.fontFile) {
+        docData.fontFile = await uploadFile(formData.fontFile, "fonts");
+      } else if (editMode && assetToEdit.fontFile && !formData.fontFile) {
+        docData.fontFile = assetToEdit.fontFile;
+      }
+
+      if (formData.type === "video-templates" && formData.videoTemplateFile) {
+        docData.videoTemplateFile = await uploadFile(
+          formData.videoTemplateFile,
+          "video-templates"
+        );
+      } else if (
+        editMode &&
+        assetToEdit.videoTemplateFile &&
+        !formData.videoTemplateFile
+      ) {
+        docData.videoTemplateFile = assetToEdit.videoTemplateFile;
+      }
+
+      if (formData.type === "icons" && formData.icons) {
+        if (Array.isArray(formData.icons) && formData.icons.length > 0) {
+          docData.icons = await uploadImages(formData.icons, "icons");
+        }
+      } else if (editMode && assetToEdit.icons && !formData.icons) {
+        docData.icons = assetToEdit.icons;
+      }
+
+      if (formData.type === "textures" && formData.textures) {
+        if (Array.isArray(formData.textures) && formData.textures.length > 0) {
+          docData.textures = await uploadImages(formData.textures, "textures");
+        }
+      } else if (editMode && assetToEdit.textures && !formData.textures) {
+        docData.textures = assetToEdit.textures;
+      }
+
+      if (formData.type === "other" && formData.other) {
+        docData.other = await uploadFile(formData.other, "other");
+      } else if (editMode && assetToEdit.other && !formData.other) {
+        docData.other = assetToEdit.other;
+      }
+
+      // ✅ Clean empty fields but preserve existing data in edit mode
+      docData = Object.fromEntries(
+        Object.entries(docData).filter(([k, v]) => {
+          if (v === undefined || v === null) return false;
+          if (Array.isArray(v) && v.length === 0) return false;
+          if (typeof v === "string" && v.trim() === "") return false;
+          return true;
+        })
+      );
+
+      // ✅ Update Mode
+      if (editMode && assetToEdit?.id) {
+        await updateDoc(doc(db, "Assets", assetToEdit.id), docData);
+        setLoadingState("success");
+        if (onUploadSuccess) onUploadSuccess();
+      } else {
+        // ✅ Create new asset
+        await addDoc(collection(db, "Assets"), docData);
+        setLoadingState("success");
+        if (onUploadSuccess) onUploadSuccess();
+        // Reset form for new upload
+        setFormData({
+          title: "",
+          description: "",
+          thumbnail: "",
+          type: "",
+          images: "",
+          video: "",
+          model: "",
+          script: "",
+          tags: "",
+          category: "",
+          is3d: false,
+          price: "",
+          date: new Date()
+            .toLocaleDateString("en-US", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })
+            .replace(/ /g, ", "),
+          aiGenerated: "",
+          resolution: "",
+          frameRate: "",
+          properties: [],
+          applicationsSupported: [],
+          orientation: "",
+          licenseType: "",
+          surfaceMaterial: "",
+          style: "",
+          environmentType: "",
+          lightingCondition: "",
+          scriptType: "",
+          programmingLanguage: "",
+          framework: "",
+          integrationReady: [],
+          colorSpace: "",
+          objectType: "",
+          fileFormat: "",
+        });
+        setTags([]);
+        setThumbnailPreview(null);
+        setFilePreviews({
+          model: null,
+          video: null,
+          script: null,
+          hdri: null,
+          graphicsTemplate: null,
+          mockupFile: null,
+          fontFile: null,
+          videoTemplateFile: null,
+          other: null,
+          images: [],
+          icons: [],
+          textures: [],
+        });
+        setFilePreviewTypes({
+          model: null,
+          video: null,
+          script: null,
+          hdri: null,
+          graphicsTemplate: null,
+          mockupFile: null,
+          fontFile: null,
+          videoTemplateFile: null,
+          other: null,
+        });
+      }
+    } catch (error) {
+      console.error("UPLOAD ERROR →", error);
+      setLoadingState("error");
+      alert(
+        `Error ${editMode ? "updating" : "uploading"} asset: ${error.message}`
+      );
+    } finally {
+      if (editMode) setIsUpdating(false);
+      else setIsSubmitting(false);
+    }
+  };
 
   const getCategoryOptions = () => {
     const filterKey = assetTypeToFilterData[formData.type];
@@ -874,46 +1370,59 @@ if (formData.type === "images" && formData.images) {
   const renderFilterSelect = (filterKey, label, name, isMulti = false) => {
     const options = getFilterOptions(filterKey);
     if (options.length === 0) return null;
-    
 
-      return (
-        <div className="blog-form-group">
-          <label className="blog-form-label">{label} <span className="blog-form-required">*</span></label>
-          <div className="select-wrapper">
-            <select
-              name={name}
-              className="blog-form-select"
-              onChange={handleChange}
-              value={isMulti ? formData[name] : formData[name] || ""}
-              required={!isMulti}
-            >
-              <option value="" disabled>Select {label}</option>
-              {options.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-            <FiChevronDown className="select-arrow" />
-          </div>
+    return (
+      <div className="blog-form-group">
+        <label className="blog-form-label">
+          {label} <span className="blog-form-required">*</span>
+        </label>
+        <div className="select-wrapper">
+          <select
+            name={name}
+            className="blog-form-select"
+            onChange={handleChange}
+            value={isMulti ? formData[name] : formData[name] || ""}
+            required={!isMulti}
+          >
+            <option value="" disabled>
+              Select {label}
+            </option>
+            {options.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <FiChevronDown className="select-arrow" />
         </div>
-      );
-   }
+      </div>
+    );
+  };
 
   const getAssetTypeIcon = (type) => {
     switch (type) {
-      case 'models': return <FiBox />;
-      case 'videos': return <FiVideo />;
-      case 'images': return <FiImage />;
-      case 'scripts': return <FiCode />;
-      // case 'sounds': return <FiMusic />;
-      default: return <FiFile />;
+      case "models":
+        return <FiBox />;
+      case "videos":
+        return <FiVideo />;
+      case "images":
+        return <FiImage />;
+      case "scripts":
+        return <FiCode />;
+      default:
+        return <FiFile />;
     }
   };
 
   // Update your modal title based on mode
   const modalTitle = editMode ? "Edit Asset" : "Upload New Asset";
-  const submitButtonText = editMode ? 
-    (isUpdating ? "Updating..." : "Update Asset") : 
-    (isSubmitting ? "Uploading..." : "Upload Asset");
+  const submitButtonText = editMode
+    ? isUpdating
+      ? "Updating..."
+      : "Update Asset"
+    : isSubmitting
+    ? "Uploading..."
+    : "Upload Asset";
 
   if (!currentUser) {
     return (
@@ -923,14 +1432,20 @@ if (formData.type === "images" && formData.images) {
             <div className="blog-modal-header">
               <h1 className="blog-modal-title">{modalTitle}</h1>
               {onUploadClose && (
-                <button onClick={onUploadClose} className="blog-modal-close" aria-label="Close">
+                <button
+                  onClick={onUploadClose}
+                  className="blog-modal-close"
+                  aria-label="Close"
+                >
                   <FiX />
                 </button>
               )}
             </div>
             <div className="not-logged-in-message">
               <h3>Please log in to upload assets</h3>
-              <p>You need to be logged in to upload assets to the marketplace.</p>
+              <p>
+                You need to be logged in to upload assets to the marketplace.
+              </p>
             </div>
           </div>
         </div>
@@ -941,12 +1456,18 @@ if (formData.type === "images" && formData.images) {
   return (
     <>
       <Helmet>
-        <title>{editMode ? "Edit Asset" : "Upload New Asset"} | Shammarianas</title>
-        <meta name="description" content={`${editMode ? 'Edit' : 'Upload'} your assets to Shammarianas`} />
+        <title>
+          {editMode ? "Edit Asset" : "Upload New Asset"} | Shammarianas
+        </title>
+        <meta
+          name="description"
+          content={`${
+            editMode ? "Edit" : "Upload"
+          } your assets to Shammarianas`}
+        />
       </Helmet>
 
-      {/* CSS styles remain the same */}
-       <style>
+      <style>
         {`
           .blog-modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
@@ -985,7 +1506,6 @@ if (formData.type === "images" && formData.images) {
             background: #fff;
           }
           
-          /* Enhanced Select Styles for Orientation, Properties, and Applications Supported */
           .select-wrapper {
             position: relative;
             width: 100%;
@@ -1213,6 +1733,98 @@ if (formData.type === "images" && formData.images) {
           .asset-type-icon {
             font-size: 1.5rem; margin-right: 0.5rem; color: #3b82f6;
           }
+
+          /* New File Preview Styles */
+          .file-preview-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background: #f8fafc;
+          }
+
+          .file-preview-container h4 {
+            margin: 0 0 0.75rem 0;
+            color: #374151;
+            font-size: 0.95rem;
+            font-weight: 600;
+          }
+
+          .file-preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+          }
+
+          .file-preview-video {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+          }
+
+          .file-info-preview {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+          }
+
+          .file-icon {
+            font-size: 2rem;
+            color: #3b82f6;
+          }
+
+          .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+          }
+
+          .file-info strong {
+            color: #374151;
+          }
+
+          .file-info span {
+            font-size: 0.875rem;
+            color: #6b7280;
+          }
+
+          .file-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+          }
+
+          .file-preview-item {
+            position: relative;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            background: white;
+            text-align: center;
+          }
+
+          .file-preview-index {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+          }
+
           @media (max-width: 768px) {
             .blog-modal-content { padding: 1.5rem; }
             .blog-modal-title { font-size: 1.25rem; }
@@ -1234,48 +1846,61 @@ if (formData.type === "images" && formData.images) {
                 {editMode ? "Edit Asset" : "Upload New Asset"}
               </h1>
               {onUploadClose && (
-                <button onClick={onUploadClose} className="blog-modal-close" aria-label="Close">
+                <button
+                  onClick={onUploadClose}
+                  className="blog-modal-close"
+                  aria-label="Close"
+                >
                   <FiX />
                 </button>
               )}
             </div>
 
             <form onSubmit={handleSubmit}>
-              {/* Form fields remain the same */}
               <div className="blog-form-group">
-                <label className="blog-form-label">Title <span className="blog-form-required">*</span></label>
-                <input 
-                  type="text" 
-                  name="title" 
-                  value={formData.title} 
-                  onChange={handleChange} 
-                  required 
-                  className="blog-form-input" 
-                  placeholder="Enter asset title..." 
+                <label className="blog-form-label">
+                  Title <span className="blog-form-required">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  className="blog-form-input"
+                  placeholder="Enter asset title..."
                 />
               </div>
 
-              {/* Thumbnail section with video playback */}
               <div className="blog-form-group">
-                <label className="blog-form-label">Thumbnail <span className="blog-form-required">*</span></label>
-                <input 
-                  type="file" 
-                  name="thumbnail" 
-                  onChange={handleThumbnailChange} 
-                  accept="image/*, video/*" 
-                  className="blog-form-file" 
+                <label className="blog-form-label">
+                  Thumbnail <span className="blog-form-required">*</span>
+                </label>
+                <input
+                  type="file"
+                  name="thumbnail"
+                  onChange={handleThumbnailChange}
+                  accept="image/*, video/*"
+                  className="blog-form-file"
                 />
                 <p className="blog-form-hint">
-                  JPG, PNG, MP4• Max 500KB • 705x472px recommended for images
+                  JPG, PNG, MP4 • Max 500KB • 705x472px recommended for images
                 </p>
-                
-                {thumbnailPreview && thumbnailType === 'image' && (
-                  <img src={thumbnailPreview} alt="Preview" className="blog-image-preview" />
+
+                {thumbnailPreview && thumbnailType === "image" && (
+                  <img
+                    src={thumbnailPreview}
+                    alt="Preview"
+                    className="blog-image-preview"
+                  />
                 )}
-                
-                {thumbnailPreview && thumbnailType === 'video' && (
-                  <div className="video-preview-container" onClick={handleVideoPlay}>
-                    <video 
+
+                {thumbnailPreview && thumbnailType === "video" && (
+                  <div
+                    className="video-preview-container"
+                    onClick={handleVideoPlay}
+                  >
+                    <video
                       ref={videoRef}
                       src={thumbnailPreview}
                       className="blog-video-preview"
@@ -1291,9 +1916,9 @@ if (formData.type === "images" && formData.images) {
                     >
                       Your browser does not support the video tag.
                     </video>
-                    
+
                     {!isVideoPlaying && (
-                      <button 
+                      <button
                         type="button"
                         className="video-play-button"
                         onClick={(e) => {
@@ -1304,9 +1929,9 @@ if (formData.type === "images" && formData.images) {
                         <FiPlay />
                       </button>
                     )}
-                    
+
                     {isVideoPlaying && (
-                      <button 
+                      <button
                         type="button"
                         className="video-play-button"
                         onClick={(e) => {
@@ -1319,38 +1944,45 @@ if (formData.type === "images" && formData.images) {
                     )}
                   </div>
                 )}
-                
+
                 {editMode && assetToEdit?.thumbnail && !thumbnailPreview && (
-                  <p className="current-image-note">Current thumbnail will be kept if no new file is selected</p>
+                  <p className="current-image-note">
+                    Current thumbnail will be kept if no new file is selected
+                  </p>
                 )}
               </div>
 
-             <div className="blog-form-group">
-                <label className="blog-form-label">Description <span className="blog-form-required">*</span></label>
-                <textarea 
-                  name="description" 
-                  value={formData.description} 
-                  onChange={handleChange} 
-                  required 
-                  className="blog-form-textarea" 
-                  placeholder="Describe your asset..." 
+              <div className="blog-form-group">
+                <label className="blog-form-label">
+                  Description <span className="blog-form-required">*</span>
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                  className="blog-form-textarea"
+                  placeholder="Describe your asset..."
                   rows="4"
                 />
               </div>
 
               <div className="blog-form-group">
-                <label className="blog-form-label">Asset Type <span className="blog-form-required">*</span></label>
-                <select 
-                  name="type" 
-                  value={formData.type} 
-                  onChange={handleChange} 
-                  required 
+                <label className="blog-form-label">
+                  Asset Type <span className="blog-form-required">*</span>
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  required
                   className="blog-form-select"
                 >
-                  <option value="" disabled>Select Asset Type</option>
+                  <option value="" disabled>
+                    Select Asset Type
+                  </option>
                   <option value="models">3D Model</option>
                   <option value="textures">Texture</option>
-                  {/* <option value="sounds">Sound</option> */}
                   <option value="scripts">Script</option>
                   <option value="images">Image</option>
                   <option value="graphics">Graphics Templates</option>
@@ -1365,36 +1997,45 @@ if (formData.type === "images" && formData.images) {
               </div>
 
               <div className="blog-form-group">
-                <label className="blog-form-label">Category <span className="blog-form-required">*</span></label>
-                <select 
-                  name="category" 
-                  value={formData.category} 
-                  onChange={handleChange} 
-                  required 
+                <label className="blog-form-label">
+                  Category <span className="blog-form-required">*</span>
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
                   className="blog-form-select"
                 >
-                  <option value="" disabled>Select Category</option>
+                  <option value="" disabled>
+                    Select Category
+                  </option>
                   {getCategoryOptions().map((category) => (
-                    <option key={category} value={category}>{category}</option>
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
                   ))}
                 </select>
               </div>
 
-              {/* SIMPLIFIED PRICING SECTION */}
               <div className="blog-form-group">
-                <label className="blog-form-label">Price Type <span className="blog-form-required">*</span></label>
-                <select 
-                  name="price" 
-                  value={formData.price} 
-                  onChange={handleChange} 
-                  required 
-                  className="blog-form-select"
-                >
-                  <option value="free">Free</option>
-                  {/* <option value="paid">Paid</option> */}
-                </select>
-                <p className="blog-form-hint">Select whether this asset is free or paid</p>
-              </div>
+  <label className="blog-form-label">
+    Price Type <span className="blog-form-required">*</span>
+  </label>
+  <select
+    name="price"
+    value={formData.price}
+    onChange={handleChange}
+    required
+    className="blog-form-select"
+  >
+    <option value="free">Free</option>
+    <option value="paid">Paid</option>
+  </select>
+  <p className="blog-form-hint">
+    Select whether this asset is free or paid
+  </p>
+</div>
 
               <div className="blog-form-group">
                 <label className="blog-form-label">Tags (Max 10)</label>
@@ -1402,88 +2043,137 @@ if (formData.type === "images" && formData.images) {
                   {tags.map((tag, index) => (
                     <div key={index} className="blog-tag">
                       #{tag}
-                      <span className="blog-tag-remove" onClick={() => handleTagRemove(tag)}>×</span>
+                      <span
+                        className="blog-tag-remove"
+                        onClick={() => handleTagRemove(tag)}
+                      >
+                        ×
+                      </span>
                     </div>
                   ))}
-                  <input 
-                    ref={tagInputRef} 
-                    type="text" 
-                    className="blog-tag-input" 
-                    value={formData.tags} 
+                  <input
+                    ref={tagInputRef}
+                    type="text"
+                    className="blog-tag-input"
+                    value={formData.tags}
                     onChange={handleTagInputChange}
                     onKeyDown={handleTagKeyDown}
-                    placeholder={tags.length === 0 ? "Type tag and press Enter..." : "Press Enter to add tag..."} 
-                    maxLength={20} 
+                    placeholder={
+                      tags.length === 0
+                        ? "Type tag and press Enter..."
+                        : "Press Enter to add tag..."
+                    }
+                    maxLength={20}
                   />
                 </div>
-                <p className="blog-form-hint">Type tag name and press Enter. Max 10 tags. Click × to remove.</p>
+                <p className="blog-form-hint">
+                  Type tag name and press Enter. Max 10 tags. Click × to remove.
+                </p>
                 {tags.length > 0 && (
-                  <p className="current-image-note" style={{ marginTop: '0.5rem' }}>
-                    {tags.length} tag{tags.length > 1 ? 's' : ''} added
+                  <p
+                    className="current-image-note"
+                    style={{ marginTop: "0.5rem" }}
+                  >
+                    {tags.length} tag{tags.length > 1 ? "s" : ""} added
                   </p>
                 )}
               </div>
 
-              {/* Additional filters based on asset type - Now Orientation, Properties, and Applications Supported have proper dropdowns */}
               {renderFilterSelect("aiGenerated", "AI-Generated", "aiGenerated")}
               {renderFilterSelect("resolution", "Resolution", "resolution")}
               {renderFilterSelect("frameRate", "Frame Rate", "frameRate")}
               {renderFilterSelect("properties", "Properties", "properties")}
-              {renderFilterSelect("applicationsSupported", "Applications Supported", "applicationsSupported")}
+              {renderFilterSelect(
+                "applicationsSupported",
+                "Applications Supported",
+                "applicationsSupported"
+              )}
               {renderFilterSelect("orientation", "Orientation", "orientation")}
               {renderFilterSelect("licenseType", "License Type", "licenseType")}
-              {renderFilterSelect("surfaceMaterial", "Surface Material", "surfaceMaterial")}
+              {renderFilterSelect(
+                "surfaceMaterial",
+                "Surface Material",
+                "surfaceMaterial"
+              )}
               {renderFilterSelect("style", "Style", "style")}
-              {renderFilterSelect("environmentType", "Environment Type", "environmentType")}
-              {renderFilterSelect("lightingCondition", "Lighting Condition", "lightingCondition")}
+              {renderFilterSelect(
+                "environmentType",
+                "Environment Type",
+                "environmentType"
+              )}
+              {renderFilterSelect(
+                "lightingCondition",
+                "Lighting Condition",
+                "lightingCondition"
+              )}
               {renderFilterSelect("scriptType", "Script Type", "scriptType")}
-              {renderFilterSelect("programmingLanguage", "Programming Language", "programmingLanguage")}
+              {renderFilterSelect(
+                "programmingLanguage",
+                "Programming Language",
+                "programmingLanguage"
+              )}
               {renderFilterSelect("framework", "Framework", "framework")}
-              {renderFilterSelect("integrationReady", "Integration Ready", "integrationReady", true)}
+              {renderFilterSelect(
+                "integrationReady",
+                "Integration Ready",
+                "integrationReady",
+                true
+              )}
               {renderFilterSelect("colorSpace", "Color Space", "colorSpace")}
               {renderFilterSelect("objectType", "Object Type", "objectType")}
               {renderFilterSelect("fileFormat", "File Format", "fileFormat")}
 
-              {/* File upload sections for all asset types */}
               {formData.type === "models" && (
                 <>
                   <div className="blog-form-group">
-                    <label className="blog-form-label">3D Model File {!editMode && <span className="blog-form-required">*</span>}</label>
-                    <input 
-                      type="file" 
-                      name="model" 
-                      onChange={handleChange} 
-                      accept=".glb,.gltf,.stl,.obj,.fbx,.blend,.zip" 
-                      className="blog-form-file" 
+                    <label className="blog-form-label">
+                      3D Model File{" "}
+                      {!editMode && (
+                        <span className="blog-form-required">*</span>
+                      )}
+                    </label>
+                    <input
+                      type="file"
+                      name="model"
+                      onChange={handleChange}
+                      accept=".glb,.gltf,.stl,.obj,.fbx,.blend,.zip"
+                      className="blog-form-file"
                       required={!editMode}
                     />
-                    <p className="blog-form-hint">Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend, .zip</p>
+                    <p className="blog-form-hint">
+                      Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend,
+                      .zip
+                    </p>
+                    {renderFilePreview("model", "3D Model")}
                     {editMode && assetToEdit.model && (
-                      <p className="current-image-note">Current model file will be kept if no new file is selected</p>
+                      <p className="current-image-note">
+                        Current model file will be kept if no new file is
+                        selected
+                      </p>
                     )}
                   </div>
-                  
+
                   <div className="blog-form-group">
                     <label className="blog-form-label">Vertices</label>
-                    <input 
-                      type="number" 
-                      name="vertices" 
-                      value={formData.vertices} 
-                      onChange={handleChange} 
-                      className="blog-form-input" 
-                      placeholder="Number of vertices" 
+                    <input
+                      type="number"
+                      name="vertices"
+                      value={formData.vertices}
+                      onChange={handleChange}
+                      className="blog-form-input"
+                      placeholder="Number of vertices"
                     />
                   </div>
 
                   <div className="blog-form-group">
                     <label className="blog-form-label">Physical Size</label>
-                    <input 
-                      type="text" 
-                      name="physicalSize" 
-                      value={formData.physicalSize} 
-                      onChange={handleChange} 
-                      className="blog-form-input" 
-                      placeholder="e.g., 10x10x10 cm" 
+                    <input
+                      type="text"
+                      name="physicalSize"
+                      value={formData.physicalSize}
+                      onChange={handleChange}
+                      className="blog-form-input"
+                      placeholder="e.g., 10x10x10 cm"
                     />
                   </div>
                 </>
@@ -1491,243 +2181,317 @@ if (formData.type === "images" && formData.images) {
 
               {formData.type === "images" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Image Files {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="images" 
-                    onChange={handleChange} 
-                    accept="image/*, .png, .jpg, .jpeg" 
-                    multiple 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Image Files{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="images"
+                    onChange={handleChange}
+                    accept="image/*, .png, .jpg, .jpeg"
+                    multiple
+                    className="blog-form-file"
                     required={!editMode}
                   />
                   <p className="blog-form-hint">Select image files</p>
+                  {renderMultipleFilesPreview("images", "Image")}
                   {editMode && assetToEdit.images && (
-                    <p className="current-image-note">Current images will be kept if no new files are selected</p>
+                    <p className="current-image-note">
+                      Current images will be kept if no new files are selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "videos" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Video File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="video" 
-                    onChange={handleChange} 
-                    accept="video/*,.mp4" 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Video File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="video"
+                    onChange={handleChange}
+                    accept="video/*"
+                    className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported video formats .mp4, & .zip</p>
+                  <p className="blog-form-hint">
+                    Supported video formats .mov, & .zip
+                  </p>
+                  {renderFilePreview("video", "Video")}
                   {editMode && assetToEdit.video && (
-                    <p className="current-image-note">Current video file will be kept if no new file is selected</p>
+                    <p className="current-image-note">
+                      Current video file will be kept if no new file is selected
+                    </p>
                   )}
                 </div>
               )}
 
-              {/* {formData.type === "sounds" && (
-                <div className="blog-form-group">
-                  <label className="blog-form-label">Sound File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="sound" 
-                    onChange={handleChange} 
-                    accept="audio/*,.zip" 
-                    className="blog-form-file" 
-                    required={!editMode}
-                  />
-                  <p className="blog-form-hint">Supported audio formats: MP3, WAV, FLAC, AAC, .zip</p>
-                  {editMode && assetToEdit.sound && (
-                    <p className="current-image-note">Current sound file will be kept if no new file is selected</p>
-                  )}
-                </div>
-              )} */}
-
               {formData.type === "scripts" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Script File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="script" 
-                    onChange={handleChange} 
-                    accept=".js,.py,.php,.html,.css,.ts,.rb,.go,.sh,.sql,.lua,.cs,.json,.xml,.zip" 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Script File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="script"
+                    onChange={handleChange}
+                    accept=".js,.py,.php,.html,.css,.ts,.rb,.go,.sh,.sql,.lua,.cs,.json,.xml,.zip"
+                    className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: JS, Python, PHP, HTML, CSS, TypeScript, Ruby, Go, Shell, SQL, Lua, C#, .zip</p>
+                  <p className="blog-form-hint">
+                    Supported formats: JS, Python, PHP, HTML, CSS, TypeScript,
+                    Ruby, Go, Shell, SQL, Lua, C#, .zip
+                  </p>
+                  {renderFilePreview("script", "Script")}
                   {editMode && assetToEdit.script && (
-                    <p className="current-image-note">Current script file will be kept if no new file is selected</p>
+                    <p className="current-image-note">
+                      Current script file will be kept if no new file is
+                      selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "textures" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Texture Files {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="textures" 
-                    onChange={handleChange} 
-                    accept="image/*, .png, .jpg, .jpeg" 
-                    multiple 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Texture Files{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="textures"
+                    onChange={handleChange}
+                    accept="image/*, .png, .jpg, .jpeg"
+                    multiple
+                    className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Select multiple texture image files & .zip</p>
+                  <p className="blog-form-hint">
+                    Select multiple texture image files & .zip
+                  </p>
+                  {renderMultipleFilesPreview("textures", "Texture")}
                   {editMode && assetToEdit.textures && (
-                    <p className="current-image-note">Current texture files will be kept if no new files are selected</p>
+                    <p className="current-image-note">
+                      Current texture files will be kept if no new files are
+                      selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "hdris" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">HDRI File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="hdri" 
-                    onChange={handleChange} 
-                    accept=".hdr,.exr,.zip" 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    HDRI File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="hdri"
+                    onChange={handleChange}
+                    accept=".hdr,.exr,.zip"
+                    className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: .HDR, .EXR, .zip</p>
+                  <p className="blog-form-hint">
+                    Supported formats: .HDR, .EXR, .zip
+                  </p>
+                  {renderFilePreview("hdri", "HDRI")}
                   {editMode && assetToEdit.hdri && (
-                    <p className="current-image-note">Current HDRI file will be kept if no new file is selected</p>
+                    <p className="current-image-note">
+                      Current HDRI file will be kept if no new file is selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "icons" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Icon Files {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="icons" 
-                    onChange={handleChange} 
-                    accept="image/*,.svg,.png,.ico" 
-                    multiple 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Icon Files{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="icons"
+                    onChange={handleChange}
+                    accept="image/*,.svg,.png,.ico"
+                    multiple
+                    className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Select multiple icon files PNG, SVG, ICO</p>
+                  <p className="blog-form-hint">
+                    Select multiple icon files PNG, SVG, ICO
+                  </p>
+                  {renderMultipleFilesPreview("icons", "Icon")}
                   {editMode && assetToEdit.icons && (
-                    <p className="current-image-note">Current icon files will be kept if no new files are selected</p>
+                    <p className="current-image-note">
+                      Current icon files will be kept if no new files are
+                      selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "graphics" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Graphics Template File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="graphicsTemplate" 
-                    onChange={handleChange} 
-                    accept=".psd,.ai,.eps,.pdf" 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Graphics Template File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="graphicsTemplate"
+                    onChange={handleChange}
+                    accept=".psd,.ai,.eps,.pdf"
+                    className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: PSD, AI, EPS, PDF</p>
+                  <p className="blog-form-hint">
+                    Supported formats: PSD, AI, EPS, PDF
+                  </p>
+                  {renderFilePreview("graphicsTemplate", "Graphics Template")}
                   {editMode && assetToEdit.graphicsTemplate && (
-                    <p className="current-image-note">Current graphics template file will be kept if no new file is selected</p>
+                    <p className="current-image-note">
+                      Current graphics template file will be kept if no new file
+                      is selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "mockups" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Mockup File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="mockupFile" 
-                    onChange={handleChange} 
-                    accept=".psd,.zip" 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Mockup File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="mockupFile"
+                    onChange={handleChange}
+                    accept=".psd,.zip"
+                    className="blog-form-file"
                     required={!editMode}
                   />
                   <p className="blog-form-hint">Supported formats: PSD, .zip</p>
+                  {renderFilePreview("mockupFile", "Mockup")}
                   {editMode && assetToEdit.mockupFile && (
-                    <p className="current-image-note">Current mockup file will be kept if no new file is selected</p>
+                    <p className="current-image-note">
+                      Current mockup file will be kept if no new file is
+                      selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "fonts" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Font File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="fontFile" 
-                    onChange={handleChange} 
-                    accept=".ttf,.otf,.woff,.woff2,.zip" 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Font File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="fontFile"
+                    onChange={handleChange}
+                    accept=".ttf,.otf,.woff,.woff2,.zip"
+                    className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: TTF, OTF, WOFF, WOFF2, .zip</p>
+                  <p className="blog-form-hint">
+                    Supported formats: TTF, OTF, WOFF, WOFF2, .zip
+                  </p>
+                  {renderFilePreview("fontFile", "Font")}
                   {editMode && assetToEdit.fontFile && (
-                    <p className="current-image-note">Current font file will be kept if no new file is selected</p>
+                    <p className="current-image-note">
+                      Current font file will be kept if no new file is selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "video-templates" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Video Template File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="videoTemplateFile" 
-                    onChange={handleChange} 
-                    accept=".mp4,.zip" 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Video Template File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="videoTemplateFile"
+                    onChange={handleChange}
+                    accept="video/*,.zip"
+                    className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: MP4, .zip</p>
+                  <p className="blog-form-hint">Supported formats: .MOV, .MP4, .zip</p>
+                  {renderFilePreview("videoTemplateFile", "Video Template")}
                   {editMode && assetToEdit.videoTemplateFile && (
-                    <p className="current-image-note">Current video template file will be kept if no new file is selected</p>
+                    <p className="current-image-note">
+                      Current video template file will be kept if no new file is
+                      selected
+                    </p>
                   )}
                 </div>
               )}
 
               {formData.type === "other" && (
                 <div className="blog-form-group">
-                  <label className="blog-form-label">Asset File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="other" 
-                    onChange={handleChange} 
-                    className="blog-form-file" 
+                  <label className="blog-form-label">
+                    Asset File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="other"
+                    onChange={handleChange}
+                    className="blog-form-file"
                     required={!editMode}
                   />
                   <p className="blog-form-hint">Upload your asset file</p>
+                  {renderFilePreview("other", "Asset")}
                   {editMode && assetToEdit.other && (
-                    <p className="current-image-note">Current asset file will be kept if no new file is selected</p>
+                    <p className="current-image-note">
+                      Current asset file will be kept if no new file is selected
+                    </p>
                   )}
                 </div>
               )}
 
               <div className="modal-actions-row">
                 {onUploadClose && (
-                  <button 
-                    type="button" 
-                    onClick={onUploadClose} 
+                  <button
+                    type="button"
+                    onClick={onUploadClose}
                     className="cancel-button"
                     disabled={isSubmitting || isUpdating}
                   >
                     Cancel
                   </button>
                 )}
-                <button 
-  type="submit" 
-  disabled={isSubmitting || isUpdating || converting} 
-  className="blog-btn blog-btn-submit"
->
-  {converting ? "Converting Images..." : 
-   editMode ? 
-    (isUpdating ? "Updating..." : "Update Asset") : 
-    (isSubmitting ? "Uploading..." : "Upload Asset")}
-</button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || isUpdating || converting}
+                  className="blog-btn blog-btn-submit"
+                >
+                  {converting
+                    ? "Converting Images..."
+                    : editMode
+                    ? isUpdating
+                      ? "Updating..."
+                      : "Update Asset"
+                    : isSubmitting
+                    ? "Uploading..."
+                    : "Upload Asset"}
+                </button>
               </div>
             </form>
           </div>

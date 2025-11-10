@@ -30,7 +30,8 @@ import FavoriteButton from "../Components/UI/FavoriteButton";
 import DownloadButton from "../Components/UI/DownloadButton";
 import VideoViewer from "./VideoViewer";
 import ContentViewer from "../Components/ContentViewer";
-import AssetFullScreen from "../Components/AssetFullScreen"; // ADD THIS IMPORT
+import AssetFullScreen from "../Components/AssetFullScreen";
+import RelatedItems from "../Components/RelatedItems";
 
 const View = () => {
   const { currentUser, userProfile } = useUser();
@@ -43,24 +44,25 @@ const View = () => {
   const [isItemOwned, setIsItemOwned] = useState(false);
   const [group, setGroup] = useState(null);
   const [markdown, setMarkdown] = useState("");
-  const [isFullscreen, setIsFullscreen] = useState(false); // ADD THIS STATE
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Get price display text
+  // Get price display text - UPDATED FOR FREE/PAID STRINGS
   const getPriceDisplay = (asset) => {
     if (asset.price === "free") return "Free";
     if (asset.price === "paid") return "Paid";
     
+    // Fallback for old data
     if (typeof asset.price === "number") {
       return asset.price > 0 ? "Paid" : "Free";
     }
-    
+
     if (typeof asset.price === "string") {
       const numPrice = parseFloat(asset.price);
       if (!isNaN(numPrice)) {
         return numPrice > 0 ? "Paid" : "Free";
       }
     }
-    
+
     return "Free";
   };
 
@@ -83,9 +85,7 @@ const View = () => {
       );
     },
     image({ node, ...props }) {
-      return (
-        <img className="markdown-image" alt={props.alt} {...props} />
-      );
+      return <img className="markdown-image" alt={props.alt} {...props} />;
     },
   };
 
@@ -111,7 +111,6 @@ const View = () => {
     }
   }, [userProfile, item]);
 
-  // ADD THESE FUNCTIONS
   const handleOpenFullscreen = () => {
     setIsFullscreen(true);
   };
@@ -121,7 +120,6 @@ const View = () => {
   };
 
   const handleDownloadFromFullscreen = () => {
-    // Trigger download logic here
     console.log("Download from fullscreen:", item);
   };
 
@@ -133,7 +131,10 @@ const View = () => {
         <meta property="og:title" content={`${item.title} | shammarianas`} />
         <meta property="og:description" content={item.description} />
         <meta property="og:image" content={item.thumbnail} />
-        <meta property="twitter:title" content={`${item.title} | shammarianas`} />
+        <meta
+          property="twitter:title"
+          content={`${item.title} | shammarianas`}
+        />
         <meta property="twitter:description" content={item.description} />
         <meta property="twitter:image" content={item.thumbnail} />
         <meta property="og:type" content="website" />
@@ -145,7 +146,7 @@ const View = () => {
         <meta property="og:site_name" content="shammarianas" />
         <meta property="og:locale" content="en_US" />
       </Helmet>
-      
+
       <div className="page_content">
         {item.id ? (
           <div className="view_item_main">
@@ -153,7 +154,6 @@ const View = () => {
               <ToastAlert message={toastMessage} state={toastState} />
             ) : null}
 
-            {/* ADD THE FULLSCREEN MODAL */}
             <AssetFullScreen
               asset={item}
               assetType={item.type}
@@ -175,7 +175,7 @@ const View = () => {
                   <ViewItemImages
                     mainImage={item.thumbnail}
                     images={item.maps}
-                    onFullscreen={handleOpenFullscreen} // PASS THIS PROP
+                    onFullscreen={handleOpenFullscreen}
                   />
                 ) : item.type === "models" || item.type === "printables" ? (
                   <ModelViewer
@@ -185,7 +185,7 @@ const View = () => {
                     sky={sky}
                     onLoad={() => console.log("Model loaded successfully")}
                     onError={(e) => console.error("Error loading model:", e)}
-                    onFullscreen={handleOpenFullscreen} // PASS THIS PROP
+                    onFullscreen={handleOpenFullscreen}
                   />
                 ) : item.type === "scripts" ? (
                   <ScriptViewer
@@ -193,39 +193,39 @@ const View = () => {
                     scriptName={item.scriptName}
                     id={item.id}
                     price={getPriceDisplay(item)}
-                    onFullscreen={handleOpenFullscreen} // PASS THIS PROP
+                    onFullscreen={handleOpenFullscreen}
                   />
                 ) : item.type === "graphics" ? (
                   <ContentViewer
                     templateUrl={item.template}
                     previewUrl={item.thumbnail}
                     title={item.title}
-                    onFullscreen={handleOpenFullscreen} // PASS THIS PROP
+                    onFullscreen={handleOpenFullscreen}
                   />
                 ) : item.type === "templates" ? (
                   <ContentViewer
                     videoUrl={item.videoTemplate}
                     previewUrl={item.thumbnail}
                     title={item.title}
-                    onFullscreen={handleOpenFullscreen} // PASS THIS PROP
+                    onFullscreen={handleOpenFullscreen}
                   />
                 ) : item.type === "hdris" ? (
-                  <HdriViewer 
-                    hdri={item.hdri} 
-                    onFullscreen={handleOpenFullscreen} // PASS THIS PROP
+                  <HdriViewer
+                    hdri={item.hdri}
+                    onFullscreen={handleOpenFullscreen}
                   />
                 ) : item.type === "videos" ? (
                   <VideoViewer
                     videoUrl={item.video}
                     videoName={item.title}
                     previewUrl={item.thumbnail}
-                    onFullscreen={handleOpenFullscreen} // PASS THIS PROP
+                    onFullscreen={handleOpenFullscreen}
                   />
                 ) : (
-                  <div 
+                  <div
                     className="details-media-frame"
-                    onClick={handleOpenFullscreen} // ADD CLICK HANDLER
-                    style={{ cursor: 'pointer' }}
+                    onClick={handleOpenFullscreen}
+                    style={{ cursor: "pointer" }}
                   >
                     <img
                       src={item.thumbnail}
@@ -277,9 +277,10 @@ const View = () => {
                     ) : (
                       ""
                     )}
-                    
+
+                    {/* UPDATED PRICE DISPLAY */}
                     <span className="price_value">
-                      {item.price > 0 ? "Paid" : "Free"}
+                      {getPriceDisplay(item)}
                     </span>
                   </div>
 
@@ -295,7 +296,7 @@ const View = () => {
                     <FavoriteButton assetId={item.id} />
                   </div>
                 </div>
-                
+
                 <ItemInfoTable asset={item} />
               </div>
             </div>
@@ -304,6 +305,13 @@ const View = () => {
           <div className="loading">Loading...</div>
         )}
       </div>
+
+      <RelatedItems
+        tags={item.tags}
+        currentItemId={item.id}
+        assetType={item.type}
+        limit={8}
+      />
     </>
   );
 };
