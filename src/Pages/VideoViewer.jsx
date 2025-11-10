@@ -93,7 +93,9 @@ const [showPreview, setShowPreview] = useState(
   ) : (
     /* ✅ Actual Video */
     <video ref={videoRef} controls width="100%" poster={previewUrl}>
-      <source src={videoUrl} type="video/mp4" />
+ <source src={videoUrl} type="video/mp4" />
+              <source src={videoUrl} type="video/quicktime" />
+              <source src={videoUrl} type="video/x-m4v" />
       Your browser does not support the video tag.
     </video>
   )}

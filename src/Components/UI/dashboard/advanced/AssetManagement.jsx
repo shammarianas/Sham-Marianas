@@ -18,7 +18,8 @@ import {
   FiCalendar,
   FiImage,
   FiMoreHorizontal,
-  FiX
+  FiX,
+  FiRefreshCw
 } from "react-icons/fi";
 import { 
   collection, 
@@ -27,7 +28,8 @@ import {
   doc, 
   updateDoc, 
   deleteDoc, 
-  serverTimestamp 
+  serverTimestamp,
+  onSnapshot
 } from "firebase/firestore";
 import { db } from "../../../../../firebase";
 import Upload from "../../../../Pages/Upload";
@@ -44,6 +46,7 @@ const AssetManagement = () => {
   const [showCreateAssetDialog, setShowCreateAssetDialog] = useState(false);
   const [showEditAssetDialog, setShowEditAssetDialog] = useState(false);
   const [assetToEdit, setAssetToEdit] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Asset categories
   const ASSET_CATEGORIES = [
@@ -107,27 +110,71 @@ const AssetManagement = () => {
     return "Free";
   };
 
-  // Fetch All Assets
-  const fetchAssets = useCallback(async () => {
-    setLoading(true);
-    try {
-      const q = query(collection(db, "Assets"));
-      const querySnapshot = await getDocs(q);
-      const assetsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setAssets(assetsData);
-    } catch (error) {
-      setError(`Failed to load assets: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Fetch All Assets with Real-time Updates
+// Fetch All Assets with Real-time Updates - FIXED VERSION
+const fetchAssets = useCallback(() => {
+  setLoading(true);
+  try {
+    const q = query(collection(db, "Assets"));
+    
+    const unsubscribe = onSnapshot(q, 
+      (querySnapshot) => {
+        const assetsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setAssets(assetsData);
+        setLoading(false);
+      }, 
+      (error) => {
+        console.error("Assets real-time listener error:", error);
+        setError(`Failed to load assets: ${error.message}`);
+        setLoading(false);
+      }
+    );
 
-  useEffect(() => {
-    fetchAssets();
-  }, [fetchAssets]);
+    return unsubscribe; // ✅ This returns the unsubscribe function
+  } catch (error) {
+    setError(`Failed to load assets: ${error.message}`);
+    setLoading(false);
+  }
+}, []);
+
+useEffect(() => {
+  const unsubscribe = fetchAssets();
+  
+  // Cleanup on component unmount
+  return () => {
+    if (unsubscribe) {
+      unsubscribe(); // ✅ This will work now
+    }
+  };
+}, [fetchAssets]);
+
+  // Manual refresh function
+  const refreshAssets = useCallback(() => {
+    console.log("🔄 Manual refresh triggered");
+    setRefreshKey(prev => prev + 1);
+    setLoading(true);
+    
+    // Force re-fetch
+    const q = query(collection(db, "Assets"));
+    getDocs(q)
+      .then((querySnapshot) => {
+        const assetsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("✅ Assets refreshed:", assetsData.length);
+        setAssets(assetsData);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("❌ Refresh failed:", error);
+        setError(`Failed to refresh assets: ${error.message}`);
+        setLoading(false);
+      });
+  }, []);
 
   // Asset management handlers
   const handleToggleAssetFeatured = async (assetId) => {
@@ -138,12 +185,10 @@ const AssetManagement = () => {
           isFeatured: !asset.isFeatured,
           updatedAt: serverTimestamp(),
         });
-        setAssets((prev) =>
-          prev.map((a) =>
-            a.id === assetId ? { ...a, isFeatured: !a.isFeatured } : a
-          )
-        );
+        console.log("✅ Asset featured status toggled");
+        // Real-time listener will automatically update the UI
       } catch (error) {
+        console.error("❌ Failed to toggle featured:", error);
         setError(`Failed to update asset: ${error.message}`);
       }
     }
@@ -157,12 +202,10 @@ const AssetManagement = () => {
           isTrending: !asset.isTrending,
           updatedAt: serverTimestamp(),
         });
-        setAssets((prev) =>
-          prev.map((a) =>
-            a.id === assetId ? { ...a, isTrending: !a.isTrending } : a
-          )
-        );
+        console.log("✅ Asset trending status toggled");
+        // Real-time listener will automatically update the UI
       } catch (error) {
+        console.error("❌ Failed to toggle trending:", error);
         setError(`Failed to update asset: ${error.message}`);
       }
     }
@@ -172,9 +215,11 @@ const AssetManagement = () => {
     if (window.confirm("Are you sure you want to delete this asset?")) {
       try {
         await deleteDoc(doc(db, "Assets", assetId));
-        setAssets(assets.filter((asset) => asset.id !== assetId));
+        console.log("✅ Asset deleted");
+        // Real-time listener will automatically update the UI
         setShowAssetDialog(false);
       } catch (error) {
+        console.error("❌ Failed to delete asset:", error);
         setError(`Failed to delete asset: ${error.message}`);
       }
     }
@@ -234,6 +279,15 @@ const AssetManagement = () => {
           <span className="asset-badge-count">
             {filteredAssets.length} assets
           </span>
+          <button
+            className="action-button secondary"
+            onClick={refreshAssets}
+            title="Refresh Assets"
+            disabled={loading}
+          >
+            <FiRefreshCw className={`button-icon ${loading ? 'spinning' : ''}`} />
+            Refresh
+          </button>
           <button
             className="action-button upload-button"
             onClick={() => setShowCreateAssetDialog(true)}
@@ -534,7 +588,7 @@ const AssetManagement = () => {
         <CreateAssetModal
           isOpen={showCreateAssetDialog}
           onClose={() => setShowCreateAssetDialog(false)}
-          onAssetCreated={fetchAssets}
+          onAssetCreated={refreshAssets}
         />
       )}
 
@@ -547,11 +601,7 @@ const AssetManagement = () => {
             setShowEditAssetDialog(false);
             setAssetToEdit(null);
           }}
-          onAssetUpdated={() => {
-            fetchAssets(); 
-            setShowEditAssetDialog(false);
-            setAssetToEdit(null);
-          }}
+          onAssetUpdated={refreshAssets}
         />
       )}
     </div>
@@ -699,21 +749,18 @@ const AssetDetailsModal = ({
   );
 };
 
-// Create Asset Modal Component
+// Create Asset Modal Component - FIXED
 const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
-  const [uploading, setUploading] = useState(false);
+  const [uploadKey, setUploadKey] = useState(0);
+
+  useEffect(() => {
+    if (isOpen) {
+      setUploadKey(prev => prev + 1);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleUpload = async () => {
-    setUploading(true);
-    // Upload logic here
-    setTimeout(() => {
-      setUploading(false);
-      onAssetCreated();
-      onClose();
-    }, 2000);
-  };
 
   return (
     <div className="blog-modal-overlay">
@@ -729,15 +776,16 @@ const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
         </div>
         <div className="modal-body">
           <div className="upload-wrapper">
-           <Upload 
-  editMode={false}
-  assetToEdit={null}
-  onUploadSuccess={() => {
-    onAssetCreated();
-    onClose();
-  }}
-  onUploadClose={onClose}
-/>
+            <Upload 
+              key={`create-${uploadKey}`} // ✅ Yeh line important hai
+              editMode={false}
+              assetToEdit={null}
+              onUploadSuccess={() => {
+                onAssetCreated();
+                onClose();
+              }}
+              onUploadClose={onClose}
+            />
           </div>
         </div>
       </div>
@@ -745,22 +793,17 @@ const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
   );
 };
 
-// Edit Asset Modal Component - Fixed Version
+// Edit Asset Modal Component - FIXED
 const EditAssetModal = ({ asset, isOpen, onClose, onAssetUpdated }) => {
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [uploadKey, setUploadKey] = useState(0);
 
-  const handleUpdateSuccess = () => {
-    setIsUpdating(false);
-    if (onAssetUpdated) {
-      onAssetUpdated();
+  useEffect(() => {
+    if (isOpen && asset) {
+      // Generate new key every time modal opens
+      setUploadKey(prev => prev + 1);
+      console.log("🔄 Edit modal opened with key:", uploadKey + 1, "for asset:", asset.id);
     }
-    onClose();
-  };
-
-  const handleUpdateClose = () => {
-    setIsUpdating(false);
-    onClose();
-  };
+  }, [isOpen, asset]);
 
   if (!isOpen) return null;
 
@@ -772,19 +815,22 @@ const EditAssetModal = ({ asset, isOpen, onClose, onAssetUpdated }) => {
             <FiEdit className="modal-icon" />
             Edit Asset
           </h3>
-          <button onClick={handleUpdateClose} className="close-button">
+          <button onClick={onClose} className="close-button">
             <FiX />
           </button>
         </div>
         <div className="modal-body">
           <div className="upload-wrapper">
             <Upload 
+              key={`edit-${asset?.id}-${uploadKey}`} // ✅ KEY PROP ADDED - This forces fresh instance
               editMode={true}
               assetToEdit={asset}
-              onUploadSuccess={handleUpdateSuccess}
-              onUploadClose={handleUpdateClose}
-              isUpdating={isUpdating}
-              setIsUpdating={setIsUpdating}
+              onUploadSuccess={() => {
+                console.log("✅ Asset updated successfully - refreshing list");
+                onAssetUpdated(); // ✅ This will refresh the assets list
+                onClose();
+              }}
+              onUploadClose={onClose}
             />
           </div>
         </div>

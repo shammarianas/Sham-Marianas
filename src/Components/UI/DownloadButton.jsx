@@ -1,5 +1,6 @@
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import PropTypes from 'prop-types';
+import { useNavigate } from "react-router-dom";
 
 const DownloadButton = ({
   item,
@@ -9,15 +10,17 @@ const DownloadButton = ({
   setShowToast,
 }) => {
   const { isDownloaded, addToDownloads, error } = useSaveToDownloads(item.id, item);
+  const navigate = useNavigate();
 
-  const price = Number(item.price) || 0;
-  const discount = Number(item.discount ?? 0) || 0;
-  const finalPrice = price - (price * discount) / 100;
+  // Check if item is free or paid
+  const isFree = item.price === "free";
+  const isPaid = item.price === "paid";
 
-  // Check if asset is free or purchased
-  const isFree = finalPrice === 0;
-  const isPurchased = userProfile && userProfile.purchasedItems && userProfile.purchasedItems.includes(item.id);
-  const canDownload = isFree || isPurchased;
+  // Check if user has active subscription
+  const hasActiveSubscription = userProfile?.subscriptionActive === true;
+
+  // Check if user has purchased this specific item
+  const hasPurchasedItem = userProfile?.purchasedItems?.includes(item.id);
 
   const getAssetUrls = () => {
     const urls = [];
@@ -50,26 +53,8 @@ const DownloadButton = ({
       case 'icons':
         if (Array.isArray(item.icons)) urls.push(...item.icons);
         break;
-     case 'images':
-        // ✅ ENHANCED: Handle multiple image sizes
-        if (item.images && Array.isArray(item.images)) {
-          item.images.forEach((imageData) => {
-            if (imageData.sizes && typeof imageData.sizes === 'object') {
-              // New format with multiple sizes
-              Object.values(imageData.sizes).forEach(sizeData => {
-                if (sizeData.url) {
-                  urls.push(sizeData.url);
-                }
-              });
-            } else if (typeof imageData === 'string') {
-              // Old format - single URL (backward compatibility)
-              urls.push(imageData);
-            } else if (imageData.url) {
-              // Alternative object format
-              urls.push(imageData.url);
-            }
-          });
-        }
+      case 'images':
+        if (Array.isArray(item.images)) urls.push(...item.images);
         break;
       case 'textures':
         if (item.maps && typeof item.maps === 'object') {
@@ -91,14 +76,35 @@ const DownloadButton = ({
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch (err) {
-      console.error('Download failed for URL:', url, err);
+    } catch (e) {
+      // window.open(url, '_blank');
     }
   };
 
   const handleDownload = () => {
-    if (!canDownload) {
-      setToastMessage('This is a paid asset. Please purchase to download.');
+    const urls = getAssetUrls();
+
+    // Free items: download immediately
+    if (isFree) {
+      addToDownloads(item);
+      if (urls.length) {
+        urls.forEach(downloadURL);
+      }
+      return;
+    }
+
+    // Purchased items or users with active subscription: allow download
+    if (hasPurchasedItem || hasActiveSubscription) {
+      addToDownloads(item);
+      if (urls.length) {
+        urls.forEach(downloadURL);
+      }
+      return;
+    }
+
+    // For paid items without subscription, show subscription message
+    if (isPaid && !hasActiveSubscription) {
+      setToastMessage('Subscription required to download paid assets');
       setToastState('warning');
       setShowToast(true);
       setTimeout(() => {
@@ -106,52 +112,79 @@ const DownloadButton = ({
       }, 4000);
       return;
     }
-
-    const urls = getAssetUrls();
-
-    // Add to downloads history
-    addToDownloads(item);
-    
-    // Download files
-    if (urls.length) {
-      urls.forEach(downloadURL);
-    }
-
-   // ✅ ENHANCED: Show different message for multiple sizes
-    if (item.type === 'images' && urls.length > 1) {
-      setToastMessage(`Downloading ${urls.length} image files in multiple sizes!`);
-    } else {
-      setToastMessage('Download started!');
-    }
-    
-    setToastState('success');
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 4000);
   };
+
+  const handleSubscription = () => {
+    navigate('/subscription');
+  };
+
+  // Determine button state and content
+  const getButtonContent = () => {
+    // Free items - always downloadable
+    if (isFree) {
+      return {
+        text: isDownloaded ? 'Downloaded' : 'Download',
+        icon: 'fas fa-download',
+        onClick: handleDownload,
+        enabled: true,
+        className: 'download_btn'
+      };
+    }
+
+    // Paid items with subscription or purchase - downloadable
+    if (hasActiveSubscription || hasPurchasedItem) {
+      return {
+        text: isDownloaded ? 'Downloaded' : 'Download',
+        icon: 'fas fa-download',
+        onClick: handleDownload,
+        enabled: true,
+        className: 'download_btn'
+      };
+    }
+
+    // Paid items without subscription - show subscribe button
+    if (isPaid && !hasActiveSubscription) {
+      return {
+        text: 'Subscribe to Download',
+        icon: 'fas fa-crown',
+        onClick: handleSubscription,
+        enabled: true,
+        className: 'subscribe_btn'
+      };
+    }
+
+    // Fallback for old numeric prices (backward compatibility)
+    const price = Number(item.price) || 0;
+    if (price === 0) {
+      return {
+        text: isDownloaded ? 'Downloaded' : 'Download',
+        icon: 'fas fa-download',
+        onClick: handleDownload,
+        enabled: true,
+        className: 'download_btn'
+      };
+    }
+
+    // Old paid items without subscription
+    return {
+      text: 'Subscribe to Download',
+      icon: 'fas fa-crown',
+      onClick: handleSubscription,
+      enabled: true,
+      className: 'subscribe_btn'
+    };
+  };
+
+  const buttonConfig = getButtonContent();
 
   return (
     <button 
-      className="add_to_cart_btn" 
-      onClick={handleDownload}
-      disabled={!canDownload}
-      style={{
-        opacity: canDownload ? 1 : 0.6,
-        cursor: canDownload ? 'pointer' : 'not-allowed'
-      }}
+      className={`action_button ${buttonConfig.className}`}
+      onClick={buttonConfig.onClick}
+      disabled={!buttonConfig.enabled}
     >
-      {canDownload ? (
-        <>
-          <i className="icon fas fa-download"></i>
-          {isDownloaded ? 'Download Again' : 'Download'}
-        </>
-      ) : (
-        <>
-          <i className="icon fas fa-lock"></i>
-          Paid Asset
-        </>
-      )}
+      <i className={`icon ${buttonConfig.icon}`}></i>
+      {buttonConfig.text}
     </button>
   );
 };
@@ -168,6 +201,7 @@ DownloadButton.propTypes = {
     purchasedItems: PropTypes.arrayOf(
       PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     ),
+    subscriptionActive: PropTypes.bool,
   }),
   setToastMessage: PropTypes.func.isRequired,
   setToastState: PropTypes.func.isRequired,

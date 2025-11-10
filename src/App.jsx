@@ -58,6 +58,7 @@ import TermsandCondition from "./Pages/Get Started/Terms&Condition";
 // import Community from "./Pages/Get Started/Community";
 import CommingSoon from "./Pages/CommingSoon";
 import BlogCategory from "./Pages/Blog-Category";
+import Subscription from "./Pages/Subscription";
 
 
 const ScrollToTop = () => {
@@ -126,7 +127,7 @@ export const AppRoutes = () => (
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />               
 <Route path="/blog-category/:category" element={<BlogCategory />} /> 
-
+<Route path="/subscription" element={<Subscription />} /> 
   </Routes>
 );
 

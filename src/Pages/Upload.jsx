@@ -23,6 +23,7 @@ import {
   FiChevronDown,
   FiPlay,
   FiPause,
+  FiFileText,
 } from "react-icons/fi";
 import useImageSizeConverter from "../hooks/ImageSizeConverter";
 
@@ -519,12 +520,11 @@ const assetTypeToFilterData = {
   textures: "Textures",
   hdris: "HDRIs",
   scripts: "Scripts",
-  // sounds: null,
   other: null,
 };
 
 const Upload = ({
-  onUploadSuccess,
+ onUploadSuccess,
   onUploadClose,
   compactView = false,
   editMode = false,
@@ -540,7 +540,7 @@ const Upload = ({
     thumbnail: "",
     description: "",
     is3d: false,
-    price: "free", // Changed to string with "free" as default
+    price: "free",
     tags: "",
     date: new Date()
       .toLocaleDateString("en-US", {
@@ -567,8 +567,6 @@ const Upload = ({
     fontFileSize: "",
     videoTemplateFile: "",
     videoTemplateFileSize: "",
-    // sound: "",
-    // soundSize: "",
     other: "",
     otherSize: "",
     ambientOcclusion: "",
@@ -614,6 +612,35 @@ const Upload = ({
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [thumbnailType, setThumbnailType] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  
+  // File preview states
+  const [filePreviews, setFilePreviews] = useState({
+    model: null,
+    video: null,
+    script: null,
+    hdri: null,
+    graphicsTemplate: null,
+    mockupFile: null,
+    fontFile: null,
+    videoTemplateFile: null,
+    other: null,
+    images: [],
+    icons: [],
+    textures: [],
+  });
+
+  const [filePreviewTypes, setFilePreviewTypes] = useState({
+    model: null,
+    video: null,
+    script: null,
+    hdri: null,
+    graphicsTemplate: null,
+    mockupFile: null,
+    fontFile: null,
+    videoTemplateFile: null,
+    other: null,
+  });
+
   const tagInputRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -624,7 +651,7 @@ const Upload = ({
         ...prev,
         title: assetToEdit.title || "",
         description: assetToEdit.description || "",
-        price: assetToEdit.price || "free", // Default to "free" if not set
+        price: assetToEdit.price || "free",
         category: assetToEdit.category || "",
         type: assetToEdit.type || "",
         is3d: assetToEdit.is3d || false,
@@ -666,6 +693,72 @@ const Upload = ({
       }
     }
   }, [editMode, assetToEdit]);
+
+  // File preview handling function
+  const handleFilePreview = (file, fileType) => {
+    if (!file) return;
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreviews(prev => ({
+          ...prev,
+          [fileType]: reader.result
+        }));
+        setFilePreviewTypes(prev => ({
+          ...prev,
+          [fileType]: "image"
+        }));
+      };
+      reader.readAsDataURL(file);
+    } else if (file.type.startsWith("video/")) {
+      const videoURL = URL.createObjectURL(file);
+      setFilePreviews(prev => ({
+        ...prev,
+        [fileType]: videoURL
+      }));
+      setFilePreviewTypes(prev => ({
+        ...prev,
+        [fileType]: "video"
+      }));
+    } else {
+      // For other file types, show file info
+      setFilePreviews(prev => ({
+        ...prev,
+        [fileType]: {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        }
+      }));
+      setFilePreviewTypes(prev => ({
+        ...prev,
+        [fileType]: "file"
+      }));
+    }
+  };
+
+  // Handle multiple files preview (for images, icons, textures)
+  const handleMultipleFilesPreview = (files, fileType) => {
+    if (!files || files.length === 0) return;
+
+    const previews = [];
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          previews.push(reader.result);
+          if (previews.length === files.length) {
+            setFilePreviews(prev => ({
+              ...prev,
+              [fileType]: previews
+            }));
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  };
 
   // Video playback functions
   const handleVideoPlay = async () => {
@@ -831,7 +924,7 @@ const Upload = ({
     }
   };
 
-  // Main form change handler - UPDATED for better file handling
+  // Main form change handler - UPDATED for file previews
   const handleChange = (event) => {
     const target = event.target;
     const name = target.name;
@@ -845,16 +938,17 @@ const Upload = ({
         if (files && files.length > 0) {
           setFormData((prev) => ({
             ...prev,
-            [name]: Array.from(files), // Store as array
+            [name]: Array.from(files),
             [`${name}Size`]: Array.from(files).map((file) => file.size),
           }));
+          handleMultipleFilesPreview(files, name);
         } else {
-          // In edit mode, if files are cleared, set to empty array
           setFormData((prev) => ({
             ...prev,
             [name]: [],
             [`${name}Size`]: [],
           }));
+          setFilePreviews(prev => ({ ...prev, [name]: [] }));
         }
       } else {
         const file = target.files[0];
@@ -864,13 +958,15 @@ const Upload = ({
             [name]: file,
             [`${name}Size`]: file.size,
           }));
+          handleFilePreview(file, name);
         } else {
-          // In edit mode, if file is cleared, set to empty string
           setFormData((prev) => ({
             ...prev,
             [name]: "",
             [`${name}Size`]: "",
           }));
+          setFilePreviews(prev => ({ ...prev, [name]: null }));
+          setFilePreviewTypes(prev => ({ ...prev, [name]: null }));
         }
       }
     } else if (
@@ -891,7 +987,75 @@ const Upload = ({
     }
   };
 
-  // ✅ MAIN SUBMIT FUNCTION — fixed for edit mode
+  // File Preview Component
+  const renderFilePreview = (fileType, label) => {
+    const preview = filePreviews[fileType];
+    const previewType = filePreviewTypes[fileType];
+
+    if (!preview) return null;
+
+    if (previewType === "image") {
+      return (
+        <div className="file-preview-container">
+          <h4>{label} Preview:</h4>
+          <img src={preview} alt={`${label} preview`} className="file-preview-image" />
+        </div>
+      );
+    } else if (previewType === "video") {
+      return (
+        <div className="file-preview-container">
+          <h4>{label} Preview:</h4>
+          <video 
+            src={preview} 
+            className="file-preview-video"
+            controls
+            muted
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    } else if (previewType === "file") {
+      return (
+        <div className="file-preview-container">
+          <h4>{label} Info:</h4>
+          <div className="file-info-preview">
+            <FiFileText className="file-icon" />
+            <div className="file-info">
+              <strong>{preview.name}</strong>
+              <span>Size: {(preview.size / 1024 / 1024).toFixed(2)} MB</span>
+              <span>Type: {preview.type}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // Multiple Files Preview Component
+  const renderMultipleFilesPreview = (fileType, label) => {
+    const previews = filePreviews[fileType];
+
+    if (!previews || previews.length === 0) return null;
+
+    return (
+      <div className="file-preview-container">
+        <h4>{label} Previews ({previews.length} files):</h4>
+        <div className="file-preview-grid">
+          {previews.map((preview, index) => (
+            <div key={index} className="file-preview-item">
+              <img src={preview} alt={`${label} ${index + 1}`} className="file-preview-image" />
+              <span className="file-preview-index">#{index + 1}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ✅ MAIN SUBMIT FUNCTION
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -934,100 +1098,93 @@ const Upload = ({
         updatedAt: serverTimestamp(),
       };
 
-      // ✅ thumbnail upload - FIXED for edit mode
+      
+      // ✅ thumbnail upload
       if (formData.thumbnail && typeof formData.thumbnail !== "string") {
         docData.thumbnail = await uploadThumbnail(formData.thumbnail);
       } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
-        // Keep existing thumbnail if no new file selected
         docData.thumbnail = assetToEdit.thumbnail;
       }
 
-      // ✅ handle assets by type - FIXED for edit mode
-      // ✅ FIXED: handle assets by type - PROPER FILE DETECTION
-if (formData.type === "images") {
-  console.log("🖼️ Processing images...", {
-    hasImages: !!formData.images,
-    isArray: Array.isArray(formData.images),
-    length: Array.isArray(formData.images) ? formData.images.length : 0,
-    firstItem: Array.isArray(formData.images) ? formData.images[0] : null
-  });
+      // ✅ FIXED: handle assets by type
+      if (formData.type === "images") {
+        console.log("🖼️ Processing images...", {
+          hasImages: !!formData.images,
+          isArray: Array.isArray(formData.images),
+          length: Array.isArray(formData.images) ? formData.images.length : 0,
+          firstItem: Array.isArray(formData.images) ? formData.images[0] : null
+        });
 
-  // FIXED: Proper file detection
-  if (Array.isArray(formData.images) && formData.images.length > 0 && formData.images[0] instanceof File) {
-    console.log("🖼️ Uploading NEW images");
-    const allImageUrls = [];
+        if (Array.isArray(formData.images) && formData.images.length > 0 && formData.images[0] instanceof File) {
+          console.log("🖼️ Uploading NEW images");
+          const allImageUrls = [];
 
-    for (const imageFile of formData.images) {
-      setLoadingState(`Generating sizes for ${imageFile.name}...`);
+          for (const imageFile of formData.images) {
+            setLoadingState(`Generating sizes for ${imageFile.name}...`);
 
-      const imageSizes = await generateAllSizes(imageFile);
+            const imageSizes = await generateAllSizes(imageFile);
 
-      if (imageSizes) {
-        setLoadingState(`Uploading ${imageFile.name} in all sizes...`);
+            if (imageSizes) {
+              setLoadingState(`Uploading ${imageFile.name} in all sizes...`);
 
-        const uploadedUrls = await uploadAllSizes(
-          imageSizes,
-          `assets/images/${currentUser?.uid || "anonymous"}/${Date.now()}`
-        );
+              const uploadedUrls = await uploadAllSizes(
+                imageSizes,
+                `assets/images/${currentUser?.uid || "anonymous"}/${Date.now()}`
+              );
 
-        if (uploadedUrls) {
-          allImageUrls.push({
-            originalName: imageFile.name,
-            sizes: uploadedUrls,
-          });
+              if (uploadedUrls) {
+                allImageUrls.push({
+                  originalName: imageFile.name,
+                  sizes: uploadedUrls,
+                });
+              }
+            }
+          }
+
+          docData.images = allImageUrls;
+          docData.hasMultipleSizes = true;
+        } else if (editMode && assetToEdit.images) {
+          console.log("🖼️ Keeping EXISTING images");
+          docData.images = assetToEdit.images;
         }
       }
-    }
 
-    docData.images = allImageUrls;
-    docData.hasMultipleSizes = true;
-  } else if (editMode && assetToEdit.images) {
-    console.log("🖼️ Keeping EXISTING images");
-    docData.images = assetToEdit.images;
-  } else {
-    console.log("🖼️ No images to process");
-  }
-}
+      if (formData.type === "videos") {
+        console.log("🎥 Processing video...", {
+          hasVideo: !!formData.video,
+          isFile: formData.video instanceof File
+        });
+        
+        if (formData.video && formData.video instanceof File) {
+          console.log("🎥 Uploading NEW video");
+          docData.video = await uploadFile(formData.video, "videos");
+        } else if (editMode && assetToEdit.video) {
+          console.log("🎥 Keeping EXISTING video");
+          docData.video = assetToEdit.video;
+        }
+      }
 
-// FIXED: Video file handling
-if (formData.type === "videos") {
-  console.log("🎥 Processing video...", {
-    hasVideo: !!formData.video,
-    isFile: formData.video instanceof File
-  });
-  
-  if (formData.video && formData.video instanceof File) {
-    console.log("🎥 Uploading NEW video");
-    docData.video = await uploadFile(formData.video, "videos");
-  } else if (editMode && assetToEdit.video) {
-    console.log("🎥 Keeping EXISTING video");
-    docData.video = assetToEdit.video;
-  }
-}
+      if (formData.type === "models") {
+        console.log("📦 Processing model...", {
+          hasModel: !!formData.model,
+          isFile: formData.model instanceof File
+        });
+        
+        if (formData.model && formData.model instanceof File) {
+          console.log("📦 Uploading NEW model");
+          docData.model = await uploadFile(formData.model, "models");
+        } else if (editMode && assetToEdit.model) {
+          console.log("📦 Keeping EXISTING model");
+          docData.model = assetToEdit.model;
+        }
+      }
 
-// FIXED: Model file handling  
-if (formData.type === "models") {
-  console.log("📦 Processing model...", {
-    hasModel: !!formData.model,
-    isFile: formData.model instanceof File
-  });
-  
-  if (formData.model && formData.model instanceof File) {
-    console.log("📦 Uploading NEW model");
-    docData.model = await uploadFile(formData.model, "models");
-  } else if (editMode && assetToEdit.model) {
-    console.log("📦 Keeping EXISTING model");
-    docData.model = assetToEdit.model;
-  }
-}
       if (formData.type === "scripts" && formData.script) {
         docData.script = await uploadFile(formData.script, "scripts");
       } else if (editMode && assetToEdit.script && !formData.script) {
-        // Keep existing script if no new file selected
         docData.script = assetToEdit.script;
       }
 
-      // ✅ Handle other file types for edit mode
       if (formData.type === "hdris" && formData.hdri) {
         docData.hdri = await uploadFile(formData.hdri, "hdris");
       } else if (editMode && assetToEdit.hdri && !formData.hdri) {
@@ -1126,9 +1283,8 @@ if (formData.type === "models") {
           script: "",
           tags: "",
           category: "",
-          // Reset all other fields
           is3d: false,
-          price: "free",
+          price: "",
           date: new Date()
             .toLocaleDateString("en-US", {
               day: "2-digit",
@@ -1136,7 +1292,6 @@ if (formData.type === "models") {
               year: "numeric",
             })
             .replace(/ /g, ", "),
-          // Reset all filter fields
           aiGenerated: "",
           resolution: "",
           frameRate: "",
@@ -1155,10 +1310,34 @@ if (formData.type === "models") {
           colorSpace: "",
           objectType: "",
           fileFormat: "",
-          
         });
         setTags([]);
         setThumbnailPreview(null);
+        setFilePreviews({
+          model: null,
+          video: null,
+          script: null,
+          hdri: null,
+          graphicsTemplate: null,
+          mockupFile: null,
+          fontFile: null,
+          videoTemplateFile: null,
+          other: null,
+          images: [],
+          icons: [],
+          textures: [],
+        });
+        setFilePreviewTypes({
+          model: null,
+          video: null,
+          script: null,
+          hdri: null,
+          graphicsTemplate: null,
+          mockupFile: null,
+          fontFile: null,
+          videoTemplateFile: null,
+          other: null,
+        });
       }
     } catch (error) {
       console.error("UPLOAD ERROR →", error);
@@ -1230,7 +1409,6 @@ if (formData.type === "models") {
         return <FiImage />;
       case "scripts":
         return <FiCode />;
-      // case 'sounds': return <FiMusic />;
       default:
         return <FiFile />;
     }
@@ -1289,7 +1467,6 @@ if (formData.type === "models") {
         />
       </Helmet>
 
-      {/* CSS styles remain the same */}
       <style>
         {`
           .blog-modal-overlay {
@@ -1329,7 +1506,6 @@ if (formData.type === "models") {
             background: #fff;
           }
           
-          /* Enhanced Select Styles for Orientation, Properties, and Applications Supported */
           .select-wrapper {
             position: relative;
             width: 100%;
@@ -1557,6 +1733,98 @@ if (formData.type === "models") {
           .asset-type-icon {
             font-size: 1.5rem; margin-right: 0.5rem; color: #3b82f6;
           }
+
+          /* New File Preview Styles */
+          .file-preview-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background: #f8fafc;
+          }
+
+          .file-preview-container h4 {
+            margin: 0 0 0.75rem 0;
+            color: #374151;
+            font-size: 0.95rem;
+            font-weight: 600;
+          }
+
+          .file-preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+          }
+
+          .file-preview-video {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
+          }
+
+          .file-info-preview {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+          }
+
+          .file-icon {
+            font-size: 2rem;
+            color: #3b82f6;
+          }
+
+          .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+          }
+
+          .file-info strong {
+            color: #374151;
+          }
+
+          .file-info span {
+            font-size: 0.875rem;
+            color: #6b7280;
+          }
+
+          .file-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+          }
+
+          .file-preview-item {
+            position: relative;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            background: white;
+            text-align: center;
+          }
+
+          .file-preview-index {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+          }
+
           @media (max-width: 768px) {
             .blog-modal-content { padding: 1.5rem; }
             .blog-modal-title { font-size: 1.25rem; }
@@ -1589,7 +1857,6 @@ if (formData.type === "models") {
             </div>
 
             <form onSubmit={handleSubmit}>
-              {/* Form fields remain the same */}
               <div className="blog-form-group">
                 <label className="blog-form-label">
                   Title <span className="blog-form-required">*</span>
@@ -1605,7 +1872,6 @@ if (formData.type === "models") {
                 />
               </div>
 
-              {/* Thumbnail section with video playback */}
               <div className="blog-form-group">
                 <label className="blog-form-label">
                   Thumbnail <span className="blog-form-required">*</span>
@@ -1618,7 +1884,7 @@ if (formData.type === "models") {
                   className="blog-form-file"
                 />
                 <p className="blog-form-hint">
-                  JPG, PNG, MP4• Max 500KB • 705x472px recommended for images
+                  JPG, PNG, MP4 • Max 500KB • 705x472px recommended for images
                 </p>
 
                 {thumbnailPreview && thumbnailType === "image" && (
@@ -1717,7 +1983,6 @@ if (formData.type === "models") {
                   </option>
                   <option value="models">3D Model</option>
                   <option value="textures">Texture</option>
-                  {/* <option value="sounds">Sound</option> */}
                   <option value="scripts">Script</option>
                   <option value="images">Image</option>
                   <option value="graphics">Graphics Templates</option>
@@ -1753,25 +2018,24 @@ if (formData.type === "models") {
                 </select>
               </div>
 
-              {/* SIMPLIFIED PRICING SECTION */}
               <div className="blog-form-group">
-                <label className="blog-form-label">
-                  Price Type <span className="blog-form-required">*</span>
-                </label>
-                <select
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  required
-                  className="blog-form-select"
-                >
-                  <option value="free">Free</option>
-                  <option value="paid">Paid</option>
-                </select>
-                <p className="blog-form-hint">
-                  Select whether this asset is free or paid
-                </p>
-              </div>
+  <label className="blog-form-label">
+    Price Type <span className="blog-form-required">*</span>
+  </label>
+  <select
+    name="price"
+    value={formData.price}
+    onChange={handleChange}
+    required
+    className="blog-form-select"
+  >
+    <option value="free">Free</option>
+    <option value="paid">Paid</option>
+  </select>
+  <p className="blog-form-hint">
+    Select whether this asset is free or paid
+  </p>
+</div>
 
               <div className="blog-form-group">
                 <label className="blog-form-label">Tags (Max 10)</label>
@@ -1815,7 +2079,6 @@ if (formData.type === "models") {
                 )}
               </div>
 
-              {/* Additional filters based on asset type - Now Orientation, Properties, and Applications Supported have proper dropdowns */}
               {renderFilterSelect("aiGenerated", "AI-Generated", "aiGenerated")}
               {renderFilterSelect("resolution", "Resolution", "resolution")}
               {renderFilterSelect("frameRate", "Frame Rate", "frameRate")}
@@ -1860,7 +2123,6 @@ if (formData.type === "models") {
               {renderFilterSelect("objectType", "Object Type", "objectType")}
               {renderFilterSelect("fileFormat", "File Format", "fileFormat")}
 
-              {/* File upload sections for all asset types */}
               {formData.type === "models" && (
                 <>
                   <div className="blog-form-group">
@@ -1882,6 +2144,7 @@ if (formData.type === "models") {
                       Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend,
                       .zip
                     </p>
+                    {renderFilePreview("model", "3D Model")}
                     {editMode && assetToEdit.model && (
                       <p className="current-image-note">
                         Current model file will be kept if no new file is
@@ -1932,6 +2195,7 @@ if (formData.type === "models") {
                     required={!editMode}
                   />
                   <p className="blog-form-hint">Select image files</p>
+                  {renderMultipleFilesPreview("images", "Image")}
                   {editMode && assetToEdit.images && (
                     <p className="current-image-note">
                       Current images will be kept if no new files are selected
@@ -1950,13 +2214,14 @@ if (formData.type === "models") {
                     type="file"
                     name="video"
                     onChange={handleChange}
-                    accept="video/*,.mp4"
+                    accept="video/*"
                     className="blog-form-file"
                     required={!editMode}
                   />
                   <p className="blog-form-hint">
-                    Supported video formats .mp4, & .zip
+                    Supported video formats .mov, & .zip
                   </p>
+                  {renderFilePreview("video", "Video")}
                   {editMode && assetToEdit.video && (
                     <p className="current-image-note">
                       Current video file will be kept if no new file is selected
@@ -1964,24 +2229,6 @@ if (formData.type === "models") {
                   )}
                 </div>
               )}
-
-              {/* {formData.type === "sounds" && (
-                <div className="blog-form-group">
-                  <label className="blog-form-label">Sound File {!editMode && <span className="blog-form-required">*</span>}</label>
-                  <input 
-                    type="file" 
-                    name="sound" 
-                    onChange={handleChange} 
-                    accept="audio/*,.zip" 
-                    className="blog-form-file" 
-                    required={!editMode}
-                  />
-                  <p className="blog-form-hint">Supported audio formats: MP3, WAV, FLAC, AAC, .zip</p>
-                  {editMode && assetToEdit.sound && (
-                    <p className="current-image-note">Current sound file will be kept if no new file is selected</p>
-                  )}
-                </div>
-              )} */}
 
               {formData.type === "scripts" && (
                 <div className="blog-form-group">
@@ -2001,6 +2248,7 @@ if (formData.type === "models") {
                     Supported formats: JS, Python, PHP, HTML, CSS, TypeScript,
                     Ruby, Go, Shell, SQL, Lua, C#, .zip
                   </p>
+                  {renderFilePreview("script", "Script")}
                   {editMode && assetToEdit.script && (
                     <p className="current-image-note">
                       Current script file will be kept if no new file is
@@ -2028,6 +2276,7 @@ if (formData.type === "models") {
                   <p className="blog-form-hint">
                     Select multiple texture image files & .zip
                   </p>
+                  {renderMultipleFilesPreview("textures", "Texture")}
                   {editMode && assetToEdit.textures && (
                     <p className="current-image-note">
                       Current texture files will be kept if no new files are
@@ -2054,6 +2303,7 @@ if (formData.type === "models") {
                   <p className="blog-form-hint">
                     Supported formats: .HDR, .EXR, .zip
                   </p>
+                  {renderFilePreview("hdri", "HDRI")}
                   {editMode && assetToEdit.hdri && (
                     <p className="current-image-note">
                       Current HDRI file will be kept if no new file is selected
@@ -2080,6 +2330,7 @@ if (formData.type === "models") {
                   <p className="blog-form-hint">
                     Select multiple icon files PNG, SVG, ICO
                   </p>
+                  {renderMultipleFilesPreview("icons", "Icon")}
                   {editMode && assetToEdit.icons && (
                     <p className="current-image-note">
                       Current icon files will be kept if no new files are
@@ -2106,6 +2357,7 @@ if (formData.type === "models") {
                   <p className="blog-form-hint">
                     Supported formats: PSD, AI, EPS, PDF
                   </p>
+                  {renderFilePreview("graphicsTemplate", "Graphics Template")}
                   {editMode && assetToEdit.graphicsTemplate && (
                     <p className="current-image-note">
                       Current graphics template file will be kept if no new file
@@ -2130,6 +2382,7 @@ if (formData.type === "models") {
                     required={!editMode}
                   />
                   <p className="blog-form-hint">Supported formats: PSD, .zip</p>
+                  {renderFilePreview("mockupFile", "Mockup")}
                   {editMode && assetToEdit.mockupFile && (
                     <p className="current-image-note">
                       Current mockup file will be kept if no new file is
@@ -2156,6 +2409,7 @@ if (formData.type === "models") {
                   <p className="blog-form-hint">
                     Supported formats: TTF, OTF, WOFF, WOFF2, .zip
                   </p>
+                  {renderFilePreview("fontFile", "Font")}
                   {editMode && assetToEdit.fontFile && (
                     <p className="current-image-note">
                       Current font file will be kept if no new file is selected
@@ -2174,11 +2428,12 @@ if (formData.type === "models") {
                     type="file"
                     name="videoTemplateFile"
                     onChange={handleChange}
-                    accept=".mp4,.zip"
+                    accept="video/*,.zip"
                     className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: MP4, .zip</p>
+                  <p className="blog-form-hint">Supported formats: .MOV, .MP4, .zip</p>
+                  {renderFilePreview("videoTemplateFile", "Video Template")}
                   {editMode && assetToEdit.videoTemplateFile && (
                     <p className="current-image-note">
                       Current video template file will be kept if no new file is
@@ -2202,6 +2457,7 @@ if (formData.type === "models") {
                     required={!editMode}
                   />
                   <p className="blog-form-hint">Upload your asset file</p>
+                  {renderFilePreview("other", "Asset")}
                   {editMode && assetToEdit.other && (
                     <p className="current-image-note">
                       Current asset file will be kept if no new file is selected
