@@ -3,7 +3,9 @@ const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen  }) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showPreview, setShowPreview] = useState(!!previewUrl);
+const [showPreview, setShowPreview] = useState(
+  !videoUrl && !!previewUrl   // ✅ sirf tab preview when ONLY image exists
+);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -72,25 +74,30 @@ const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen  }) => {
         </div> */}
 
         <div className="video_wrapper">
-          {showPreview && previewUrl ? (
-            <div
-              className="preview_section"
-              onClick={() => setShowPreview(false)}
-            >
-              <img
-                src={previewUrl}
-                alt="Video Preview"
-                className="preview_image"
-              />
-              <button className="play_button" aria-label="Play preview">▶ Preview</button>
-            </div>
-          ) : (
-            <video ref={videoRef} controls width="100%" poster={previewUrl}>
-              <source src={videoUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          )}
-        </div>
+  {/* ✅ If file is image only */}
+  {!videoUrl && previewUrl ? (
+    <img
+      src={previewUrl}
+      alt="Uploaded Image"
+      className="preview_image_only"
+    />
+  ) : showPreview && previewUrl ? (
+    /* ✅ If video has preview thumbnail */
+    <div
+      className="preview_section"
+      onClick={() => setShowPreview(false)}
+    >
+      <img src={previewUrl} alt="Video Preview" className="preview_image" />
+      <button className="play_button">▶ Play</button>
+    </div>
+  ) : (
+    /* ✅ Actual Video */
+    <video ref={videoRef} controls width="100%" poster={previewUrl}>
+      <source src={videoUrl} type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  )}
+</div>
 
         <div className="controls">
           <button onClick={togglePlay}>{isPlaying ? "Pause" : "Play"}</button>

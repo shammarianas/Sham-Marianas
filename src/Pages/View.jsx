@@ -30,7 +30,8 @@ import FavoriteButton from "../Components/UI/FavoriteButton";
 import DownloadButton from "../Components/UI/DownloadButton";
 import VideoViewer from "./VideoViewer";
 import ContentViewer from "../Components/ContentViewer";
-import AssetFullScreen from "../Components/AssetFullScreen"; // ADD THIS IMPORT
+import AssetFullScreen from "../Components/AssetFullScreen"; 
+import RelatedItems from "../Components/RelatedItems"
 
 const View = () => {
   const { currentUser, userProfile } = useUser();
@@ -254,6 +255,7 @@ const View = () => {
                       <Keywords keywords={item.tags} />
                     </div>
                   </div>
+                  
                 </div>
               </div>
 
@@ -304,6 +306,13 @@ const View = () => {
           <div className="loading">Loading...</div>
         )}
       </div>
+
+       <RelatedItems 
+    tags={item.tags} 
+    currentItemId={item.id}
+    assetType={item.type}
+    limit={8}
+  />
     </>
   );
 };
