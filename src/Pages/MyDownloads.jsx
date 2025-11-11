@@ -20,32 +20,34 @@ const MyDownloads = () => {
 
       try {
         setLoading(true);
-        
+
         // Get downloads from subcollection
-        const downloadsRef = collection(db, `Profiles/${currentUser.uid}/downloads`);
+        const downloadsRef = collection(
+          db,
+          `Profiles/${currentUser.uid}/downloads`
+        );
         const downloadsSnapshot = await getDocs(downloadsRef);
 
-        
         if (downloadsSnapshot.empty) {
           setLoading("no_items");
           return;
         }
-        
+
         // Map through downloads documents and extract asset data
         const downloadsData = [];
-        
+
         for (const doc of downloadsSnapshot.docs) {
           // The document ID is the asset ID
           const assetId = doc.id;
           // The document data contains the asset information
           const assetData = doc.data();
-          
+
           downloadsData.push({
             id: assetId,
-            ...assetData
+            ...assetData,
           });
         }
-        
+
         setAssets(downloadsData);
         setLoading(false);
       } catch (error) {
@@ -101,8 +103,13 @@ const MyDownloads = () => {
                           {(() => {
                             const price = Number(asset.price) || 0;
                             const discount = Number(asset.discount ?? 0) || 0;
-                            const finalPrice = Math.max(0, price - (price * discount) / 100);
-                            return finalPrice === 0 ? "Free" : `$${finalPrice.toFixed(2)}`;
+                            const finalPrice = Math.max(
+                              0,
+                              price - (price * discount) / 100
+                            );
+                            return finalPrice === 0
+                              ? "Free"
+                              : `$${finalPrice.toFixed(2)}`;
                           })()}
                         </strong>
                       </span>
