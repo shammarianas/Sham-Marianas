@@ -7,6 +7,8 @@ git clone https://github.com/shammarianas/Sham-Marianas.git
 cd shammarianas
 npm install
 npm run dev
+
+npm install @stripe/stripe-js @stripe/react-stripe-js
 ```
 
 Check Firebase.js
