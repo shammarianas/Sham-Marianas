@@ -537,6 +537,7 @@ const Upload = ({
     useImageSizeConverter();
   const [formData, setFormData] = useState({
     title: "",
+    slug: "",
     thumbnail: "",
     description: "",
     is3d: false,
@@ -644,12 +645,25 @@ const Upload = ({
   const tagInputRef = useRef(null);
   const videoRef = useRef(null);
 
+  // Function to generate slug from title
+  const generateSlug = (title) => {
+    if (!title) return "";
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim()
+      .slice(0, 100);
+  };
+
   // Initialize form data with existing asset data when in edit mode
   useEffect(() => {
     if (editMode && assetToEdit) {
       setFormData((prev) => ({
         ...prev,
         title: assetToEdit.title || "",
+        slug: assetToEdit.slug || generateSlug(assetToEdit.title || ""),
         description: assetToEdit.description || "",
         price: assetToEdit.price || "free",
         category: assetToEdit.category || "",
@@ -924,7 +938,7 @@ const Upload = ({
     }
   };
 
-  // Main form change handler - UPDATED for file previews
+  // Main form change handler - UPDATED for title to slug conversion
   const handleChange = (event) => {
     const target = event.target;
     const name = target.name;
@@ -980,10 +994,20 @@ const Upload = ({
         [name]: options,
       }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      // Auto-generate slug when title changes
+      if (name === "title") {
+        const slug = generateSlug(value);
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+          slug: slug // Automatically set slug based on title
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      }
     }
   };
 
@@ -1067,6 +1091,7 @@ const Upload = ({
     try {
       let docData = {
         title: formData.title,
+        slug: formData.slug || generateSlug(formData.title), // Ensure slug is included
         description: formData.description,
         type: formData.type,
         price: formData.price,
@@ -1274,6 +1299,7 @@ const Upload = ({
         // Reset form for new upload
         setFormData({
           title: "",
+          slug: "",
           description: "",
           thumbnail: "",
           type: "",
@@ -1870,6 +1896,29 @@ const Upload = ({
                   className="blog-form-input"
                   placeholder="Enter asset title..."
                 />
+              
+              </div>
+
+              <div className="blog-form-group">
+                <label className="blog-form-label">
+                  Slug <span className="blog-form-required">*</span>
+                </label>
+                {formData.slug && (
+                <input
+                  type="text"
+                  name="Slug"
+                  value={formData.slug}
+                  onChange={handleChange}
+                  required
+                  className="blog-form-input"
+                  placeholder="URL Auto Generate"
+                />
+                )}
+              {/* {formData.slug && (
+                  <p className="blog-form-hint" style={{ color: '#059669', fontStyle: 'normal' }}>
+                    Slug: {formData.slug}
+                  </p>
+                )} */}
               </div>
 
               <div className="blog-form-group">
@@ -2214,7 +2263,7 @@ const Upload = ({
                     type="file"
                     name="video"
                     onChange={handleChange}
-                    accept="video/*"
+                    accept="video/*, .zip"
                     className="blog-form-file"
                     required={!editMode}
                   />
@@ -2268,13 +2317,13 @@ const Upload = ({
                     type="file"
                     name="textures"
                     onChange={handleChange}
-                    accept="image/*, .png, .jpg, .jpeg"
+                    accept="image/*, .png, .jpg, .jpeg, .psd"
                     multiple
                     className="blog-form-file"
                     required={!editMode}
                   />
                   <p className="blog-form-hint">
-                    Select multiple texture image files & .zip
+                    Select multiple texture image files & .psd, .zip
                   </p>
                   {renderMultipleFilesPreview("textures", "Texture")}
                   {editMode && assetToEdit.textures && (
@@ -2402,7 +2451,7 @@ const Upload = ({
                     type="file"
                     name="fontFile"
                     onChange={handleChange}
-                    accept=".ttf,.otf,.woff,.woff2,.zip"
+                    accept=".eps,.ttf,.otf,.woff,.woff2,.zip"
                     className="blog-form-file"
                     required={!editMode}
                   />

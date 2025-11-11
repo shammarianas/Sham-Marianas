@@ -4204,6 +4204,7 @@ div.hidden.none {
   background-color: black;
 }
 
+/* --------Support style ----------*/
 .upload_section {
   display: flex;
   flex-direction: column;
@@ -4614,6 +4615,9 @@ div.hidden.none {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 }
+
+
+/* -------------support end----  */
 
 .trade_main {
   display: flex;
@@ -5626,21 +5630,26 @@ div.hidden.none {
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   font-size: 14px;
 }
 
 .download_btn {
-  background: linear-gradient(135deg, #10b981, #059669);
+      width: 100%;
+  background-color: #52b0b4;
   color: white;
 }
 
 .download_btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669, #047857);
-  transform: translateY(-2px);
+  border-color: #fff;
+    background: transparent;
+    color: #fff;
+    border: 1px solid;
 }
 
 .subscribe_btn {
+      width: 100%;
   background: linear-gradient(135deg, #f59e0b, #d97706);
   color: white;
 }
