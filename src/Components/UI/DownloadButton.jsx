@@ -1,5 +1,5 @@
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
 const DownloadButton = ({
@@ -9,7 +9,10 @@ const DownloadButton = ({
   setToastState,
   setShowToast,
 }) => {
-  const { isDownloaded, addToDownloads, error } = useSaveToDownloads(item.id, item);
+  const { isDownloaded, addToDownloads, error } = useSaveToDownloads(
+    item.id,
+    item
+  );
   const navigate = useNavigate();
 
   // Check if item is free or paid
@@ -24,146 +27,126 @@ const DownloadButton = ({
 
   const getAssetUrls = () => {
     const urls = [];
-    
+
     console.log("📥 Downloading item data:", {
       id: item.id,
       type: item.type,
       title: item.title,
-      availableFiles: Object.keys(item).filter(key => 
-        typeof item[key] === 'string' && item[key].includes('http')
-      )
     });
 
-    switch ((item.type || '').toLowerCase()) {
-      case 'models':
-      case 'printables':
-        if (item.model) {
-          console.log("📦 Model URL found:", item.model);
-          urls.push(item.model);
-        }
+    const pushUrl = (u) => {
+      if (!u) return;
+      if (typeof u === "string") urls.push(u);
+      else if (typeof u === "object" && u.url) urls.push(u.url);
+    };
+
+    switch ((item.type || "").toLowerCase()) {
+      case "models":
+      case "printables":
+        pushUrl(item.model);
         break;
-      case 'scripts':
-        if (item.script) {
-          console.log("📜 Script URL found:", item.script);
-          urls.push(item.script);
-        }
+      case "scripts":
+        pushUrl(item.script);
         break;
-      case 'videos':
-        if (item.video) {
-          console.log("🎥 Video URL found:", item.video);
-          urls.push(item.video);
-        }
+      case "videos":
+        pushUrl(item.video);
         break;
-      case 'graphics':
-        if (item.graphicsTemplate) {
-          console.log("🎨 Graphics Template URL found:", item.graphicsTemplate);
-          urls.push(item.graphicsTemplate);
-        }
+      case "graphics":
+        pushUrl(item.graphicsTemplate);
         break;
-      case 'mockups':
-        if (item.mockupFile) {
-          console.log("📱 Mockup File URL found:", item.mockupFile);
-          urls.push(item.mockupFile);
-        }
+      case "mockups":
+        pushUrl(item.mockupFile);
         break;
-      case 'fonts':
-        if (item.fontFile) {
-          console.log("🔤 Font File URL found:", item.fontFile);
-          urls.push(item.fontFile);
-        }
+      case "fonts":
+        pushUrl(item.fontFile);
         break;
-      case 'video-templates':
-        if (item.videoTemplateFile) {
-          console.log("🎬 Video Template URL found:", item.videoTemplateFile);
-          urls.push(item.videoTemplateFile);
-        }
+      case "video-templates":
+        pushUrl(item.videoTemplateFile);
         break;
-      case 'hdris':
-        if (item.hdri) {
-          console.log("🌅 HDRI URL found:", item.hdri);
-          urls.push(item.hdri);
-        }
+      case "hdris":
+        pushUrl(item.hdri);
         break;
-      case 'icons':
+      case "icons":
         if (Array.isArray(item.icons)) {
-          console.log("🖼️ Icons URLs found:", item.icons.length);
-          urls.push(...item.icons);
-        } else if (item.icons) {
-          console.log("🖼️ Single Icon URL found:", item.icons);
-          urls.push(item.icons);
-        }
+          item.icons.forEach(pushUrl);
+        } else pushUrl(item.icons);
         break;
-      case 'images':
+      case "images":
         if (Array.isArray(item.images)) {
-          console.log("🖼️ Images array found:", item.images.length);
-          // Handle multiple sizes structure
-          item.images.forEach((img, index) => {
-            if (img.sizes && typeof img.sizes === 'object') {
-              // Get the highest quality image (original)
-              const originalUrl = img.sizes.original || Object.values(img.sizes)[0];
-              if (originalUrl) {
-                console.log(`🖼️ Image ${index + 1} URL:`, originalUrl);
-                urls.push(originalUrl);
+          item.images.forEach((img) => {
+            if (typeof img === "string") pushUrl(img);
+            else if (img && typeof img === "object") {
+              // Check sizes object first
+              if (img.sizes && typeof img.sizes === "object") {
+                const original =
+                  img.sizes.original || Object.values(img.sizes)[0];
+                pushUrl(original);
+              } else {
+                pushUrl(img.url); // fallback
               }
-            } else if (typeof img === 'string') {
-              console.log(`🖼️ Image ${index + 1} URL:`, img);
-              urls.push(img);
             }
           });
-        } else if (item.images) {
-          console.log("🖼️ Single Image URL found:", item.images);
-          urls.push(item.images);
-        }
+        } else pushUrl(item.images);
         break;
-      case 'textures':
+      case "textures":
         if (Array.isArray(item.textures)) {
-          console.log("🎨 Textures URLs found:", item.textures.length);
-          urls.push(...item.textures);
-        } else if (item.textures) {
-          console.log("🎨 Single Texture URL found:", item.textures);
-          urls.push(item.textures);
-        }
-        
-        // Also check for individual texture maps
-        const textureMaps = ['ambientOcclusion', 'baseColor', 'displacement', 'normal', 'roughness', 'metallic', 'bump', 'idmap'];
-        textureMaps.forEach(map => {
-          if (item[map]) {
-            console.log(`🎨 ${map} map URL found:`, item[map]);
-            urls.push(item[map]);
-          }
+          item.textures.forEach(pushUrl);
+        } else pushUrl(item.textures);
+
+        // Also check individual texture maps
+        [
+          "ambientOcclusion",
+          "baseColor",
+          "displacement",
+          "normal",
+          "roughness",
+          "metallic",
+          "bump",
+          "idmap",
+        ].forEach((map) => {
+          pushUrl(item[map]);
         });
         break;
       default:
-        if (item.other) {
-          console.log("📄 Other file URL found:", item.other);
-          urls.push(item.other);
-        }
+        pushUrl(item.other);
         break;
     }
 
     console.log("📥 Final URLs to download:", urls);
-    return urls.filter(Boolean);
+    return urls.filter(Boolean); // remove any undefined/null
   };
 
-  const downloadURL = (url) => {
+  const downloadURL = (urlOrObj) => {
     try {
+      let url = urlOrObj;
+
+      // If it's an object with a url property, extract it
+      if (typeof urlOrObj === "object" && urlOrObj.url) {
+        url = urlOrObj.url;
+      }
+
+      if (typeof url !== "string") {
+        console.warn("Invalid URL for download:", urlOrObj);
+        return;
+      }
+
       console.log("⬇️ Downloading:", url);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      
+
       // Extract filename from URL
-      const filename = url.split('/').pop().split('?')[0];
-      a.download = filename || 'download';
-      
+      const filename = url.split("/").pop().split("?")[0];
+      a.download = filename || "download";
+
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      
+
       console.log("✅ Download initiated for:", filename);
     } catch (e) {
       console.error("❌ Download error:", e);
       // Fallback: open in new tab
-      window.open(url, '_blank');
+      if (typeof urlOrObj === "string") window.open(urlOrObj, "_blank");
     }
   };
 
@@ -173,8 +156,8 @@ const DownloadButton = ({
 
     if (urls.length === 0) {
       console.error("❌ No downloadable files found for this asset");
-      setToastMessage('No downloadable files found for this asset');
-      setToastState('error');
+      setToastMessage("No downloadable files found for this asset");
+      setToastState("error");
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
@@ -191,16 +174,16 @@ const DownloadButton = ({
         // Save to downloads first
         await addToDownloads(item);
         console.log("✅ Saved to downloads collection");
-        
+
         // Then download files
         urls.forEach((url, index) => {
           setTimeout(() => {
             downloadURL(url);
           }, index * 500); // Stagger downloads by 500ms
         });
-        
+
         setToastMessage(`Downloading ${urls.length} file(s)...`);
-        setToastState('success');
+        setToastState("success");
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
@@ -220,16 +203,16 @@ const DownloadButton = ({
         // Save to downloads first
         await addToDownloads(item);
         console.log("✅ Saved to downloads collection");
-        
+
         // Then download files
         urls.forEach((url, index) => {
           setTimeout(() => {
             downloadURL(url);
           }, index * 500);
         });
-        
+
         setToastMessage(`Downloading ${urls.length} file(s)...`);
-        setToastState('success');
+        setToastState("success");
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
@@ -245,8 +228,8 @@ const DownloadButton = ({
     // For paid items without subscription, show subscription message
     if (isPaid && !hasActiveSubscription) {
       console.log("🔒 Paid asset without subscription - redirecting");
-      setToastMessage('Subscription required to download paid assets');
-      setToastState('warning');
+      setToastMessage("Subscription required to download paid assets");
+      setToastState("warning");
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
@@ -258,8 +241,8 @@ const DownloadButton = ({
     const price = Number(item.price) || 0;
     if (price > 0 && !hasActiveSubscription && !hasPurchasedItem) {
       console.log("💰 Old paid asset without subscription - redirecting");
-      setToastMessage('Subscription required to download paid assets');
-      setToastState('warning');
+      setToastMessage("Subscription required to download paid assets");
+      setToastState("warning");
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
@@ -270,7 +253,7 @@ const DownloadButton = ({
 
   const handleSubscription = () => {
     console.log("👑 Redirecting to subscription page");
-    navigate('/subscription');
+    navigate("/subscription");
   };
 
   // Determine button state and content
@@ -278,33 +261,33 @@ const DownloadButton = ({
     // Free items - always downloadable
     if (isFree) {
       return {
-        text: isDownloaded ? 'Downloaded' : 'Download',
-        icon: 'fas fa-download',
+        text: isDownloaded ? "Downloaded" : "Download",
+        icon: "fas fa-download",
         onClick: handleDownload,
         enabled: true,
-        className: 'download_btn'
+        className: "download_btn",
       };
     }
 
     // Paid items with subscription or purchase - downloadable
     if (hasActiveSubscription || hasPurchasedItem) {
       return {
-        text: isDownloaded ? 'Downloaded' : 'Download',
-        icon: 'fas fa-download',
+        text: isDownloaded ? "Downloaded" : "Download",
+        icon: "fas fa-download",
         onClick: handleDownload,
         enabled: true,
-        className: 'download_btn'
+        className: "download_btn",
       };
     }
 
     // Paid items without subscription - show subscribe button
     if (isPaid && !hasActiveSubscription) {
       return {
-        text: 'Subscribe to Download',
-        icon: 'fas fa-crown',
+        text: "Subscribe to Download",
+        icon: "fas fa-crown",
         onClick: handleSubscription,
         enabled: true,
-        className: 'subscribe_btn'
+        className: "subscribe_btn",
       };
     }
 
@@ -312,28 +295,28 @@ const DownloadButton = ({
     const price = Number(item.price) || 0;
     if (price === 0) {
       return {
-        text: isDownloaded ? 'Downloaded' : 'Download',
-        icon: 'fas fa-download',
+        text: isDownloaded ? "Downloaded" : "Download",
+        icon: "fas fa-download",
         onClick: handleDownload,
         enabled: true,
-        className: 'download_btn'
+        className: "download_btn",
       };
     }
 
     // Old paid items without subscription
     return {
-      text: 'Subscribe to Download',
-      icon: 'fas fa-crown',
+      text: "Subscribe to Download",
+      icon: "fas fa-crown",
       onClick: handleSubscription,
       enabled: true,
-      className: 'subscribe_btn'
+      className: "subscribe_btn",
     };
   };
 
   const buttonConfig = getButtonContent();
 
   return (
-    <button 
+    <button
       className={`action_button ${buttonConfig.className}`}
       onClick={buttonConfig.onClick}
       disabled={!buttonConfig.enabled}
