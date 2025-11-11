@@ -63,9 +63,9 @@ const Favorites = () => {
           My Favorites - {currentUser ? currentUser.displayName : "User"}
         </title>
       </Helmet>
-      <div className="container page_content">
+      <div className="page_content">
         <PageTitle title="My Favorites" />
-        <div className=" item_listing">
+        <div className="item_listing">
           {loading === true ? (
             <div className="loading">Loading...</div>
           ) : loading === "no_items" ? (
@@ -74,9 +74,14 @@ const Favorites = () => {
             </div>
           ) : (
             assets.map((asset, index) => (
-              <Link to={`/View/${asset.id}`} key={index}>
+              <div className="" key={index}>
                 <div className="item_card">
-                  <div className="card_image">
+                  <div 
+                    className="card_image"
+                    style={{
+                      aspectRatio: asset.type === "textures" ? "1 / 1" : undefined,
+                    }}
+                  >
                     {asset.discount > 0 ? (
                       <div className="discount_card">
                         <span>
@@ -84,16 +89,71 @@ const Favorites = () => {
                         </span>
                       </div>
                     ) : null}
-                    <img src={asset.thumbnail} alt="placeholder" />
+                    <Link className="card_image" to={`/View/${asset.id}`}>
+                      {(() => {
+                        const src = asset.thumbnail;
+
+                        // Detect video
+                        const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
+
+                        if (isVideo) {
+                          return (
+                            <div
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                position: "relative",
+                                overflow: "hidden",
+                              }}
+                              onMouseEnter={(e) => {
+                                const video = e.currentTarget.querySelector("video");
+                                if (video) video.play();
+                              }}
+                              onMouseLeave={(e) => {
+                                const video = e.currentTarget.querySelector("video");
+                                if (video) {
+                                  video.pause();
+                                  video.currentTime = 0;
+                                }
+                              }}
+                            >
+                              <video
+                                src={src}
+                                muted
+                                loop
+                                playsInline
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            </div>
+                          );
+                        }
+
+                        // ✅ Image fallback (normal case)
+                        return <img src={src} alt="placeholder" />;
+                      })()}
+                    </Link>
                   </div>
 
                   <div className="card_content">
-                    <span className="title">
-                      {asset.title}{" "}
-                      <span className="publisher">
-                        by Servant {asset.publisher}
-                      </span>
-                    </span>
+                    <div className="title">
+                      {asset.title} <br />
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span className="publisher">
+                          by {asset.publisher || currentUser?.displayName || "User"}
+                        </span>
+                      </div>
+                    </div>
+
                     <div className="details">
                       <span className="price">
                         <strong>
@@ -108,7 +168,7 @@ const Favorites = () => {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))
           )}
         </div>

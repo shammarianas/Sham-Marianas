@@ -2214,7 +2214,7 @@ const Upload = ({
                     type="file"
                     name="video"
                     onChange={handleChange}
-                    accept="video/*"
+                    accept="video/*, .zip"
                     className="blog-form-file"
                     required={!editMode}
                   />
@@ -2268,13 +2268,13 @@ const Upload = ({
                     type="file"
                     name="textures"
                     onChange={handleChange}
-                    accept="image/*, .png, .jpg, .jpeg"
+                    accept="image/*, .png, .jpg, .jpeg, .psd"
                     multiple
                     className="blog-form-file"
                     required={!editMode}
                   />
                   <p className="blog-form-hint">
-                    Select multiple texture image files & .zip
+                    Select multiple texture image files & .psd, .zip
                   </p>
                   {renderMultipleFilesPreview("textures", "Texture")}
                   {editMode && assetToEdit.textures && (
@@ -2402,7 +2402,7 @@ const Upload = ({
                     type="file"
                     name="fontFile"
                     onChange={handleChange}
-                    accept=".ttf,.otf,.woff,.woff2,.zip"
+                    accept=".eps,.ttf,.otf,.woff,.woff2,.zip"
                     className="blog-form-file"
                     required={!editMode}
                   />

@@ -41,6 +41,8 @@ git clone https://github.com/nurmandev/shammarianas
 cd shammarianas
 npm install
 npm run dev
+
+npm install @stripe/stripe-js @stripe/react-stripe-js
 ```
 
 ---
