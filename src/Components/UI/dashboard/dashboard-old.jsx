@@ -128,15 +128,19 @@ const AdminDashboard = () => {
 
       try {
         const email = currentUser.email?.toLowerCase();
-        if (!email) {
-          setError("User email not available");
+        const uid = currentUser.uid;
+
+        if (!email || !uid) {
+          setError("User information not available");
           return;
         }
 
-        if (await checkAdminStatus(email)) {
+        const isAdminUser = await checkAdminStatus(email, uid);
+
+        if (isAdminUser) {
           setIsAdmin(true);
 
-          // Primary admin can seed additional authorized admins
+          // Seed additional authorized admins if primary admin
           const PRIMARY_ADMIN = "admin@shammarianas.com";
           if (email === PRIMARY_ADMIN) {
             try {
@@ -150,11 +154,14 @@ const AdminDashboard = () => {
                     )
                 )
               );
-            } catch {}
+            } catch (err) {
+              console.warn("Failed to seed authorized admins:", err);
+            }
           }
 
+          // Fetch necessary data for admin dashboard
           await Promise.all([fetchUsers(), fetchSupportMessages(null)]);
-          setSelectedProfileId(currentUser.uid);
+          setSelectedProfileId(uid);
         } else {
           setError("You do not have admin privileges");
           navigate("/");
@@ -167,12 +174,13 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (email) => {
-    if (!email) return false;
+  // Check admin status
+  const checkAdminStatus = async (email, uid) => {
+    if (!email || !uid) return false;
 
-    // Primary admin (must match Firestore rules)
     const PRIMARY_ADMIN = "admin@shammarianas.com";
-    const ALSO_AUTHORIZED = ["shammarianas@gmail.com"];
+
+    // ✅ Primary admin always authorized
     if (email === PRIMARY_ADMIN) {
       try {
         await setDoc(
@@ -185,17 +193,25 @@ const AdminDashboard = () => {
     }
 
     try {
-      if (!db) return false;
-      // Allow UI access for pre-authorized emails once seeded
+      // ✅ Step 1: Check adminUsers collection
       const adminDoc = await getDoc(doc(db, "adminUsers", email));
       if (adminDoc.exists()) return true;
-      if (ALSO_AUTHORIZED.includes(email)) return false; // needs seeding by primary admin
+
+      // ✅ Step 2: Check Profiles collection for role
+      const profileDoc = await getDoc(doc(db, "Profiles", uid));
+      if (profileDoc.exists()) {
+        const role = profileDoc.data()?.role?.toLowerCase();
+        console.log("User Role:", role); // Debug line
+        if (role === "admin" || role === "Moderator") return true;
+      }
+
       return false;
     } catch (error) {
       setError(`Failed to check admin status: ${error.message}`);
       return false;
     }
   };
+
   // Paste yeh functions AdminDashboard ke andar (kisi bhi jagah, upar ya neeche)
   const changeUserRole = async (userId, newRole, email) => {
     try {
