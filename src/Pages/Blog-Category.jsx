@@ -1,12 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const VALID_CATEGORIES = [
@@ -30,7 +24,7 @@ const BlogCategory = () => {
     .toString()
     .toLowerCase();
 
-  const [allBlogs, setAllBlogs] = useState([]);   // <-- ALL published blogs
+  const [allBlogs, setAllBlogs] = useState([]); // <-- ALL published blogs
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState(urlCategory || "*");
@@ -175,12 +169,14 @@ const BlogCategory = () => {
                       <div className="d-flex align-items-center mb-15">
                         <div className="post-date">
                           {post.publishedAt
-                            ? new Date(post.publishedAt.toDate()).toLocaleDateString()
+                            ? new Date(
+                                post.publishedAt.toDate()
+                              ).toLocaleDateString()
                             : ""}
                         </div>
                         <div className="commt opacity-7 fz-13">
-                          <span className="ti-comment-alt mr-10"></span>
-                          0 Comments
+                          <span className="ti-comment-alt mr-10"></span>0
+                          Comments
                         </div>
                       </div>
 
