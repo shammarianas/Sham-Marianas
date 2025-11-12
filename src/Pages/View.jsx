@@ -50,7 +50,7 @@ const View = () => {
   const getPriceDisplay = (asset) => {
     if (asset.price === "free") return "Free";
     if (asset.price === "paid") return "Paid";
-    
+
     // Fallback for old data
     if (typeof asset.price === "number") {
       return asset.price > 0 ? "Paid" : "Free";
@@ -279,9 +279,7 @@ const View = () => {
                     )}
 
                     {/* UPDATED PRICE DISPLAY */}
-                    <span className="price_value">
-                      {getPriceDisplay(item)}
-                    </span>
+                    <span className="price_value">{getPriceDisplay(item)}</span>
                   </div>
 
                   <div className="action_buttons">

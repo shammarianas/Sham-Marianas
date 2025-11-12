@@ -60,7 +60,6 @@ import CommingSoon from "./Pages/CommingSoon";
 import BlogCategory from "./Pages/Blog-Category";
 import Subscription from "./Pages/Subscription";
 
-
 const ScrollToTop = () => {
   const location = useLocation();
 
@@ -96,7 +95,8 @@ export const AppRoutes = () => (
     <Route path="/contact" element={<Contact />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="/blog/:id" element={<BlogDetails />} />
-    <Route path="/blog-details/:id" element={<BlogDetails />} /> {/* optional compatibility */}
+    <Route path="/blog-details/:id" element={<BlogDetails />} />{" "}
+    {/* optional compatibility */}
     <Route path="/portfolio" element={<Portfolio />} />
     <Route path="/project-details/:id" element={<PortfolioDetails />} />
     <Route path="/Support" element={<Support />} />
@@ -125,9 +125,9 @@ export const AppRoutes = () => (
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     {/* <Route path="/community" element={<Community />} /> */}
     <Route path="/comming-soon" element={<CommingSoon />} />
-    <Route path="/blogs" element={<BlogCategory />} />               
-<Route path="/blog-category/:category" element={<BlogCategory />} /> 
-<Route path="/subscription" element={<Subscription />} /> 
+    <Route path="/blogs" element={<BlogCategory />} />
+    <Route path="/blog-category/:category" element={<BlogCategory />} />
+    <Route path="/subscription" element={<Subscription />} />
   </Routes>
 );
 
