@@ -54,6 +54,27 @@ const showTemplateButton = [
     collapse.classList.toggle("show");
   }
 
+  // Navigation items array for consistency
+  const navItems = [
+    { path: "/Videos", label: "Videos" },
+    { path: "/Models", label: "3D Models" },
+    { path: "/video-templates", label: "Video Template" },
+    { path: "/images", label: "Pictures" },
+    { path: "/graphics", label: "Graphic Templates" },
+    { path: "/Mockups", label: "Mockups" },
+    { path: "/Fonts", label: "Fonts" },
+    { path: "/More", label: "More" },
+  ];
+
+  // More dropdown items
+  const moreDropdownItems = [
+    { path: "/icons", label: "Icons" },
+    { path: "/textures", label: "Textures" },
+    { path: "/scripts", label: "Scripts" },
+    { path: "/plugins", label: "Plugins" },
+    { path: "/hdris", label: "HDRIs" },
+  ];
+
   // If user is NOT logged in
   if (!currentUser) {
     return (
@@ -207,17 +228,7 @@ const showTemplateButton = [
           <div className="bottom-bar">
             <div className="links">
               <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
-                {[
-                  // { path: "/hot", label: "Hot" },
-                  { path: "/Videos", label: "Videos" },
-                  { path: "/Models", label: "3D Models" },
-                  { path: "/templates", label: "Video Template" },
-                  { path: "/images", label: "Pictures" },
-                  { path: "/graphics", label: "Graphic Templates" },
-                  { path: "/Mockups", label: "Mockups" },
-                  { path: "/Fonts", label: "Fonts" },
-                  { path: "/More", label: "More" },
-                ].map(({ path, icon, label }) => {
+                {navItems.map(({ path, icon, label }) => {
                   if (label == "More") {
                     return (
                       <nav
@@ -239,7 +250,7 @@ const showTemplateButton = [
                                 <p
                                   className="nav-link dropdown-toggle"
                                   data-toggle="dropdown"
-                                  href="#"
+                                  href=""
                                   role="button"
                                   aria-haspopup="true"
                                   aria-expanded="false"
@@ -258,26 +269,11 @@ const showTemplateButton = [
                                   }}
                                   className="dropdown-menu"
                                 >
-                                  {[
-                                    { label: "Icons", href: "/stock#icons" },
-                                    {
-                                      label: "Textures",
-                                      href: "/stock#textures",
-                                    },
-                                    {
-                                      label: "Scripts",
-                                      href: "/stock#scripts",
-                                    },
-                                    {
-                                      label: "Plugins",
-                                      href: "/stock#plugins",
-                                    },
-                                    { label: "HDRIs", href: "/stock#hdris" },
-                                  ].map(({ label, href }) => (
-                                    <li key={href}>
-                                      <a className="dropdown-item" href={href}>
+                                  {moreDropdownItems.map(({ path, label }) => (
+                                    <li key={path}>
+                                      <Link className="dropdown-item" to={path}>
                                         {label}
-                                      </a>
+                                      </Link>
                                     </li>
                                   ))}
                                 </ul>
@@ -389,16 +385,7 @@ const showTemplateButton = [
         <div className="bottom-bar">
           <div className="links">
             <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
-              {[
-                { path: "/Videos", label: "Videos" },
-                { path: "/Models", label: "3D Models" },
-                { path: "/templates", label: "Video Template" },
-                { path: "/images", label: "Pictures" },
-                { path: "/graphics", label: "Graphic Templates" },
-                { path: "/Mockups", label: "Mockups" },
-                { path: "/Fonts", label: "Fonts" },
-                { path: "/More", label: "More" },
-              ].map(({ path, icon, label }) => {
+              {navItems.map(({ path, icon, label }) => {
                 if (label == "More") {
                   return (
                     <nav
@@ -439,20 +426,11 @@ const showTemplateButton = [
                                 }}
                                 className="dropdown-menu"
                               >
-                                {[
-                                  { label: "Icons", href: "/stock#icons" },
-                                  {
-                                    label: "Textures",
-                                    href: "/stock#textures",
-                                  },
-                                  { label: "Scripts", href: "/stock#scripts" },
-                                  { label: "Plugins", href: "/stock#plugins" },
-                                  { label: "HDRIs", href: "/stock#hdris" },
-                                ].map(({ label, href }) => (
-                                  <li key={href}>
-                                    <a className="dropdown-item" href={href}>
+                                {moreDropdownItems.map(({ path, label }) => (
+                                  <li key={path}>
+                                    <Link className="dropdown-item" to={path}>
                                       {label}
-                                    </a>
+                                    </Link>
                                   </li>
                                 ))}
                               </ul>
@@ -485,5 +463,5 @@ const showTemplateButton = [
     </>
   );
 };
-
+   
 export default Navbar;
