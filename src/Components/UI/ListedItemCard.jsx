@@ -8,6 +8,30 @@ const ListedItemCard = ({ id, data, rating }) => {
   const { currentUser } = useUser();
   const navigate = useNavigate();
 
+  // Consistent author name extraction
+  const getAuthorName = (assetData) => {
+    if (!assetData) return "Unknown Author";
+    
+    // Priority order for author name
+    if (assetData.authorName && assetData.authorName !== "Unknown Author") return assetData.authorName;
+    if (assetData.author && assetData.author !== "Unknown Author") return assetData.author;
+    if (assetData.userDisplayName) return assetData.userDisplayName;
+    if (assetData.userName) return assetData.userName;
+    if (assetData.displayName) return assetData.displayName;
+    if (assetData.uploadedBy) return assetData.uploadedBy;
+    if (assetData.createdBy) return assetData.createdBy;
+    if (assetData.updatedBy) return assetData.updatedBy;
+    
+    // Fallback to email only if no name found
+    // if (assetData.userEmail) return assetData.userEmail;
+    // if (assetData.email) return assetData.email;
+    
+    return "Unknown Author";
+  };
+
+  // Get author name from data
+  const authorName = getAuthorName(data);
+
   // Check if item is free or paid
   const isFree = data.price === "free" || data.price === 0;
   const isPaid = data.price === "paid";
@@ -187,8 +211,9 @@ const ListedItemCard = ({ id, data, rating }) => {
                 justifyContent: "space-between",
               }}
             >
+              {/* ✅ FIXED: Use actual author name from asset data */}
               <span className="publisher">
-                by {currentUser?.displayName || "User"}
+                by {authorName}
               </span>
               <span
                 style={{

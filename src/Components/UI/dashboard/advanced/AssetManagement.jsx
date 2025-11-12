@@ -95,6 +95,25 @@ const AssetManagement = () => {
     return null;
   };
 
+  // ✅ UPDATED: Consistent author name extraction - same logic as Upload component
+  const getAuthorName = (asset) => {
+    // Priority order matches Upload component logic
+    if (asset.authorName && asset.authorName !== "Unknown Author") return asset.authorName;
+    if (asset.author && asset.author !== "Unknown Author") return asset.author;
+    if (asset.userDisplayName) return asset.userDisplayName;
+    if (asset.userName) return asset.userName;
+    if (asset.displayName) return asset.displayName;
+    if (asset.uploadedBy) return asset.uploadedBy;
+    if (asset.createdBy) return asset.createdBy;
+    if (asset.updatedBy) return asset.updatedBy;
+    
+    // Fallback to email only if no name found
+    if (asset.userEmail) return asset.userEmail;
+    if (asset.email) return asset.email;
+    
+    return "Unknown Author";
+  };
+
   // Get price display text
   const getPriceDisplay = (asset) => {
     // Check if price is string "free" or "paid"
@@ -111,45 +130,44 @@ const AssetManagement = () => {
   };
 
   // Fetch All Assets with Real-time Updates
-// Fetch All Assets with Real-time Updates - FIXED VERSION
-const fetchAssets = useCallback(() => {
-  setLoading(true);
-  try {
-    const q = query(collection(db, "Assets"));
-    
-    const unsubscribe = onSnapshot(q, 
-      (querySnapshot) => {
-        const assetsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setAssets(assetsData);
-        setLoading(false);
-      }, 
-      (error) => {
-        console.error("Assets real-time listener error:", error);
-        setError(`Failed to load assets: ${error.message}`);
-        setLoading(false);
-      }
-    );
+  const fetchAssets = useCallback(() => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, "Assets"));
+      
+      const unsubscribe = onSnapshot(q, 
+        (querySnapshot) => {
+          const assetsData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setAssets(assetsData);
+          setLoading(false);
+        }, 
+        (error) => {
+          console.error("Assets real-time listener error:", error);
+          setError(`Failed to load assets: ${error.message}`);
+          setLoading(false);
+        }
+      );
 
-    return unsubscribe; // ✅ This returns the unsubscribe function
-  } catch (error) {
-    setError(`Failed to load assets: ${error.message}`);
-    setLoading(false);
-  }
-}, []);
-
-useEffect(() => {
-  const unsubscribe = fetchAssets();
-  
-  // Cleanup on component unmount
-  return () => {
-    if (unsubscribe) {
-      unsubscribe(); // ✅ This will work now
+      return unsubscribe;
+    } catch (error) {
+      setError(`Failed to load assets: ${error.message}`);
+      setLoading(false);
     }
-  };
-}, [fetchAssets]);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = fetchAssets();
+    
+    // Cleanup on component unmount
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [fetchAssets]);
 
   // Manual refresh function
   const refreshAssets = useCallback(() => {
@@ -186,7 +204,6 @@ useEffect(() => {
           updatedAt: serverTimestamp(),
         });
         console.log("✅ Asset featured status toggled");
-        // Real-time listener will automatically update the UI
       } catch (error) {
         console.error("❌ Failed to toggle featured:", error);
         setError(`Failed to update asset: ${error.message}`);
@@ -203,7 +220,6 @@ useEffect(() => {
           updatedAt: serverTimestamp(),
         });
         console.log("✅ Asset trending status toggled");
-        // Real-time listener will automatically update the UI
       } catch (error) {
         console.error("❌ Failed to toggle trending:", error);
         setError(`Failed to update asset: ${error.message}`);
@@ -216,7 +232,6 @@ useEffect(() => {
       try {
         await deleteDoc(doc(db, "Assets", assetId));
         console.log("✅ Asset deleted");
-        // Real-time listener will automatically update the UI
         setShowAssetDialog(false);
       } catch (error) {
         console.error("❌ Failed to delete asset:", error);
@@ -519,9 +534,10 @@ useEffect(() => {
                 </div>
 
                 <div className="asset-footer">
+                  {/* ✅ UPDATED: Consistent author name display */}
                   <span className="asset-author">
                     <FiUser className="author-icon" />
-                    by {currentUser?.displayName || "User"}
+                    by {getAuthorName(asset)}
                   </span>
                   <span className="asset-date">
                     {formatDate(asset.createdAt)}
@@ -580,6 +596,7 @@ useEffect(() => {
           onToggleTrending={handleToggleAssetTrending}
           getPriceDisplay={getPriceDisplay}
           formatDate={formatDate}
+          getAuthorName={getAuthorName} // ✅ Pass the updated function to modal
         />
       )}
 
@@ -608,7 +625,7 @@ useEffect(() => {
   );
 };
 
-// Asset Details Modal Component 
+// Asset Details Modal Component - UPDATED
 const AssetDetailsModal = ({
   asset,
   onClose,
@@ -617,6 +634,7 @@ const AssetDetailsModal = ({
   onToggleTrending,
   getPriceDisplay,
   formatDate,
+  getAuthorName, // ✅ Added this prop
 }) => {
   return (
     <div className="modal-overlay">
@@ -684,9 +702,10 @@ const AssetDetailsModal = ({
                 </span>
               </div>
               <div className="info-item">
+                {/* ✅ UPDATED: Consistent author name display */}
                 <span className="info-label">Author</span>
                 <span className="info-value">
-                  {asset.authorName || asset.userId || "Unknown"}
+                  {getAuthorName(asset)}
                 </span>
               </div>
               <div className="info-item">
@@ -761,7 +780,6 @@ const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
 
   if (!isOpen) return null;
 
-
   return (
     <div className="blog-modal-overlay">
       <div className="blog-modal-container">
@@ -777,7 +795,7 @@ const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
         <div className="modal-body">
           <div className="upload-wrapper">
             <Upload 
-              key={`create-${uploadKey}`} // ✅ Yeh line important hai
+              key={`create-${uploadKey}`}
               editMode={false}
               assetToEdit={null}
               onUploadSuccess={() => {
@@ -799,9 +817,7 @@ const EditAssetModal = ({ asset, isOpen, onClose, onAssetUpdated }) => {
 
   useEffect(() => {
     if (isOpen && asset) {
-      // Generate new key every time modal opens
       setUploadKey(prev => prev + 1);
-      console.log("🔄 Edit modal opened with key:", uploadKey + 1, "for asset:", asset.id);
     }
   }, [isOpen, asset]);
 
@@ -822,12 +838,11 @@ const EditAssetModal = ({ asset, isOpen, onClose, onAssetUpdated }) => {
         <div className="modal-body">
           <div className="upload-wrapper">
             <Upload 
-              key={`edit-${asset?.id}-${uploadKey}`} // ✅ KEY PROP ADDED - This forces fresh instance
+              key={`edit-${asset?.id}-${uploadKey}`}
               editMode={true}
               assetToEdit={asset}
               onUploadSuccess={() => {
-                console.log("✅ Asset updated successfully - refreshing list");
-                onAssetUpdated(); // ✅ This will refresh the assets list
+                onAssetUpdated();
                 onClose();
               }}
               onUploadClose={onClose}
