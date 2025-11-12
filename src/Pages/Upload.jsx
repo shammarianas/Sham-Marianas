@@ -6,6 +6,7 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
+  getDoc
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUser } from "../Context/UserProvider";
@@ -645,6 +646,21 @@ const Upload = ({
   const tagInputRef = useRef(null);
   const videoRef = useRef(null);
 
+  // ✅ Function to get user profile data
+  const getUserProfileData = async () => {
+  if (!currentUser?.uid) return null;
+  
+  try {
+    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+    if (userDoc.exists()) {
+      return userDoc.data();
+    }
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+  }
+  return null;
+};
+
   // Function to generate slug from title
   const generateSlug = (title) => {
     if (!title) return "";
@@ -1079,7 +1095,7 @@ const Upload = ({
     );
   };
 
-  // ✅ MAIN SUBMIT FUNCTION
+  // ✅ MAIN SUBMIT FUNCTION - UPDATED WITH getUserProfileData
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -1089,6 +1105,13 @@ const Upload = ({
     setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
 
     try {
+      // ✅ Get user profile data
+      const userProfile = await getUserProfileData();
+      const userName = userProfile?.displayName || 
+                      userProfile?.name || 
+                      currentUser?.displayName || 
+                      "Unknown Author";
+
       let docData = {
         title: formData.title,
         slug: formData.slug || generateSlug(formData.title), // Ensure slug is included
@@ -1118,11 +1141,24 @@ const Upload = ({
         resolution: formData.resolution,
         frameRate: formData.frameRate,
         date: formData.date,
-        updatedBy: currentUser?.email || "anonymous",
-        userId: currentUser?.uid ?? "anonymous",
+         updatedBy: userName, // Changed from email to name
+      userId: currentUser?.uid ?? "anonymous",
+      
+      // ✅ CONSISTENT NAME FIELD
+      authorName: userName,
+      author: userName,
+      userDisplayName: userName,
+        
+        // Timestamps
+        createdAt: editMode ? assetToEdit.createdAt : serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
 
+      // ✅ For new assets, also set createdBy with displayName
+      if (!editMode) {
+        docData.createdBy = userName;
+        docData.createdAt = serverTimestamp();
+      }
       
       // ✅ thumbnail upload
       if (formData.thumbnail && typeof formData.thumbnail !== "string") {
