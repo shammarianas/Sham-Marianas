@@ -8,11 +8,11 @@ const ListedItemCard = ({ id, data, rating }) => {
   const { currentUser } = useUser();
   const navigate = useNavigate();
 
-  // Consistent author name extraction
+  // ✅ FIXED: Consistent author name extraction
   const getAuthorName = (assetData) => {
     if (!assetData) return "Unknown Author";
     
-    // Priority order for author name
+    // Priority order for author name - same as AssetManagement.jsx
     if (assetData.authorName && assetData.authorName !== "Unknown Author") return assetData.authorName;
     if (assetData.author && assetData.author !== "Unknown Author") return assetData.author;
     if (assetData.userDisplayName) return assetData.userDisplayName;
@@ -23,8 +23,8 @@ const ListedItemCard = ({ id, data, rating }) => {
     if (assetData.updatedBy) return assetData.updatedBy;
     
     // Fallback to email only if no name found
-    // if (assetData.userEmail) return assetData.userEmail;
-    // if (assetData.email) return assetData.email;
+    if (assetData.userEmail) return assetData.userEmail;
+    if (assetData.email) return assetData.email;
     
     return "Unknown Author";
   };

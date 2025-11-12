@@ -279,7 +279,7 @@ const filterData = {
 // Map route paths to filterData keys
 const categoryMapping = {
   Videos: "Videos",
-  templates: "VideoTemplates",
+  "video-templates": "VideoTemplates",
   images: "Pictures",
   graphics: "GraphicTemplates",
   Mockups: "Mockups",
