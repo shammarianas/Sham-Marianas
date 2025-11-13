@@ -209,9 +209,10 @@ const ListedItemCard = ({ id, data, rating }) => {
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "space-between",
+                    paddingTop: "5px"
               }}
             >
-              {/* ✅ FIXED: Use actual author name from asset data */}
+              {/* Use actual author name from asset data */}
               <span className="publisher">
                 by {authorName}
               </span>

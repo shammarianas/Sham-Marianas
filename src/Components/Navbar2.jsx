@@ -71,7 +71,7 @@ const showTemplateButton = [
     { path: "/icons", label: "Icons" },
     { path: "/textures", label: "Textures" },
     { path: "/scripts", label: "Scripts" },
-    { path: "/plugins", label: "Plugins" },
+    // { path: "/plugins", label: "Plugins" },
     { path: "/hdris", label: "HDRIs" },
   ];
 
@@ -323,7 +323,7 @@ const showTemplateButton = [
         {currentPage !== "/admin" && (
           <>
             <Link to="/stock">
-              <div className="ml-auto vi-more">
+              <div className="d-none d-md-block  ml-auto vi-more">
                 <span className="butn butn-sm butn-bord radius-30">
                   <span>Explore</span>
                 </span>
