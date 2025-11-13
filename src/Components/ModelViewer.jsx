@@ -1,4 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { app } from "../firebase"; // your Firebase app config
+
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
@@ -119,76 +122,87 @@ const ModelViewer = (props) => {
       scene.background = texture;
     });
 
-    const loadModel = (url) => {
-      let extension = url.split(".").pop().toLowerCase();
-      extension = extension.split("?")[0]; // Remove query
+    const loadModel = async (path) => {
+      try {
+        const storage = getStorage(app);
+        const modelRef = ref(storage, path); // e.g., 'models/scene.gltf'
+        const url = await getDownloadURL(modelRef);
 
-      let loader;
+        let extension = url.split(".").pop().toLowerCase();
+        extension = extension.split("?")[0]; // Remove query
 
-      switch (extension) {
-        case "glb":
-        case "gltf":
-          loader = new GLTFLoader();
-          loader.load(url, (gltf) => {
-            const model = gltf.scene;
-            model.traverse((node) => {
-              if (node.isMesh) {
-                node.material.envMap = scene.environment; // Apply environment map to material
-                node.material.needsUpdate = true; // Ensure material updates
-                node.castShadow = true; // Enable shadows for the model
-                node.receiveShadow = true; // Enable shadows for the model
-                if (isWireframeOn) {
-                  node.material = new THREE.MeshBasicMaterial({
-                    color: 0xffffff,
-                    wireframe: true,
-                  }); // Set wireframe color to white
+        let loader;
+
+        switch (extension) {
+          case "glb":
+          case "gltf":
+            loader = new GLTFLoader();
+            loader.load(url, (gltf) => {
+              const model = gltf.scene;
+              model.traverse((node) => {
+                if (node.isMesh) {
+                  node.material.envMap = scene.environment;
+                  node.material.needsUpdate = true;
+                  node.castShadow = true;
+                  node.receiveShadow = true;
+                  if (isWireframeOn) {
+                    node.material = new THREE.MeshBasicMaterial({
+                      color: 0xffffff,
+                      wireframe: true,
+                    });
+                  }
                 }
-              }
+              });
+              scene.add(model);
+              centerModel(model);
+              setIsLoading(false);
             });
-            scene.add(model);
-            centerModel(model);
-            setIsLoading(false);
-          });
-          break;
-        case "obj":
-          loader = new OBJLoader();
-          loader.load(url, (obj) => {
-            obj.traverse((node) => {
-              if (node.isMesh) {
-                node.material.envMap = scene.environment; // Apply environment map to material
-                node.material.needsUpdate = true; // Ensure material updates
-                node.castShadow = true; // Enable shadows for the model
-                node.receiveShadow = true; // Enable shadows for the model
-                if (isWireframeOn) {
-                  node.material = new THREE.MeshBasicMaterial({
-                    color: 0xffffff,
-                    wireframe: true,
-                  }); // Set wireframe color to white
+            break;
+
+          case "obj":
+            loader = new OBJLoader();
+            loader.load(url, (obj) => {
+              obj.traverse((node) => {
+                if (node.isMesh) {
+                  node.material.envMap = scene.environment;
+                  node.material.needsUpdate = true;
+                  node.castShadow = true;
+                  node.receiveShadow = true;
+                  if (isWireframeOn) {
+                    node.material = new THREE.MeshBasicMaterial({
+                      color: 0xffffff,
+                      wireframe: true,
+                    });
+                  }
                 }
-              }
+              });
+              scene.add(obj);
+              centerModel(obj);
+              setIsLoading(false);
             });
-            scene.add(obj);
-            centerModel(obj);
-            setIsLoading(false);
-          });
-          break;
-        case "stl":
-          loader = new STLLoader();
-          loader.load(url, (geometry) => {
-            const material = new THREE.MeshBasicMaterial({
-              color: 0xffffff,
-              wireframe: isWireframeOn, // Enable wireframe mode if isWireframeOn is true
+            break;
+
+          case "stl":
+            loader = new STLLoader();
+            loader.load(url, (geometry) => {
+              const material = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                wireframe: isWireframeOn,
+              });
+              const mesh = new THREE.Mesh(geometry, material);
+              mesh.castShadow = true;
+              mesh.receiveShadow = true;
+              scene.add(mesh);
+              centerModel(mesh);
+              setIsLoading(false);
             });
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.castShadow = true; // Enable shadows for the model
-            mesh.receiveShadow = true; // Enable shadows for the model
-            scene.add(mesh);
-            centerModel(mesh);
-            setIsLoading(false);
-          });
-          break;
-        default:
-          console.error(`Unsupported file format: ${extension}`);
+            break;
+
+          default:
+            console.error(`Unsupported file format: ${extension}`);
+        }
+      } catch (err) {
+        console.error("Failed to load model:", err);
       }
     };
 
