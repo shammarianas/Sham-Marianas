@@ -23,13 +23,6 @@ const ContentViewer = ({ fileUrl, fileName, fileType, price, id }) => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-900 text-white rounded-lg shadow-lg">
-      {/* {!purchased && (
-        <div className="flex items-center justify-center bg-gray-800 text-gray-400 p-4 rounded-md">
-          <Lock className="w-6 h-6 mr-2" />
-          <span>Purchase to access this file</span>
-        </div>
-      )} */}
-
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">{fileName}</h2>
 
@@ -46,25 +39,14 @@ const ContentViewer = ({ fileUrl, fileName, fileType, price, id }) => {
 
       {purchased && (
         <div className="p-4 rounded-md bg-gray-800">
-          {fileType === "graphics" || fileType === "mockups" ? (
-            <img
-              src={fileUrl}
-              alt={fileName}
-              className="w-full h-auto rounded-md"
-            />
-          ) : fileType === "fonts" ? (
+          {fileType === "fonts" ? (
             <div className="text-center">
               <p className="text-lg">Preview: {fileName.split(".")[0]}</p>
               <p className="text-4xl" style={{ fontFamily: fileUrl }}>
                 AaBbCc
               </p>
             </div>
-          ) : fileType === "videos" || fileType === "templates" ? (
-            <video controls className="w-full rounded-md">
-              <source src={fileUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          ) : (
+          ) :  (
             <p className="text-gray-400">Unsupported file type</p>
           )}
         </div>

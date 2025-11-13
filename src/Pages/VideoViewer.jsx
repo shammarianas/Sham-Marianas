@@ -1,11 +1,17 @@
 import React, { useRef, useState, useEffect } from "react";
-const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen  }) => {
+
+const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen }) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-const [showPreview, setShowPreview] = useState(
-  !videoUrl && !!previewUrl   // ✅ sirf tab preview when ONLY image exists
-);
+
+  // Check if preview is video or image
+  const isPreviewVideo = previewUrl && (
+    previewUrl.includes('.mp4') || 
+    previewUrl.includes('.mov') || 
+    previewUrl.includes('.webm') ||
+    previewUrl.includes('video/')
+  );
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -69,44 +75,64 @@ const [showPreview, setShowPreview] = useState(
   return (
     <div className={`video_viewer_main ${isFullscreen ? "fullscreen" : ""}`}>
       <div className="container">
-        {/* <div className="header">
-          <h2>{videoName}</h2>
-        </div> */}
-
         <div className="video_wrapper">
-  {/* ✅ If file is image only */}
-  {!videoUrl && previewUrl ? (
-    <img
-      src={previewUrl}
-      alt="Uploaded Image"
-      className="preview_image_only"
-    />
-  ) : showPreview && previewUrl ? (
-    /* ✅ If video has preview thumbnail */
-    <div
-      className="preview_section"
-      onClick={() => setShowPreview(false)}
-    >
-      <img src={previewUrl} alt="Video Preview" className="preview_image" />
-      <button className="play_button">▶ Play</button>
-    </div>
-  ) : (
-    /* ✅ Actual Video */
-    <video ref={videoRef} controls width="100%" poster={previewUrl}>
- <source src={videoUrl} type="video/mp4" />
+          {/* ✅ AGAR PREVIEW VIDEO HAI - VIDEO PLAY HO */}
+          {previewUrl && isPreviewVideo ? (
+            <video 
+              ref={videoRef} 
+              controls 
+              width="100%" 
+              style={{ width: '100%', height: 'auto' }}
+            >
+              <source src={previewUrl} type="video/mp4" />
+              <source src={previewUrl} type="video/quicktime" />
+              <source src={previewUrl} type="video/webm" />
+              Your browser does not support the video tag.
+            </video>
+          ) : /* ✅ AGAR PREVIEW IMAGE HAI - IMAGE SHOW HO */
+          previewUrl && !isPreviewVideo ? (
+            <img
+              src={previewUrl}
+              alt={videoName || "Preview Image"}
+              style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+            />
+          ) : /* ✅ AGAR PREVIEW NAHI HAI - ACTUAL VIDEO SHOW HO */
+          videoUrl ? (
+            <video 
+              ref={videoRef} 
+              controls 
+              width="100%" 
+              style={{ width: '100%', height: 'auto' }}
+            >
+              <source src={videoUrl} type="video/mp4" />
               <source src={videoUrl} type="video/quicktime" />
-              <source src={videoUrl} type="video/x-m4v" />
-      Your browser does not support the video tag.
-    </video>
-  )}
-</div>
-
-        <div className="controls">
-          <button onClick={togglePlay}>{isPlaying ? "Pause" : "Play"}</button>
-          <button onClick={toggleFullscreen}>
-            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            /* ✅ KOI BHI CONTENT NAHI HAI */
+            <div className="no-content" style={{ 
+              padding: '2rem', 
+              textAlign: 'center', 
+              color: '#666',
+              border: '2px dashed #ddd',
+              borderRadius: '8px'
+            }}>
+              No video or image available
+            </div>
+          )}
         </div>
+
+        {/* ✅ CONTROLS SIRF VIDEO KE LIYE */}
+        {(previewUrl && isPreviewVideo) || videoUrl ? (
+          <div className="controls" style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
+            <button onClick={togglePlay} >
+              {isPlaying ? "Pause" : "Play"}
+            </button>
+            <button onClick={toggleFullscreen} >
+              {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

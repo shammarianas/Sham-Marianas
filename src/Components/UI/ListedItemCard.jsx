@@ -211,7 +211,7 @@ const ListedItemCard = ({ id, data, rating }) => {
                 justifyContent: "space-between",
               }}
             >
-              {/* ✅ FIXED: Use actual author name from asset data */}
+              {/* Use actual author name from asset data */}
               <span className="publisher">
                 by {authorName}
               </span>

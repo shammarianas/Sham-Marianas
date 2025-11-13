@@ -6,7 +6,7 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
-  getDoc
+  getDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUser } from "../Context/UserProvider";
@@ -525,7 +525,7 @@ const assetTypeToFilterData = {
 };
 
 const Upload = ({
- onUploadSuccess,
+  onUploadSuccess,
   onUploadClose,
   compactView = false,
   editMode = false,
@@ -614,7 +614,7 @@ const Upload = ({
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [thumbnailType, setThumbnailType] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  
+
   // File preview states
   const [filePreviews, setFilePreviews] = useState({
     model: null,
@@ -648,18 +648,18 @@ const Upload = ({
 
   // ✅ Function to get user profile data
   const getUserProfileData = async () => {
-  if (!currentUser?.uid) return null;
-  
-  try {
-    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-    if (userDoc.exists()) {
-      return userDoc.data();
+    if (!currentUser?.uid) return null;
+
+    try {
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        return userDoc.data();
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
     }
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-  }
-  return null;
-};
+    return null;
+  };
 
   // Function to generate slug from title
   const generateSlug = (title) => {
@@ -731,39 +731,39 @@ const Upload = ({
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFilePreviews(prev => ({
+        setFilePreviews((prev) => ({
           ...prev,
-          [fileType]: reader.result
+          [fileType]: reader.result,
         }));
-        setFilePreviewTypes(prev => ({
+        setFilePreviewTypes((prev) => ({
           ...prev,
-          [fileType]: "image"
+          [fileType]: "image",
         }));
       };
       reader.readAsDataURL(file);
     } else if (file.type.startsWith("video/")) {
       const videoURL = URL.createObjectURL(file);
-      setFilePreviews(prev => ({
+      setFilePreviews((prev) => ({
         ...prev,
-        [fileType]: videoURL
+        [fileType]: videoURL,
       }));
-      setFilePreviewTypes(prev => ({
+      setFilePreviewTypes((prev) => ({
         ...prev,
-        [fileType]: "video"
+        [fileType]: "video",
       }));
     } else {
       // For other file types, show file info
-      setFilePreviews(prev => ({
+      setFilePreviews((prev) => ({
         ...prev,
         [fileType]: {
           name: file.name,
           size: file.size,
-          type: file.type
-        }
+          type: file.type,
+        },
       }));
-      setFilePreviewTypes(prev => ({
+      setFilePreviewTypes((prev) => ({
         ...prev,
-        [fileType]: "file"
+        [fileType]: "file",
       }));
     }
   };
@@ -773,15 +773,15 @@ const Upload = ({
     if (!files || files.length === 0) return;
 
     const previews = [];
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file) => {
       if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
           previews.push(reader.result);
           if (previews.length === files.length) {
-            setFilePreviews(prev => ({
+            setFilePreviews((prev) => ({
               ...prev,
-              [fileType]: previews
+              [fileType]: previews,
             }));
           }
         };
@@ -978,7 +978,7 @@ const Upload = ({
             [name]: [],
             [`${name}Size`]: [],
           }));
-          setFilePreviews(prev => ({ ...prev, [name]: [] }));
+          setFilePreviews((prev) => ({ ...prev, [name]: [] }));
         }
       } else {
         const file = target.files[0];
@@ -995,8 +995,8 @@ const Upload = ({
             [name]: "",
             [`${name}Size`]: "",
           }));
-          setFilePreviews(prev => ({ ...prev, [name]: null }));
-          setFilePreviewTypes(prev => ({ ...prev, [name]: null }));
+          setFilePreviews((prev) => ({ ...prev, [name]: null }));
+          setFilePreviewTypes((prev) => ({ ...prev, [name]: null }));
         }
       }
     } else if (
@@ -1016,7 +1016,7 @@ const Upload = ({
         setFormData((prev) => ({
           ...prev,
           [name]: value,
-          slug: slug // Automatically set slug based on title
+          slug: slug, // Automatically set slug based on title
         }));
       } else {
         setFormData((prev) => ({
@@ -1038,19 +1038,18 @@ const Upload = ({
       return (
         <div className="file-preview-container">
           <h4>{label} Preview:</h4>
-          <img src={preview} alt={`${label} preview`} className="file-preview-image" />
+          <img
+            src={preview}
+            alt={`${label} preview`}
+            className="file-preview-image"
+          />
         </div>
       );
     } else if (previewType === "video") {
       return (
         <div className="file-preview-container">
           <h4>{label} Preview:</h4>
-          <video 
-            src={preview} 
-            className="file-preview-video"
-            controls
-            muted
-          >
+          <video src={preview} className="file-preview-video" controls muted>
             Your browser does not support the video tag.
           </video>
         </div>
@@ -1082,11 +1081,17 @@ const Upload = ({
 
     return (
       <div className="file-preview-container">
-        <h4>{label} Previews ({previews.length} files):</h4>
+        <h4>
+          {label} Previews ({previews.length} files):
+        </h4>
         <div className="file-preview-grid">
           {previews.map((preview, index) => (
             <div key={index} className="file-preview-item">
-              <img src={preview} alt={`${label} ${index + 1}`} className="file-preview-image" />
+              <img
+                src={preview}
+                alt={`${label} ${index + 1}`}
+                className="file-preview-image"
+              />
               <span className="file-preview-index">#{index + 1}</span>
             </div>
           ))}
@@ -1107,10 +1112,11 @@ const Upload = ({
     try {
       // ✅ Get user profile data
       const userProfile = await getUserProfileData();
-      const userName = userProfile?.displayName || 
-                      userProfile?.name || 
-                      currentUser?.displayName || 
-                      "Unknown Author";
+      const userName =
+        userProfile?.displayName ||
+        userProfile?.name ||
+        currentUser?.displayName ||
+        "Unknown Author";
 
       let docData = {
         title: formData.title,
@@ -1141,14 +1147,14 @@ const Upload = ({
         resolution: formData.resolution,
         frameRate: formData.frameRate,
         date: formData.date,
-         updatedBy: userName, // Changed from email to name
-      userId: currentUser?.uid ?? "anonymous",
-      
-      // ✅ CONSISTENT NAME FIELD
-      authorName: userName,
-      author: userName,
-      userDisplayName: userName,
-        
+        userId: currentUser?.uid ?? "anonymous",
+
+        // ✅ CONSISTENT NAME FIELD
+        authorName: userName,
+        author: userName,
+        createdBy: userName, // new assets
+        updatedBy: userName, // edits
+
         // Timestamps
         createdAt: editMode ? assetToEdit.createdAt : serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -1159,7 +1165,7 @@ const Upload = ({
         docData.createdBy = userName;
         docData.createdAt = serverTimestamp();
       }
-      
+
       // ✅ thumbnail upload
       if (formData.thumbnail && typeof formData.thumbnail !== "string") {
         docData.thumbnail = await uploadThumbnail(formData.thumbnail);
@@ -1173,10 +1179,14 @@ const Upload = ({
           hasImages: !!formData.images,
           isArray: Array.isArray(formData.images),
           length: Array.isArray(formData.images) ? formData.images.length : 0,
-          firstItem: Array.isArray(formData.images) ? formData.images[0] : null
+          firstItem: Array.isArray(formData.images) ? formData.images[0] : null,
         });
 
-        if (Array.isArray(formData.images) && formData.images.length > 0 && formData.images[0] instanceof File) {
+        if (
+          Array.isArray(formData.images) &&
+          formData.images.length > 0 &&
+          formData.images[0] instanceof File
+        ) {
           console.log("🖼️ Uploading NEW images");
           const allImageUrls = [];
 
@@ -1213,9 +1223,9 @@ const Upload = ({
       if (formData.type === "videos") {
         console.log("🎥 Processing video...", {
           hasVideo: !!formData.video,
-          isFile: formData.video instanceof File
+          isFile: formData.video instanceof File,
         });
-        
+
         if (formData.video && formData.video instanceof File) {
           console.log("🎥 Uploading NEW video");
           docData.video = await uploadFile(formData.video, "videos");
@@ -1228,9 +1238,9 @@ const Upload = ({
       if (formData.type === "models") {
         console.log("📦 Processing model...", {
           hasModel: !!formData.model,
-          isFile: formData.model instanceof File
+          isFile: formData.model instanceof File,
         });
-        
+
         if (formData.model && formData.model instanceof File) {
           console.log("📦 Uploading NEW model");
           docData.model = await uploadFile(formData.model, "models");
@@ -1932,7 +1942,6 @@ const Upload = ({
                   className="blog-form-input"
                   placeholder="Enter asset title..."
                 />
-              
               </div>
 
               <div className="blog-form-group">
@@ -1940,17 +1949,17 @@ const Upload = ({
                   Slug <span className="blog-form-required">*</span>
                 </label>
                 {formData.slug && (
-                <input
-                  type="text"
-                  name="Slug"
-                  value={formData.slug}
-                  onChange={handleChange}
-                  required
-                  className="blog-form-input"
-                  placeholder="URL Auto Generate"
-                />
+                  <input
+                    type="text"
+                    name="Slug"
+                    value={formData.slug}
+                    onChange={handleChange}
+                    required
+                    className="blog-form-input"
+                    placeholder="URL Auto Generate"
+                  />
                 )}
-              {/* {formData.slug && (
+                {/* {formData.slug && (
                   <p className="blog-form-hint" style={{ color: '#059669', fontStyle: 'normal' }}>
                     Slug: {formData.slug}
                   </p>
@@ -2104,23 +2113,23 @@ const Upload = ({
               </div>
 
               <div className="blog-form-group">
-  <label className="blog-form-label">
-    Price Type <span className="blog-form-required">*</span>
-  </label>
-  <select
-    name="price"
-    value={formData.price}
-    onChange={handleChange}
-    required
-    className="blog-form-select"
-  >
-    <option value="free">Free</option>
-    <option value="paid">Paid</option>
-  </select>
-  <p className="blog-form-hint">
-    Select whether this asset is free or paid
-  </p>
-</div>
+                <label className="blog-form-label">
+                  Price Type <span className="blog-form-required">*</span>
+                </label>
+                <select
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                  className="blog-form-select"
+                >
+                  <option value="free">Free</option>
+                  <option value="paid">Paid</option>
+                </select>
+                <p className="blog-form-hint">
+                  Select whether this asset is free or paid
+                </p>
+              </div>
 
               <div className="blog-form-group">
                 <label className="blog-form-label">Tags (Max 10)</label>
@@ -2517,7 +2526,9 @@ const Upload = ({
                     className="blog-form-file"
                     required={!editMode}
                   />
-                  <p className="blog-form-hint">Supported formats: .MOV, .MP4, .zip</p>
+                  <p className="blog-form-hint">
+                    Supported formats: .MOV, .MP4, .zip
+                  </p>
                   {renderFilePreview("videoTemplateFile", "Video Template")}
                   {editMode && assetToEdit.videoTemplateFile && (
                     <p className="current-image-note">
