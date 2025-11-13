@@ -18,7 +18,7 @@
     border-radius: 12px;
     overflow: hidden;
     background: #131313;
-    height: 70vh;
+    height: 90vh;
 }
 
 .video_viewer_main .preview_section {
@@ -51,7 +51,8 @@
     display: block;
     width: 100%;
     height: 70vh;
-    background: #000
+    background: #000;
+        object-fit: fill;
 }
 
 .video_viewer_main .controls {
@@ -86,4 +87,8 @@
     .video_viewer_main .play_button {
         padding: 10px 14px
     }
+    .video_viewer_main .video_wrapper {
+        height: 50vh;
+    }
+    
 }
