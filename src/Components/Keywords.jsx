@@ -1,9 +1,10 @@
 import React from "react";
 
-const Keywords = (props) => {
+const Keywords = ({ keywords = [] }) => {
+  // If keywords is undefined/null → treat as empty array
   return (
     <div className="keywords">
-      {props.keywords.map((keyword, index) => (
+      {keywords.map((keyword, index) => (
         <span key={index} className="keyword">
           {keyword}
         </span>

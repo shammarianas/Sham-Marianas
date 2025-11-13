@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { 
-  FiBox, 
-  FiTrendingUp, 
-  FiDownload, 
-  FiUsers, 
-  FiDollarSign, 
-  FiSearch, 
-  FiFilter, 
-  FiEye, 
+import {
+  FiBox,
+  FiTrendingUp,
+  FiDownload,
+  FiUsers,
+  FiDollarSign,
+  FiSearch,
+  FiFilter,
+  FiEye,
   FiEdit,
-  FiUpload,  
-  FiTrash2, 
+  FiUpload,
+  FiTrash2,
   FiPlus,
   FiStar,
   FiTag,
@@ -19,17 +19,17 @@ import {
   FiImage,
   FiMoreHorizontal,
   FiX,
-  FiRefreshCw
+  FiRefreshCw,
 } from "react-icons/fi";
-import { 
-  collection, 
-  query, 
-  getDocs, 
-  doc, 
-  updateDoc, 
-  deleteDoc, 
+import {
+  collection,
+  query,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc,
   serverTimestamp,
-  onSnapshot
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "../../../../../firebase";
 import Upload from "../../../../Pages/Upload";
@@ -63,7 +63,7 @@ const AssetManagement = () => {
     "Audio",
     "Templates",
   ];
-  
+
   const { currentUser } = useUser();
 
   // Helper functions
@@ -95,22 +95,27 @@ const AssetManagement = () => {
     return null;
   };
 
-  // ✅ UPDATED: Consistent author name extraction - same logic as Upload component
+  // Consistent author name extraction 
   const getAuthorName = (asset) => {
-    // Priority order matches Upload component logic
-    if (asset.authorName && asset.authorName !== "Unknown Author") return asset.authorName;
+    // 1. Highest priority – the fields we write in Upload
+    if (asset.authorName && asset.authorName !== "Unknown Author")
+      return asset.authorName;
     if (asset.author && asset.author !== "Unknown Author") return asset.author;
+    if (asset.createdBy && asset.createdBy !== "Unknown Author")
+      return asset.createdBy;
+    if (asset.updatedBy && asset.updatedBy !== "Unknown Author")
+      return asset.updatedBy;
+
+    // 2. Legacy / profile fields
     if (asset.userDisplayName) return asset.userDisplayName;
-    if (asset.userName) return asset.userName;
     if (asset.displayName) return asset.displayName;
     if (asset.uploadedBy) return asset.uploadedBy;
-    if (asset.createdBy) return asset.createdBy;
-    if (asset.updatedBy) return asset.updatedBy;
-    
-    // Fallback to email only if no name found
+
+    // 3. Fallback to email **only** if you really want it
     if (asset.userEmail) return asset.userEmail;
     if (asset.email) return asset.email;
-    
+
+    // 4. Absolute fallback
     return "Unknown Author";
   };
 
@@ -119,12 +124,12 @@ const AssetManagement = () => {
     // Check if price is string "free" or "paid"
     if (asset.price === "free") return "Free";
     if (asset.price === "paid") return "Paid";
-    
+
     // Fallback for legacy numeric prices
     if (typeof asset.price === "number") {
       return asset.price > 0 ? "Paid" : "Free";
     }
-    
+
     // Default to Free if no price set
     return "Free";
   };
@@ -134,8 +139,9 @@ const AssetManagement = () => {
     setLoading(true);
     try {
       const q = query(collection(db, "Assets"));
-      
-      const unsubscribe = onSnapshot(q, 
+
+      const unsubscribe = onSnapshot(
+        q,
         (querySnapshot) => {
           const assetsData = querySnapshot.docs.map((doc) => ({
             id: doc.id,
@@ -143,7 +149,7 @@ const AssetManagement = () => {
           }));
           setAssets(assetsData);
           setLoading(false);
-        }, 
+        },
         (error) => {
           console.error("Assets real-time listener error:", error);
           setError(`Failed to load assets: ${error.message}`);
@@ -160,7 +166,7 @@ const AssetManagement = () => {
 
   useEffect(() => {
     const unsubscribe = fetchAssets();
-    
+
     // Cleanup on component unmount
     return () => {
       if (unsubscribe) {
@@ -172,9 +178,9 @@ const AssetManagement = () => {
   // Manual refresh function
   const refreshAssets = useCallback(() => {
     console.log("🔄 Manual refresh triggered");
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
     setLoading(true);
-    
+
     // Force re-fetch
     const q = query(collection(db, "Assets"));
     getDocs(q)
@@ -269,11 +275,12 @@ const AssetManagement = () => {
     featured: assets.filter((a) => a.isFeatured).length,
     trending: assets.filter((a) => a.isTrending).length,
     totalDownloads: assets.reduce((sum, a) => sum + (a.downloads || 0), 0),
-    freeAssets: assets.filter(a => 
-      a.price === "free" || (typeof a.price === "number" && a.price === 0)
+    freeAssets: assets.filter(
+      (a) =>
+        a.price === "free" || (typeof a.price === "number" && a.price === 0)
     ).length,
-    paidAssets: assets.filter(a => 
-      a.price === "paid" || (typeof a.price === "number" && a.price > 0)
+    paidAssets: assets.filter(
+      (a) => a.price === "paid" || (typeof a.price === "number" && a.price > 0)
     ).length,
   };
 
@@ -300,7 +307,9 @@ const AssetManagement = () => {
             title="Refresh Assets"
             disabled={loading}
           >
-            <FiRefreshCw className={`button-icon ${loading ? 'spinning' : ''}`} />
+            <FiRefreshCw
+              className={`button-icon ${loading ? "spinning" : ""}`}
+            />
             Refresh
           </button>
           <button
@@ -442,11 +451,13 @@ const AssetManagement = () => {
                           className="asset-image"
                           style={{ position: "relative", overflow: "hidden" }}
                           onMouseEnter={(e) => {
-                            const video = e.currentTarget.querySelector("video");
+                            const video =
+                              e.currentTarget.querySelector("video");
                             if (video) video.play();
                           }}
                           onMouseLeave={(e) => {
-                            const video = e.currentTarget.querySelector("video");
+                            const video =
+                              e.currentTarget.querySelector("video");
                             if (video) {
                               video.pause();
                               video.currentTime = 0;
@@ -458,7 +469,11 @@ const AssetManagement = () => {
                             muted
                             loop
                             playsInline
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
                           />
                         </div>
                       );
@@ -547,7 +562,7 @@ const AssetManagement = () => {
                 {/* Actions - Exactly like BlogSection */}
                 <div className="table-actions">
                   <div>
-                   <button
+                    <button
                       className="action-button secondary"
                       onClick={() => handleToggleAssetTrending(asset.id)}
                     >
@@ -687,9 +702,7 @@ const AssetDetailsModal = ({
               </div>
               <div className="info-item">
                 <span className="info-label">Price</span>
-                <span className="info-value">
-                  {getPriceDisplay(asset)}
-                </span>
+                <span className="info-value">{getPriceDisplay(asset)}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Downloads</span>
@@ -704,9 +717,7 @@ const AssetDetailsModal = ({
               <div className="info-item">
                 {/* ✅ UPDATED: Consistent author name display */}
                 <span className="info-label">Author</span>
-                <span className="info-value">
-                  {getAuthorName(asset)}
-                </span>
+                <span className="info-value">{getAuthorName(asset)}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Status</span>
@@ -774,7 +785,7 @@ const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
 
   useEffect(() => {
     if (isOpen) {
-      setUploadKey(prev => prev + 1);
+      setUploadKey((prev) => prev + 1);
     }
   }, [isOpen]);
 
@@ -794,7 +805,7 @@ const CreateAssetModal = ({ isOpen, onClose, onAssetCreated }) => {
         </div>
         <div className="modal-body">
           <div className="upload-wrapper">
-            <Upload 
+            <Upload
               key={`create-${uploadKey}`}
               editMode={false}
               assetToEdit={null}
@@ -817,7 +828,7 @@ const EditAssetModal = ({ asset, isOpen, onClose, onAssetUpdated }) => {
 
   useEffect(() => {
     if (isOpen && asset) {
-      setUploadKey(prev => prev + 1);
+      setUploadKey((prev) => prev + 1);
     }
   }, [isOpen, asset]);
 
@@ -837,7 +848,7 @@ const EditAssetModal = ({ asset, isOpen, onClose, onAssetUpdated }) => {
         </div>
         <div className="modal-body">
           <div className="upload-wrapper">
-            <Upload 
+            <Upload
               key={`edit-${asset?.id}-${uploadKey}`}
               editMode={true}
               assetToEdit={asset}

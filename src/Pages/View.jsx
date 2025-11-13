@@ -16,12 +16,10 @@ import {
 import ModelViewer from "../Components/ModelViewer";
 import UserCard from "../Components/UI/UserCard";
 import ToastAlert from "../Components/UI/ToastAlert";
-import ViewItemImages from "../Components/ViewItemImages";
 import { Helmet } from "react-helmet-async";
 import { useUser } from "../Context/UserProvider";
 import ReactMarkdown from "react-markdown";
 import "@google/model-viewer";
-import ScriptViewer from "../Components/ScriptViewer";
 import HdriViewer from "../Components/HdriViewer";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -171,13 +169,7 @@ const View = () => {
             />
             <div className="content">
               <div className="left">
-                {item.type === "textures" || item.type === "shaders" ? (
-                  <ViewItemImages
-                    mainImage={item.thumbnail}
-                    images={item.maps}
-                    onFullscreen={handleOpenFullscreen}
-                  />
-                ) : item.type === "models" || item.type === "printables" ? (
+                {item.type === "models" || item.type === "printables" ? (
                   <ModelViewer
                     model={item.model}
                     alt={item.title}
@@ -185,28 +177,6 @@ const View = () => {
                     sky={sky}
                     onLoad={() => console.log("Model loaded successfully")}
                     onError={(e) => console.error("Error loading model:", e)}
-                    onFullscreen={handleOpenFullscreen}
-                  />
-                ) : item.type === "scripts" ? (
-                  <ScriptViewer
-                    script={item.script}
-                    scriptName={item.scriptName}
-                    id={item.id}
-                    price={getPriceDisplay(item)}
-                    onFullscreen={handleOpenFullscreen}
-                  />
-                ) : item.type === "graphics" ? (
-                  <ContentViewer
-                    templateUrl={item.template}
-                    previewUrl={item.thumbnail}
-                    title={item.title}
-                    onFullscreen={handleOpenFullscreen}
-                  />
-                ) : item.type === "templates" ? (
-                  <ContentViewer
-                    videoUrl={item.videoTemplate}
-                    previewUrl={item.thumbnail}
-                    title={item.title}
                     onFullscreen={handleOpenFullscreen}
                   />
                 ) : item.type === "hdris" ? (
@@ -217,6 +187,13 @@ const View = () => {
                 ) : item.type === "videos" ? (
                   <VideoViewer
                     videoUrl={item.video}
+                    videoName={item.title}
+                    previewUrl={item.thumbnail}
+                    onFullscreen={handleOpenFullscreen}
+                  />
+                ) : item.type === "video-templates" ? (
+                  <VideoViewer
+                    videoUrl={item.videoTemplateFile} // YEH CHANGE KARO
                     videoName={item.title}
                     previewUrl={item.thumbnail}
                     onFullscreen={handleOpenFullscreen}

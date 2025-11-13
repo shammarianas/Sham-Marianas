@@ -17,7 +17,8 @@
     position: relative;
     border-radius: 12px;
     overflow: hidden;
-    background: var(--black, #000)
+    background: #131313;
+    height: 70vh;
 }
 
 .video_viewer_main .preview_section {
