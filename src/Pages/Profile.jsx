@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Breadcrumbs from "../Components/Breadcrumbs";
 import { Link, useParams } from "react-router-dom";
+import ListedItemCard from "../Components/UI/ListedItemCard";
 import {
   doc,
   getDoc,
@@ -29,6 +30,28 @@ const Profile = () => {
   const [username, setUsername] = useState("");
   const [saving, setSaving] = useState(false);
   const isOwnProfile = currentUser?.uid === id;
+
+const getAuthorName = (assetData) => {
+    if (!assetData) return "Unknown Author";
+    
+    // Priority order for author name - same as AssetManagement.jsx
+    if (assetData.authorName && assetData.authorName !== "Unknown Author") return assetData.authorName;
+    if (assetData.author && assetData.author !== "Unknown Author") return assetData.author;
+    if (assetData.userDisplayName) return assetData.userDisplayName;
+    if (assetData.userName) return assetData.userName;
+    if (assetData.displayName) return assetData.displayName;
+    if (assetData.uploadedBy) return assetData.uploadedBy;
+    if (assetData.createdBy) return assetData.createdBy;
+    if (assetData.updatedBy) return assetData.updatedBy;
+    
+    // Fallback to username if no name found (instead of email)
+    if (assetData.username) return assetData.username;
+    
+    return "Unknown Author";
+};
+
+// Get author name from user
+const authorName = getAuthorName(user);
 
   const followUser = async () => {
     if (!user) {
@@ -341,42 +364,14 @@ const Profile = () => {
                   </h2>
                 </div>
                 <div className="item_listing">
-                  {groupedItems[category].map((item, index) => (
-                    <Link to={`/View/${item.id}`} key={index}>
-                      <div className="item_card" key={index}>
-                        <div
-                          className="card_image"
-                          style={{
-                            aspectRatio:
-                              item.type === "textures" ? "1 / 1" : undefined,
-                          }}
-                        >
-                          <img src={item.thumbnail} alt="placeholder" />
-                        </div>
-                        <div className="card_content">
-                          <span className="title">
-                            {item.title}{" "}
-                            <span className="publisher">
-                              by Servant {item.publisher}
-                            </span>
-                          </span>
-                          <div className="details">
-                            <span className="price">
-                              <strong>
-                                {(() => {
-                                  const price = Number(item.price) || 0;
-                                  const discount = Number(item.discount ?? 0) || 0;
-                                  const finalPrice = Math.max(0, price - (price * discount) / 100);
-                                  return finalPrice === 0 ? "Free" : `$${finalPrice.toFixed(2)}`;
-                                })()}
-                              </strong>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+  {groupedItems[category].map((item, index) => (
+    <ListedItemCard 
+      key={item.id} 
+      id={item.id} 
+      data={item} 
+    />
+  ))}
+</div>
               </div>
             ))}
           </div>

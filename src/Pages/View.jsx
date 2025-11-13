@@ -169,69 +169,48 @@ const View = () => {
             />
             <div className="content">
               <div className="left">
-                {item.type === "models" || item.type === "printables" ? (
-                  <ModelViewer
-                    model={item.model}
-                    alt={item.title}
-                    ar={item.vrArLowPoly}
-                    sky={sky}
-                    onLoad={() => console.log("Model loaded successfully")}
-                    onError={(e) => console.error("Error loading model:", e)}
-                    onFullscreen={handleOpenFullscreen}
-                  />
-                ) : item.type === "hdris" ? (
-                  <HdriViewer
-                    hdri={item.hdri}
-                    onFullscreen={handleOpenFullscreen}
-                  />
-                ) : item.type === "videos" ? (
-                  <VideoViewer
-                    videoUrl={item.video}
-                    videoName={item.title}
-                    previewUrl={item.thumbnail}
-                    onFullscreen={handleOpenFullscreen}
-                  />
-                ) : item.type === "video-templates" ? (
-                  <VideoViewer
-                    videoUrl={item.videoTemplateFile} // YEH CHANGE KARO
-                    videoName={item.title}
-                    previewUrl={item.thumbnail}
-                    onFullscreen={handleOpenFullscreen}
-                  />
-                ) : (
-                  <div
-                    className="details-media-frame"
-                    onClick={handleOpenFullscreen}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <img
-                      src={item.thumbnail}
+                  {item.type === "models" || item.type === "printables" ? (
+                    <ModelViewer
+                      model={item.model}
                       alt={item.title}
-                      className="details-media-img"
+                      ar={item.vrArLowPoly}
+                      sky={sky}
+                      onLoad={() => console.log("Model loaded successfully")}
+                      onError={(e) => console.error("Error loading model:", e)}
+                      onFullscreen={handleOpenFullscreen}
                     />
-                  </div>
-                )}
-
-                <div className="asset_details">
-                  <div className="description">
-                    <h2 className="title">Details</h2>
-                    <div className="content" />
-                    <div className="markdown-preview">
-                      <ReactMarkdown
-                        components={renderers}
-                        remarkPlugins={[remarkGfm]}
-                      >
-                        {markdown}
-                      </ReactMarkdown>
+                  ) : item.type === "hdris" ? (
+                    <HdriViewer
+                      hdri={item.hdri}
+                      onFullscreen={handleOpenFullscreen}
+                    />
+                  ) : item.type === "videos" ? (
+                    <VideoViewer
+                      videoUrl={item.video}
+                      videoName={item.title}
+                      previewUrl={item.thumbnail}
+                      onFullscreen={handleOpenFullscreen}
+                    />
+                  ) : item.type === "video-templates" ? (
+                    <VideoViewer
+                      videoUrl={item.videoTemplateFile} // YEH CHANGE KARO
+                      videoName={item.title}
+                      previewUrl={item.thumbnail}
+                      onFullscreen={handleOpenFullscreen}
+                    />
+                  ) : (
+                    <div
+                      className="details-media-frame"
+                      onClick={handleOpenFullscreen}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <img
+                        src={item.thumbnail}
+                        alt={item.title}
+                        className="details-media-img"
+                      />
                     </div>
-                  </div>
-                  <div className="keywords_section">
-                    <h2 className="title">Assets Tags</h2>
-                    <div>
-                      <Keywords keywords={item.tags} />
-                    </div>
-                  </div>
-                </div>
+                  )}
               </div>
 
               <div className="right">
@@ -274,6 +253,27 @@ const View = () => {
 
                 <ItemInfoTable asset={item} />
               </div>
+
+              <div className="asset_details">
+                  <div className="description">
+                    <h2 className="title">Details</h2>
+                    <div className="content" />
+                    <div className="markdown-preview">
+                      <ReactMarkdown
+                        components={renderers}
+                        remarkPlugins={[remarkGfm]}
+                      >
+                        {markdown}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                  <div className="keywords_section">
+                    <h2 className="title">Assets Tags</h2>
+                    <div>
+                      <Keywords keywords={item.tags} />
+                    </div>
+                  </div>
+                </div>
             </div>
           </div>
         ) : (
