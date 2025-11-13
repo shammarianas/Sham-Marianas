@@ -95,6 +95,67 @@ const AssetManagement = () => {
     return null;
   };
 
+  // Download tracking function
+const trackDownload = async (assetId) => {
+  try {
+    const assetRef = doc(db, "Assets", assetId);
+    const assetDoc = await getDoc(assetRef);
+    
+    if (assetDoc.exists()) {
+      const currentDownloads = assetDoc.data().downloads || 0;
+      await updateDoc(assetRef, {
+        downloads: currentDownloads + 1,
+        lastDownloadedAt: serverTimestamp(),
+      });
+      console.log("✅ Download tracked for asset:", assetId);
+    }
+  } catch (error) {
+    console.error("❌ Failed to track download:", error);
+  }
+};
+const handleDownloadClick = async (e, assetId) => {
+  e.preventDefault();
+  
+  try {
+    // Track download first
+    await trackDownload(assetId);
+    
+    // Then proceed with actual download logic
+    const urls = getAssetUrls();
+    
+    // Free items: download immediately
+    if (isFree) {
+      if (urls.length) {
+        urls.forEach(downloadURL);
+      }
+      return;
+    }
+
+    // Purchased items or users with active subscription: allow download
+    if (hasPurchasedItem || hasActiveSubscription) {
+      if (urls.length) {
+        urls.forEach(downloadURL);
+      }
+      return;
+    }
+
+    // For paid items without subscription, redirect to subscription page
+    if (isPaid && !hasActiveSubscription) {
+      navigate('/subscription');
+      return;
+    }
+
+    // Fallback for old numeric prices
+    const price = Number(data.price) || 0;
+    if (price > 0 && !hasActiveSubscription && !hasPurchasedItem) {
+      navigate('/subscription');
+      return;
+    }
+  } catch (error) {
+    console.error("❌ Download failed:", error);
+  }
+};
+
   // Consistent author name extraction 
   const getAuthorName = (asset) => {
     // 1. Highest priority – the fields we write in Upload
