@@ -1943,14 +1943,18 @@ a {
   }
 }
 .page_content .view_item_main .content {
-  display: flex;
-  flex-direction: row;
+  /* display: flex;
+  flex-direction: row; */
   gap: 1rem;
   width: 100%;
   position: relative;
+  padding: 0 16px;
+  display: grid;
+        grid-template-columns: 2fr minmax(auto, 550px);
+        grid-template-rows: max-content 1fr;
 }
 .page_content .view_item_main .content .left {
-  width: 60%;
+  /* width: 60%; */
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -2567,12 +2571,16 @@ a {
   color: #f5f5f5;
   opacity: 0.6;
 }
-.page_content .view_item_main .content .left .asset_details .keywords_section .keyword{
+.page_content .view_item_main .content .asset_details .keywords_section{
+  margin-top: 40px;
+}
+.page_content .view_item_main .content .asset_details .keywords_section .keyword{
       border: 1px solid #fff;
     padding: 5px 10px;;
         border-radius: 20px;
+        margin-top: 10px;
 }
-.page_content .view_item_main .content .left .asset_details .keywords_section .keywords {
+.page_content .view_item_main .content .asset_details .keywords_section .keywords {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
@@ -2580,17 +2588,20 @@ a {
 }
 @media screen and (max-width: 768px) {
   .page_content .view_item_main .content {
-    flex-direction: column;
+    /* flex-direction: column; */
+        display: flex;
+    flex-flow: column nowrap;
+    gap: 40px;
   }
   .page_content .view_item_main .content .left {
     width: 100%;
   }
   .page_content .view_item_main .content .right .item_info_table {
-    display: none;
+    margin-top: 40px;
   }
 }
 .page_content .view_item_main .right {
-  width: 40%;
+  /* width: 40%; */
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -4154,6 +4165,7 @@ div > button.add_to_wishlist_btn.favorited {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  padding: 0 1rem;
 }
 .profile_main .bottom .section {
   display: flex;
@@ -5663,4 +5675,10 @@ div.hidden.none {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+@media screen and (max-width: 1080px){
+.page_content .view_item_main .content{
+  grid-template-columns: 2fr minmax(auto, 380px);
+}
 }
