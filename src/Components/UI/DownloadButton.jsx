@@ -1,6 +1,8 @@
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
+import { doc, updateDoc, getDoc, increment, serverTimestamp } from "firebase/firestore";
+import { db } from "../../../firebase"; // Adjust path as needed
 
 const DownloadButton = ({
   item,
@@ -24,6 +26,25 @@ const DownloadButton = ({
 
   // Check if user has purchased this specific item
   const hasPurchasedItem = userProfile?.purchasedItems?.includes(item.id);
+
+  // ✅ ADD THIS FUNCTION: Track download in Firestore
+  const trackDownloadInFirestore = async (assetId) => {
+    try {
+      const assetRef = doc(db, "Assets", assetId);
+      
+      // Use Firestore increment to atomically update download count
+      await updateDoc(assetRef, {
+        downloads: increment(1),
+        lastDownloadedAt: serverTimestamp(),
+      });
+      
+      console.log("✅ Download tracked for asset:", assetId);
+      return true;
+    } catch (error) {
+      console.error("❌ Failed to track download:", error);
+      return false;
+    }
+  };
 
   const getAssetUrls = () => {
     const urls = [];
@@ -166,6 +187,9 @@ const DownloadButton = ({
     }
 
     console.log(`📁 Found ${urls.length} file(s) to download`);
+
+    // ✅ TRACK DOWNLOAD IN FIRESTORE FIRST
+    const downloadTracked = await trackDownloadInFirestore(item.id);
 
     // Free items: download immediately
     if (isFree) {
