@@ -13,7 +13,7 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
-import hdri from "../assets/Models/illovo_beach_balcony_4k.hdr";
+// Remove this line: import hdri from "../assets/Models/illovo_beach_balcony_4k.hdr";
 import model_bg from "../assets/Images/Sections/model_bg.png";
 
 const ModelViewer = (props) => {
@@ -106,14 +106,7 @@ const ModelViewer = (props) => {
     fillLight.position.set(-5, 5, 5);
     scene.add(fillLight);
 
-    // HDRI Environment
-    new RGBELoader()
-      .load(hdri, (texture) => {
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = texture;
-        scene.background = texture;
-      });
-
+    // HDRI Environment - REMOVED FIXED HDRI
     // Background texture as fallback
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(model_bg, (texture) => {
@@ -133,7 +126,7 @@ const ModelViewer = (props) => {
       mountRef.current.appendChild(renderer.domElement);
     }
 
-    // Load Model Function
+    // Load Model Function - GLB OPTIMIZED
     const loadModel = async (path) => {
       try {
         const storage = getStorage(app);
@@ -169,7 +162,7 @@ const ModelViewer = (props) => {
               const model = gltf.scene;
               currentModel = model;
               
-              // Setup materials and shadows
+              // GLB OPTIMIZED MATERIAL HANDLING
               model.traverse((node) => {
                 if (node.isMesh) {
                   node.castShadow = true;
@@ -180,13 +173,19 @@ const ModelViewer = (props) => {
                     node.material.wireframe = true;
                   }
                   
-                  // Improve material quality
+                  // GLB SPECIFIC MATERIAL OPTIMIZATIONS
                   if (node.material) {
                     node.material.envMapIntensity = 1;
+                    
+                    // For GLB files, preserve original material properties
                     if (node.material.isMeshStandardMaterial) {
-                      node.material.roughness = 0.5;
-                      node.material.metalness = 0.1;
+                      // Keep original GLB material values
+                      node.material.roughness = node.material.roughness !== undefined ? node.material.roughness : 0.5;
+                      node.material.metalness = node.material.metalness !== undefined ? node.material.metalness : 0.1;
                     }
+                    
+                    // Ensure material updates
+                    node.material.needsUpdate = true;
                   }
                 }
               });
@@ -300,7 +299,7 @@ const ModelViewer = (props) => {
       controls.update();
     };
 
-    // Load the model
+    // Load the model - YAHAN PROPS.MODEL USE HO RAHA HAI JO UPLOAD COMPONENT SE AAYEGA
     if (props.model) {
       loadModel(props.model);
     }
@@ -412,7 +411,7 @@ const ModelViewer = (props) => {
 
   return (
     <div className={`model_showcase ${isFullscreen ? "fullscreen" : ""}`}>
-      {/* Controls Panel */}
+      {/* Controls Panel - unchanged */}
       <div className="controls">
         <button
           className="control-btn"
@@ -473,7 +472,7 @@ const ModelViewer = (props) => {
         </button>
       </div>
 
-      {/* Model Viewer Container */}
+      {/* Model Viewer Container - unchanged */}
       <div className="model_viewer" ref={mountRef}>
         {isLoading && (
           <div className="loading-overlay">
@@ -490,6 +489,7 @@ const ModelViewer = (props) => {
         )}
       </div>
 
+      {/* CSS styles - unchanged */}
       <style jsx>{`
         .model_showcase {
           position: relative;
@@ -519,21 +519,6 @@ const ModelViewer = (props) => {
         .model_viewer:active {
           cursor: grabbing;
         }
-        
-        // .controls {
-        //   position: absolute;
-        //   bottom: 20px;
-        //   left: 50%;
-        //   transform: translateX(-50%);
-        //   display: flex;
-        //   align-items: center;
-        //   gap: 15px;
-        //   backdrop-filter: blur(10px);
-        //   padding: 12px 20px;
-        //   border-radius: 25px;
-        //   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        //   z-index: 10;
-        // }
         
         .control-btn {
           background: none;
