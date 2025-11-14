@@ -126,7 +126,7 @@ const ModelViewer = (props) => {
       mountRef.current.appendChild(renderer.domElement);
     }
 
-    // Load Model Function
+    // Load Model Function - GLB OPTIMIZED
     const loadModel = async (path) => {
       try {
         const storage = getStorage(app);
@@ -162,7 +162,7 @@ const ModelViewer = (props) => {
               const model = gltf.scene;
               currentModel = model;
               
-              // Setup materials and shadows
+              // GLB OPTIMIZED MATERIAL HANDLING
               model.traverse((node) => {
                 if (node.isMesh) {
                   node.castShadow = true;
@@ -173,13 +173,19 @@ const ModelViewer = (props) => {
                     node.material.wireframe = true;
                   }
                   
-                  // Improve material quality
+                  // GLB SPECIFIC MATERIAL OPTIMIZATIONS
                   if (node.material) {
                     node.material.envMapIntensity = 1;
+                    
+                    // For GLB files, preserve original material properties
                     if (node.material.isMeshStandardMaterial) {
-                      node.material.roughness = 0.5;
-                      node.material.metalness = 0.1;
+                      // Keep original GLB material values
+                      node.material.roughness = node.material.roughness !== undefined ? node.material.roughness : 0.5;
+                      node.material.metalness = node.material.metalness !== undefined ? node.material.metalness : 0.1;
                     }
+                    
+                    // Ensure material updates
+                    node.material.needsUpdate = true;
                   }
                 }
               });
@@ -336,9 +342,63 @@ const ModelViewer = (props) => {
     };
   }, [props.model]);
 
-  // ... rest of your code remains exactly the same
-  // Wireframe effect, Auto-rotate effect, Shadow intensity effect, Exposure effect
-  // All these remain unchanged
+  // Wireframe effect
+  useEffect(() => {
+    if (currentModel) {
+      currentModel.traverse((node) => {
+        if (node.isMesh) {
+          if (isWireframeOn) {
+            if (node.material.isMaterial) {
+              node.material.wireframe = true;
+            } else {
+              // For OBJ files, replace material
+              const wireframeMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                wireframe: true
+              });
+              node.material = wireframeMaterial;
+            }
+          } else {
+            if (node.material.isMaterial) {
+              node.material.wireframe = false;
+            }
+            // Note: OBJ materials can't be easily restored without reloading
+          }
+        }
+      });
+    }
+  }, [isWireframeOn]);
+
+  // Auto-rotate effect
+  useEffect(() => {
+    if (controls) {
+      controls.autoRotate = autoRotate && isPlaying;
+    }
+  }, [autoRotate, isPlaying, controls]);
+
+  // Shadow intensity effect
+  useEffect(() => {
+    if (scene) {
+      scene.traverse((node) => {
+        if (node.isDirectionalLight && node !== scene.children.find(child => child.isAmbientLight)) {
+          node.intensity = shadow;
+        }
+      });
+    }
+  }, [shadow]);
+
+  // Exposure effect
+  useEffect(() => {
+    if (scene) {
+      const ambientLight = scene.children.find(child => child.isAmbientLight);
+      if (ambientLight) {
+        ambientLight.intensity = exposure * 0.6;
+      }
+    }
+    if (renderer) {
+      renderer.toneMappingExposure = exposure;
+    }
+  }, [exposure]);
 
   const handleFullscreen = () => {
     if (!document.fullscreenElement) {
