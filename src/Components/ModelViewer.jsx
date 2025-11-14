@@ -8,7 +8,7 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
-import { ARButton } from "three/examples/jsm/webxr/ARButton";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
@@ -18,381 +18,651 @@ import model_bg from "../assets/Images/Sections/model_bg.png";
 
 const ModelViewer = (props) => {
   const [shadow, setShadow] = useState(2);
-  const [exposure, setExposure] = useState(7);
+  const [exposure, setExposure] = useState(1);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadProgress, setLoadProgress] = useState(0);
   const mountRef = useRef(null);
   const [isWireframeOn, setIsWireframeOn] = useState(false);
-
-  let renderer,
-    camera,
-    ambientLight,
-    directionalLight,
-    controls,
-    scene,
-    composer;
   const [autoRotate, setAutoRotate] = useState(true);
+
+  let renderer, camera, scene, controls, composer;
+  let currentModel = null;
 
   useEffect(() => {
     setIsLoading(true);
-    scene = new THREE.Scene();
+    setLoadProgress(0);
 
+    // Initialize Scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
+
+    // Initialize Camera
     camera = new THREE.PerspectiveCamera(
       75,
-      window.innerWidth / window.innerHeight,
+      mountRef.current?.clientWidth / mountRef.current?.clientHeight || 1,
       0.1,
       1000
     );
+    camera.position.set(5, 5, 5);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0); // Explicitly set clear color to transparent
-    renderer.shadowMap.enabled = true; // Enable shadows
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
-    renderer.physicallyCorrectLights = true; // Enable physically correct lighting
-    renderer.xr.enabled = true; // Enable WebXR
-
-    // Add post-processing effects
-    composer = new EffectComposer(renderer);
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
-
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.2, // Strength
-      0.4, // Radius
-      0.85 // Threshold
-    );
-    composer.addPass(bloomPass);
-
-    const bokehPass = new BokehPass(scene, camera, {
-      focus: 1,
-      aperture: 0.025,
-      maxblur: 0.00001,
-      width: window.innerWidth,
-      height: window.innerHeight,
+    // Initialize Renderer
+    renderer = new THREE.WebGLRenderer({ 
+      antialias: true, 
+      alpha: true,
+      powerPreference: "high-performance"
     });
-    composer.addPass(bokehPass);
+    
+    const width = mountRef.current?.clientWidth || window.innerWidth;
+    const height = mountRef.current?.clientHeight || window.innerHeight;
+    
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.physicallyCorrectLights = true;
 
-    if (mountRef.current) {
-      mountRef.current.appendChild(renderer.domElement);
-      // Add AR button if supported
-      if ("xr" in navigator) {
-        navigator.xr.isSessionSupported("immersive-ar").then((supported) => {
-          if (supported) {
-            document.body.appendChild(ARButton.createButton(renderer));
-          } else {
-            console.error("WebXR not supported");
-          }
-        });
-      } else {
-        console.error("WebXR not supported");
-      }
-    }
-
+    // Initialize Controls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 1.0;
+    controls.zoomSpeed = 1.0;
+    controls.panSpeed = 0.8;
+    controls.minDistance = 1;
+    controls.maxDistance = 50;
+    controls.autoRotate = autoRotate;
+    controls.autoRotateSpeed = 2;
 
-    ambientLight = new THREE.AmbientLight(0xffffff, exposure);
+    // Touch controls for mobile
+    controls.enableTouch = true;
+    controls.touchRotateSpeed = 0.5;
+    controls.touchZoomSpeed = 0.8;
+    controls.touchPanSpeed = 0.3;
 
-    // set ambient light intensity
-
+    // Setup Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    directionalLight = new THREE.DirectionalLight(0xffffff, shadow);
-    directionalLight.position.set(5, 5, 5);
-    directionalLight.intensity = 2;
-    directionalLight.shadow.bias = -0.0001; // Adjust shadow bias
-    directionalLight.shadow.mapSize.width = 2048; // Increase shadow resolution
+    const directionalLight = new THREE.DirectionalLight(0xffffff, shadow);
+    directionalLight.position.set(10, 10, 5);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
     directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 500;
+    directionalLight.shadow.camera.left = -20;
+    directionalLight.shadow.camera.right = 20;
+    directionalLight.shadow.camera.top = 20;
+    directionalLight.shadow.camera.bottom = -20;
     scene.add(directionalLight);
 
-    // Load HDRI environment map
-    new RGBELoader().load(hdri, (texture) => {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      scene.environment = texture;
-      // scene.background = texture; // Optional: set the background to the HDRI
-    });
+    // Add fill light
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    fillLight.position.set(-5, 5, 5);
+    scene.add(fillLight);
 
-    // Load background image as texture
+    // HDRI Environment
+    new RGBELoader()
+      .load(hdri, (texture) => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        scene.environment = texture;
+        scene.background = texture;
+      });
+
+    // Background texture as fallback
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(model_bg, (texture) => {
-      texture.repeat.set(2, 2); // Adjust the scale as needed
-      scene.background = texture;
+      if (!scene.background.isTexture) {
+        texture.repeat.set(2, 2);
+        scene.background = texture;
+      }
     });
 
+    // Setup DRACO Loader for compressed models
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    dracoLoader.setDecoderConfig({ type: 'js' });
+
+    // Mount renderer
+    if (mountRef.current) {
+      mountRef.current.appendChild(renderer.domElement);
+    }
+
+    // Load Model Function
     const loadModel = async (path) => {
       try {
         const storage = getStorage(app);
-        const modelRef = ref(storage, path); // e.g., 'models/scene.gltf'
+        const modelRef = ref(storage, path);
         const url = await getDownloadURL(modelRef);
 
-        let extension = url.split(".").pop().toLowerCase();
-        extension = extension.split("?")[0]; // Remove query
+        let extension = url.split('.').pop().toLowerCase().split('?')[0];
+        
+        const manager = new THREE.LoadingManager();
+        manager.onProgress = (url, itemsLoaded, itemsTotal) => {
+          setLoadProgress((itemsLoaded / itemsTotal) * 100);
+        };
+
+        manager.onLoad = () => {
+          setIsLoading(false);
+          setLoadProgress(100);
+        };
 
         let loader;
 
         switch (extension) {
-          case "glb":
-          case "gltf":
-            loader = new GLTFLoader();
+          case 'glb':
+          case 'gltf':
+            loader = new GLTFLoader(manager);
+            loader.setDRACOLoader(dracoLoader);
+            
             loader.load(url, (gltf) => {
+              // Remove previous model
+              if (currentModel) {
+                scene.remove(currentModel);
+              }
+              
               const model = gltf.scene;
+              currentModel = model;
+              
+              // Setup materials and shadows
               model.traverse((node) => {
                 if (node.isMesh) {
-                  node.material.envMap = scene.environment;
-                  node.material.needsUpdate = true;
                   node.castShadow = true;
                   node.receiveShadow = true;
+                  
+                  // Enable wireframe if toggled
                   if (isWireframeOn) {
-                    node.material = new THREE.MeshBasicMaterial({
-                      color: 0xffffff,
-                      wireframe: true,
-                    });
+                    node.material.wireframe = true;
+                  }
+                  
+                  // Improve material quality
+                  if (node.material) {
+                    node.material.envMapIntensity = 1;
+                    if (node.material.isMeshStandardMaterial) {
+                      node.material.roughness = 0.5;
+                      node.material.metalness = 0.1;
+                    }
                   }
                 }
               });
+              
               scene.add(model);
-              centerModel(model);
+              centerAndScaleModel(model);
+              fitModelToView(model);
+            }, 
+            (progress) => {
+              if (progress.lengthComputable) {
+                setLoadProgress((progress.loaded / progress.total) * 100);
+              }
+            },
+            (error) => {
+              console.error('Error loading GLTF model:', error);
               setIsLoading(false);
             });
             break;
 
-          case "obj":
-            loader = new OBJLoader();
+          case 'obj':
+            loader = new OBJLoader(manager);
             loader.load(url, (obj) => {
+              if (currentModel) {
+                scene.remove(currentModel);
+              }
+              
+              currentModel = obj;
               obj.traverse((node) => {
                 if (node.isMesh) {
-                  node.material.envMap = scene.environment;
-                  node.material.needsUpdate = true;
                   node.castShadow = true;
                   node.receiveShadow = true;
                   if (isWireframeOn) {
-                    node.material = new THREE.MeshBasicMaterial({
+                    const wireframeMaterial = new THREE.MeshBasicMaterial({
                       color: 0xffffff,
-                      wireframe: true,
+                      wireframe: true
                     });
+                    node.material = wireframeMaterial;
                   }
                 }
               });
+              
               scene.add(obj);
-              centerModel(obj);
-              setIsLoading(false);
+              centerAndScaleModel(obj);
+              fitModelToView(obj);
             });
             break;
 
-          case "stl":
-            loader = new STLLoader();
+          case 'stl':
+            loader = new STLLoader(manager);
             loader.load(url, (geometry) => {
-              const material = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                wireframe: isWireframeOn,
+              if (currentModel) {
+                scene.remove(currentModel);
+              }
+              
+              const material = new THREE.MeshPhongMaterial({ 
+                color: 0xaaaaaa,
+                specular: 0x111111,
+                shininess: 200,
+                wireframe: isWireframeOn
               });
-              const mesh = new THREE.Mesh(geometry, material);
-              mesh.castShadow = true;
-              mesh.receiveShadow = true;
-              scene.add(mesh);
-              centerModel(mesh);
-              setIsLoading(false);
+              
+              currentModel = new THREE.Mesh(geometry, material);
+              currentModel.castShadow = true;
+              currentModel.receiveShadow = true;
+              
+              scene.add(currentModel);
+              centerAndScaleModel(currentModel);
+              fitModelToView(currentModel);
             });
             break;
 
           default:
-            console.error(`Unsupported file format: ${extension}`);
+            console.error(`Unsupported format: ${extension}`);
+            setIsLoading(false);
         }
-      } catch (err) {
-        console.error("Failed to load model:", err);
+      } catch (error) {
+        console.error('Failed to load model:', error);
+        setIsLoading(false);
       }
     };
 
-    const centerModel = (model) => {
+    const centerAndScaleModel = (model) => {
       const box = new THREE.Box3().setFromObject(model);
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
-      const maxDimension = Math.max(size.x, size.y, size.z);
-      const desiredSize = 15;
-      const scale = desiredSize / maxDimension;
-      model.scale.set(scale, scale, scale);
+      
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const scale = 10 / maxDim;
+      
+      model.scale.setScalar(scale);
+      model.position.sub(center.multiplyScalar(scale));
+    };
 
-      const newBox = new THREE.Box3().setFromObject(model);
-      const newCenter = newBox.getCenter(new THREE.Vector3());
-
-      model.position.set(-newCenter.x, -newCenter.y, -newCenter.z);
-
-      const pivot = new THREE.Object3D();
-      pivot.add(model);
-      scene.add(pivot);
-
-      controls.target.set(0, 0, 0);
+    const fitModelToView = (model) => {
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      
+      const maxSize = Math.max(size.x, size.y, size.z);
+      const fitHeightDistance = maxSize / (2 * Math.atan((Math.PI * camera.fov) / 360));
+      const fitWidthDistance = fitHeightDistance / camera.aspect;
+      const distance = 1.2 * Math.max(fitHeightDistance, fitWidthDistance);
+      
+      camera.position.copy(center);
+      camera.position.x += distance;
+      camera.position.y += distance * 0.5;
+      camera.position.z += distance;
+      camera.lookAt(center);
+      
+      controls.target.copy(center);
       controls.update();
     };
 
-    loadModel(props.model);
+    // Load the model
+    if (props.model) {
+      loadModel(props.model);
+    }
 
-    camera.position.z = 15;
-
+    // Animation Loop
     const animate = () => {
-      renderer.setAnimationLoop(() => {
-        controls.update();
-
-        // Multi-direction auto-rotate and zoom in/out
-        if (autoRotate) {
-          controls.autoRotate = true;
-          controls.autoRotateSpeed = 1;
-          controls.enableZoom = true;
-        } else {
-          controls.autoRotate = false;
-          controls.enableZoom = false;
-        }
-
-        if (isPlaying) {
-          controls.autoRotate = true;
-          controls.autoRotateSpeed = 0.5;
-        }
-
-        composer.render();
-      });
+      requestAnimationFrame(animate);
+      
+      controls.autoRotate = autoRotate && isPlaying;
+      controls.update();
+      
+      renderer.render(scene, camera);
     };
-
+    
     animate();
 
+    // Handle Resize
+    const handleResize = () => {
+      const width = mountRef.current?.clientWidth || window.innerWidth;
+      const height = mountRef.current?.clientHeight || window.innerHeight;
+      
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
     return () => {
-      if (mountRef.current) {
+      window.removeEventListener('resize', handleResize);
+      if (mountRef.current && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
-      renderer.dispose(); // Dispose of the renderer to free up resources
-      controls.dispose(); // Dispose of the controls
-      scene = null;
-      camera = null;
-      renderer = null;
-    };
-  }, [props.model, isWireframeOn]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      if (renderer) {
-        renderer.setSize(width, height);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-        composer.setSize(width, height);
+      renderer.dispose();
+      controls.dispose();
+      if (currentModel) {
+        scene.remove(currentModel);
       }
     };
+  }, [props.model]);
 
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [renderer, camera, composer]);
-
+  // Wireframe effect
   useEffect(() => {
-    if (directionalLight) {
-      directionalLight.intensity = shadow;
+    if (currentModel) {
+      currentModel.traverse((node) => {
+        if (node.isMesh) {
+          if (isWireframeOn) {
+            if (node.material.isMaterial) {
+              node.material.wireframe = true;
+            } else {
+              // For OBJ files, replace material
+              const wireframeMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                wireframe: true
+              });
+              node.material = wireframeMaterial;
+            }
+          } else {
+            if (node.material.isMaterial) {
+              node.material.wireframe = false;
+            }
+            // Note: OBJ materials can't be easily restored without reloading
+          }
+        }
+      });
+    }
+  }, [isWireframeOn]);
+
+  // Auto-rotate effect
+  useEffect(() => {
+    if (controls) {
+      controls.autoRotate = autoRotate && isPlaying;
+    }
+  }, [autoRotate, isPlaying, controls]);
+
+  // Shadow intensity effect
+  useEffect(() => {
+    if (scene) {
+      scene.traverse((node) => {
+        if (node.isDirectionalLight && node !== scene.children.find(child => child.isAmbientLight)) {
+          node.intensity = shadow;
+        }
+      });
     }
   }, [shadow]);
 
+  // Exposure effect
+  useEffect(() => {
+    if (scene) {
+      const ambientLight = scene.children.find(child => child.isAmbientLight);
+      if (ambientLight) {
+        ambientLight.intensity = exposure * 0.6;
+      }
+    }
+    if (renderer) {
+      renderer.toneMappingExposure = exposure;
+    }
+  }, [exposure]);
+
+  const handleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      mountRef.current?.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+    setIsFullscreen(!isFullscreen);
+  };
+
   return (
     <div className={`model_showcase ${isFullscreen ? "fullscreen" : ""}`}>
-      <button
-        className="full_screen_btn"
-        onClick={() => {
-          setIsFullscreen(!isFullscreen);
-        }}
-      >
-        <i className="fas fa-expand"></i>
-      </button>
-
+      {/* Controls Panel */}
       <div className="controls">
-        <div className="play_pause">
-          <button
-            onClick={() => {
-              setIsPlaying(!isPlaying);
-              // Implement play/pause functionality if needed
-            }}
-          >
-            {isPlaying ? (
-              <i className="fas fa-pause"></i>
-            ) : (
-              <i className="fas fa-play"></i>
-            )}
-          </button>
+        <button
+          className="control-btn"
+          onClick={() => setIsPlaying(!isPlaying)}
+          title={isPlaying ? "Pause Rotation" : "Play Rotation"}
+        >
+          <i className={`fas ${isPlaying ? "fa-pause" : "fa-play"}`}></i>
+        </button>
+
+        <button
+          className="control-btn"
+          onClick={() => setAutoRotate(!autoRotate)}
+          title={autoRotate ? "Disable Auto Rotate" : "Enable Auto Rotate"}
+        >
+          <i className={`fas ${autoRotate ? "fa-sync" : "fa-sync-alt"}`}></i>
+        </button>
+
+        <button
+          className="control-btn"
+          onClick={() => setIsWireframeOn(!isWireframeOn)}
+          title="Toggle Wireframe"
+        >
+          <i className={`fas ${isWireframeOn ? "fa-cube" : "fa-th"}`}></i>
+        </button>
+
+        <div className="control-group">
+          <span className="control-label">Shadow</span>
+          <input
+            type="range"
+            min="0"
+            max="3"
+            step="0.1"
+            value={shadow}
+            onChange={(e) => setShadow(parseFloat(e.target.value))}
+            className="control-slider"
+          />
+        </div>
+
+        <div className="control-group">
+          <span className="control-label">Exposure</span>
+          <input
+            type="range"
+            min="0.1"
+            max="2"
+            step="0.1"
+            value={exposure}
+            onChange={(e) => setExposure(parseFloat(e.target.value))}
+            className="control-slider"
+          />
         </div>
 
         <button
-          className="wireframe_btn"
-          onClick={() => {
-            setIsWireframeOn(!isWireframeOn);
-          }}
+          className="control-btn fullscreen-btn"
+          onClick={handleFullscreen}
+          title="Toggle Fullscreen"
         >
-          <i className="fas fa-cube"></i>
+          <i className={`fas ${isFullscreen ? "fa-compress" : "fa-expand"}`}></i>
         </button>
-
-        <div className="colors">
-          <span
-            style={{ backgroundColor: "#181818" }}
-            className="color_option active"
-            onClick={() => {
-              mountRef.current.style.backgroundColor = "#181818";
-            }}
-          ></span>
-          <span
-            style={{ backgroundColor: "white" }}
-            className="color_option active"
-            onClick={() => {
-              mountRef.current.style.backgroundColor = "rgb(158,158,158)";
-            }}
-          ></span>
-          <span
-            style={{ backgroundColor: "black" }}
-            className="color_option"
-            onClick={() => {
-              mountRef.current.style.backgroundColor = "black";
-            }}
-          ></span>
-          <span
-            style={{ backgroundColor: "grey" }}
-            className="color_option"
-            onClick={() => {
-              mountRef.current.style.backgroundColor = "grey";
-            }}
-          ></span>
-        </div>
-
-        <div className="shadow_control">
-          <span className="label">Shadow</span>
-          <input
-            type="range"
-            min="0"
-            max="5"
-            step="0.01"
-            value={shadow}
-            onChange={(e) => setShadow(parseFloat(e.target.value))}
-          />
-        </div>
-        <div className="shadow_control">
-          <span className="label">Exposure</span>
-          <input
-            type="range"
-            min="0"
-            max="4"
-            step="0.01"
-            value={exposure}
-            onChange={(e) => setExposure(parseFloat(e.target.value))}
-          />
-        </div>
       </div>
 
+      {/* Model Viewer Container */}
       <div className="model_viewer" ref={mountRef}>
         {isLoading && (
-          <div className="loading">
-            <div className="spinner"></div>
-            <span>Loading Model</span>
+          <div className="loading-overlay">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Loading Model...</div>
+            <div className="loading-progress">
+              <div 
+                className="loading-progress-bar" 
+                style={{ width: `${loadProgress}%` }}
+              ></div>
+            </div>
+            <div className="loading-percentage">{Math.round(loadProgress)}%</div>
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .model_showcase {
+          position: relative;
+          width: 100%;
+          height: 500px;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #f0f0f0;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .model_showcase.fullscreen {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: 9999;
+        }
+        
+        .model_viewer {
+          width: 100%;
+          height: 100%;
+          cursor: grab;
+        }
+        
+        .model_viewer:active {
+          cursor: grabbing;
+        }
+        
+        // .controls {
+        //   position: absolute;
+        //   bottom: 20px;
+        //   left: 50%;
+        //   transform: translateX(-50%);
+        //   display: flex;
+        //   align-items: center;
+        //   gap: 15px;
+        //   backdrop-filter: blur(10px);
+        //   padding: 12px 20px;
+        //   border-radius: 25px;
+        //   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        //   z-index: 10;
+        // }
+        
+        .control-btn {
+          background: none;
+          border: none;
+          padding: 8px;
+          border-radius: 50%;
+          cursor: pointer;
+          color: #333;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+        }
+        
+        .control-btn:hover {
+          background: rgba(0,0,0,0.1);
+          transform: scale(1.1);
+        }
+        
+        .control-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .control-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #333;
+          min-width: 60px;
+        }
+        
+        .control-slider {
+          width: 80px;
+          height: 4px;
+          border-radius: 2px;
+          background: #ddd;
+          outline: none;
+          opacity: 0.7;
+          transition: opacity 0.2s;
+        }
+        
+        .control-slider:hover {
+          opacity: 1;
+        }
+        
+        .control-slider::-webkit-slider-thumb {
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+        }
+        
+        .loading-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(255, 255, 255, 0.95);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 20;
+        }
+        
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #3b82f6;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 15px;
+        }
+        
+        .loading-text {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 10px;
+        }
+        
+        .loading-progress {
+          width: 200px;
+          height: 4px;
+          background: #e0e0e0;
+          border-radius: 2px;
+          overflow: hidden;
+          margin-bottom: 8px;
+        }
+        
+        .loading-progress-bar {
+          height: 100%;
+          background: #3b82f6;
+          transition: width 0.3s ease;
+        }
+        
+        .loading-percentage {
+          font-size: 14px;
+          color: #666;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+          .controls {
+            flex-wrap: wrap;
+            justify-content: center;
+            bottom: 10px;
+            padding: 8px 15px;
+            gap: 10px;
+          }
+          
+          .control-group {
+            flex: 1;
+            min-width: 100px;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </div>
   );
 };
