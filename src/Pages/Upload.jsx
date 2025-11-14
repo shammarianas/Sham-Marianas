@@ -1974,7 +1974,7 @@ const Upload = ({
                   type="file"
                   name="thumbnail"
                   onChange={handleThumbnailChange}
-                  accept="image/*, video/*"
+                  accept="image/*, video/*, .gltf"
                   className="blog-form-file"
                 />
                 <p className="blog-form-hint">

@@ -168,7 +168,8 @@ const View = () => {
               ]}
             />
             <div className="content">
-              <div className="left">
+              <div>
+                <div className="left">
                   {item.type === "models" || item.type === "printables" ? (
                     <ModelViewer
                       model={item.model}
@@ -211,6 +212,28 @@ const View = () => {
                       />
                     </div>
                   )}
+                </div>
+
+                <div className="asset_details d-md-block d-none mt-4">
+                <div className="description">
+                  <h2 className="title">Details</h2>
+                  <div className="content" />
+                  <div className="markdown-preview">
+                    <ReactMarkdown
+                      components={renderers}
+                      remarkPlugins={[remarkGfm]}
+                    >
+                      {markdown}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+                <div className="keywords_section">
+                  <h2 className="title">Assets Tags</h2>
+                  <div>
+                    <Keywords keywords={item.tags} />
+                  </div>
+                </div>
+              </div>
               </div>
 
               <div className="right">
@@ -254,26 +277,26 @@ const View = () => {
                 <ItemInfoTable asset={item} />
               </div>
 
-              <div className="asset_details">
-                  <div className="description">
-                    <h2 className="title">Details</h2>
-                    <div className="content" />
-                    <div className="markdown-preview">
-                      <ReactMarkdown
-                        components={renderers}
-                        remarkPlugins={[remarkGfm]}
-                      >
-                        {markdown}
-                      </ReactMarkdown>
-                    </div>
-                  </div>
-                  <div className="keywords_section">
-                    <h2 className="title">Assets Tags</h2>
-                    <div>
-                      <Keywords keywords={item.tags} />
-                    </div>
+              <div className="asset_details d-block d-md-none mt-4">
+                <div className="description">
+                  <h2 className="title">Details</h2>
+                  <div className="content" />
+                  <div className="markdown-preview">
+                    <ReactMarkdown
+                      components={renderers}
+                      remarkPlugins={[remarkGfm]}
+                    >
+                      {markdown}
+                    </ReactMarkdown>
                   </div>
                 </div>
+                <div className="keywords_section">
+                  <h2 className="title">Assets Tags</h2>
+                  <div>
+                    <Keywords keywords={item.tags} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
