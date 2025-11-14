@@ -128,6 +128,7 @@ export const AppRoutes = () => (
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/blog-category/:category" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
+    <Route path="/view/:slug" element={<View />} />
   </Routes>
 );
 
