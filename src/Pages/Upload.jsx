@@ -1167,11 +1167,27 @@ const Upload = ({
       }
 
       // ✅ thumbnail upload
-      if (formData.thumbnail && typeof formData.thumbnail !== "string") {
+     // ✅ THUMBNAIL UPLOAD - YAHAN CHANGE KARNA HAI
+    if (formData.thumbnail && typeof formData.thumbnail !== "string") {
+      // Check if thumbnail is a 3D model file
+      const is3DFile = formData.thumbnail.name.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
+      
+      if (is3DFile && formData.type === "models") {
+        // Agar 3D model file hai aur asset type models hai, toh model field mein save karo
+        docData.model = await uploadFile(formData.thumbnail, "models");
+        // Regular thumbnail ke liye kuch nahi save karo ya default image use karo
+        docData.thumbnail = "/default-model-thumbnail.jpg"; // Ya aap koi default image path de sakte hain
+      } else {
+        // Regular image/video thumbnail hai
         docData.thumbnail = await uploadThumbnail(formData.thumbnail);
-      } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
-        docData.thumbnail = assetToEdit.thumbnail;
       }
+    } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
+      docData.thumbnail = assetToEdit.thumbnail;
+      // Edit mode mein agar model bhi existing hai toh woh bhi maintain karo
+      if (assetToEdit.model) {
+        docData.model = assetToEdit.model;
+      }
+    }
 
       // ✅ FIXED: handle assets by type
       if (formData.type === "images") {
@@ -1236,19 +1252,31 @@ const Upload = ({
       }
 
       if (formData.type === "models") {
-        console.log("📦 Processing model...", {
-          hasModel: !!formData.model,
-          isFile: formData.model instanceof File,
-        });
+      console.log("📦 Processing model...", {
+        hasModel: !!formData.model,
+        isFile: formData.model instanceof File,
+        hasThumbnail: !!formData.thumbnail,
+        thumbnailIs3D: formData.thumbnail && formData.thumbnail.name.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)$/)
+      });
 
-        if (formData.model && formData.model instanceof File) {
-          console.log("📦 Uploading NEW model");
-          docData.model = await uploadFile(formData.model, "models");
-        } else if (editMode && assetToEdit.model) {
-          console.log("📦 Keeping EXISTING model");
-          docData.model = assetToEdit.model;
-        }
+      // Agar model file alag se upload ki gayi hai
+      if (formData.model && formData.model instanceof File) {
+        console.log("📦 Uploading NEW model from model field");
+        docData.model = await uploadFile(formData.model, "models");
+      } 
+      // Agar thumbnail mein 3D file hai aur model field empty hai
+      else if (formData.thumbnail && formData.thumbnail instanceof File && 
+               formData.thumbnail.name.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)$/) && 
+               !formData.model) {
+        console.log("📦 Uploading model from thumbnail field");
+        docData.model = await uploadFile(formData.thumbnail, "models");
       }
+      // Edit mode mein existing model maintain karo
+      else if (editMode && assetToEdit.model && !formData.model) {
+        console.log("📦 Keeping EXISTING model");
+        docData.model = assetToEdit.model;
+      }
+    }
 
       if (formData.type === "scripts" && formData.script) {
         docData.script = await uploadFile(formData.script, "scripts");
