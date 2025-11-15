@@ -13,7 +13,6 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
-// Remove this line: import hdri from "../assets/Models/illovo_beach_balcony_4k.hdr";
 import model_bg from "../assets/Images/Sections/model_bg.png";
 
 const ModelViewer = (props) => {
@@ -413,31 +412,31 @@ const ModelViewer = (props) => {
     <div className={`model_showcase ${isFullscreen ? "fullscreen" : ""}`}>
       {/* Controls Panel - unchanged */}
       <div className="controls">
-        <button
+        {/* <button
           className="control-btn"
           onClick={() => setIsPlaying(!isPlaying)}
           title={isPlaying ? "Pause Rotation" : "Play Rotation"}
         >
           <i className={`fas ${isPlaying ? "fa-pause" : "fa-play"}`}></i>
-        </button>
+        </button> */}
 
-        <button
+        {/* <button
           className="control-btn"
           onClick={() => setAutoRotate(!autoRotate)}
           title={autoRotate ? "Disable Auto Rotate" : "Enable Auto Rotate"}
         >
           <i className={`fas ${autoRotate ? "fa-sync" : "fa-sync-alt"}`}></i>
-        </button>
+        </button> */}
 
-        <button
+        {/* <button
           className="control-btn"
           onClick={() => setIsWireframeOn(!isWireframeOn)}
           title="Toggle Wireframe"
         >
           <i className={`fas ${isWireframeOn ? "fa-cube" : "fa-th"}`}></i>
-        </button>
+        </button> */}
 
-        <div className="control-group">
+        {/* <div className="control-group">
           <span className="control-label">Shadow</span>
           <input
             type="range"
@@ -448,9 +447,9 @@ const ModelViewer = (props) => {
             onChange={(e) => setShadow(parseFloat(e.target.value))}
             className="control-slider"
           />
-        </div>
+        </div> */}
 
-        <div className="control-group">
+        {/* <div className="control-group">
           <span className="control-label">Exposure</span>
           <input
             type="range"
@@ -461,7 +460,7 @@ const ModelViewer = (props) => {
             onChange={(e) => setExposure(parseFloat(e.target.value))}
             className="control-slider"
           />
-        </div>
+        </div> */}
 
         <button
           className="control-btn fullscreen-btn"
