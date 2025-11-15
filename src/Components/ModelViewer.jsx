@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-import { app } from "../firebase"; // your Firebase app config
+import { app } from "../firebase";
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -22,6 +22,7 @@ const ModelViewer = (props) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
+  const [error, setError] = useState(null);
   const mountRef = useRef(null);
   const [isWireframeOn, setIsWireframeOn] = useState(false);
   const [autoRotate, setAutoRotate] = useState(true);
@@ -29,9 +30,62 @@ const ModelViewer = (props) => {
   let renderer, camera, scene, controls, composer;
   let currentModel = null;
 
+  // Function to check if file is supported 3D format
+  const isSupported3DFormat = (url) => {
+    if (!url) return false;
+    const extension = url.split('.').pop()?.toLowerCase().split('?')[0];
+    // ZIP files ko exclude karo - sirf 3D formats allow karo
+    return ['glb', 'gltf', 'fbx', 'obj', 'stl', '3ds'].includes(extension);
+  };
+
+  // ✅ YEH FUNCTION BANAYO JO SAHI MODEL URL DETA HAI
+  const getModelToLoad = () => {
+    console.log("🔍 ModelViewer checking all model sources:", {
+      thumbnailModel: props.thumbnailModel, // 👈 THUMBNAIL SE 3D MODEL
+      model: props.model,                   // 👈 MODEL FIELD SE DOWNLOAD FILE
+      type: props.type
+    });
+
+    // Priority 1: thumbnailModel (preview ke liye)
+    if (props.thumbnailModel && isSupported3DFormat(props.thumbnailModel)) {
+      console.log("✅ Using thumbnailModel for 3D preview:", props.thumbnailModel);
+      return props.thumbnailModel;
+    }
+    
+    // Priority 2: model field (only if supported format)
+    if (props.model && isSupported3DFormat(props.model)) {
+      console.log("✅ Using model field for 3D preview:", props.model);
+      return props.model;
+    }
+    
+    console.log("❌ No supported 3D model found");
+    return null;
+  };
+
   useEffect(() => {
     setIsLoading(true);
     setLoadProgress(0);
+    setError(null);
+
+    // ✅ SAHI MODEL URL GET KARO
+    const modelToLoad = getModelToLoad();
+
+    console.log("🎯 ModelViewer will load:", modelToLoad);
+
+    if (!modelToLoad) {
+      console.log("❌ No model to load");
+      setError('No 3D model available for preview');
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if the model file is supported
+    if (!isSupported3DFormat(modelToLoad)) {
+      console.error('❌ Unsupported format for 3D preview:', modelToLoad);
+      setError('This file format cannot be previewed in 3D. Please download the file to view it.');
+      setIsLoading(false);
+      return;
+    }
 
     // Initialize Scene
     scene = new THREE.Scene();
@@ -39,7 +93,7 @@ const ModelViewer = (props) => {
 
     // Initialize Camera
     camera = new THREE.PerspectiveCamera(
-      75,
+      35,
       mountRef.current?.clientWidth / mountRef.current?.clientHeight || 1,
       0.1,
       1000
@@ -105,7 +159,6 @@ const ModelViewer = (props) => {
     fillLight.position.set(-5, 5, 5);
     scene.add(fillLight);
 
-    // HDRI Environment - REMOVED FIXED HDRI
     // Background texture as fallback
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(model_bg, (texture) => {
@@ -133,6 +186,16 @@ const ModelViewer = (props) => {
         const url = await getDownloadURL(modelRef);
 
         let extension = url.split('.').pop().toLowerCase().split('?')[0];
+        
+        console.log("📦 Loading model:", { url, extension });
+        
+        // Final check - agar ZIP file hai to error show karo
+        if (extension === 'zip') {
+          console.error('❌ ZIP files cannot be previewed in 3D viewer');
+          setError('ZIP files cannot be previewed in 3D. Please download the file to view its contents.');
+          setIsLoading(false);
+          return;
+        }
         
         const manager = new THREE.LoadingManager();
         manager.onProgress = (url, itemsLoaded, itemsTotal) => {
@@ -200,6 +263,7 @@ const ModelViewer = (props) => {
             },
             (error) => {
               console.error('Error loading GLTF model:', error);
+              setError('Failed to load 3D model');
               setIsLoading(false);
             });
             break;
@@ -258,10 +322,12 @@ const ModelViewer = (props) => {
 
           default:
             console.error(`Unsupported format: ${extension}`);
+            setError(`Unsupported file format: ${extension}`);
             setIsLoading(false);
         }
       } catch (error) {
         console.error('Failed to load model:', error);
+        setError('Failed to load 3D model');
         setIsLoading(false);
       }
     };
@@ -298,19 +364,22 @@ const ModelViewer = (props) => {
       controls.update();
     };
 
-    // Load the model - YAHAN PROPS.MODEL USE HO RAHA HAI JO UPLOAD COMPONENT SE AAYEGA
-    if (props.model) {
-      loadModel(props.model);
-    }
+    // ✅ SAHI MODEL LOAD KARO
+    console.log("🚀 Loading model:", modelToLoad);
+    loadModel(modelToLoad);
 
     // Animation Loop
     const animate = () => {
       requestAnimationFrame(animate);
       
-      controls.autoRotate = autoRotate && isPlaying;
-      controls.update();
+      if (controls) {
+        controls.autoRotate = autoRotate && isPlaying;
+        controls.update();
+      }
       
-      renderer.render(scene, camera);
+      if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+      }
     };
     
     animate();
@@ -320,9 +389,13 @@ const ModelViewer = (props) => {
       const width = mountRef.current?.clientWidth || window.innerWidth;
       const height = mountRef.current?.clientHeight || window.innerHeight;
       
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
+      if (camera) {
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }
+      if (renderer) {
+        renderer.setSize(width, height);
+      }
     };
 
     window.addEventListener('resize', handleResize);
@@ -330,16 +403,20 @@ const ModelViewer = (props) => {
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      if (mountRef.current && renderer.domElement) {
+      if (mountRef.current && renderer && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
-      renderer.dispose();
-      controls.dispose();
+      if (renderer) {
+        renderer.dispose();
+      }
+      if (controls) {
+        controls.dispose();
+      }
       if (currentModel) {
         scene.remove(currentModel);
       }
     };
-  }, [props.model]);
+  }, [props.thumbnailModel, props.model]); // 👈 DONO PROPS KO LISTEN KARO
 
   // Wireframe effect
   useEffect(() => {
@@ -410,58 +487,7 @@ const ModelViewer = (props) => {
 
   return (
     <div className={`model_showcase ${isFullscreen ? "fullscreen" : ""}`}>
-      {/* Controls Panel - unchanged */}
       <div className="controls">
-        {/* <button
-          className="control-btn"
-          onClick={() => setIsPlaying(!isPlaying)}
-          title={isPlaying ? "Pause Rotation" : "Play Rotation"}
-        >
-          <i className={`fas ${isPlaying ? "fa-pause" : "fa-play"}`}></i>
-        </button> */}
-
-        {/* <button
-          className="control-btn"
-          onClick={() => setAutoRotate(!autoRotate)}
-          title={autoRotate ? "Disable Auto Rotate" : "Enable Auto Rotate"}
-        >
-          <i className={`fas ${autoRotate ? "fa-sync" : "fa-sync-alt"}`}></i>
-        </button> */}
-
-        {/* <button
-          className="control-btn"
-          onClick={() => setIsWireframeOn(!isWireframeOn)}
-          title="Toggle Wireframe"
-        >
-          <i className={`fas ${isWireframeOn ? "fa-cube" : "fa-th"}`}></i>
-        </button> */}
-
-        {/* <div className="control-group">
-          <span className="control-label">Shadow</span>
-          <input
-            type="range"
-            min="0"
-            max="3"
-            step="0.1"
-            value={shadow}
-            onChange={(e) => setShadow(parseFloat(e.target.value))}
-            className="control-slider"
-          />
-        </div> */}
-
-        {/* <div className="control-group">
-          <span className="control-label">Exposure</span>
-          <input
-            type="range"
-            min="0.1"
-            max="2"
-            step="0.1"
-            value={exposure}
-            onChange={(e) => setExposure(parseFloat(e.target.value))}
-            className="control-slider"
-          />
-        </div> */}
-
         <button
           className="control-btn fullscreen-btn"
           onClick={handleFullscreen}
@@ -471,7 +497,6 @@ const ModelViewer = (props) => {
         </button>
       </div>
 
-      {/* Model Viewer Container - unchanged */}
       <div className="model_viewer" ref={mountRef}>
         {isLoading && (
           <div className="loading-overlay">
@@ -486,9 +511,18 @@ const ModelViewer = (props) => {
             <div className="loading-percentage">{Math.round(loadProgress)}%</div>
           </div>
         )}
+        
+        {error && (
+          <div className="error-overlay">
+            <div className="error-icon">⚠️</div>
+            <div className="error-text">{error}</div>
+            <div className="error-hint">
+              Please download the file to view its contents
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* CSS styles - unchanged */}
       <style jsx>{`
         .model_showcase {
           position: relative;
@@ -539,42 +573,6 @@ const ModelViewer = (props) => {
           transform: scale(1.1);
         }
         
-        .control-group {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .control-label {
-          font-size: 12px;
-          font-weight: 600;
-          color: #333;
-          min-width: 60px;
-        }
-        
-        .control-slider {
-          width: 80px;
-          height: 4px;
-          border-radius: 2px;
-          background: #ddd;
-          outline: none;
-          opacity: 0.7;
-          transition: opacity 0.2s;
-        }
-        
-        .control-slider:hover {
-          opacity: 1;
-        }
-        
-        .control-slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: #3b82f6;
-          cursor: pointer;
-        }
-        
         .loading-overlay {
           position: absolute;
           top: 0;
@@ -587,6 +585,39 @@ const ModelViewer = (props) => {
           align-items: center;
           justify-content: center;
           z-index: 20;
+        }
+        
+        .error-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(255, 255, 255, 0.95);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 20;
+          text-align: center;
+          padding: 20px;
+        }
+        
+        .error-icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+        
+        .error-text {
+          font-size: 18px;
+          font-weight: 600;
+          color: #dc2626;
+          margin-bottom: 8px;
+        }
+        
+        .error-hint {
+          font-size: 14px;
+          color: #6b7280;
         }
         
         .loading-spinner {
@@ -629,22 +660,6 @@ const ModelViewer = (props) => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 768px) {
-          .controls {
-            flex-wrap: wrap;
-            justify-content: center;
-            bottom: 10px;
-            padding: 8px 15px;
-            gap: 10px;
-          }
-          
-          .control-group {
-            flex: 1;
-            min-width: 100px;
-            justify-content: center;
-          }
         }
       `}</style>
     </div>
