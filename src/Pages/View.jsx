@@ -20,7 +20,7 @@ import { Helmet } from "react-helmet-async";
 import { useUser } from "../Context/UserProvider";
 import ReactMarkdown from "react-markdown";
 import "@google/model-viewer";
-import HdriViewer from "../Components/HdriViewer";
+// import HdriViewer from "../Components/HdriViewer";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
@@ -172,17 +172,14 @@ const View = () => {
                 <div className="left">
                   {item.type === "models" || item.type === "printables" ? (
                     <ModelViewer
+                      thumbnailModel={item.thumbnailModel} 
                       model={item.model}
+                      type={item.type}
                       alt={item.title}
                       ar={item.vrArLowPoly}
                       sky={sky}
                       onLoad={() => console.log("Model loaded successfully")}
                       onError={(e) => console.error("Error loading model:", e)}
-                      onFullscreen={handleOpenFullscreen}
-                    />
-                  ) : item.type === "hdris" ? (
-                    <HdriViewer
-                      hdri={item.hdri}
                       onFullscreen={handleOpenFullscreen}
                     />
                   ) : item.type === "videos" ? (

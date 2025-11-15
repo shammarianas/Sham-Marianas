@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import AddToBookmark from "./AddToBookmark";
 import { useUser } from "../../Context/UserProvider";
 import { useNavigate } from "react-router-dom";
+import SimpleModelViewer from "./SimpleModelViewer";
 
 const ListedItemCard = ({ id, data, rating }) => {
   const { currentUser } = useUser();
@@ -138,6 +139,55 @@ const ListedItemCard = ({ id, data, rating }) => {
     }
   };
 
+  // Function to detect 3D model files
+  const is3DModel = (url) => {
+    if (!url) return false;
+    const extension = url.split('.').pop()?.toLowerCase().split('?')[0];
+    return ['glb', 'gltf', 'fbx', 'obj', 'stl', '3ds'].includes(extension);
+  };
+
+  // Get 3D model URL from data
+ const get3DModelUrl = () => {
+  console.log("🔍 Checking 3D model data:", {
+    thumbnailModel: data.thumbnailModel,
+    model: data.model,
+    thumbnail: data.thumbnail,
+    type: data.type
+  });
+
+  // Function to check if file is supported 3D format (ZIP KO EXCLUDE KARO)
+  const isSupported3DFormat = (url) => {
+    if (!url) return false;
+    const extension = url.split('.').pop()?.toLowerCase().split('?')[0];
+    // ZIP KO HATA DO - sirf 3D formats rahenge
+    return ['glb', 'gltf', 'fbx', 'obj', 'stl', '3ds'].includes(extension);
+  };
+
+  // Priority 1: thumbnailModel field (preview ke liye) - ZIP FREE
+  if (data.thumbnailModel && isSupported3DFormat(data.thumbnailModel)) {
+    console.log("✅ Using thumbnailModel for 3D preview:", data.thumbnailModel);
+    return data.thumbnailModel;
+  }
+  
+  // Priority 2: Direct model file - ONLY IF NOT ZIP
+  if (data.model && isSupported3DFormat(data.model)) {
+    console.log("✅ Using model for 3D preview:", data.model);
+    return data.model;
+  }
+  
+  // Priority 3: Thumbnail is 3D model
+  if (data.thumbnail && isSupported3DFormat(data.thumbnail)) {
+    console.log("✅ Using thumbnail for 3D preview:", data.thumbnail);
+    return data.thumbnail;
+  }
+  
+  console.log("❌ No supported 3D model found for preview");
+  return null;
+};
+
+  const modelUrl = get3DModelUrl();
+  const is3D = modelUrl !== null;
+
   return (
     <div className="">
       <div className="item_card" key={id}>
@@ -197,6 +247,31 @@ const ListedItemCard = ({ id, data, rating }) => {
                 );
               }
 
+              // 3D Model Preview
+              if (is3D) {
+                return (
+                  <div style={{
+                    width: "100%",
+                    height: "100%",
+                    position: "relative"
+                  }}>
+                    <SimpleModelViewer modelUrl={modelUrl} />
+                    <div style={{
+                      position: 'absolute',
+                      top: '8px',
+                      left: '8px',
+                      background: 'rgba(0,0,0,0.7)',
+                      color: 'white',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontSize: '10px'
+                    }}>
+                      3D MODEL
+                    </div>
+                  </div>
+                );
+              }
+
               // ✅ Image fallback (normal case)
               return <img src={src} alt="placeholder" />;
             })()}
@@ -242,21 +317,7 @@ const ListedItemCard = ({ id, data, rating }) => {
                 {data.price === "free" || data.price === 0 ? "Free" : "Paid"}
               </strong>
             </span>
-            {/* <span className="rating">
-              <div className="icons">
-                {Array.from({ length: rating }, (_, i) => (
-                  <i key={`filled_${i}`} className="icon fas fa-star"></i> // Added unique key here
-                ))}
-                {Array.from({ length: 5 - rating }, (_, i) => (
-                  <i key={`unfilled_${i}`} className="icon far fa-star"></i> // And here
-                ))}
-              </div>
-              <span className="rating_count">125</span>
-            </span> */}
           </div>
-          {/* <button className="add_to_cart_btn">
-          <i className="icon fas fa-shopping-cart"></i> Add to cart
-        </button> */}
         </div>
       </div>
     </div>
