@@ -30,10 +30,12 @@ import {
   deleteDoc,
   serverTimestamp,
   onSnapshot,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../../../../../firebase";
 import Upload from "../../../../Pages/Upload";
 import { useUser } from "../../../../Context/UserProvider";
+import SimpleModelViewer from "../../../UI/SimpleModelViewer"; // Adjust path as needed
 
 const AssetManagement = () => {
   const [assets, setAssets] = useState([]);
@@ -95,66 +97,56 @@ const AssetManagement = () => {
     return null;
   };
 
+  // Function to detect 3D model files
+  const is3DModel = (url) => {
+    if (!url) return false;
+    const extension = url.split('.').pop()?.toLowerCase().split('?')[0];
+    return ['glb', 'gltf', 'fbx', 'obj', 'stl', '3ds'].includes(extension);
+  };
+
+  // Get 3D model URL from asset data
+  const get3DModelUrl = (asset) => {
+    // Priority 1: thumbnailModel field (preview ke liye)
+    if (asset.thumbnailModel && is3DModel(asset.thumbnailModel)) {
+      return asset.thumbnailModel;
+    }
+    
+    // Priority 2: Direct model file
+    if (asset.model && is3DModel(asset.model)) {
+      return asset.model;
+    }
+    
+    // Priority 3: Thumbnail is 3D model
+    if (asset.thumbnail && is3DModel(asset.thumbnail)) {
+      return asset.thumbnail;
+    }
+    
+    return null;
+  };
+
+  // Check if asset has 3D model
+  const has3DModel = (asset) => {
+    return get3DModelUrl(asset) !== null;
+  };
+
   // Download tracking function
-const trackDownload = async (assetId) => {
-  try {
-    const assetRef = doc(db, "Assets", assetId);
-    const assetDoc = await getDoc(assetRef);
-    
-    if (assetDoc.exists()) {
-      const currentDownloads = assetDoc.data().downloads || 0;
-      await updateDoc(assetRef, {
-        downloads: currentDownloads + 1,
-        lastDownloadedAt: serverTimestamp(),
-      });
-      console.log("✅ Download tracked for asset:", assetId);
-    }
-  } catch (error) {
-    console.error("❌ Failed to track download:", error);
-  }
-};
-const handleDownloadClick = async (e, assetId) => {
-  e.preventDefault();
-  
-  try {
-    // Track download first
-    await trackDownload(assetId);
-    
-    // Then proceed with actual download logic
-    const urls = getAssetUrls();
-    
-    // Free items: download immediately
-    if (isFree) {
-      if (urls.length) {
-        urls.forEach(downloadURL);
+  const trackDownload = async (assetId) => {
+    try {
+      const assetRef = doc(db, "Assets", assetId);
+      const assetDoc = await getDoc(assetRef);
+      
+      if (assetDoc.exists()) {
+        const currentDownloads = assetDoc.data().downloads || 0;
+        await updateDoc(assetRef, {
+          downloads: currentDownloads + 1,
+          lastDownloadedAt: serverTimestamp(),
+        });
+        console.log("✅ Download tracked for asset:", assetId);
       }
-      return;
+    } catch (error) {
+      console.error("❌ Failed to track download:", error);
     }
-
-    // Purchased items or users with active subscription: allow download
-    if (hasPurchasedItem || hasActiveSubscription) {
-      if (urls.length) {
-        urls.forEach(downloadURL);
-      }
-      return;
-    }
-
-    // For paid items without subscription, redirect to subscription page
-    if (isPaid && !hasActiveSubscription) {
-      navigate('/subscription');
-      return;
-    }
-
-    // Fallback for old numeric prices
-    const price = Number(data.price) || 0;
-    if (price > 0 && !hasActiveSubscription && !hasPurchasedItem) {
-      navigate('/subscription');
-      return;
-    }
-  } catch (error) {
-    console.error("❌ Download failed:", error);
-  }
-};
+  };
 
   // Consistent author name extraction 
   const getAuthorName = (asset) => {
@@ -493,170 +485,201 @@ const handleDownloadClick = async (e, assetId) => {
         </div>
       ) : (
         <div className="assets-grid">
-          {filteredAssets.map((asset) => (
-            <div key={asset.id} className="asset-card">
-              <div className="asset-image-wrapper">
-                {asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
-                  (() => {
-                    const src =
-                      asset.thumbnail ||
-                      (Array.isArray(asset.images) && asset.images[0]) ||
-                      (Array.isArray(asset.icons) && asset.icons[0]) ||
-                      "";
+          {filteredAssets.map((asset) => {
+    const modelUrl = get3DModelUrl(asset);
+    const is3D = modelUrl !== null;
+    
+    console.log("🔍 Asset Debug:", {
+      assetId: asset.id,
+      assetTitle: asset.title,
+      is3D: is3D,
+      modelUrl: modelUrl,
+      thumbnailModel: asset.thumbnailModel,
+      model: asset.model,
+      thumbnail: asset.thumbnail
+    });
+            return (
+              <div key={asset.id} className="asset-card">
+                <div className="asset-image-wrapper">
+                  {/* 3D Model Preview */}
+                  {is3D ? (
+                    <div className="asset-3d-preview">
+                      <SimpleModelViewer modelUrl={modelUrl} />
+                      <div className="asset-3d-badge">
+                        3D MODEL
+                      </div>
+                    </div>
+                  ) : asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
+                    (() => {
+                      const src =
+                        asset.thumbnail ||
+                        (Array.isArray(asset.images) && asset.images[0]) ||
+                        (Array.isArray(asset.icons) && asset.icons[0]) ||
+                        "";
 
-                    const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
+                      const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
 
-                    if (isVideo) {
-                      return (
-                        <div
-                          className="asset-image"
-                          style={{ position: "relative", overflow: "hidden" }}
-                          onMouseEnter={(e) => {
-                            const video =
-                              e.currentTarget.querySelector("video");
-                            if (video) video.play();
-                          }}
-                          onMouseLeave={(e) => {
-                            const video =
-                              e.currentTarget.querySelector("video");
-                            if (video) {
-                              video.pause();
-                              video.currentTime = 0;
-                            }
-                          }}
-                        >
-                          <video
-                            src={src}
-                            muted
-                            loop
-                            playsInline
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
+                      if (isVideo) {
+                        return (
+                          <div
+                            className="asset-image"
+                            style={{ position: "relative", overflow: "hidden" }}
+                            onMouseEnter={(e) => {
+                              const video = e.currentTarget.querySelector("video");
+                              if (video) video.play();
                             }}
-                          />
-                        </div>
+                            onMouseLeave={(e) => {
+                              const video = e.currentTarget.querySelector("video");
+                              if (video) {
+                                video.pause();
+                                video.currentTime = 0;
+                              }
+                            }}
+                          >
+                            <video
+                              src={src}
+                              muted
+                              loop
+                              playsInline
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </div>
+                        );
+                      }
+
+                      // ✅ Image fallback
+                      return (
+                        <img
+                          src={src}
+                          alt={asset.title || asset.name || "Asset"}
+                          className="asset-image"
+                        />
                       );
-                    }
+                    })()
+                  ) : (
+                    <div className="asset-placeholder">
+                      <FiImage className="placeholder-icon" />
+                    </div>
+                  )}
 
-                    // ✅ Image fallback
-                    return (
-                      <img
-                        src={src}
-                        alt={asset.title || asset.name || "Asset"}
-                        className="asset-image"
-                      />
-                    );
-                  })()
-                ) : (
-                  <div className="asset-placeholder">
-                    <FiImage className="placeholder-icon" />
+                  {/* Asset badges */}
+                  <div className="asset-badges">
+                    {asset.isFeatured && (
+                      <span className="asset-badge featured">
+                        <FiStar className="badge-icon" />
+                        Featured
+                      </span>
+                    )}
+                    {asset.isTrending && (
+                      <span className="asset-badge trending">
+                        <FiTrendingUp className="badge-icon" />
+                        Trending
+                      </span>
+                    )}
+                    {is3D && (
+                      <span className="asset-badge info">
+                        <FiBox className="badge-icon" />
+                        3D
+                      </span>
+                    )}
                   </div>
-                )}
 
-                {/* Asset badges */}
-                <div className="asset-badges">
-                  {asset.isFeatured && (
-                    <span className="asset-badge featured">
-                      <FiStar className="badge-icon" />
-                      Featured
+                  {/* Price badge  */}
+                  <div className="asset-price-badge">
+                    <span
+                      className={`price-badge ${
+                        getPriceDisplay(asset) === "Paid" ? "premium" : "free"
+                      }`}
+                    >
+                      {getPriceDisplay(asset)}
                     </span>
-                  )}
-                  {asset.isTrending && (
-                    <span className="asset-badge trending">
-                      <FiTrendingUp className="badge-icon" />
-                      Trending
-                    </span>
-                  )}
+                  </div>
                 </div>
 
-                {/* Price badge  */}
-                <div className="asset-price-badge">
-                  <span
-                    className={`price-badge ${
-                      getPriceDisplay(asset) === "Paid" ? "premium" : "free"
-                    }`}
-                  >
-                    {getPriceDisplay(asset)}
-                  </span>
+                <div className="asset-content">
+                  <div className="asset-header-row">
+                    <h3 className="asset-title">
+                      {asset.title || asset.name || "Untitled"}
+                    </h3>
+                    <div className="asset-menu">
+                      <button
+                        className="action-button secondary"
+                        onClick={() => handleToggleAssetFeatured(asset.id)}
+                      >
+                        {asset.isFeatured ? "UnFeatured" : "Featured"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="asset-meta">
+                    <span className="meta-item">
+                      <FiTag className="meta-icon" />
+                      {asset.category || asset.type || "Uncategorized"}
+                    </span>
+                    <span className="meta-item">
+                      <FiDownload className="meta-icon" />
+                      {asset.downloads || 0} downloads
+                    </span>
+                    {is3D && (
+                      <span className="meta-item">
+                        <FiBox className="meta-icon" />
+                        3D Model
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="asset-footer">
+                    <span className="asset-author">
+                      <FiUser className="author-icon" />
+                      by {getAuthorName(asset)}
+                    </span>
+                    <span className="asset-date">
+                      {formatDate(asset.createdAt)}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="table-actions">
+                    <div>
+                      <button
+                        className="action-button secondary"
+                        onClick={() => handleToggleAssetTrending(asset.id)}
+                      >
+                        {asset.isTrending ? "Remove Trending" : "Mark Trending"}
+                      </button>
+                    </div>
+                    <div className="d-flex gap-2">
+                      <button
+                        className="action-button secondary"
+                        onClick={() => {
+                          setSelectedAsset(asset);
+                          setShowAssetDialog(true);
+                        }}
+                      >
+                        <FiEye className="button-icon" />
+                      </button>
+                      <button
+                        className="action-button secondary"
+                        onClick={() => handleEditAsset(asset)}
+                      >
+                        <FiEdit className="button-icon" />
+                      </button>
+                      <button
+                        className="action-button danger"
+                        onClick={() => handleDeleteAsset(asset.id)}
+                      >
+                        <FiTrash2 className="button-icon" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <div className="asset-content">
-                <div className="asset-header-row">
-                  <h3 className="asset-title">
-                    {asset.title || asset.name || "Untitled"}
-                  </h3>
-                  <div className="asset-menu">
-                    <button
-                      className="action-button secondary"
-                      onClick={() => handleToggleAssetFeatured(asset.id)}
-                    >
-                      {asset.isFeatured ? "UnFeatured" : "Featured"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="asset-meta">
-                  <span className="meta-item">
-                    <FiTag className="meta-icon" />
-                    {asset.category || asset.type || "Uncategorized"}
-                  </span>
-                  <span className="meta-item">
-                    <FiDownload className="meta-icon" />
-                    {asset.downloads || 0} downloads
-                  </span>
-                </div>
-
-                <div className="asset-footer">
-                  {/* ✅ UPDATED: Consistent author name display */}
-                  <span className="asset-author">
-                    <FiUser className="author-icon" />
-                    by {getAuthorName(asset)}
-                  </span>
-                  <span className="asset-date">
-                    {formatDate(asset.createdAt)}
-                  </span>
-                </div>
-
-                {/* Actions - Exactly like BlogSection */}
-                <div className="table-actions">
-                  <div>
-                    <button
-                      className="action-button secondary"
-                      onClick={() => handleToggleAssetTrending(asset.id)}
-                    >
-                      {asset.isTrending ? "Remove Trending" : "Mark Trending"}
-                    </button>
-                  </div>
-                  <div className="d-flex gap-2">
-                    <button
-                      className="action-button secondary"
-                      onClick={() => {
-                        setSelectedAsset(asset);
-                        setShowAssetDialog(true);
-                      }}
-                    >
-                      <FiEye className="button-icon" />
-                    </button>
-                    <button
-                      className="action-button secondary"
-                      onClick={() => handleEditAsset(asset)}
-                    >
-                      <FiEdit className="button-icon" />
-                    </button>
-                    <button
-                      className="action-button danger"
-                      onClick={() => handleDeleteAsset(asset.id)}
-                    >
-                      <FiTrash2 className="button-icon" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -672,7 +695,8 @@ const handleDownloadClick = async (e, assetId) => {
           onToggleTrending={handleToggleAssetTrending}
           getPriceDisplay={getPriceDisplay}
           formatDate={formatDate}
-          getAuthorName={getAuthorName} // ✅ Pass the updated function to modal
+          getAuthorName={getAuthorName}
+          get3DModelUrl={get3DModelUrl}
         />
       )}
 
@@ -701,7 +725,7 @@ const handleDownloadClick = async (e, assetId) => {
   );
 };
 
-// Asset Details Modal Component - UPDATED
+// Asset Details Modal Component - UPDATED with 3D support
 const AssetDetailsModal = ({
   asset,
   onClose,
@@ -710,8 +734,12 @@ const AssetDetailsModal = ({
   onToggleTrending,
   getPriceDisplay,
   formatDate,
-  getAuthorName, // ✅ Added this prop
+  getAuthorName,
+  get3DModelUrl,
 }) => {
+  const modelUrl = get3DModelUrl(asset);
+  const is3D = modelUrl !== null;
+
   return (
     <div className="modal-overlay">
       <div className="modal enhanced-modal">
@@ -727,7 +755,14 @@ const AssetDetailsModal = ({
         <div className="modal-body enhanced-modal-body">
           {/* Asset Preview */}
           <div className="asset-preview">
-            {asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
+            {is3D ? (
+              <div className="asset-3d-preview-large">
+                <SimpleModelViewer modelUrl={modelUrl} />
+                <div className="asset-3d-badge-large">
+                  3D MODEL
+                </div>
+              </div>
+            ) : asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
               <img
                 src={
                   asset.thumbnail ||
@@ -776,9 +811,14 @@ const AssetDetailsModal = ({
                 </span>
               </div>
               <div className="info-item">
-                {/* ✅ UPDATED: Consistent author name display */}
                 <span className="info-label">Author</span>
                 <span className="info-value">{getAuthorName(asset)}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Type</span>
+                <span className="info-value">
+                  {is3D ? "3D Model" : "2D Asset"}
+                </span>
               </div>
               <div className="info-item">
                 <span className="info-label">Status</span>
