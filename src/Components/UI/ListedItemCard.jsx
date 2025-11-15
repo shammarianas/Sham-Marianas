@@ -11,21 +11,23 @@ const ListedItemCard = ({ id, data, rating }) => {
   // ✅ FIXED: Consistent author name extraction
   const getAuthorName = (assetData) => {
     if (!assetData) return "Unknown Author";
-    
+
     // Priority order for author name - same as AssetManagement.jsx
-    if (assetData.authorName && assetData.authorName !== "Unknown Author") return assetData.authorName;
-    if (assetData.author && assetData.author !== "Unknown Author") return assetData.author;
+    if (assetData.authorName && assetData.authorName !== "Unknown Author")
+      return assetData.authorName;
+    if (assetData.author && assetData.author !== "Unknown Author")
+      return assetData.author;
     if (assetData.userDisplayName) return assetData.userDisplayName;
     if (assetData.userName) return assetData.userName;
     if (assetData.displayName) return assetData.displayName;
     if (assetData.uploadedBy) return assetData.uploadedBy;
     if (assetData.createdBy) return assetData.createdBy;
     if (assetData.updatedBy) return assetData.updatedBy;
-    
+
     // Fallback to email only if no name found
     if (assetData.userEmail) return assetData.userEmail;
     if (assetData.email) return assetData.email;
-    
+
     return "Unknown Author";
   };
 
@@ -44,40 +46,40 @@ const ListedItemCard = ({ id, data, rating }) => {
 
   const getAssetUrls = () => {
     const urls = [];
-    switch ((data.type || '').toLowerCase()) {
-      case 'models':
-      case 'printables':
+    switch ((data.type || "").toLowerCase()) {
+      case "models":
+      case "printables":
         if (data.model) urls.push(data.model);
         break;
-      case 'scripts':
+      case "scripts":
         if (data.script) urls.push(data.script);
         break;
-      case 'videos':
+      case "videos":
         if (data.video) urls.push(data.video);
         break;
-      case 'graphics':
+      case "graphics":
         if (data.graphicsTemplate) urls.push(data.graphicsTemplate);
         break;
-      case 'mockups':
+      case "mockups":
         if (data.mockupFile) urls.push(data.mockupFile);
         break;
-      case 'fonts':
+      case "fonts":
         if (data.fontFile) urls.push(data.fontFile);
         break;
-      case 'video-templates':
+      case "video-templates":
         if (data.videoTemplateFile) urls.push(data.videoTemplateFile);
         break;
-      case 'hdris':
+      case "hdris":
         if (data.hdri) urls.push(data.hdri);
         break;
-      case 'icons':
+      case "icons":
         if (Array.isArray(data.icons)) urls.push(...data.icons);
         break;
-      case 'images':
+      case "images":
         if (Array.isArray(data.images)) urls.push(...data.images);
         break;
-      case 'textures':
-        if (data.maps && typeof data.maps === 'object') {
+      case "textures":
+        if (data.maps && typeof data.maps === "object") {
           urls.push(...Object.values(data.maps).filter(Boolean));
         }
         break;
@@ -90,9 +92,9 @@ const ListedItemCard = ({ id, data, rating }) => {
 
   const downloadURL = (url) => {
     try {
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = '';
+      a.download = "";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -103,7 +105,7 @@ const ListedItemCard = ({ id, data, rating }) => {
 
   const handleDownloadClick = (e) => {
     e.preventDefault();
-    
+
     const urls = getAssetUrls();
 
     // Free items: download immediately
@@ -124,14 +126,14 @@ const ListedItemCard = ({ id, data, rating }) => {
 
     // For paid items without subscription, redirect to subscription page
     if (isPaid && !hasActiveSubscription) {
-      navigate('/subscription');
+      navigate("/subscription");
       return;
     }
 
     // Fallback for old numeric prices
     const price = Number(data.price) || 0;
     if (price > 0 && !hasActiveSubscription && !hasPurchasedItem) {
-      navigate('/subscription');
+      navigate("/subscription");
       return;
     }
   };
@@ -203,39 +205,32 @@ const ListedItemCard = ({ id, data, rating }) => {
 
         <div className="card_content">
           <div className="title">
-            {data.title} <br />
+            <Link
+              to={`/View/${id}`}
+              className="title-link"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              {data.title}
+            </Link>
+            <br />
+
             <div
               style={{
                 display: "flex",
-                flexDirection: "row",
                 justifyContent: "space-between",
-                    paddingTop: "5px"
+                paddingTop: "5px",
               }}
             >
-              {/* Use actual author name from asset data */}
-              <span className="publisher">
-                by {authorName}
-              </span>
-              <span
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  width: "40px",
-                  justifyContent: "space-between",
-                }}
-              >
-                <a 
+              <span className="publisher">by {authorName}</span>
+
+              <span style={{ display: "flex", gap: "12px" }}>
+                <a
                   href="#"
                   onClick={handleDownloadClick}
-                  style={{ 
-                    cursor: 'pointer',
-                    color: 'inherit',
-                    textDecoration: 'none'
-                  }}
+                  style={{ cursor: "pointer", color: "inherit" }}
                 >
                   <i className="fa-solid fa-download"></i>
                 </a>
-                {/* <i className="fa-solid fa-bookmark"></i> */}
                 <AddToBookmark assetId={id} />
               </span>
             </div>

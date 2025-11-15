@@ -215,31 +215,37 @@ const View = () => {
                 </div>
 
                 <div className="asset_details d-md-block d-none mt-4">
-                <div className="description">
-                  <h2 className="title">Details</h2>
-                  <div className="content" />
-                  <div className="markdown-preview">
-                    <ReactMarkdown
-                      components={renderers}
-                      remarkPlugins={[remarkGfm]}
-                    >
-                      {markdown}
-                    </ReactMarkdown>
+                  <div className="description">
+                    <h2 className="title">Details</h2>
+                    <div className="content" />
+                    <div className="markdown-preview">
+                      <ReactMarkdown
+                        components={renderers}
+                        remarkPlugins={[remarkGfm]}
+                      >
+                        {markdown}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                  <div className="keywords_section">
+                    <h2 className="title">Assets Tags</h2>
+                    <div>
+                      <Keywords keywords={item.tags} />
+                    </div>
                   </div>
                 </div>
-                <div className="keywords_section">
-                  <h2 className="title">Assets Tags</h2>
-                  <div>
-                    <Keywords keywords={item.tags} />
-                  </div>
-                </div>
-              </div>
               </div>
 
               <div className="right">
                 <div className="top_info">
                   <div className="title">
-                    <h2>{item.title}</h2>
+                    <h2
+                      onClick={handleOpenFullscreen}
+                      style={{ cursor: "pointer", display: "inline-block" }}
+                      title="Click to view in fullscreen"
+                    >
+                      {item.title}
+                    </h2>
 
                     <div className="deatils">
                       <UserCard
@@ -249,7 +255,6 @@ const View = () => {
                       />
                     </div>
                   </div>
-
                   <div className="price">
                     {isItemOwned ? (
                       <span className="ownership_badge">Purchased</span>
