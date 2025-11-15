@@ -253,8 +253,7 @@ const ListedItemCard = ({ id, data, rating }) => {
                   <div style={{
                     width: "100%",
                     height: "100%",
-                    position: "relative",
-                    background: '#f5f5f5'
+                    position: "relative"
                   }}>
                     <SimpleModelViewer modelUrl={modelUrl} />
                     <div style={{

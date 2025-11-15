@@ -22,7 +22,7 @@ const SimpleModelViewer = ({ modelUrl }) => {
 
         // Scene setup
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf5f5f5);
+        // scene.background = new THREE.Color(0xf5f5f5);
 
         // Camera
         camera = new THREE.PerspectiveCamera(
@@ -38,6 +38,7 @@ const SimpleModelViewer = ({ modelUrl }) => {
           antialias: true, 
           alpha: true 
         });
+
         renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         mountRef.current.appendChild(renderer.domElement);
@@ -50,10 +51,10 @@ const SimpleModelViewer = ({ modelUrl }) => {
         controls.autoRotateSpeed = 1;
 
         // Basic lighting
-        const ambientLight = new THREE.AmbientLight(0xfffff, 0.6);
+        const ambientLight = new THREE.AmbientLight(0x404040, 1);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(10, 10, 5);
         scene.add(directionalLight);
 
@@ -174,35 +175,8 @@ const SimpleModelViewer = ({ modelUrl }) => {
 
   return (
     <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      {isLoading && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          color: 'black',
-          padding: '8px 12px',
-          borderRadius: '4px',
-          fontSize: '12px'
-        }}>
-          Loading 3D Model...
-        </div>
-      )}
-      {error && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: 'rgba(255,0,0,0.7)',
-          color: 'white',
-          padding: '8px 12px',
-          borderRadius: '4px',
-          fontSize: '12px'
-        }}>
-          {error}
-        </div>
-      )}
+    
+      
     </div>
   );
 };
