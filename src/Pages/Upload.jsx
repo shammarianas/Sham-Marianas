@@ -2031,7 +2031,7 @@ if (formData.model && formData.model instanceof File) {
                   className="blog-form-file"
                 />
                 <p className="blog-form-hint">
-                  JPG, PNG, MP4, .glb • Max 500KB • 705x472px recommended
+                  JPG, PNG, MP4, (.glb for 3d model) • Max 500KB • 705x472px recommended
                 </p>
 
                 {thumbnailPreview && thumbnailType === "image" && (
@@ -2288,8 +2288,6 @@ if (formData.model && formData.model instanceof File) {
       />
       <p className="blog-form-hint">
         Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend, .zip
-        <br />
-        <strong>Note: You can also upload 3D models in the thumbnail field above</strong>
       </p>
       {renderFilePreview("model", "3D Model")}
       {editMode && assetToEdit.model && (
