@@ -100,41 +100,80 @@ const AssetManagement = () => {
   // Function to detect 3D model files
   const is3DModel = (url) => {
     if (!url) return false;
-    const extension = url.split('.').pop()?.toLowerCase().split('?')[0];
-    return ['glb', 'gltf', 'fbx', 'obj', 'stl', '3ds'].includes(extension);
+    const extension = url.split(".").pop()?.toLowerCase().split("?")[0];
+    return ["glb", "gltf", "fbx", "obj", "stl", "3ds"].includes(extension);
   };
 
   // Get 3D model URL from asset data
   const get3DModelUrl = (asset) => {
-    // Priority 1: thumbnailModel field (preview ke liye)
-    if (asset.thumbnailModel && is3DModel(asset.thumbnailModel)) {
-      return asset.thumbnailModel;
-    }
-    
-    // Priority 2: Direct model file
-    if (asset.model && is3DModel(asset.model)) {
+  if (!asset) return null;
+
+  // Debug log
+  console.log("🔍 Checking 3D model for asset:", {
+    id: asset.id,
+    title: asset.title,
+    thumbnailModel: asset.thumbnailModel,
+    model: asset.model,
+    type: asset.type
+  });
+
+  // Priority 1: thumbnailModel field (preview ke liye)
+  if (asset.thumbnailModel) {
+    console.log("✅ Using thumbnailModel:", asset.thumbnailModel);
+    return asset.thumbnailModel;
+  }
+  
+  // Priority 2: Direct model file (check if it's 3D format)
+  if (asset.model) {
+    const is3DFile = asset.model.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
+    if (is3DFile) {
+      console.log("✅ Using model field (3D format):", asset.model);
       return asset.model;
+    } else {
+      console.log("❌ Model field but not 3D format:", asset.model);
     }
-    
-    // Priority 3: Thumbnail is 3D model
-    if (asset.thumbnail && is3DModel(asset.thumbnail)) {
+  }
+  
+  // Priority 3: Thumbnail is 3D model (unlikely but check)
+  if (asset.thumbnail) {
+    const is3DFile = asset.thumbnail.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
+    if (is3DFile) {
+      console.log("✅ Using thumbnail (3D format):", asset.thumbnail);
       return asset.thumbnail;
     }
-    
-    return null;
-  };
+  }
+
+  console.log("❌ No suitable 3D model URL found");
+  return null;
+};
 
   // Check if asset has 3D model
-  const has3DModel = (asset) => {
-    return get3DModelUrl(asset) !== null;
-  };
+ const has3DModel = (asset) => {
+  if (!asset) return false;
+  
+  const hasThumbnailModel = !!asset.thumbnailModel;
+  const has3DModelFile = asset.model && asset.model.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
+  const has3DThumbnail = asset.thumbnail && asset.thumbnail.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
+  
+  const result = hasThumbnailModel || has3DModelFile || has3DThumbnail;
+  
+  console.log("🔍 has3DModel check:", {
+    title: asset.title,
+    hasThumbnailModel,
+    has3DModelFile,
+    has3DThumbnail,
+    result
+  });
+  
+  return result;
+};
 
   // Download tracking function
   const trackDownload = async (assetId) => {
     try {
       const assetRef = doc(db, "Assets", assetId);
       const assetDoc = await getDoc(assetRef);
-      
+
       if (assetDoc.exists()) {
         const currentDownloads = assetDoc.data().downloads || 0;
         await updateDoc(assetRef, {
@@ -148,7 +187,9 @@ const AssetManagement = () => {
     }
   };
 
-  // Consistent author name extraction 
+
+  
+  // Consistent author name extraction
   const getAuthorName = (asset) => {
     // 1. Highest priority – the fields we write in Upload
     if (asset.authorName && asset.authorName !== "Unknown Author")
@@ -486,18 +527,18 @@ const AssetManagement = () => {
       ) : (
         <div className="assets-grid">
           {filteredAssets.map((asset) => {
-    const modelUrl = get3DModelUrl(asset);
-    const is3D = modelUrl !== null;
-    
-    console.log("🔍 Asset Debug:", {
-      assetId: asset.id,
-      assetTitle: asset.title,
-      is3D: is3D,
-      modelUrl: modelUrl,
-      thumbnailModel: asset.thumbnailModel,
-      model: asset.model,
-      thumbnail: asset.thumbnail
-    });
+            const modelUrl = get3DModelUrl(asset);
+            const is3D = modelUrl !== null;
+
+            console.log("🔍 Asset Debug:", {
+              assetId: asset.id,
+              assetTitle: asset.title,
+              is3D: is3D,
+              modelUrl: modelUrl,
+              thumbnailModel: asset.thumbnailModel,
+              model: asset.model,
+              thumbnail: asset.thumbnail,
+            });
             return (
               <div key={asset.id} className="asset-card">
                 <div className="asset-image-wrapper">
@@ -505,11 +546,11 @@ const AssetManagement = () => {
                   {is3D ? (
                     <div className="asset-3d-preview">
                       <SimpleModelViewer modelUrl={modelUrl} />
-                      <div className="asset-3d-badge">
-                        3D MODEL
-                      </div>
+                      <div className="asset-3d-badge">3D MODEL</div>
                     </div>
-                  ) : asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
+                  ) : asset.thumbnail ||
+                    asset.images?.[0] ||
+                    asset.icons?.[0] ? (
                     (() => {
                       const src =
                         asset.thumbnail ||
@@ -525,11 +566,13 @@ const AssetManagement = () => {
                             className="asset-image"
                             style={{ position: "relative", overflow: "hidden" }}
                             onMouseEnter={(e) => {
-                              const video = e.currentTarget.querySelector("video");
+                              const video =
+                                e.currentTarget.querySelector("video");
                               if (video) video.play();
                             }}
                             onMouseLeave={(e) => {
-                              const video = e.currentTarget.querySelector("video");
+                              const video =
+                                e.currentTarget.querySelector("video");
                               if (video) {
                                 video.pause();
                                 video.currentTime = 0;
@@ -758,9 +801,7 @@ const AssetDetailsModal = ({
             {is3D ? (
               <div className="asset-3d-preview-large">
                 <SimpleModelViewer modelUrl={modelUrl} />
-                <div className="asset-3d-badge-large">
-                  3D MODEL
-                </div>
+                <div className="asset-3d-badge-large">3D MODEL</div>
               </div>
             ) : asset.thumbnail || asset.images?.[0] || asset.icons?.[0] ? (
               <img
