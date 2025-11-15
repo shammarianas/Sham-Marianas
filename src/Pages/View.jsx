@@ -172,7 +172,9 @@ const View = () => {
                 <div className="left">
                   {item.type === "models" || item.type === "printables" ? (
                     <ModelViewer
+                      thumbnailModel={item.thumbnailModel} 
                       model={item.model}
+                      type={item.type}
                       alt={item.title}
                       ar={item.vrArLowPoly}
                       sky={sky}
