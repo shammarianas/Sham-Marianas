@@ -9,6 +9,11 @@ npm install
 npm run dev
 
 npm install @stripe/stripe-js @stripe/react-stripe-js
+
+
+for 3d model preview
+npm install three
+npm install three @react-three/fiber@8.15.10 @react-three/drei@9.85.0
 ```
 
 Check Firebase.js
