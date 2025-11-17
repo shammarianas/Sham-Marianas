@@ -354,15 +354,7 @@ const AssetFullScreen = ({
           <div className="asset-fullscreen-header">
             <h3 className="asset-fullscreen-title">{assetName}</h3>
             <div className="asset-fullscreen-controls">
-              {assetUrl && (
-                <button 
-                  className="asset-fullscreen-btn"
-                  onClick={handleDownload}
-                  aria-label="Download asset"
-                >
-                  <FiDownload size={18} />
-                </button>
-              )}
+              
               <button 
                 className="asset-fullscreen-btn"
                 onClick={toggleFullscreen}
@@ -381,9 +373,7 @@ const AssetFullScreen = ({
           </div>
 
           <div className="asset-fullscreen-content">
-            {isLoading && (
-              <div className="asset-fullscreen-loading">Loading...</div>
-            )}
+           
             
             {isVideo() && assetUrl ? (
               <>
