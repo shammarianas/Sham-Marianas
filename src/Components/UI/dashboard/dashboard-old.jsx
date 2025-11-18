@@ -837,7 +837,7 @@ const AdminDashboard = () => {
           <h1 className="page-title">
             {activeTab === 1 && selectedDashboard === "admin" && ""}
             {activeTab === 2 && ""}
-            {activeTab === 3 && "Payment & Plan"}
+            {activeTab === 3 && ""}
             {activeTab === 4 && "Seller Account Verify"}
             {activeTab === 5 && "Asset Request"}
             {activeTab === 6 && "Seller Earning"}
@@ -883,7 +883,17 @@ const AdminDashboard = () => {
 
             {activeTab === 2 && <UserReport />}
 
-            {activeTab === 3 && <PaymentPlan />}
+             {activeTab === 3 && (
+      <PaymentPlan 
+        users={users}
+        formatCurrency={(amount) => `$${amount?.toFixed(2) || '0.00'}`}
+        formatDate={(date) => {
+          if (!date) return "N/A";
+          const normalizedDate = normalizeDate(date);
+          return normalizedDate ? normalizedDate.toLocaleDateString() : "N/A";
+        }}
+      />
+    )}
 
             {activeTab === 4 && <SellerAccountVerify />}
 
