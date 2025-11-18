@@ -313,9 +313,6 @@ ul {
   background: var(--gray-dark);
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid var(--border-color);
 }
 
 .stat-card:hover {
@@ -4400,3 +4397,43 @@ ul {
 
 
 /* Asset Mahangement Dashboard Styles  */
+
+/* Payment and Plan */
+.action-button.danger {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .action-button.danger:hover {
+          background: rgba(239, 68, 68, 0.2);
+        }
+        
+        .action-button.danger.small {
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+        }
+        
+        .report-user-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: var(--primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 600;
+          color: white;
+        }
+        
+        @media (max-width: 768px) {
+          .filter-controls-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .report-table {
+            display: block;
+            overflow-x: auto;
+          }
+        }
