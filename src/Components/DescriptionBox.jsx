@@ -107,6 +107,7 @@ const DescriptionBox = ({ name, value = "", onChange }) => {
   return (
     <div>
       <textarea
+        className="form_input"
         name={name}
         value={value}
         onChange={onChange}
@@ -114,19 +115,7 @@ const DescriptionBox = ({ name, value = "", onChange }) => {
         rows={10}
       />
 
-      {value.length > 0 && (
-        <div
-          className="markdown-preview"
-          style={{
-            maxHeight: "40vh",
-            overflow: "auto",
-          }}
-        >
-          <ReactMarkdown components={renderers} remarkPlugins={[remarkGfm]}>
-            {value}
-          </ReactMarkdown>
-        </div>
-      )}
+      
     </div>
   );
 };
