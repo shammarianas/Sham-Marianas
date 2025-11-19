@@ -1,223 +1,256 @@
-import React, { useState, useEffect } from "react";
-import { 
-  FiFileText, 
-  FiRefreshCw, 
-  FiUsers, 
-  FiAlertCircle, 
-  FiClock, 
-  FiTrendingUp, 
-  FiTrendingDown, 
-  FiStar, 
-  FiPieChart, 
-  FiFilter, 
-  FiSearch, 
-  FiDownload, 
-  FiList, 
-  FiEye, 
-  FiCheckCircle, 
-  FiCornerUpLeft, 
-  FiMapPin 
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import {
+  FiFileText,
+  FiRefreshCw,
+  FiUsers,
+  FiAlertCircle,
+  FiClock,
+  FiTrendingUp,
+  FiTrendingDown,
+  FiStar,
+  FiPieChart,
+  FiFilter,
+  FiSearch,
+  FiDownload,
+  FiList,
+  FiEye,
+  FiCheckCircle,
+  FiCornerUpLeft,
 } from "react-icons/fi";
-// import { db } from "../firebase";
-import { collection, getDocs, query, where, orderBy, updateDoc, doc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { db } from "../../../../firebase"; // Make sure this is correctly exported
 
 const UserReport = () => {
-  const [reports, setReports] = useState([]);
+  // Master data (fetched once)
+  const [allReports, setAllReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalReports: 0,
-    unresolvedReports: 0,
-    resolvedReports: 0,
-    averageResolutionTime: 0,
-    userSatisfaction: 8.2
-  });
+
+  // Filters
   const [filters, setFilters] = useState({
     search: "",
     category: "",
     status: "",
-    date: ""
+    date: "",
   });
 
-  // Fetch reports from Firebase
+  // Debounced search
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useMemo(() => {
+    const handler = setTimeout(() => searchInput, 500);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
   useEffect(() => {
-    fetchReports();
-  }, [filters]);
+    setFilters((prev) => ({ ...prev, search: searchInput }));
+  }, [debouncedSearch, searchInput]);
 
-  const fetchReports = async () => {
-    try {
-      setLoading(true);
-      const reportsRef = collection(db, "Profiles");
-      const reportsSnapshot = await getDocs(reportsRef);
-      
-      let allReports = [];
-      let totalReports = 0;
-      let unresolvedReports = 0;
-      let resolvedReports = 0;
+  // Fetch ALL reports ONCE on mount
+  useEffect(() => {
+    const fetchAllReports = async () => {
+      try {
+        setLoading(true);
+        const profilesRef = collection(db, "Profiles");
+        const profilesSnapshot = await getDocs(profilesRef);
 
-      // Get all support reports from all users
-      for (const userDoc of reportsSnapshot.docs) {
-        const supportRef = collection(db, `Profiles/${userDoc.id}/Support`);
-        const supportSnapshot = await getDocs(supportRef);
-        
-        supportSnapshot.forEach((doc) => {
-          const reportData = {
-            id: doc.id,
-            userId: userDoc.id,
-            ...doc.data()
-          };
-          allReports.push(reportData);
-          totalReports++;
-          
-          // Count status
-          if (reportData.status === "resolved") {
-            resolvedReports++;
-          } else {
-            unresolvedReports++;
-          }
+        const reports = [];
+
+        for (const profileDoc of profilesSnapshot.docs) {
+          const supportRef = collection(
+            db,
+            `Profiles/${profileDoc.id}/Support`
+          );
+          const supportSnapshot = await getDocs(supportRef);
+
+          supportSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.createdAt) {
+              reports.push({
+                id: doc.id,
+                userId: profileDoc.id,
+                email: data.email || profileDoc.id,
+                ...data,
+              });
+            }
+          });
+        }
+
+        // Sort newest first
+        reports.sort((a, b) => {
+          const timeA = a.createdAt?.toDate?.() || 0;
+          const timeB = b.createdAt?.toDate?.() || 0;
+          return timeB - timeA;
         });
+
+        setAllReports(reports);
+      } catch (error) {
+        console.error("Error loading reports:", error);
+        alert("Failed to load reports");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllReports();
+  }, []);
+
+  // Client-side filtering with useMemo (super fast)
+  const reports = useMemo(() => {
+    return allReports.filter((report) => {
+      // Search filter
+      if (
+        filters.search &&
+        !`${report.subject || ""} ${report.description || ""} ${
+          report.email || ""
+        }`
+          .toLowerCase()
+          .includes(filters.search.toLowerCase())
+      ) {
+        return false;
       }
 
-      // Apply filters
-      let filteredReports = allReports;
-      
-      if (filters.search) {
-        filteredReports = filteredReports.filter(report => 
-          report.subject?.toLowerCase().includes(filters.search.toLowerCase()) ||
-          report.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
-          report.email?.toLowerCase().includes(filters.search.toLowerCase())
-        );
-      }
-      
-      if (filters.category) {
-        filteredReports = filteredReports.filter(report => 
-          report.issueType === filters.category
-        );
-      }
-      
-      if (filters.status) {
-        filteredReports = filteredReports.filter(report => 
-          report.status === filters.status
-        );
+      // Category filter
+      if (filters.category && report.issueType !== filters.category) {
+        return false;
       }
 
-      // Apply date filter
-      if (filters.date) {
+      // Status filter
+      if (filters.status && report.status !== filters.status) {
+        return false;
+      }
+
+      // Date filter
+      if (filters.date && report.createdAt) {
+        const reportDate = report.createdAt.toDate();
         const now = new Date();
-        filteredReports = filteredReports.filter(report => {
-          const reportDate = report.createdAt?.toDate();
-          if (!reportDate) return false;
-          
-          switch (filters.date) {
-            case 'today':
-              return reportDate.toDateString() === now.toDateString();
-            case 'week':
-              const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-              return reportDate >= weekAgo;
-            case 'month':
-              const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-              return reportDate >= monthAgo;
-            case 'older':
-              const monthAgoOlder = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-              return reportDate < monthAgoOlder;
-            default:
-              return true;
-          }
-        });
+
+        switch (filters.date) {
+          case "today":
+            if (reportDate.toDateString() !== now.toDateString()) return false;
+            break;
+          case "week":
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            if (reportDate < weekAgo) return false;
+            break;
+          case "month":
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            if (reportDate < monthAgo) return false;
+            break;
+          case "older":
+            const olderThanMonth = new Date(
+              now.getTime() - 30 * 24 * 60 * 60 * 1000
+            );
+            if (reportDate >= olderThanMonth) return false;
+            break;
+          default:
+            break;
+        }
       }
 
-      // Calculate average resolution time (mock data for now)
-      const averageResolutionTime = 2.5; // In days
+      return true;
+    });
+  }, [allReports, filters]);
 
-      setStats({
-        totalReports,
-        unresolvedReports,
-        resolvedReports,
-        averageResolutionTime,
-        userSatisfaction: 8.2
+  // Recalculate stats from filtered reports
+  const stats = useMemo(() => {
+    const totalReports = allReports.length;
+    const filteredTotal = reports.length;
+
+    const resolvedReports = reports.filter(
+      (r) => r.status === "resolved"
+    ).length;
+    const unresolvedReports = filteredTotal - resolvedReports;
+
+    // Calculate real average resolution time
+    const resolvedWithTime = reports
+      .filter((r) => r.status === "resolved" && r.resolvedAt && r.createdAt)
+      .map((r) => {
+        const created = r.createdAt.toDate();
+        const resolved = r.resolvedAt.toDate?.() || new Date();
+        return (resolved - created) / (1000 * 60 * 60 * 24);
       });
 
-      setReports(filteredReports);
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const averageResolutionTime =
+      resolvedWithTime.length > 0
+        ? (
+            resolvedWithTime.reduce((a, b) => a + b, 0) /
+            resolvedWithTime.length
+          ).toFixed(1)
+        : "N/A";
+
+    return {
+      totalReports,
+      unresolvedReports,
+      resolvedReports,
+      averageResolutionTime,
+      userSatisfaction: 8.2, // You can make this dynamic later
+    };
+  }, [allReports, reports]);
 
   const updateReportStatus = async (reportId, userId, newStatus) => {
     try {
       const reportRef = doc(db, `Profiles/${userId}/Support`, reportId);
-      await updateDoc(reportRef, {
+      const updateData = {
         status: newStatus,
-        updatedAt: new Date()
-      });
-      
-      // Refresh reports
-      fetchReports();
+        updatedAt: new Date(),
+      };
+      if (newStatus === "resolved") {
+        updateData.resolvedAt = new Date();
+      }
+      await updateDoc(reportRef, updateData);
+
+      // Optimistic UI update
+      setAllReports((prev) =>
+        prev.map((r) =>
+          r.userId === userId && r.id === reportId ? { ...r, ...updateData } : r
+        )
+      );
     } catch (error) {
-      console.error("Error updating report status:", error);
-      alert("Error updating report status");
+      console.error("Error updating status:", error);
+      alert("Failed to update status");
     }
   };
 
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const resetFilters = () => {
-    setFilters({
-      search: "",
-      category: "",
-      status: "",
-      date: ""
-    });
+    setFilters({ search: "", category: "", status: "", date: "" });
+    setSearchInput("");
   };
 
   const getCategoryStats = () => {
     const categories = {
-      technical: { name: "Technical Issue", count: 0, color: "technical" },
-      billing: { name: "Billing Issue", count: 0, color: "billing" },
-      general: { name: "General Inquiry", count: 0, color: "general" }
+      technical: { name: "Technical Issue", count: 0 },
+      billing: { name: "Billing Issue", count: 0 },
+      general: { name: "General Inquiry", count: 0 },
     };
 
-    reports.forEach(report => {
-      if (categories[report.issueType]) {
-        categories[report.issueType].count++;
-      }
+    reports.forEach((r) => {
+      if (categories[r.issueType]) categories[r.issueType].count++;
     });
 
     return Object.values(categories);
   };
 
   const formatDate = (timestamp) => {
-    if (!timestamp) return "N/A";
-    
+    if (!timestamp?.toDate) return "N/A";
     const date = timestamp.toDate();
     const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return "1 day ago";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+    const diff = Math.abs(now - date);
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    if (days === 1) return "1 day ago";
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.ceil(days / 7)} weeks ago`;
     return date.toLocaleDateString();
   };
 
-  const getUserInitials = (email) => {
-    if (!email) return "UU";
-    return email.substring(0, 2).toUpperCase();
-  };
-
-  const getUserName = (email) => {
-    if (!email) return "Unknown User";
-    return email.split('@')[0];
-  };
+  const getUserInitials = (email) =>
+    email ? email.substring(0, 2).toUpperCase() : "UU";
+  const getUserName = (email) => (email ? email.split("@")[0] : "Unknown User");
 
   const categoryStats = getCategoryStats();
-  const totalReportsCount = reports.length;
 
   if (loading) {
     return (
@@ -241,13 +274,14 @@ const UserReport = () => {
           </p>
         </div>
         <div className="header-actions">
-          <span className="user-badge-count">{stats.totalReports} total reports</span>
+          <span className="user-badge-count">
+            {stats.totalReports} total reports
+          </span>
         </div>
       </div>
 
       {/* Statistics Cards */}
       <div className="reports-stats-grid">
-        {/* Total User Reports */}
         <div className="report-stat-card primary">
           <div className="report-stat-header">
             <div className="report-stat-icon">
@@ -263,13 +297,11 @@ const UserReport = () => {
               All complaints, feedback, violations
             </div>
             <div className="report-stat-trend positive">
-              +12%  
-              <FiTrendingUp className="fi-pl" />
+              +12% <FiTrendingUp className="fi-pl" />
             </div>
           </div>
         </div>
 
-        {/* Pending Reports */}
         <div className="report-stat-card warning">
           <div className="report-stat-header">
             <div className="report-stat-icon">
@@ -282,19 +314,18 @@ const UserReport = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              {stats.totalReports > 0 ? 
-                `${((stats.unresolvedReports / stats.totalReports) * 100).toFixed(1)}% of total reports` 
-                : '0% of total reports'
-              }
+              {stats.totalReports > 0
+                ? `${((stats.unresolvedReports / reports.length) * 100).toFixed(
+                    1
+                  )}% of filtered`
+                : "0% of total reports"}
             </div>
             <div className="report-stat-trend negative">
-              +5%  
-              <FiTrendingUp className="fi-pl" />
+              +5% <FiTrendingUp className="fi-pl" />
             </div>
           </div>
         </div>
 
-        {/* Resolved Reports */}
         <div className="report-stat-card success">
           <div className="report-stat-header">
             <div className="report-stat-icon">
@@ -307,19 +338,18 @@ const UserReport = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              {stats.totalReports > 0 ? 
-                `${((stats.resolvedReports / stats.totalReports) * 100).toFixed(1)}% resolution rate` 
-                : '0% resolution rate'
-              }
+              {reports.length > 0
+                ? `${((stats.resolvedReports / reports.length) * 100).toFixed(
+                    1
+                  )}% resolution rate`
+                : "0% resolution rate"}
             </div>
             <div className="report-stat-trend positive">
-              +8%  
-              <FiTrendingUp className="fi-pl" />
+              +8% <FiTrendingUp className="fi-pl" />
             </div>
           </div>
         </div>
 
-        {/* Average Resolution Time */}
         <div className="report-stat-card info">
           <div className="report-stat-header">
             <div className="report-stat-icon">
@@ -327,29 +357,28 @@ const UserReport = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Average solution time</h3>
-              <div className="report-stat-value">{stats.averageResolutionTime}</div>
+              <div className="report-stat-value">
+                {stats.averageResolutionTime === "N/A"
+                  ? "N/A"
+                  : `${stats.averageResolutionTime} days`}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              days average resolution
-            </div>
+            <div className="report-stat-subtext">days average resolution</div>
             <div className="report-stat-trend positive">
-              -0.5 days
-              <FiTrendingDown className="fi-pl" />
+              -0.5 days <FiTrendingDown className="fi-pl" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Charts and Categories Section */}
+      {/* Charts and Categories */}
       <div className="reports-content-grid">
-        {/* User Satisfaction Score */}
         <div className="reports-chart-card">
           <div className="reports-chart-header">
             <h3 className="panel-title">
-              <FiStar className="panel-icon" />
-              User Satisfaction Score
+              <FiStar className="panel-icon" /> User Satisfaction Score
             </h3>
             <div className="satisfaction-score">
               <span className="score-value">{stats.userSatisfaction}/10</span>
@@ -361,11 +390,12 @@ const UserReport = () => {
               <div className="pie-chart-wrapper">
                 <div className="pie-chart">
                   <div className="pie-chart-center">
-                    <div className="pie-chart-value">{stats.userSatisfaction}</div>
+                    <div className="pie-chart-value">
+                      {stats.userSatisfaction}
+                    </div>
                   </div>
                 </div>
               </div>
-              
               <div className="pie-chart-labels">
                 <div className="pie-chart-label">
                   <span className="pie-label-dot excellent"></span>
@@ -374,7 +404,6 @@ const UserReport = () => {
                     <span className="pie-label-percentage">45%</span>
                   </div>
                 </div>
-                
                 <div className="pie-chart-label">
                   <span className="pie-label-dot good"></span>
                   <div className="pie-label-text">
@@ -382,7 +411,6 @@ const UserReport = () => {
                     <span className="pie-label-percentage">35%</span>
                   </div>
                 </div>
-                
                 <div className="pie-chart-label">
                   <span className="pie-label-dot average"></span>
                   <div className="pie-label-text">
@@ -390,7 +418,6 @@ const UserReport = () => {
                     <span className="pie-label-percentage">15%</span>
                   </div>
                 </div>
-                
                 <div className="pie-chart-label">
                   <span className="pie-label-dot poor"></span>
                   <div className="pie-label-text">
@@ -403,33 +430,35 @@ const UserReport = () => {
           </div>
         </div>
 
-        {/* Report Categories */}
         <div className="reports-categories-card">
           <div className="reports-categories-header">
             <h3 className="panel-title">
-              <FiPieChart className="panel-icon" />
-              Report Categories
+              <FiPieChart className="panel-icon" /> Report Categories
             </h3>
           </div>
           <div className="reports-categories-body">
-            {categoryStats.map((category, index) => (
-              <div key={index} className="category-progress">
+            {categoryStats.map((cat, i) => (
+              <div key={i} className="category-progress">
                 <div className="category-header">
-                  <span className="category-name">{category.name}</span>
+                  <span className="category-name">{cat.name}</span>
                   <span className="category-count">
-                    {stats.totalReports > 0 ? 
-                      `${Math.round((category.count / stats.totalReports) * 100)}% (${category.count})` 
-                      : '0% (0)'
-                    }
+                    {stats.totalReports > 0
+                      ? `${Math.round(
+                          (cat.count / stats.totalReports) * 100
+                        )}% (${cat.count})`
+                      : "0% (0)"}
                   </span>
                 </div>
                 <div className="category-progress-bar">
-                  <div 
-                    className={`category-progress-fill ${category.color}`} 
-                    style={{ 
-                      width: stats.totalReports > 0 ? 
-                        `${(category.count / stats.totalReports) * 100}%` 
-                        : '0%' 
+                  <div
+                    className={`category-progress-fill ${cat.name
+                      .split(" ")[0]
+                      .toLowerCase()}`}
+                    style={{
+                      width:
+                        stats.totalReports > 0
+                          ? `${(cat.count / stats.totalReports) * 100}%`
+                          : "0%",
                     }}
                   ></div>
                 </div>
@@ -439,12 +468,11 @@ const UserReport = () => {
         </div>
       </div>
 
-      {/* Reports Filter Bar */}
+      {/* Filter Bar */}
       <div className="reports-filter-bar">
         <div className="filter-bar-header">
           <h3 className="filter-bar-title">
-            <FiFilter className="panel-icon" />
-            Filter Reports
+            <FiFilter className="panel-icon" /> Filter Reports
           </h3>
           <div className="filter-results">
             <span className="filter-text">
@@ -452,49 +480,45 @@ const UserReport = () => {
             </span>
           </div>
         </div>
-        
+
         <div className="filter-controls-grid">
-          {/* Search by Name/Email */}
           <div className="filter-search-wrapper">
             <FiSearch className="filter-search-icon" />
             <input
               type="text"
               className="filter-search-input"
               placeholder="Search by subject, description, or email..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
             />
           </div>
-          
-          {/* Category Filter */}
-          <select 
+
+          <select
             className="filter-select"
             value={filters.category}
-            onChange={(e) => handleFilterChange('category', e.target.value)}
+            onChange={(e) => handleFilterChange("category", e.target.value)}
           >
             <option value="">All Categories</option>
             <option value="technical">Technical Issue</option>
             <option value="billing">Billing Issue</option>
             <option value="general">General Inquiry</option>
           </select>
-          
-          {/* Status Filter */}
-          <select 
+
+          <select
             className="filter-select"
             value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
+            onChange={(e) => handleFilterChange("status", e.target.value)}
           >
             <option value="">All Status</option>
             <option value="pending">Pending</option>
             <option value="in-progress">In Progress</option>
             <option value="resolved">Resolved</option>
           </select>
-          
-          {/* Date Filter */}
-          <select 
+
+          <select
             className="filter-select"
             value={filters.date}
-            onChange={(e) => handleFilterChange('date', e.target.value)}
+            onChange={(e) => handleFilterChange("date", e.target.value)}
           >
             <option value="">Any Time</option>
             <option value="today">Today</option>
@@ -502,31 +526,23 @@ const UserReport = () => {
             <option value="month">This Month</option>
             <option value="older">Older</option>
           </select>
-          
-          {/* Action Buttons */}
+
           <div className="filter-actions">
-            <button className="filter-button" onClick={fetchReports}>
-              <FiFilter />
-              Apply
-            </button>
             <button className="filter-button" onClick={resetFilters}>
-              <FiRefreshCw />
-              Reset
+              <FiRefreshCw /> Reset
             </button>
           </div>
         </div>
       </div>
 
-      {/* Recent Reports Table */}
+      {/* Reports Table */}
       <div className="recent-reports-card">
         <div className="recent-reports-header">
           <h3 className="panel-title">
-            <FiList className="panel-icon" />
-            Recent Reports
+            <FiList className="panel-icon" /> Recent Reports
           </h3>
           <button className="action-button secondary">
-            <FiDownload className="button-icon" />
-            Export Reports
+            <FiDownload className="button-icon" /> Export Reports
           </button>
         </div>
         <div className="recent-reports-body">
@@ -558,10 +574,12 @@ const UserReport = () => {
                     </div>
                   </td>
                   <td>
-                    <span className={`report-category-badge ${report.issueType}`}>
-                      {report.issueType === 'technical' && 'Technical Issue'}
-                      {report.issueType === 'billing' && 'Billing Issue'}
-                      {report.issueType === 'general' && 'General Inquiry'}
+                    <span
+                      className={`report-category-badge ${report.issueType}`}
+                    >
+                      {report.issueType === "technical" && "Technical Issue"}
+                      {report.issueType === "billing" && "Billing Issue"}
+                      {report.issueType === "general" && "General Inquiry"}
                     </span>
                   </td>
                   <td>
@@ -570,29 +588,52 @@ const UserReport = () => {
                     </div>
                   </td>
                   <td>
-                    <span className={`report-status-badge ${report.status || 'pending'}`}>
-                      {report.status === 'resolved' ? 'Resolved' : 'Pending'}
+                    <span
+                      className={`report-status-badge ${
+                        report.status || "pending"
+                      }`}
+                    >
+                      {report.status === "resolved"
+                        ? "Resolved"
+                        : report.status === "in-progress"
+                        ? "In Progress"
+                        : "Pending"}
                     </span>
                   </td>
                   <td>{formatDate(report.createdAt)}</td>
                   <td>
                     <div className="report-actions">
-                      <button className="action-button secondary small" title="View Details">
+                      <button
+                        className="action-button secondary small"
+                        title="View Details"
+                      >
                         <FiEye />
                       </button>
-                      {report.status !== 'resolved' ? (
-                        <button 
-                          className="action-button small" 
+                      {report.status !== "resolved" ? (
+                        <button
+                          className="action-button small"
                           title="Mark Resolved"
-                          onClick={() => updateReportStatus(report.id, report.userId, 'resolved')}
+                          onClick={() =>
+                            updateReportStatus(
+                              report.id,
+                              report.userId,
+                              "resolved"
+                            )
+                          }
                         >
                           <FiCheckCircle />
                         </button>
                       ) : (
-                        <button 
-                          className="action-button small" 
+                        <button
+                          className="action-button small"
                           title="Reopen"
-                          onClick={() => updateReportStatus(report.id, report.userId, 'pending')}
+                          onClick={() =>
+                            updateReportStatus(
+                              report.id,
+                              report.userId,
+                              "pending"
+                            )
+                          }
                         >
                           <FiCornerUpLeft />
                         </button>

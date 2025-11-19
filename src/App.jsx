@@ -65,7 +65,7 @@ import { Elements } from "@stripe/react-stripe-js";
 
 // THIS IS STRIPE'S OFFICIAL PUBLIC TEST KEY - 100% SAFE & WORKS FOR EVERYONE
 const stripePromise = loadStripe(
-  "pk_test_51PgQ6VFNRmj6ejr8Iy4TjuO7hvl7uRfiWTIFIUzv8NghMALgIRjhJLV0BMzcuuxPtAc1dheHQKyaRNfWNUNjgOLM00QfVWKWJ2"
+  "pk_test_51Qp2sLFRNVbhydxG8zAsORIhUy8ZS7nNCl9omwJQ7PJYSHmfyvqj6mIxk1ATxvT2sl9HyiEzdA60UndoF9mAejSM00ZF8DHsip"
 );
 
 const ScrollToTop = () => {
