@@ -1,7 +1,232 @@
-import React from "react";
-import { FiFileText, FiRefreshCw, FiUsers, FiAlertCircle, FiClock, FiTrendingUp, FiTrendingDown, FiStar, FiPieChart, FiFilter, FiSearch, FiDownload, FiList, FiEye, FiCheckCircle, FiCornerUpLeft, FiMapPin } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { 
+  FiFileText, 
+  FiRefreshCw, 
+  FiUsers, 
+  FiAlertCircle, 
+  FiClock, 
+  FiTrendingUp, 
+  FiTrendingDown, 
+  FiStar, 
+  FiPieChart, 
+  FiFilter, 
+  FiSearch, 
+  FiDownload, 
+  FiList, 
+  FiEye, 
+  FiCheckCircle, 
+  FiCornerUpLeft, 
+  FiMapPin 
+} from "react-icons/fi";
+// import { db } from "../firebase";
+import { collection, getDocs, query, where, orderBy, updateDoc, doc } from "firebase/firestore";
 
 const UserReport = () => {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalReports: 0,
+    unresolvedReports: 0,
+    resolvedReports: 0,
+    averageResolutionTime: 0,
+    userSatisfaction: 8.2
+  });
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "",
+    status: "",
+    date: ""
+  });
+
+  // Fetch reports from Firebase
+  useEffect(() => {
+    fetchReports();
+  }, [filters]);
+
+  const fetchReports = async () => {
+    try {
+      setLoading(true);
+      const reportsRef = collection(db, "Profiles");
+      const reportsSnapshot = await getDocs(reportsRef);
+      
+      let allReports = [];
+      let totalReports = 0;
+      let unresolvedReports = 0;
+      let resolvedReports = 0;
+
+      // Get all support reports from all users
+      for (const userDoc of reportsSnapshot.docs) {
+        const supportRef = collection(db, `Profiles/${userDoc.id}/Support`);
+        const supportSnapshot = await getDocs(supportRef);
+        
+        supportSnapshot.forEach((doc) => {
+          const reportData = {
+            id: doc.id,
+            userId: userDoc.id,
+            ...doc.data()
+          };
+          allReports.push(reportData);
+          totalReports++;
+          
+          // Count status
+          if (reportData.status === "resolved") {
+            resolvedReports++;
+          } else {
+            unresolvedReports++;
+          }
+        });
+      }
+
+      // Apply filters
+      let filteredReports = allReports;
+      
+      if (filters.search) {
+        filteredReports = filteredReports.filter(report => 
+          report.subject?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          report.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          report.email?.toLowerCase().includes(filters.search.toLowerCase())
+        );
+      }
+      
+      if (filters.category) {
+        filteredReports = filteredReports.filter(report => 
+          report.issueType === filters.category
+        );
+      }
+      
+      if (filters.status) {
+        filteredReports = filteredReports.filter(report => 
+          report.status === filters.status
+        );
+      }
+
+      // Apply date filter
+      if (filters.date) {
+        const now = new Date();
+        filteredReports = filteredReports.filter(report => {
+          const reportDate = report.createdAt?.toDate();
+          if (!reportDate) return false;
+          
+          switch (filters.date) {
+            case 'today':
+              return reportDate.toDateString() === now.toDateString();
+            case 'week':
+              const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              return reportDate >= weekAgo;
+            case 'month':
+              const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+              return reportDate >= monthAgo;
+            case 'older':
+              const monthAgoOlder = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+              return reportDate < monthAgoOlder;
+            default:
+              return true;
+          }
+        });
+      }
+
+      // Calculate average resolution time (mock data for now)
+      const averageResolutionTime = 2.5; // In days
+
+      setStats({
+        totalReports,
+        unresolvedReports,
+        resolvedReports,
+        averageResolutionTime,
+        userSatisfaction: 8.2
+      });
+
+      setReports(filteredReports);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateReportStatus = async (reportId, userId, newStatus) => {
+    try {
+      const reportRef = doc(db, `Profiles/${userId}/Support`, reportId);
+      await updateDoc(reportRef, {
+        status: newStatus,
+        updatedAt: new Date()
+      });
+      
+      // Refresh reports
+      fetchReports();
+    } catch (error) {
+      console.error("Error updating report status:", error);
+      alert("Error updating report status");
+    }
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      search: "",
+      category: "",
+      status: "",
+      date: ""
+    });
+  };
+
+  const getCategoryStats = () => {
+    const categories = {
+      technical: { name: "Technical Issue", count: 0, color: "technical" },
+      billing: { name: "Billing Issue", count: 0, color: "billing" },
+      general: { name: "General Inquiry", count: 0, color: "general" }
+    };
+
+    reports.forEach(report => {
+      if (categories[report.issueType]) {
+        categories[report.issueType].count++;
+      }
+    });
+
+    return Object.values(categories);
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    
+    const date = timestamp.toDate();
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return "1 day ago";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+    return date.toLocaleDateString();
+  };
+
+  const getUserInitials = (email) => {
+    if (!email) return "UU";
+    return email.substring(0, 2).toUpperCase();
+  };
+
+  const getUserName = (email) => {
+    if (!email) return "Unknown User";
+    return email.split('@')[0];
+  };
+
+  const categoryStats = getCategoryStats();
+  const totalReportsCount = reports.length;
+
+  if (loading) {
+    return (
+      <div className="user-reports-dashboard">
+        <div className="loading-state">Loading reports...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="user-reports-dashboard">
       {/* Header */}
@@ -16,7 +241,7 @@ const UserReport = () => {
           </p>
         </div>
         <div className="header-actions">
-          <span className="user-badge-count">1,250 total reports</span>
+          <span className="user-badge-count">{stats.totalReports} total reports</span>
         </div>
       </div>
 
@@ -30,7 +255,7 @@ const UserReport = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Total Reports</h3>
-              <div className="report-stat-value">1,250</div>
+              <div className="report-stat-value">{stats.totalReports}</div>
             </div>
           </div>
           <div className="report-stat-content">
@@ -52,12 +277,15 @@ const UserReport = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Unresolved reports</h3>
-              <div className="report-stat-value">45</div>
+              <div className="report-stat-value">{stats.unresolvedReports}</div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              3.6% of total reports
+              {stats.totalReports > 0 ? 
+                `${((stats.unresolvedReports / stats.totalReports) * 100).toFixed(1)}% of total reports` 
+                : '0% of total reports'
+              }
             </div>
             <div className="report-stat-trend negative">
               +5%  
@@ -74,12 +302,15 @@ const UserReport = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Completed Reports</h3>
-              <div className="report-stat-value">1,150</div>
+              <div className="report-stat-value">{stats.resolvedReports}</div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              92% resolution rate
+              {stats.totalReports > 0 ? 
+                `${((stats.resolvedReports / stats.totalReports) * 100).toFixed(1)}% resolution rate` 
+                : '0% resolution rate'
+              }
             </div>
             <div className="report-stat-trend positive">
               +8%  
@@ -96,7 +327,7 @@ const UserReport = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Average solution time</h3>
-              <div className="report-stat-value">2.5</div>
+              <div className="report-stat-value">{stats.averageResolutionTime}</div>
             </div>
           </div>
           <div className="report-stat-content">
@@ -121,7 +352,7 @@ const UserReport = () => {
               User Satisfaction Score
             </h3>
             <div className="satisfaction-score">
-              <span className="score-value">8.2/10</span>
+              <span className="score-value">{stats.userSatisfaction}/10</span>
               <span className="score-label">Overall Rating</span>
             </div>
           </div>
@@ -130,7 +361,7 @@ const UserReport = () => {
               <div className="pie-chart-wrapper">
                 <div className="pie-chart">
                   <div className="pie-chart-center">
-                    <div className="pie-chart-value">8.2</div>
+                    <div className="pie-chart-value">{stats.userSatisfaction}</div>
                   </div>
                 </div>
               </div>
@@ -177,59 +408,33 @@ const UserReport = () => {
           <div className="reports-categories-header">
             <h3 className="panel-title">
               <FiPieChart className="panel-icon" />
-              Top Report Categories
+              Report Categories
             </h3>
           </div>
           <div className="reports-categories-body">
-            <div className="category-progress">
-              <div className="category-header">
-                <span className="category-name">Harassment</span>
-                <span className="category-count">40% (500)</span>
+            {categoryStats.map((category, index) => (
+              <div key={index} className="category-progress">
+                <div className="category-header">
+                  <span className="category-name">{category.name}</span>
+                  <span className="category-count">
+                    {stats.totalReports > 0 ? 
+                      `${Math.round((category.count / stats.totalReports) * 100)}% (${category.count})` 
+                      : '0% (0)'
+                    }
+                  </span>
+                </div>
+                <div className="category-progress-bar">
+                  <div 
+                    className={`category-progress-fill ${category.color}`} 
+                    style={{ 
+                      width: stats.totalReports > 0 ? 
+                        `${(category.count / stats.totalReports) * 100}%` 
+                        : '0%' 
+                    }}
+                  ></div>
+                </div>
               </div>
-              <div className="category-progress-bar">
-                <div className="category-progress-fill harassment" style={{ width: '40%' }}></div>
-              </div>
-            </div>
-
-            <div className="category-progress">
-              <div className="category-header">
-                <span className="category-name">Spam Content</span>
-                <span className="category-count">25% (312)</span>
-              </div>
-              <div className="category-progress-bar">
-                <div className="category-progress-fill spam" style={{ width: '25%' }}></div>
-              </div>
-            </div>
-
-            <div className="category-progress">
-              <div className="category-header">
-                <span className="category-name">Fraud</span>
-                <span className="category-count">20% (250)</span>
-              </div>
-              <div className="category-progress-bar">
-                <div className="category-progress-fill fraud" style={{ width: '20%' }}></div>
-              </div>
-            </div>
-
-            <div className="category-progress">
-              <div className="category-header">
-                <span className="category-name">Content Violation</span>
-                <span className="category-count">10% (125)</span>
-              </div>
-              <div className="category-progress-bar">
-                <div className="category-progress-fill content" style={{ width: '10%' }}></div>
-              </div>
-            </div>
-
-            <div className="category-progress">
-              <div className="category-header">
-                <span className="category-name">Other</span>
-                <span className="category-count">5% (63)</span>
-              </div>
-              <div className="category-progress-bar">
-                <div className="category-progress-fill other" style={{ width: '5%' }}></div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -242,7 +447,9 @@ const UserReport = () => {
             Filter Reports
           </h3>
           <div className="filter-results">
-            <span className="filter-text">Showing 45 of 1,250 reports</span>
+            <span className="filter-text">
+              Showing {reports.length} of {stats.totalReports} reports
+            </span>
           </div>
         </div>
         
@@ -253,31 +460,42 @@ const UserReport = () => {
             <input
               type="text"
               className="filter-search-input"
-              placeholder="Search by name, email, or description..."
+              placeholder="Search by subject, description, or email..."
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
             />
           </div>
           
           {/* Category Filter */}
-          <select className="filter-select">
+          <select 
+            className="filter-select"
+            value={filters.category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+          >
             <option value="">All Categories</option>
-            <option value="harassment">Harassment</option>
-            <option value="spam">Spam Content</option>
-            <option value="fraud">Fraud</option>
-            <option value="content">Content Violation</option>
-            <option value="other">Other</option>
+            <option value="technical">Technical Issue</option>
+            <option value="billing">Billing Issue</option>
+            <option value="general">General Inquiry</option>
           </select>
           
           {/* Status Filter */}
-          <select className="filter-select">
+          <select 
+            className="filter-select"
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+          >
             <option value="">All Status</option>
             <option value="pending">Pending</option>
             <option value="in-progress">In Progress</option>
             <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
           </select>
           
           {/* Date Filter */}
-          <select className="filter-select">
+          <select 
+            className="filter-select"
+            value={filters.date}
+            onChange={(e) => handleFilterChange('date', e.target.value)}
+          >
             <option value="">Any Time</option>
             <option value="today">Today</option>
             <option value="week">This Week</option>
@@ -287,11 +505,11 @@ const UserReport = () => {
           
           {/* Action Buttons */}
           <div className="filter-actions">
-            <button className="filter-button">
+            <button className="filter-button" onClick={fetchReports}>
               <FiFilter />
               Apply
             </button>
-            <button className="filter-button">
+            <button className="filter-button" onClick={resetFilters}>
               <FiRefreshCw />
               Reset
             </button>
@@ -324,66 +542,72 @@ const UserReport = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
-                  <div className="report-user">
-                    <div className="report-user-avatar">AJ</div>
-                    <div className="report-user-info">
-                      <div className="report-user-name">Ali Javed</div>
-                      <div className="report-user-email">ali@example.com</div>
+              {reports.slice(0, 10).map((report) => (
+                <tr key={`${report.userId}-${report.id}`}>
+                  <td>
+                    <div className="report-user">
+                      <div className="report-user-avatar">
+                        {getUserInitials(report.email)}
+                      </div>
+                      <div className="report-user-info">
+                        <div className="report-user-name">
+                          {getUserName(report.email)}
+                        </div>
+                        <div className="report-user-email">{report.email}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td>
-                  <span className="report-category-badge harassment">Harassment</span>
-                </td>
-                <td>
-                  <div className="comp-dis">Inappropriate messages from another user Inappropriate messages from another user Inappropriate messages from another user</div>
-                </td>
-                <td>
-                  <span className="report-status-badge pending">Pending</span>
-                </td>
-                <td>2 hours ago</td>
-                <td>
-                  <div className="report-actions">
-                    <button className="action-button secondary small" title="View Details">
-                      <FiEye />
-                    </button>
-                    <button className="action-button small" title="Mark Resolved">
-                      <FiCheckCircle />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div className="report-user">
-                    <div className="report-user-avatar">SR</div>
-                    <div className="report-user-info">
-                      <div className="report-user-name">Sara Riaz</div>
-                      <div className="report-user-email">sara@example.com</div>
+                  </td>
+                  <td>
+                    <span className={`report-category-badge ${report.issueType}`}>
+                      {report.issueType === 'technical' && 'Technical Issue'}
+                      {report.issueType === 'billing' && 'Billing Issue'}
+                      {report.issueType === 'general' && 'General Inquiry'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="comp-dis" title={report.description}>
+                      {report.subject || "No subject"}
                     </div>
-                  </div>
-                </td>
-                <td>
-                  <span className="report-category-badge spam">Spam</span>
-                </td>
-                <td>Multiple spam messages in comments</td>
-                <td>
-                  <span className="report-status-badge resolved">Resolved</span>
-                </td>
-                <td>1 day ago</td>
-                <td>
-                  <div className="report-actions">
-                    <button className="action-button secondary small" title="View Details">
-                      <FiEye />
-                    </button>
-                    <button className="action-button small" title="Reopen">
-                      <FiCornerUpLeft />
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                  </td>
+                  <td>
+                    <span className={`report-status-badge ${report.status || 'pending'}`}>
+                      {report.status === 'resolved' ? 'Resolved' : 'Pending'}
+                    </span>
+                  </td>
+                  <td>{formatDate(report.createdAt)}</td>
+                  <td>
+                    <div className="report-actions">
+                      <button className="action-button secondary small" title="View Details">
+                        <FiEye />
+                      </button>
+                      {report.status !== 'resolved' ? (
+                        <button 
+                          className="action-button small" 
+                          title="Mark Resolved"
+                          onClick={() => updateReportStatus(report.id, report.userId, 'resolved')}
+                        >
+                          <FiCheckCircle />
+                        </button>
+                      ) : (
+                        <button 
+                          className="action-button small" 
+                          title="Reopen"
+                          onClick={() => updateReportStatus(report.id, report.userId, 'pending')}
+                        >
+                          <FiCornerUpLeft />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {reports.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="no-reports">
+                    No reports found matching your filters
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
