@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { amount, currency, userId, cartItems } = req.body;
+    const { amount, currency, userId, items } = req.body;
 
     // Create PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
       currency: currency || 'usd',
       metadata: {
         userId: userId || 'guest',
-        cartItems: JSON.stringify(cartItems || [])
+        items: JSON.stringify(items || [])
       },
       // Optional: add more configuration like payment method types
       payment_method_types: ['card'],

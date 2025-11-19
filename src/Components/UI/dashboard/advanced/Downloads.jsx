@@ -1,417 +1,802 @@
-import React, { useState } from "react";
-import { FiDownload, FiTrendingUp, FiUsers, FiCalendar, FiFilter, FiSearch, FiEye, FiBarChart2 } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { 
+  FiDownload, 
+  FiTrendingUp, 
+  FiTrendingDown,
+  FiUsers, 
+  FiCalendar, 
+  FiFilter, 
+  FiSearch, 
+  FiEye, 
+  FiBarChart2,
+  FiFileText,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiClock,
+  FiPieChart,
+  FiList,
+  FiRefreshCw,
+  FiX,
+  FiDollarSign,
+  FiPackage,
+  FiUser
+} from "react-icons/fi";
+// import { db } from "../../firebase";
+// import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { useUser } from "../../../../Context/UserProvider";
 
 const Downloads = () => {
+  const { currentUser } = useUser();
   const [timeRange, setTimeRange] = useState("30d");
-  const [downloads, setDownloads] = useState([
-    {
-      id: 1,
-      assetName: "Modern 3D Car Model",
-      assetType: "3D Model",
-      user: "John Smith",
-      userEmail: "john@example.com",
-      date: "2024-02-15",
-      time: "14:30",
-      fileSize: "45.2 MB",
-      status: "completed",
-      license: "Commercial"
-    },
-    {
-      id: 2,
-      assetName: "Business Presentation Template",
-      assetType: "Template",
-      user: "Sarah Johnson",
-      userEmail: "sarah@example.com",
-      date: "2024-02-15",
-      time: "13:15",
-      fileSize: "12.8 MB",
-      status: "completed",
-      license: "Personal"
-    },
-    {
-      id: 3,
-      assetName: "Premium Icon Pack",
-      assetType: "Icons",
-      user: "Mike Brown",
-      userEmail: "mike@example.com",
-      date: "2024-02-14",
-      time: "16:45",
-      fileSize: "8.3 MB",
-      status: "failed",
-      license: "Commercial"
-    },
-    {
-      id: 4,
-      assetName: "4K HDRI Environment",
-      assetType: "HDRI",
-      user: "Emma Wilson",
-      userEmail: "emma@example.com",
-      date: "2024-02-14",
-      time: "11:20",
-      fileSize: "156.7 MB",
-      status: "completed",
-      license: "Enterprise"
-    }
-  ]);
-
+  const [downloads, setDownloads] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
+  // Fetch downloads data from Firebase
+  useEffect(() => {
+    const fetchDownloadsData = async () => {
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // Get all downloads from the downloads collection
+        const downloadsRef = collection(db, "downloads");
+        const downloadsSnapshot = await getDocs(downloadsRef);
+
+        if (downloadsSnapshot.empty) {
+          // If no downloads in main collection, check user's personal downloads
+          await fetchUserDownloads();
+          return;
+        }
+
+        // Process download data to get asset-wise statistics
+        const assetStats = {};
+        
+        downloadsSnapshot.docs.forEach(doc => {
+          const downloadData = doc.data();
+          const assetId = downloadData.assetId || doc.id;
+          
+          if (!assetStats[assetId]) {
+            assetStats[assetId] = {
+              id: assetId,
+              assetName: downloadData.title || downloadData.assetName || "Unknown Asset",
+              assetType: downloadData.type || downloadData.assetType || "Unknown",
+              publisher: downloadData.publisher || "Unknown",
+              totalDownloads: 0,
+              successfulDownloads: 0,
+              failedDownloads: 0,
+              fileSize: downloadData.fileSize || "0",
+              price: downloadData.price || 0,
+              license: downloadData.licenseType || downloadData.license || "Personal",
+              lastDownload: downloadData.downloadDate || new Date(),
+              category: downloadData.category || "General",
+              rating: downloadData.rating || 4.5,
+              revenue: 0,
+              trend: Math.random() > 0.5 ? "up" : "down",
+              trendPercentage: Math.floor(Math.random() * 30) + 5
+            };
+          }
+          
+          assetStats[assetId].totalDownloads++;
+          
+          if (downloadData.status === "completed" || !downloadData.status) {
+            assetStats[assetId].successfulDownloads++;
+            assetStats[assetId].revenue += downloadData.price || 0;
+          } else if (downloadData.status === "failed") {
+            assetStats[assetId].failedDownloads++;
+          }
+        });
+
+        // Calculate success rates and convert to array
+        const downloadsArray = Object.values(assetStats).map(asset => ({
+          ...asset,
+          successRate: asset.totalDownloads > 0 ? 
+            Math.round((asset.successfulDownloads / asset.totalDownloads) * 100) : 0
+        })).sort((a, b) => b.totalDownloads - a.totalDownloads);
+
+        setDownloads(downloadsArray);
+        setLoading(false);
+
+      } catch (error) {
+        console.error("Error fetching downloads:", error);
+        // Fallback to user's personal downloads
+        await fetchUserDownloads();
+      }
+    };
+
+    // Fallback function to get user's personal downloads
+    const fetchUserDownloads = async () => {
+      try {
+        if (!currentUser) return;
+
+        const userDownloadsRef = collection(db, `Profiles/${currentUser.uid}/downloads`);
+        const userDownloadsSnapshot = await getDocs(userDownloadsRef);
+
+        if (userDownloadsSnapshot.empty) {
+          setDownloads([]);
+          setLoading(false);
+          return;
+        }
+
+        const userDownloadsData = [];
+        for (const doc of userDownloadsSnapshot.docs) {
+          const assetData = doc.data();
+          userDownloadsData.push({
+            id: doc.id,
+            assetName: assetData.title || "Unknown Asset",
+            assetType: assetData.type || "Unknown",
+            publisher: assetData.publisher || currentUser?.displayName || "User",
+            totalDownloads: 1,
+            successfulDownloads: 1,
+            failedDownloads: 0,
+            successRate: 100,
+            fileSize: assetData.fileSize || "0",
+            price: assetData.price || 0,
+            license: assetData.licenseType || "Personal",
+            lastDownload: assetData.downloadDate ? 
+              new Date(assetData.downloadDate.seconds * 1000).toISOString().split('T')[0] : 
+              new Date().toISOString().split('T')[0],
+            category: assetData.category || "General",
+            rating: assetData.rating || 4.5,
+            revenue: assetData.price || 0,
+            trend: "up",
+            trendPercentage: 10
+          });
+        }
+
+        setDownloads(userDownloadsData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user downloads:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchDownloadsData();
+  }, [currentUser]);
+
+  // Filter downloads based on search and filters
   const filteredDownloads = downloads.filter(download => {
     const matchesSearch = 
       download.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      download.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      download.userEmail.toLowerCase().includes(searchTerm.toLowerCase());
+      download.publisher.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      download.category.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === "all" || download.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "high" && download.successRate >= 95) ||
+      (statusFilter === "medium" && download.successRate >= 85 && download.successRate < 95) ||
+      (statusFilter === "low" && download.successRate < 85);
+    
     const matchesType = typeFilter === "all" || download.assetType === typeFilter;
     
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  // Calculate statistics
   const stats = {
-    total: downloads.length,
-    completed: downloads.filter(d => d.status === "completed").length,
-    failed: downloads.filter(d => d.status === "failed").length,
-    totalSize: downloads.reduce((sum, d) => sum + parseFloat(d.fileSize), 0)
+    totalDownloads: downloads.reduce((sum, d) => sum + d.totalDownloads, 0),
+    totalRevenue: downloads.reduce((sum, d) => sum + d.revenue, 0),
+    avgSuccessRate: downloads.length > 0 ? 
+      Math.round(downloads.reduce((sum, d) => sum + d.successRate, 0) / downloads.length) : 0,
+    totalAssets: downloads.length
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "completed":
-        return <span className="status-badge success">Completed</span>;
-      case "failed":
-        return <span className="status-badge danger">Failed</span>;
-      case "processing":
-        return <span className="status-badge warning">Processing</span>;
-      default:
-        return <span className="status-badge">Unknown</span>;
+  // Calculate category distribution for pie chart
+  const categoryDistribution = downloads.reduce((acc, download) => {
+    const category = download.category || "Unknown";
+    acc[category] = (acc[category] || 0) + download.totalDownloads;
+    return acc;
+  }, {});
+
+  // Calculate asset type distribution for progress bars
+  const assetTypeDistribution = downloads.reduce((acc, download) => {
+    const type = download.assetType || "Unknown";
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {});
+
+  const getStatusBadge = (successRate) => {
+    if (successRate >= 95) {
+      return <span className="report-status-badge resolved">Excellent</span>;
+    } else if (successRate >= 85) {
+      return <span className="report-status-badge in-progress">Good</span>;
+    } else {
+      return <span className="report-status-badge pending">Needs Attention</span>;
     }
   };
 
   const getLicenseBadge = (license) => {
     switch (license) {
       case "Commercial":
-        return <span className="license-badge commercial">Commercial</span>;
+        return <span className="report-category-badge fraud">Commercial</span>;
       case "Enterprise":
-        return <span className="license-badge enterprise">Enterprise</span>;
+        return <span className="report-category-badge content">Enterprise</span>;
       case "Personal":
-        return <span className="license-badge personal">Personal</span>;
+        return <span className="report-category-badge spam">Personal</span>;
       default:
-        return <span className="license-badge">Unknown</span>;
+        return <span className="report-category-badge other">Unknown</span>;
     }
   };
 
+  const getTrendBadge = (trend, percentage) => {
+    return (
+      <div className={`report-stat-trend ${trend === 'up' ? 'positive' : 'negative'}`}>
+        {percentage}%
+        {trend === 'up' ? <FiTrendingUp className="fi-pl" /> : <FiTrendingDown className="fi-pl" />}
+      </div>
+    );
+  };
+
+  // Format file size for display
+  const formatFileSize = (sizeInMB) => {
+    const size = parseFloat(sizeInMB);
+    if (size >= 1024) {
+      return `${(size / 1024).toFixed(1)} GB`;
+    }
+    return `${size.toFixed(1)} MB`;
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount || 0);
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Invalid Date';
+    }
+  };
+
+  // Handle view details
+  const handleViewDetails = (asset) => {
+    setSelectedAsset(asset);
+    setShowModal(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedAsset(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="user-reports-dashboard">
+        <div className="dashboard-header">
+          <div className="header-content">
+            <h2 className="header-title">
+              <FiDownload className="header-icon" />
+              Downloads Analytics
+            </h2>
+          </div>
+        </div>
+        <div className="loading">Loading download analytics...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="downloads-dashboard">
+    <div className="user-reports-dashboard">
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-content">
           <h2 className="header-title">
             <FiDownload className="header-icon" />
-            Downloads Management
+            Downloads Analytics
           </h2>
           <p className="header-subtitle">
-            Monitor and manage asset downloads across the platform
+            Track download performance and asset popularity
           </p>
         </div>
         <div className="header-actions">
-          <select
+          <span className="user-badge-count">{stats.totalDownloads.toLocaleString()} total downloads</span>
+        </div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="reports-stats-grid">
+        {/* Total Downloads */}
+        <div className="report-stat-card primary">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiDownload />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Total Downloads</h3>
+              <div className="report-stat-value">{stats.totalDownloads.toLocaleString()}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Across all assets
+            </div>
+            <div className="report-stat-trend positive">
+              +12%  
+              <FiTrendingUp className="fi-pl" />
+            </div>
+          </div>
+        </div>
+
+        {/* Total Revenue */}
+        <div className="report-stat-card success">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiDollarSign />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Total Revenue</h3>
+              <div className="report-stat-value">{formatCurrency(stats.totalRevenue)}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              From all downloads
+            </div>
+            <div className="report-stat-trend positive">
+              +15%  
+              <FiTrendingUp className="fi-pl" />
+            </div>
+          </div>
+        </div>
+
+        {/* Success Rate */}
+        <div className="report-stat-card warning">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiCheckCircle />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Avg Success Rate</h3>
+              <div className="report-stat-value">{stats.avgSuccessRate}%</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Download completion rate
+            </div>
+            <div className="report-stat-trend positive">
+              +2%  
+              <FiTrendingUp className="fi-pl" />
+            </div>
+          </div>
+        </div>
+
+        {/* Total Assets */}
+        <div className="report-stat-card info">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiPackage />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Total Assets</h3>
+              <div className="report-stat-value">{stats.totalAssets}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Available for download
+            </div>
+            <div className="report-stat-trend positive">
+              +8%  
+              <FiTrendingUp className="fi-pl" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts and Distribution Section */}
+      <div className="reports-content-grid">
+        {/* Category Distribution Pie Chart */}
+        <div className="reports-chart-card">
+          <div className="reports-chart-header">
+            <h3 className="panel-title">
+              <FiPieChart className="panel-icon" />
+              Downloads by Category
+            </h3>
+            <div className="satisfaction-score">
+              <span className="score-value">{Object.keys(categoryDistribution).length}</span>
+              <span className="score-label">Categories</span>
+            </div>
+          </div>
+          <div className="reports-chart-body">
+            <div className="pie-chart-container">
+              <div className="pie-chart-wrapper">
+                <div className="pie-chart">
+                  <div className="pie-chart-center">
+                    <div className="pie-chart-value">
+                      {stats.totalDownloads > 0 ? Math.round((Math.max(...Object.values(categoryDistribution)) / stats.totalDownloads) * 100) : 0}%
+                    </div>
+                    <div className="pie-chart-label">Top Category</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pie-chart-labels">
+                {Object.entries(categoryDistribution).map(([category, count], index) => {
+                  const percentage = stats.totalDownloads > 0 ? 
+                    Math.round((count / stats.totalDownloads) * 100) : 0;
+                  const colors = ['excellent', 'good', 'average', 'poor'];
+                  return (
+                    <div key={category} className="pie-chart-label">
+                      <span className={`pie-label-dot ${colors[index % colors.length]}`}></span>
+                      <div className="pie-label-text">
+                        <span className="pie-label-name">{category}</span>
+                        <span className="pie-label-percentage">{percentage}% ({count})</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Asset Type Distribution */}
+        <div className="reports-categories-card">
+          <div className="reports-categories-header">
+            <h3 className="panel-title">
+              <FiBarChart2 className="panel-icon" />
+              Asset Type Distribution
+            </h3>
+          </div>
+          <div className="reports-categories-body">
+            {Object.entries(assetTypeDistribution).map(([type, count]) => {
+              const percentage = downloads.length > 0 ? (count / downloads.length) * 100 : 0;
+              return (
+                <div key={type} className="category-progress">
+                  <div className="category-header">
+                    <span className="category-name">{type}</span>
+                    <span className="category-count">{percentage.toFixed(1)}% ({count})</span>
+                  </div>
+                  <div className="category-progress-bar">
+                    <div 
+                      className={`category-progress-fill ${
+                        type === '3D Model' ? 'harassment' :
+                        type === 'UI Kit' ? 'spam' :
+                        type === 'Audio' ? 'fraud' :
+                        type === 'Icons' ? 'content' : 'other'
+                      }`} 
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {Object.keys(assetTypeDistribution).length === 0 && (
+              <div className="empty-state">
+                <p>No asset types to display</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="reports-filter-bar">
+        <div className="filter-bar-header">
+          <h3 className="filter-bar-title">
+            <FiFilter className="panel-icon" />
+            Filter Assets
+          </h3>
+          <div className="filter-results">
+            <span className="filter-text">Showing {filteredDownloads.length} of {downloads.length} assets</span>
+          </div>
+        </div>
+        
+        <div className="filter-controls-grid">
+          {/* Search by Asset/Publisher */}
+          <div className="filter-search-wrapper">
+            <FiSearch className="filter-search-icon" />
+            <input
+              type="text"
+              className="filter-search-input"
+              placeholder="Search by asset name, publisher, or category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          {/* Success Rate Filter */}
+          <select 
+            className="filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Success Rates</option>
+            <option value="high">High (95%+)</option>
+            <option value="medium">Medium (85-94%)</option>
+            <option value="low">Low (&lt;85%)</option>
+          </select>
+          
+          {/* Type Filter */}
+          <select 
+            className="filter-select"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
+            <option value="all">All Types</option>
+            {Object.keys(assetTypeDistribution).map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+          
+          {/* Time Range Filter */}
+          <select 
+            className="filter-select"
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="filter-select"
           >
             <option value="7d">Last 7 Days</option>
             <option value="30d">Last 30 Days</option>
             <option value="90d">Last 90 Days</option>
           </select>
-          <button className="action-button secondary">
-            Export Report
-          </button>
-        </div>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="stats-grid">
-        <div className="stat-card primary">
-          <div className="stat-icon">
-            <FiDownload />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total Downloads</div>
-            <div className="stat-trend positive">
-              <FiTrendingUp />
-              +15.3%
-            </div>
-          </div>
-        </div>
-
-        <div className="stat-card success">
-          <div className="stat-icon">
-            <FiDownload />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.completed}</div>
-            <div className="stat-label">Successful</div>
-            <div className="stat-trend positive">
-              <FiTrendingUp />
-              +12.7%
-            </div>
-          </div>
-        </div>
-
-        <div className="stat-card danger">
-          <div className="stat-icon">
-            <FiDownload />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.failed}</div>
-            <div className="stat-label">Failed</div>
-            <div className="stat-trend negative">
-              -2.1%
-            </div>
-          </div>
-        </div>
-
-        <div className="stat-card info">
-          <div className="stat-icon">
-            <FiDownload />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.totalSize.toFixed(1)} MB</div>
-            <div className="stat-label">Total Size</div>
-            <div className="stat-trend positive">
-              <FiTrendingUp />
-              +18.5%
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="dashboard-content">
-        {/* Left Column - Charts */}
-        <div className="charts-column">
-          {/* Download Trends */}
-          <div className="content-card">
-            <div className="card-header">
-              <h3 className="panel-title">
-                <FiBarChart2 className="panel-icon" />
-                Download Trends
-              </h3>
-            </div>
-            <div className="card-body">
-              <div className="chart-placeholder">
-                <FiBarChart2 className="placeholder-icon large" />
-                <p>Download trends chart showing daily/weekly patterns</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Asset Type Distribution */}
-          <div className="content-card">
-            <div className="card-header">
-              <h3 className="panel-title">Asset Type Distribution</h3>
-            </div>
-            <div className="card-body">
-              <div className="type-distribution">
-                <div className="type-item">
-                  <div className="type-header">
-                    <span className="type-name">3D Models</span>
-                    <span className="type-percentage">35%</span>
-                  </div>
-                  <div className="type-progress">
-                    <div className="progress-bar" style={{ width: '35%' }}></div>
-                  </div>
-                </div>
-                <div className="type-item">
-                  <div className="type-header">
-                    <span className="type-name">Templates</span>
-                    <span className="type-percentage">25%</span>
-                  </div>
-                  <div className="type-progress">
-                    <div className="progress-bar" style={{ width: '25%' }}></div>
-                  </div>
-                </div>
-                <div className="type-item">
-                  <div className="type-header">
-                    <span className="type-name">Graphics</span>
-                    <span className="type-percentage">20%</span>
-                  </div>
-                  <div className="type-progress">
-                    <div className="progress-bar" style={{ width: '20%' }}></div>
-                  </div>
-                </div>
-                <div className="type-item">
-                  <div className="type-header">
-                    <span className="type-name">Others</span>
-                    <span className="type-percentage">20%</span>
-                  </div>
-                  <div className="type-progress">
-                    <div className="progress-bar" style={{ width: '20%' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Recent Downloads */}
-        <div className="downloads-column">
-          <div className="content-card">
-            <div className="card-header">
-              <h3 className="panel-title">Recent Downloads</h3>
-            </div>
-            <div className="card-body">
-              <div className="recent-downloads-list">
-                {downloads.slice(0, 5).map((download) => (
-                  <div key={download.id} className="download-item">
-                    <div className="download-info">
-                      <div className="asset-name">{download.assetName}</div>
-                      <div className="download-meta">
-                        <span className="user">{download.user}</span>
-                        <span className="date">{download.date} at {download.time}</span>
-                      </div>
-                    </div>
-                    <div className="download-stats">
-                      {getStatusBadge(download.status)}
-                      <span className="file-size">{download.fileSize}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="content-card filters-card">
-        <div className="card-body">
-          <div className="filters-grid">
-            <div className="search-input-wrapper">
-              <FiSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search downloads..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
-            </div>
-
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="filter-select"
+          
+          {/* Action Buttons */}
+          <div className="filter-actions">
+            <button className="filter-button primary">
+              <FiFilter />
+              Apply
+            </button>
+            <button 
+              className="filter-button"
+              onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("all");
+                setTypeFilter("all");
+                setTimeRange("30d");
+              }}
             >
-              <option value="all">All Status</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
-              <option value="processing">Processing</option>
-            </select>
-
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Types</option>
-              <option value="3D Model">3D Models</option>
-              <option value="Template">Templates</option>
-              <option value="Icons">Icons</option>
-              <option value="HDRI">HDRIs</option>
-            </select>
-
-            <div className="filter-result">
-              <FiFilter className="filter-icon" />
-              <span className="filter-text">
-                {filteredDownloads.length} results
-              </span>
-            </div>
+              <FiRefreshCw />
+              Reset
+            </button>
           </div>
         </div>
       </div>
 
       {/* Downloads Table */}
-      <div className="content-card">
-        <div className="card-body">
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Asset</th>
-                  <th>User</th>
-                  <th>Date & Time</th>
-                  <th>File Size</th>
-                  <th>License</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+      <div className="recent-reports-card">
+        <div className="recent-reports-header">
+          <h3 className="panel-title">
+            <FiList className="panel-icon" />
+            Asset Download Statistics
+          </h3>
+          <button className="action-button secondary">
+            <FiDownload className="button-icon" />
+            Export Report
+          </button>
+        </div>
+        <div className="recent-reports-body">
+          <table className="report-table">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Publisher</th>
+                <th>Downloads</th>
+                <th>Success Rate</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Trend</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDownloads.map((download) => (
+                <tr key={download.id}>
+                  <td>
+                    <div className="report-user">
+                      <div className="report-user-avatar">
+                        {download.assetName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                      </div>
+                      <div className="report-user-info">
+                        <div className="report-user-name comp-dis">{download.assetName}</div>
+                        <div className="report-user-email">{download.assetType} • {formatFileSize(download.fileSize)}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="comp-dis">{download.publisher}</div>
+                  </td>
+                  <td>
+                    <div className="download-count">
+                      <strong>{download.totalDownloads.toLocaleString()}</strong>
+                      <div className="download-breakdown">
+                        <span className="success">{download.successfulDownloads} ✓</span>
+                        <span className="failed">{download.failedDownloads} ✗</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="success-rate">
+                      <div className="rate-value">{download.successRate}%</div>
+                      <div className="rate-bar">
+                        <div 
+                          className="rate-fill" 
+                          style={{ width: `${download.successRate}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  
+                  <td>
+                    <span className="report-category-badge content">{download.category}</span>
+                  </td>
+                  <td>
+                    {getStatusBadge(download.successRate)}
+                  </td>
+                  <td>
+                    {getTrendBadge(download.trend, download.trendPercentage)}
+                  </td>
+                  <td>
+                    <div className="report-actions">
+                      <button 
+                        className="action-button secondary small" 
+                        title="View Details"
+                        onClick={() => handleViewDetails(download)}
+                      >
+                        <FiEye />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredDownloads.map((download) => (
-                  <tr key={download.id}>
-                    <td>
-                      <div className="asset-info">
-                        <div className="asset-name">{download.assetName}</div>
-                        <div className="asset-type">{download.assetType}</div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="user-info">
-                        <div className="user-name">{download.user}</div>
-                        <div className="user-email">{download.userEmail}</div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="download-date">
-                        <div className="date">{download.date}</div>
-                        <div className="time">{download.time}</div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="file-size">{download.fileSize}</div>
-                    </td>
-                    <td>
-                      {getLicenseBadge(download.license)}
-                    </td>
-                    <td>
-                      {getStatusBadge(download.status)}
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button className="action-button secondary small">
-                          <FiEye />
-                          Details
-                        </button>
-                        {download.status === "failed" && (
-                          <button className="action-button small">
-                            Retry
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
 
           {filteredDownloads.length === 0 && (
             <div className="empty-state">
               <FiDownload className="empty-icon" />
-              <h3 className="empty-title">No downloads found</h3>
+              <h3 className="empty-title">
+                {downloads.length === 0 ? "No download data available" : "No assets found"}
+              </h3>
               <p className="empty-text">
-                {searchTerm 
-                  ? "No downloads match your search criteria." 
-                  : "No download records available for the selected period."}
+                {downloads.length === 0 
+                  ? "Download statistics will appear here once assets are downloaded." 
+                  : "No assets match your search criteria."}
               </p>
             </div>
           )}
         </div>
       </div>
+
+      {/* Asset Details Modal */}
+      {showModal && selectedAsset && (
+        <div className="modal-overlay">
+          <div className="modal enhanced-modal">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                <FiPackage className="modal-icon" />
+                {selectedAsset.assetName}
+              </h3>
+              <button className="close-button" onClick={handleCloseModal}>
+                <FiX />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="asset-details-grid">
+                <div className="detail-section">
+                  <h4 className="section-title">
+                    <FiBarChart2 className="section-icon" />
+                    Download Statistics
+                  </h4>
+                  <div className="stats-grid-modal">
+                    <div className="stat-card-modal">
+                      <div className="stat-value">{selectedAsset.totalDownloads.toLocaleString()}</div>
+                      <div className="stat-label">Total Downloads</div>
+                    </div>
+                    <div className="stat-card-modal">
+                      <div className="stat-value">{selectedAsset.successRate}%</div>
+                      <div className="stat-label">Success Rate</div>
+                    </div>
+                    <div className="stat-card-modal">
+                      <div className="stat-value currency">{formatCurrency(selectedAsset.revenue)}</div>
+                      <div className="stat-label">Total Revenue</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4 className="section-title">
+                    <FiUser className="section-icon" />
+                    Asset Information
+                  </h4>
+                  <div className="info-grid">
+                    <div className="info-item">
+                      <span className="info-label">Publisher:</span>
+                      <span className="info-value">{selectedAsset.publisher}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Asset Type:</span>
+                      <span className="info-value">{selectedAsset.assetType}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Category:</span>
+                      <span className="info-value">{selectedAsset.category}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">File Size:</span>
+                      <span className="info-value">{formatFileSize(selectedAsset.fileSize)}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Price:</span>
+                      <span className="info-value">{formatCurrency(selectedAsset.price)}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">License:</span>
+                      <span className="info-value">{getLicenseBadge(selectedAsset.license)}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Rating:</span>
+                      <span className="info-value">{selectedAsset.rating}/5.0</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Last Download:</span>
+                      <span className="info-value">{formatDate(selectedAsset.lastDownload)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4 className="section-title">
+                    <FiTrendingUp className="section-icon" />
+                    Performance Metrics
+                  </h4>
+                  <div className="performance-metrics">
+                    <div className="metric">
+                      <span className="metric-label">Successful Downloads:</span>
+                      <span className="metric-value">{selectedAsset.successfulDownloads.toLocaleString()}</span>
+                    </div>
+                    <div className="metric">
+                      <span className="metric-label">Failed Downloads:</span>
+                      <span className="metric-value">{selectedAsset.failedDownloads.toLocaleString()}</span>
+                    </div>
+                    <div className="metric">
+                      <span className="metric-label">Trend:</span>
+                      <span className="metric-value">
+                        {getTrendBadge(selectedAsset.trend, selectedAsset.trendPercentage)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <div className="modal-actions">
+                <button className="action-button secondary" onClick={handleCloseModal}>
+                  Close
+                </button>
+                <button className="action-button">
+                  <FiDownload className="button-icon" />
+                  Download Full Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

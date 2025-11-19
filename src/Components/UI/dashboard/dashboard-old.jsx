@@ -844,9 +844,9 @@ const AdminDashboard = () => {
             {activeTab === 7 && "Seller Report"}
             {activeTab === 8 && "Seller Analytic"}
             {activeTab === 9 && "Seller Complains"}
-            {activeTab === 10 && "Download"}
-            {activeTab === 11 && "Earning"}
-            {activeTab === 12 && "Analytic"}
+            {activeTab === 10 && ""}
+            {activeTab === 11 && ""}
+            {activeTab === 12 && ""}
             {activeTab === 13 && ""}
             {activeTab === 1 &&
               selectedDashboard === "company" &&
