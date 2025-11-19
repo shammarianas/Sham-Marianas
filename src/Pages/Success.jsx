@@ -19,7 +19,7 @@ const Success = () => {
     const verifyPayment = async () => {
       const sessionId = searchParams.get("session_id");
       if (!sessionId || !currentUser?.uid) {
-        navigate('/cart');
+        navigate('/stock');
         return;
       }
 
@@ -28,8 +28,6 @@ const Success = () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Verification failed');
 
-        // Clear cart on success
-        localStorage.removeItem('cart');
         setStatus('success');
       } catch (error) {
         console.error('Payment verification failed:', error);
@@ -57,8 +55,8 @@ const Success = () => {
         <div className="cart_main error">
           <h1>Payment Verification Failed</h1>
           <p>There was an issue verifying your payment.</p>
-          <button onClick={() => navigate('/cart')} className="back_button">
-            Return to Cart
+          <button onClick={() => navigate('/stock')} className="back_button">
+            Return to Stock
           </button>
         </div>
       </div>
@@ -88,10 +86,10 @@ const Success = () => {
           </ul>
         </div>
         <div className="action-buttons">
-          <button onClick={() => navigate('/library')} className="view-library">
-            View Your Library
+          <button onClick={() => navigate('/stock')} className="view-library">
+            Back to Stock
           </button>
-          <button onClick={() => navigate('/products')} className="continue-shopping">
+          <button onClick={() => navigate('/stock')} className="continue-shopping">
             Continue Shopping
           </button>
         </div>
@@ -117,7 +115,7 @@ export default Success;
 //     const handleSuccess = async () => {
 //       const sessionId = searchParams.get("session_id");
 //       if (!sessionId) {
-//         navigate('/cart');
+//         navigate('/stock');
 //         return;
 //       }
 
@@ -127,17 +125,14 @@ export default Success;
 //         const data = await response.json();
 
 //         if (response.ok) {
-//           // Clear cart from local storage
-//           localStorage.removeItem("cart");
-          
-//           // Redirect to library or orders page
-//           navigate('/library');
+//           // Redirect to stock page
+//           navigate('/stock');
 //         } else {
 //           throw new Error(data.error || "Payment verification failed");
 //         }
 //       } catch (error) {
 //         console.error("Error:", error);
-//         navigate('/cart');
+//         navigate('/stock');
 //       }
 //     };
 
