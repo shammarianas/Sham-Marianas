@@ -92,7 +92,7 @@ const Checkout = () => {
       const userRef = doc(db, "Profiles", currentUser.uid);
       await updateDoc(userRef, {
         subscription: {
-          plan: subscriptionItem?.name || "pro",
+          plan: subscriptionItem?.name === "Pro Plan" ? "pro" : "enterprise",
           billingCycle: subscriptionItem?.billingCycle || "monthly",
           status: freeTrial ? "trial" : "active",
           startDate: new Date().toISOString(),
@@ -143,7 +143,14 @@ const Checkout = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: totalAmount }),
+          body: JSON.stringify({
+            amount: totalAmount,
+            metadata: {
+              userId: currentUser?.uid || "guest",
+              plan:
+                subscriptionItem?.name === "Pro Plan" ? "pro" : "enterprise", // YE ADD KIYA
+            },
+          }),
         }
       );
 
