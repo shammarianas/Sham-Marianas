@@ -25,7 +25,7 @@
     "ethers": "^6.15.0",
     "file-saver": "^2.0.5",
     "file-server": "^2.2.1",
-    "firebase": "^12.5.0",
+    "firebase": "^12.6.0",
     "gh-pages": "^6.1.1",
     "gsap": "^3.13.0",
     "lucide-react": "^0.483.0",

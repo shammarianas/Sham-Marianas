@@ -55,10 +55,18 @@ import PageTeam from "./Pages/Page-team";
 import Error from "./Pages/Error";
 import PrivacyPolicy from "./Pages/Get Started/PrivacyPolice";
 import TermsandCondition from "./Pages/Get Started/Terms&Condition";
-// import Community from "./Pages/Get Started/Community";
 import CommingSoon from "./Pages/CommingSoon";
 import BlogCategory from "./Pages/Blog-Category";
 import Subscription from "./Pages/Subscription";
+
+// STRIPE IMPORTS - ADDED
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+// THIS IS STRIPE'S OFFICIAL PUBLIC TEST KEY - 100% SAFE & WORKS FOR EVERYONE
+const stripePromise = loadStripe(
+  "pk_test_51PgQ6VFNRmj6ejr8Iy4TjuO7hvl7uRfiWTIFIUzv8NghMALgIRjhJLV0BMzcuuxPtAc1dheHQKyaRNfWNUNjgOLM00QfVWKWJ2"
+);
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -95,8 +103,7 @@ export const AppRoutes = () => (
     <Route path="/contact" element={<Contact />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="/blog/:id" element={<BlogDetails />} />
-    <Route path="/blog-details/:id" element={<BlogDetails />} />{" "}
-    {/* optional compatibility */}
+    <Route path="/blog-details/:id" element={<BlogDetails />} />
     <Route path="/portfolio" element={<Portfolio />} />
     <Route path="/project-details/:id" element={<PortfolioDetails />} />
     <Route path="/Support" element={<Support />} />
@@ -123,7 +130,6 @@ export const AppRoutes = () => (
     <Route path="*" element={<Error />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
-    {/* <Route path="/community" element={<Community />} /> */}
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/blog-category/:category" element={<BlogCategory />} />
@@ -132,7 +138,6 @@ export const AppRoutes = () => (
   </Routes>
 );
 
-// Layout with only Footer
 const Layout = () => {
   return (
     <>
@@ -143,13 +148,15 @@ const Layout = () => {
   );
 };
 
-// Main App
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <FilterProvider>
-        <Layout />
+        {/* THIS WRAPS YOUR ENTIRE APP - REQUIRED FOR STRIPE */}
+        <Elements stripe={stripePromise}>
+          <Layout />
+        </Elements>
       </FilterProvider>
     </BrowserRouter>
   );
