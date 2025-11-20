@@ -58,6 +58,9 @@ import TermsandCondition from "./Pages/Get Started/Terms&Condition";
 import CommingSoon from "./Pages/CommingSoon";
 import BlogCategory from "./Pages/Blog-Category";
 import Subscription from "./Pages/Subscription";
+import ContributorLogin from "./Pages/Login/ContributorLogin"
+import ContributorDashboard from "./Components/UI/dashboard/Contributor/ContributorDashboard"
+
 
 // STRIPE IMPORTS - ADDED
 import { loadStripe } from "@stripe/stripe-js";
@@ -82,6 +85,8 @@ export const AppRoutes = () => (
   <Routes>
     <Route path="/Login" element={<Login />} />
     <Route path="/login" element={<Login />} />
+    <Route path="/ContributorLogin" element={<ContributorLogin />} />
+    <Route path="/ContributorDashboard" element={<ContributorDashboard />} />
     <Route path="/Admin" element={<Admin />} />
     <Route path="/Reset" element={<PasswordReset />} />
     <Route path="/reset" element={<PasswordReset />} />

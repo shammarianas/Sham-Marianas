@@ -72,7 +72,7 @@ function Footer() {
                     <h6 className="sub-title mb-30">Become a Seller</h6>
                     <ul className="rest fz-14 opacity-7">
                       <li className="mb-15">
-                        <Link>Sell on Marketplace</Link>
+                        <Link to="/ContributorLogin">Sell on Marketplace</Link>
                       </li>
                       <li className="mb-15">
                         <a href="/seller-guidelines">Seller Guidelines</a>
