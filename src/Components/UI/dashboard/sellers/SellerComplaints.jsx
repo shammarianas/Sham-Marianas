@@ -1,65 +1,89 @@
 import React, { useState } from "react";
-import { FiAlertTriangle, FiCheckCircle, FiClock, FiSearch, FiFilter, FiEye, FiMessageSquare, FiUser, FiXCircle } from "react-icons/fi";
+import { 
+  FiAlertTriangle, 
+  FiCheckCircle, 
+  FiTrendingUp,
+  FiClock, 
+  FiSearch, 
+  FiFilter, 
+  FiEye, 
+  FiMessageSquare, 
+  FiUser, 
+  FiXCircle,
+  FiRefreshCw,
+  FiDownload,
+  FiList,
+  FiX,
+  FiMail,
+  FiCalendar
+} from "react-icons/fi";
 
 const SellerComplaints = () => {
   const [complaints, setComplaints] = useState([
     {
       id: 1,
       sellerName: "Ali Designs",
+      sellerEmail: "ali.ahmed@example.com",
       complainant: "John Smith",
       complainantEmail: "john.smith@example.com",
       type: "Product Quality",
       subject: "Low quality 3D model",
-      description: "The purchased 3D model has poor texture quality and doesn't match the preview images.",
+      description: "The purchased 3D model has poor texture quality and doesn't match the preview images. The textures are blurry and the model has several mesh issues that make it unusable for professional projects.",
       status: "open",
-      priority: "high",
       createdAt: "2024-02-15",
-      updatedAt: "2024-02-15"
+      updatedAt: "2024-02-15",
+      orderId: "ORD-001234",
+      product: "Modern Office Building 3D Model"
     },
     {
       id: 2,
       sellerName: "Sara Creations",
+      sellerEmail: "sara.khan@example.com",
       complainant: "Emma Wilson",
       complainantEmail: "emma.wilson@example.com",
       type: "Delivery Issue",
       subject: "File not delivered",
-      description: "Paid for the graphics pack but didn't receive download link after payment.",
+      description: "Paid for the graphics pack but didn't receive download link after payment. The transaction was completed successfully but no files were accessible.",
       status: "in_progress",
-      priority: "medium",
       createdAt: "2024-02-14",
-      updatedAt: "2024-02-15"
+      updatedAt: "2024-02-15",
+      orderId: "ORD-001235",
+      product: "Professional Graphics Pack"
     },
     {
       id: 3,
       sellerName: "UR Designs",
+      sellerEmail: "usman.riaz@example.com",
       complainant: "Mike Johnson",
       complainantEmail: "mike.johnson@example.com",
       type: "Refund Request",
       subject: "Wrong product delivered",
-      description: "Received different template than what was shown in the product listing.",
+      description: "Received different template than what was shown in the product listing. The features and design elements are completely different from the advertised product.",
       status: "resolved",
-      priority: "medium",
       createdAt: "2024-02-10",
-      updatedAt: "2024-02-12"
+      updatedAt: "2024-02-12",
+      orderId: "ORD-001236",
+      product: "Dashboard UI Template"
     },
     {
       id: 4,
       sellerName: "Digital Assets Co",
+      sellerEmail: "fatima.noor@example.com",
       complainant: "Sarah Brown",
       complainantEmail: "sarah.brown@example.com",
       type: "Copyright Issue",
       subject: "Possible copyright violation",
-      description: "Seller might be using copyrighted material without permission.",
+      description: "Seller might be using copyrighted material without permission. The 3D model appears to be copied from a commercial product.",
       status: "open",
-      priority: "critical",
       createdAt: "2024-02-16",
-      updatedAt: "2024-02-16"
+      updatedAt: "2024-02-16",
+      orderId: "ORD-001237",
+      product: "Character Model Pack"
     }
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [priorityFilter, setPriorityFilter] = useState("all");
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
@@ -67,42 +91,50 @@ const SellerComplaints = () => {
     const matchesSearch = 
       complaint.sellerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       complaint.complainant.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.subject.toLowerCase().includes(searchTerm.toLowerCase());
+      complaint.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      complaint.type.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || complaint.status === statusFilter;
-    const matchesPriority = priorityFilter === "all" || complaint.priority === priorityFilter;
     
-    return matchesSearch && matchesStatus && matchesPriority;
+    return matchesSearch && matchesStatus;
   });
+
+  // Statistics
+  const stats = {
+    total: complaints.length,
+    open: complaints.filter(c => c.status === "open").length,
+    inProgress: complaints.filter(c => c.status === "in_progress").length,
+    resolved: complaints.filter(c => c.status === "resolved").length
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "open":
-        return <span className="status-badge warning"><FiClock /> Open</span>;
+        return <span className="report-status-badge pending"><FiClock /> Open</span>;
       case "in_progress":
-        return <span className="status-badge info"><FiMessageSquare /> In Progress</span>;
+        return <span className="report-status-badge in-progress"><FiMessageSquare /> In Progress</span>;
       case "resolved":
-        return <span className="status-badge success"><FiCheckCircle /> Resolved</span>;
+        return <span className="report-status-badge resolved"><FiCheckCircle /> Resolved</span>;
       case "closed":
-        return <span className="status-badge">Closed</span>;
+        return <span className="report-status-badge">Closed</span>;
       default:
-        return <span className="status-badge">Unknown</span>;
+        return <span className="report-status-badge pending">Unknown</span>;
     }
   };
 
-  const getPriorityBadge = (priority) => {
-    switch (priority) {
-      case "critical":
-        return <span className="priority-badge critical"><FiAlertTriangle /> Critical</span>;
-      case "high":
-        return <span className="priority-badge high"><FiAlertTriangle /> High</span>;
-      case "medium":
-        return <span className="priority-badge medium">Medium</span>;
-      case "low":
-        return <span className="priority-badge low">Low</span>;
-      default:
-        return <span className="priority-badge">Unknown</span>;
-    }
+  const getTypeBadge = (type) => {
+    const typeClasses = {
+      "Product Quality": "technical",
+      "Delivery Issue": "billing",
+      "Refund Request": "general",
+      "Copyright Issue": "feature"
+    };
+    
+    return (
+      <span className={`report-category-badge ${typeClasses[type] || 'general'}`}>
+        {type}
+      </span>
+    );
   };
 
   const handleStatusChange = (complaintId, newStatus) => {
@@ -113,16 +145,13 @@ const SellerComplaints = () => {
     ));
   };
 
-  const stats = {
-    total: complaints.length,
-    open: complaints.filter(c => c.status === "open").length,
-    inProgress: complaints.filter(c => c.status === "in_progress").length,
-    resolved: complaints.filter(c => c.status === "resolved").length,
-    critical: complaints.filter(c => c.priority === "critical").length
+  const resetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
   };
 
   return (
-    <div className="seller-complaints-dashboard">
+    <div className="user-reports-dashboard">
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-content">
@@ -135,356 +164,402 @@ const SellerComplaints = () => {
           </p>
         </div>
         <div className="header-actions">
-          <span className="complaint-badge-count">
-            {stats.total} complaints
+          <span className="user-badge-count">
+            {stats.total} total complaints
           </span>
         </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="stats-grid">
-        <div className="stat-card primary">
-          <div className="stat-icon">
-            <FiAlertTriangle />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total Complaints</div>
-          </div>
-        </div>
-
-        <div className="stat-card warning">
-          <div className="stat-icon">
-            <FiClock />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.open}</div>
-            <div className="stat-label">Open Complaints</div>
-          </div>
-        </div>
-
-        <div className="stat-card info">
-          <div className="stat-icon">
-            <FiMessageSquare />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.inProgress}</div>
-            <div className="stat-label">In Progress</div>
-          </div>
-        </div>
-
-        <div className="stat-card danger">
-          <div className="stat-icon">
-            <FiAlertTriangle />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.critical}</div>
-            <div className="stat-label">Critical Priority</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="content-card filters-card">
-        <div className="card-body">
-          <div className="filters-grid">
-            <div className="search-input-wrapper">
-              <FiSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search complaints..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
+      <div className="reports-stats-grid">
+        <div className="report-stat-card primary">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiAlertTriangle />
             </div>
+            <div>
+              <h3 className="report-stat-title">Total Complaints</h3>
+              <div className="report-stat-value">{stats.total}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              All complaints received
+            </div>
+            <div className="report-stat-trend negative">
+              +12% <FiTrendingUp className="fi-pl" />
+            </div>
+          </div>
+        </div>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Status</option>
-              <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
-              <option value="resolved">Resolved</option>
-            </select>
+        <div className="report-stat-card warning">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiClock />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Open Complaints</h3>
+              <div className="report-stat-value">{stats.open}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Awaiting resolution
+            </div>
+            <div className="report-stat-trend negative">
+              +8% <FiTrendingUp className="fi-pl" />
+            </div>
+          </div>
+        </div>
 
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Priority</option>
-              <option value="critical">Critical</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
+        <div className="report-stat-card success">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiMessageSquare />
+            </div>
+            <div>
+              <h3 className="report-stat-title">In Progress</h3>
+              <div className="report-stat-value">{stats.inProgress}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Under investigation
+            </div>
+            <div className="report-stat-trend positive">
+              +15% <FiTrendingUp className="fi-pl" />
+            </div>
+          </div>
+        </div>
 
-            <div className="filter-result">
-              <FiFilter className="filter-icon" />
-              <span className="filter-text">
-                {filteredComplaints.length} results
-              </span>
+        <div className="report-stat-card info">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiCheckCircle />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Resolved</h3>
+              <div className="report-stat-value">{stats.resolved}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Successfully resolved
+            </div>
+            <div className="report-stat-trend positive">
+              +22% <FiTrendingUp className="fi-pl" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Complaints List */}
-      <div className="content-card">
-        <div className="card-body">
-          {filteredComplaints.length > 0 ? (
-            <div className="complaints-list">
+      {/* Filter Bar */}
+      <div className="reports-filter-bar">
+        <div className="filter-bar-header">
+          <h3 className="filter-bar-title">
+            <FiFilter className="panel-icon" /> Filter Complaints
+          </h3>
+          <div className="filter-results">
+            <span className="filter-text">
+              Showing {filteredComplaints.length} of {stats.total} complaints
+            </span>
+          </div>
+        </div>
+
+        <div className="filter-controls-grid">
+          <div className="filter-search-wrapper">
+            <FiSearch className="filter-search-icon" />
+            <input
+              type="text"
+              className="filter-search-input"
+              placeholder="Search complaints by seller, complainant, or subject..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <select
+            className="filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+          </select>
+
+          <div className="filter-actions">
+            <button className="filter-button" onClick={resetFilters}>
+              <FiRefreshCw /> Reset
+            </button>
+            <button className="filter-button primary">
+              <FiDownload /> Export
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Complaints Table */}
+      <div className="recent-reports-card">
+        <div className="recent-reports-header">
+          <h3 className="panel-title">
+            <FiList className="panel-icon" /> Customer Complaints
+          </h3>
+          <button className="action-button secondary">
+            <FiDownload className="button-icon" /> Export List
+          </button>
+        </div>
+        <div className="recent-reports-body">
+          <table className="report-table">
+            <thead>
+              <tr>
+                <th>Seller</th>
+                <th>Complainant</th>
+                <th>Type</th>
+                <th>Subject</th>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
               {filteredComplaints.map((complaint) => (
-                <div key={complaint.id} className="complaint-item">
-                  <div className="complaint-header">
-                    <div className="complaint-meta">
-                      <div className="seller-info">
-                        <div className="seller-avatar">
-                          {complaint.sellerName.charAt(0)}
-                        </div>
-                        <div className="seller-details">
-                          <div className="seller-name">{complaint.sellerName}</div>
-                          <div className="complaint-type">{complaint.type}</div>
-                        </div>
-                      </div>
-                      <div className="complaint-priority">
-                        {getPriorityBadge(complaint.priority)}
+                <tr key={complaint.id}>
+                  <td>
+                    <div className="report-user">
+                     
+                      <div className="report-user-info">
+                        <div className="report-user-name">{complaint.sellerName}</div>
+                        <div className="report-user-email">{complaint.sellerEmail}</div>
                       </div>
                     </div>
-                    <div className="complaint-status">
-                      {getStatusBadge(complaint.status)}
-                    </div>
-                  </div>
-
-                  <div className="complaint-body">
-                    <h4 className="complaint-subject">{complaint.subject}</h4>
-                    <p className="complaint-description">{complaint.description}</p>
-                    
-                    <div className="complainant-info">
-                      <div className="complainant">
-                        <FiUser className="complainant-icon" />
-                        <span className="complainant-name">{complaint.complainant}</span>
-                        <span className="complainant-email">({complaint.complainantEmail})</span>
-                      </div>
-                      <div className="complaint-dates">
-                        <span className="created-date">Created: {complaint.createdAt}</span>
-                        {complaint.updatedAt !== complaint.createdAt && (
-                          <span className="updated-date">Updated: {complaint.updatedAt}</span>
-                        )}
+                  </td>
+                  <td>
+                    <div className="report-user">
+                      
+                      <div className="report-user-info">
+                        <div className="report-user-name">{complaint.complainant}</div>
+                        <div className="report-user-email">{complaint.complainantEmail}</div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="complaint-actions">
-                    <button
-                      className="action-button secondary"
-                      onClick={() => {
-                        setSelectedComplaint(complaint);
-                        setShowDetailsModal(true);
-                      }}
-                    >
-                      <FiEye className="button-icon" />
-                      View Details
-                    </button>
-
-                    {complaint.status === "open" && (
+                  </td>
+                  <td>
+                    {getTypeBadge(complaint.type)}
+                  </td>
+                  <td>
+                    <div className="comp-dis" title={complaint.subject}>
+                      {complaint.subject}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="comp-dis">
+                      <FiCalendar style={{ marginRight: '4px' }} />
+                      {complaint.createdAt}
+                    </div>
+                  </td>
+                  <td>
+                    {getStatusBadge(complaint.status)}
+                  </td>
+                  <td>
+                    <div className="report-actions">
                       <button
-                        className="action-button"
-                        onClick={() => handleStatusChange(complaint.id, "in_progress")}
-                      >
-                        <FiMessageSquare className="button-icon" />
-                        Start Investigation
-                      </button>
-                    )}
-
-                    {complaint.status === "in_progress" && (
-                      <button
-                        className="action-button success"
-                        onClick={() => handleStatusChange(complaint.id, "resolved")}
-                      >
-                        <FiCheckCircle className="button-icon" />
-                        Mark Resolved
-                      </button>
-                    )}
-
-                    {(complaint.status === "open" || complaint.status === "in_progress") && (
-                      <button
-                        className="action-button danger"
+                        className="action-button secondary small"
+                        title="View Details"
                         onClick={() => {
-                          if (window.confirm("Are you sure you want to close this complaint?")) {
-                            handleStatusChange(complaint.id, "closed");
-                          }
+                          setSelectedComplaint(complaint);
+                          setShowDetailsModal(true);
                         }}
                       >
-                        <FiXCircle className="button-icon" />
-                        Close
+                        <FiEye />
                       </button>
-                    )}
-                  </div>
-                </div>
+                      
+                      {complaint.status === "open" && (
+                        <button
+                          className="action-button small"
+                          title="Start Investigation"
+                          onClick={() => handleStatusChange(complaint.id, "in_progress")}
+                        >
+                          <FiMessageSquare />
+                        </button>
+                      )}
+                      
+                      {complaint.status === "in_progress" && (
+                        <button
+                          className="action-button success small"
+                          title="Mark Resolved"
+                          onClick={() => handleStatusChange(complaint.id, "resolved")}
+                        >
+                          <FiCheckCircle />
+                        </button>
+                      )}
+                      
+                      <button
+                        className="action-button warning small"
+                        title="Contact Parties"
+                        onClick={() => alert(`Contacting ${complaint.sellerName} and ${complaint.complainant}`)}
+                      >
+                        <FiMail />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </div>
-          ) : (
-            <div className="empty-state">
-              <FiAlertTriangle className="empty-icon" />
-              <h3 className="empty-title">No complaints found</h3>
-              <p className="empty-text">
-                {searchTerm 
-                  ? "No complaints match your search criteria." 
-                  : "No complaints have been reported yet."}
-              </p>
-            </div>
-          )}
+              
+              {filteredComplaints.length === 0 && (
+                <tr>
+                  <td colSpan="7" className="no-reports">
+                    No complaints found matching your filters
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Complaint Details Modal */}
       {showDetailsModal && selectedComplaint && (
-        <ComplaintDetailsModal
-          complaint={selectedComplaint}
-          onClose={() => setShowDetailsModal(false)}
-          onStatusChange={handleStatusChange}
-        />
-      )}
-    </div>
-  );
-};
-
-// Complaint Details Modal Component
-const ComplaintDetailsModal = ({ complaint, onClose, onStatusChange }) => {
-  const [response, setResponse] = useState("");
-
-  const handleSubmitResponse = () => {
-    if (response.trim()) {
-      // Handle response submission
-      alert("Response submitted successfully!");
-      setResponse("");
-    }
-  };
-
-  return (
-    <div className="modal-overlay">
-      <div className="modal large-modal">
-        <div className="modal-header">
-          <h3 className="modal-title">
-            <FiAlertTriangle className="modal-icon" />
-            Complaint Details
-          </h3>
-          <button onClick={onClose} className="close-button">
-            <FiXCircle />
-          </button>
-        </div>
-
-        <div className="modal-body">
-          <div className="complaint-details">
-            {/* Complaint Header */}
-            <div className="details-header">
-              <div className="seller-complainant-info">
-                <div className="seller-section">
+        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Complaint Details</h3>
+              <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
+                <FiX />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="report-detail-grid">
+                <div className="detail-section">
                   <h4>Seller Information</h4>
-                  <div className="info-item">
-                    <strong>Seller:</strong> {complaint.sellerName}
+                  <div className="detail-item">
+                    <span className="detail-label">Seller Name:</span>
+                    <span className="detail-value">{selectedComplaint.sellerName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Seller Email:</span>
+                    <span className="detail-value">{selectedComplaint.sellerEmail}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Product:</span>
+                    <span className="detail-value">{selectedComplaint.product}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Order ID:</span>
+                    <span className="detail-value">{selectedComplaint.orderId}</span>
                   </div>
                 </div>
-                <div className="complainant-section">
+
+                <div className="detail-section">
                   <h4>Complainant Information</h4>
-                  <div className="info-item">
-                    <strong>Name:</strong> {complaint.complainant}
+                  <div className="detail-item">
+                    <span className="detail-label">Name:</span>
+                    <span className="detail-value">{selectedComplaint.complainant}</span>
                   </div>
-                  <div className="info-item">
-                    <strong>Email:</strong> {complaint.complainantEmail}
+                  <div className="detail-item">
+                    <span className="detail-label">Email:</span>
+                    <span className="detail-value">{selectedComplaint.complainantEmail}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Complaint Type:</span>
+                    <span className="detail-value">
+                      {getTypeBadge(selectedComplaint.type)}
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="status-priority">
-                <div className="info-item">
-                  <strong>Status:</strong> 
-                  <span className={`status-badge ${complaint.status}`}>
-                    {complaint.status}
-                  </span>
+                <div className="detail-section">
+                  <h4>Complaint Details</h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Status:</span>
+                    <span className="detail-value">
+                      {getStatusBadge(selectedComplaint.status)}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Created:</span>
+                    <span className="detail-value">{selectedComplaint.createdAt}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Last Updated:</span>
+                    <span className="detail-value">{selectedComplaint.updatedAt}</span>
+                  </div>
                 </div>
-                <div className="info-item">
-                  <strong>Priority:</strong> 
-                  <span className={`priority-badge ${complaint.priority}`}>
-                    {complaint.priority}
-                  </span>
+
+                <div className="detail-section full-width">
+                  <h4>Subject & Description</h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Subject:</span>
+                    <span className="detail-value">{selectedComplaint.subject}</span>
+                  </div>
+                  <div className="detail-description">
+                    {selectedComplaint.description}
+                  </div>
                 </div>
-                <div className="info-item">
-                  <strong>Type:</strong> {complaint.type}
+
+                <div className="detail-section full-width">
+                  <h4>Admin Response</h4>
+                  <textarea
+                    className="response-textarea"
+                    placeholder="Type your response to the complainant here..."
+                    rows="4"
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      background: 'var(--darker)',
+                      color: 'var(--text-primary)',
+                      resize: 'vertical'
+                    }}
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Complaint Content */}
-            <div className="complaint-content">
-              <h4>Subject: {complaint.subject}</h4>
-              <div className="complaint-description">
-                <strong>Description:</strong>
-                <p>{complaint.description}</p>
-              </div>
-            </div>
-
-            {/* Dates */}
-            <div className="complaint-dates">
-              <div className="date-item">
-                <strong>Created:</strong> {complaint.createdAt}
-              </div>
-              {complaint.updatedAt !== complaint.createdAt && (
-                <div className="date-item">
-                  <strong>Last Updated:</strong> {complaint.updatedAt}
-                </div>
-              )}
-            </div>
-
-            {/* Response Section */}
-            <div className="response-section">
-              <h4>Admin Response</h4>
-              <textarea
-                value={response}
-                onChange={(e) => setResponse(e.target.value)}
-                placeholder="Type your response here..."
-                rows="4"
-                className="response-textarea"
-              />
-              <div className="response-actions">
-                <button 
-                  className="action-button secondary"
-                  onClick={handleSubmitResponse}
-                  disabled={!response.trim()}
+            <div className="modal-footer">
+              <button className="action-button secondary" onClick={() => setShowDetailsModal(false)}>
+                Close
+              </button>
+              
+              {selectedComplaint.status === "open" && (
+                <button
+                  className="action-button"
+                  onClick={() => {
+                    handleStatusChange(selectedComplaint.id, "in_progress");
+                    setShowDetailsModal(false);
+                  }}
                 >
-                  Submit Response
+                  <FiMessageSquare /> Start Investigation
                 </button>
-              </div>
+              )}
+              
+              {selectedComplaint.status === "in_progress" && (
+                <button
+                  className="action-button success"
+                  onClick={() => {
+                    handleStatusChange(selectedComplaint.id, "resolved");
+                    setShowDetailsModal(false);
+                  }}
+                >
+                  <FiCheckCircle /> Mark Resolved
+                </button>
+              )}
+              
+              <button
+                className="action-button warning"
+                onClick={() => {
+                  alert(`Sending email to ${selectedComplaint.complainantEmail}`);
+                  setShowDetailsModal(false);
+                }}
+              >
+                <FiMail /> Contact Complainant
+              </button>
             </div>
           </div>
         </div>
-
-        <div className="modal-footer">
-          {complaint.status === "open" && (
-            <button
-              className="action-button"
-              onClick={() => onStatusChange(complaint.id, "in_progress")}
-            >
-              Start Investigation
-            </button>
-          )}
-          {complaint.status === "in_progress" && (
-            <button
-              className="action-button success"
-              onClick={() => onStatusChange(complaint.id, "resolved")}
-            >
-              Mark Resolved
-            </button>
-          )}
-          <button className="action-button secondary" onClick={onClose}>
-            Close
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
