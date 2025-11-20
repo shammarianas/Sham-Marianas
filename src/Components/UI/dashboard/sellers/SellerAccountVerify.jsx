@@ -1,5 +1,23 @@
 import React, { useState } from "react";
-import { FiUserCheck, FiUserX, FiEye, FiMail, FiCalendar, FiMapPin, FiCheckCircle, FiXCircle, FiClock, FiSearch, FiFilter } from "react-icons/fi";
+import { 
+  FiUserCheck, 
+  FiUserX, 
+  FiEye, 
+  FiMail, 
+  FiCalendar, 
+  FiMapPin, 
+  FiCheckCircle, 
+  FiXCircle, 
+  FiClock, 
+  FiSearch, 
+  FiFilter,
+  FiRefreshCw,
+  FiDownload,
+  FiList,
+  FiUsers,
+  FiTrendingUp,
+  FiX
+} from "react-icons/fi";
 
 const SellerAccountVerify = () => {
   const [sellers, setSellers] = useState([
@@ -55,6 +73,12 @@ const SellerAccountVerify = () => {
     ));
   };
 
+  const handleUnverify = (sellerId) => {
+    setSellers(sellers.map(seller => 
+      seller.id === sellerId ? { ...seller, status: "pending" } : seller
+    ));
+  };
+
   const filteredSellers = sellers.filter(seller => {
     const matchesSearch = 
       seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -69,18 +93,30 @@ const SellerAccountVerify = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case "verified":
-        return <span className="status-badge success"><FiCheckCircle /> Verified</span>;
+        return <span className="report-status-badge resolved"><FiCheckCircle /> Verified</span>;
       case "pending":
-        return <span className="status-badge warning"><FiClock /> Pending</span>;
+        return <span className="report-status-badge pending"><FiClock /> Pending</span>;
       case "rejected":
-        return <span className="status-badge danger"><FiXCircle /> Rejected</span>;
+        return <span className="report-status-badge in-progress"><FiXCircle /> Rejected</span>;
       default:
-        return <span className="status-badge">Unknown</span>;
+        return <span className="report-status-badge pending">Unknown</span>;
     }
   };
 
+  const stats = {
+    totalSellers: sellers.length,
+    verifiedSellers: sellers.filter(s => s.status === "verified").length,
+    pendingSellers: sellers.filter(s => s.status === "pending").length,
+    rejectedSellers: sellers.filter(s => s.status === "rejected").length
+  };
+
+  const resetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
+
   return (
-    <div className="seller-verification-dashboard">
+    <div className="user-reports-dashboard">
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-content">
@@ -93,336 +129,399 @@ const SellerAccountVerify = () => {
           </p>
         </div>
         <div className="header-actions">
-          <span className="seller-badge-count">
-            {filteredSellers.length} sellers
+          <span className="user-badge-count">
+            {stats.totalSellers} total sellers
           </span>
         </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="stats-grid">
-        <div className="stat-card primary">
-          <div className="stat-icon">
-            <FiUserCheck />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">
-              {sellers.filter(s => s.status === "verified").length}
+      <div className="reports-stats-grid">
+        <div className="report-stat-card primary">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiUserCheck />
             </div>
-            <div className="stat-label">Verified Sellers</div>
+            <div>
+              <h3 className="report-stat-title">Verified Sellers</h3>
+              <div className="report-stat-value">{stats.verifiedSellers}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Approved seller accounts
+            </div>
+            <div className="report-stat-trend positive">
+              +12% <FiTrendingUp className="fi-pl" />
+            </div>
           </div>
         </div>
 
-        <div className="stat-card warning">
-          <div className="stat-icon">
-            <FiClock />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">
-              {sellers.filter(s => s.status === "pending").length}
+        <div className="report-stat-card warning">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiClock />
             </div>
-            <div className="stat-label">Pending Review</div>
+            <div>
+              <h3 className="report-stat-title">Pending Review</h3>
+              <div className="report-stat-value">{stats.pendingSellers}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Awaiting verification
+            </div>
+            <div className="report-stat-trend negative">
+              +5% <FiTrendingUp className="fi-pl" />
+            </div>
           </div>
         </div>
 
-        <div className="stat-card danger">
-          <div className="stat-icon">
-            <FiUserX />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">
-              {sellers.filter(s => s.status === "rejected").length}
+        <div className="report-stat-card success">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiUsers />
             </div>
-            <div className="stat-label">Rejected</div>
+            <div>
+              <h3 className="report-stat-title">Total Applications</h3>
+              <div className="report-stat-value">{stats.totalSellers}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              All seller applications
+            </div>
+            <div className="report-stat-trend positive">
+              +8% <FiTrendingUp className="fi-pl" />
+            </div>
           </div>
         </div>
 
-        <div className="stat-card info">
-          <div className="stat-icon">
-            <FiMail />
+        <div className="report-stat-card info">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiUserX />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Rejected</h3>
+              <div className="report-stat-value">{stats.rejectedSellers}</div>
+            </div>
           </div>
-          <div className="stat-content">
-            <div className="stat-value">{sellers.length}</div>
-            <div className="stat-label">Total Applications</div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Rejected applications
+            </div>
+            <div className="report-stat-trend negative">
+              +3% <FiTrendingUp className="fi-pl" />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="content-card filters-card">
-        <div className="card-body">
-          <div className="filters-grid">
-            <div className="search-input-wrapper">
-              <FiSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search sellers by name, email, or business..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
-            </div>
+      {/* Filter Bar */}
+      <div className="reports-filter-bar">
+        <div className="filter-bar-header">
+          <h3 className="filter-bar-title">
+            <FiFilter className="panel-icon" /> Filter Sellers
+          </h3>
+          <div className="filter-results">
+            <span className="filter-text">
+              Showing {filteredSellers.length} of {stats.totalSellers} sellers
+            </span>
+          </div>
+        </div>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="verified">Verified</option>
-              <option value="rejected">Rejected</option>
-            </select>
+        <div className="filter-controls-grid">
+          <div className="filter-search-wrapper">
+            <FiSearch className="filter-search-icon" />
+            <input
+              type="text"
+              className="filter-search-input"
+              placeholder="Search sellers by name, email, or business..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-            <div className="filter-result">
-              <FiFilter className="filter-icon" />
-              <span className="filter-text">
-                {filteredSellers.length} results
-              </span>
-            </div>
+          <select
+            className="filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="verified">Verified</option>
+            <option value="rejected">Rejected</option>
+          </select>
+
+          <select className="filter-select" defaultValue="">
+            <option value="">All Categories</option>
+            <option value="3d">3D Models</option>
+            <option value="graphics">Graphics</option>
+            <option value="templates">Templates</option>
+          </select>
+
+          <div className="filter-actions">
+            <button className="filter-button" onClick={resetFilters}>
+              <FiRefreshCw /> Reset
+            </button>
           </div>
         </div>
       </div>
 
       {/* Sellers Table */}
-      <div className="content-card">
-        <div className="card-body">
-          {filteredSellers.length > 0 ? (
-            <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Seller Info</th>
-                    <th>Business</th>
-                    <th>Category</th>
-                    <th>Location</th>
-                    <th>Join Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredSellers.map((seller) => (
-                    <tr key={seller.id}>
-                      <td>
-                        <div className="user-info">
-                          <div className="user-avatar">
-                            {seller.name.charAt(0)}
-                          </div>
-                          <div className="user-details">
-                            <div className="user-name">{seller.name}</div>
-                            <div className="user-email">{seller.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="business-name">{seller.businessName}</div>
-                      </td>
-                      <td>
-                        <span className="category-badge">{seller.category}</span>
-                      </td>
-                      <td>
-                        <div className="location">
-                          <FiMapPin className="location-icon" />
-                          {seller.location}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="join-date">
-                          <FiCalendar className="date-icon" />
-                          {seller.joinDate}
-                        </div>
-                      </td>
-                      <td>
-                        {getStatusBadge(seller.status)}
-                      </td>
-                      <td>
-                        <div className="action-buttons">
-                          <button
-                            className="action-button secondary small"
-                            onClick={() => {
-                              setSelectedSeller(seller);
-                              setShowDetailsModal(true);
-                            }}
-                            title="View Details"
-                          >
-                            <FiEye />
-                          </button>
-                          
-                          {seller.status === "pending" && (
-                            <>
-                              <button
-                                className="action-button success small"
-                                onClick={() => handleVerify(seller.id)}
-                                title="Verify Seller"
-                              >
-                                <FiCheckCircle />
-                              </button>
-                              <button
-                                className="action-button danger small"
-                                onClick={() => handleReject(seller.id)}
-                                title="Reject Seller"
-                              >
-                                <FiXCircle />
-                              </button>
-                            </>
-                          )}
-                          
-                          {seller.status === "rejected" && (
-                            <button
-                              className="action-button success small"
-                              onClick={() => handleVerify(seller.id)}
-                              title="Re-verify Seller"
-                            >
-                              <FiCheckCircle />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="empty-state">
-              <FiUserCheck className="empty-icon" />
-              <h3 className="empty-title">No sellers found</h3>
-              <p className="empty-text">
-                {searchTerm 
-                  ? "No sellers match your search criteria." 
-                  : "No seller applications available for review."}
-              </p>
-            </div>
-          )}
+      <div className="recent-reports-card">
+        <div className="recent-reports-header">
+          <h3 className="panel-title">
+            <FiList className="panel-icon" /> Seller Management
+          </h3>
+          <button className="action-button secondary">
+            <FiDownload className="button-icon" /> Export Data
+          </button>
+        </div>
+        <div className="recent-reports-body">
+          <table className="report-table">
+            <thead>
+              <tr>
+                <th>Seller</th>
+                <th>Business</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Join Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSellers.map((seller) => (
+                <tr key={seller.id}>
+                  <td>
+                    <div className="report-user">
+                      <div className="report-user-avatar">
+                        {seller.name.charAt(0)}
+                      </div>
+                      <div className="report-user-info">
+                        <div className="report-user-name">{seller.name}</div>
+                        <div className="report-user-email">{seller.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="comp-dis" title={seller.businessName}>
+                      {seller.businessName}
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`report-category-badge ${
+                      seller.category === '3D Models' ? 'technical' : 
+                      seller.category === 'Graphics' ? 'billing' : 'general'
+                    }`}>
+                      {seller.category}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="comp-dis">
+                      <FiMapPin style={{ marginRight: '4px' }} />
+                      {seller.location}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="comp-dis">
+                      <FiCalendar style={{ marginRight: '4px' }} />
+                      {seller.joinDate}
+                    </div>
+                  </td>
+                  <td>
+                    {getStatusBadge(seller.status)}
+                  </td>
+                  <td>
+                    <div className="report-actions">
+                      <button
+                        className="action-button secondary small"
+                        title="View Details"
+                        onClick={() => {
+                          setSelectedSeller(seller);
+                          setShowDetailsModal(true);
+                        }}
+                      >
+                        <FiEye />
+                      </button>
+                      
+                      {/* Always show Verify button for non-verified sellers */}
+                      {seller.status !== "verified" && (
+                        <button
+                          className="action-button small"
+                          title="Verify Seller"
+                          onClick={() => handleVerify(seller.id)}
+                        >
+                          <FiCheckCircle />
+                        </button>
+                      )}
+                      
+                     
+                      {/* Always show Unverify button for verified sellers */}
+                      {seller.status === "verified" && (
+                        <button
+                          className="action-button warning small"
+                          title="Unverify Seller"
+                          onClick={() => handleUnverify(seller.id)}
+                        >
+                          <FiUserX />
+                        </button>
+                      )}
+                       {/* Always show Reject button for non-rejected sellers */}
+                      {seller.status !== "rejected" && (
+                        <button
+                          className="action-button danger small"
+                          title="Reject Seller"
+                          onClick={() => handleReject(seller.id)}
+                        >
+                          <FiXCircle />
+                        </button>
+                      )}
+                      
+                      {/* Show Unverify button for rejected sellers to move them back to pending */}
+                      {seller.status === "rejected" && (
+                        <button
+                          className="action-button warning small"
+                          title="Move to Pending"
+                          onClick={() => handleUnverify(seller.id)}
+                        >
+                          <FiUserX />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              
+              {filteredSellers.length === 0 && (
+                <tr>
+                  <td colSpan="7" className="no-reports">
+                    No sellers found matching your filters
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Seller Details Modal */}
       {showDetailsModal && selectedSeller && (
-        <SellerDetailsModal
-          seller={selectedSeller}
-          onClose={() => setShowDetailsModal(false)}
-          onVerify={() => {
-            handleVerify(selectedSeller.id);
-            setShowDetailsModal(false);
-          }}
-          onReject={() => {
-            handleReject(selectedSeller.id);
-            setShowDetailsModal(false);
-          }}
-        />
-      )}
-    </div>
-  );
-};
-
-// Seller Details Modal Component
-const SellerDetailsModal = ({ seller, onClose, onVerify, onReject }) => {
-  return (
-    <div className="modal-overlay">
-      <div className="modal large-modal">
-        <div className="modal-header">
-          <h3 className="modal-title">
-            <FiUserCheck className="modal-icon" />
-            Seller Application Details
-          </h3>
-          <button onClick={onClose} className="close-button">
-            <FiXCircle />
-          </button>
-        </div>
-        
-        <div className="modal-body">
-          <div className="seller-profile-section">
-            <div className="profile-header">
-              <div className="profile-avatar-large">
-                {seller.name.charAt(0)}
-              </div>
-              <div className="profile-info">
-                <h3 className="profile-name">{seller.name}</h3>
-                <p className="profile-email">{seller.email}</p>
-                <div className="profile-badges">
-                  <span className={`status-badge ${seller.status}`}>
-                    {seller.status === "verified" && <FiCheckCircle />}
-                    {seller.status === "pending" && <FiClock />}
-                    {seller.status === "rejected" && <FiXCircle />}
-                    {seller.status.charAt(0).toUpperCase() + seller.status.slice(1)}
-                  </span>
-                </div>
-              </div>
+        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Seller Application Details</h3>
+              <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
+                <FiX />
+              </button>
             </div>
+            
+            <div className="modal-body">
+              <div className="report-detail-grid">
+                <div className="detail-section">
+                  <h4>Seller Information</h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Name:</span>
+                    <span className="detail-value">{selectedSeller.name}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Email:</span>
+                    <span className="detail-value">{selectedSeller.email}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Location:</span>
+                    <span className="detail-value">{selectedSeller.location}</span>
+                  </div>
+                </div>
 
-            <div className="details-grid">
-              <div className="detail-section">
-                <h4 className="section-title">Business Information</h4>
-                <div className="detail-item">
-                  <span className="detail-label">Business Name:</span>
-                  <span className="detail-value">{seller.businessName}</span>
+                <div className="detail-section">
+                  <h4>Business Information</h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Business Name:</span>
+                    <span className="detail-value">{selectedSeller.businessName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Category:</span>
+                    <span className="detail-value">{selectedSeller.category}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Join Date:</span>
+                    <span className="detail-value">{selectedSeller.joinDate}</span>
+                  </div>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Category:</span>
-                  <span className="detail-value">{seller.category}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Location:</span>
-                  <span className="detail-value">{seller.location}</span>
-                </div>
-              </div>
 
-              <div className="detail-section">
-                <h4 className="section-title">Application Details</h4>
-                <div className="detail-item">
-                  <span className="detail-label">Join Date:</span>
-                  <span className="detail-value">{seller.joinDate}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Status:</span>
-                  <span className="detail-value">
-                    <span className={`status-badge ${seller.status}`}>
-                      {seller.status}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="documents-section">
-              <h4 className="section-title">Submitted Documents</h4>
-              <div className="documents-list">
-                {seller.documents.map((doc, index) => (
-                  <div key={index} className="document-item">
-                    <div className="document-icon">📄</div>
-                    <div className="document-info">
-                      <div className="document-name">{doc}</div>
-                      <button className="action-button secondary small">
-                        View Document
-                      </button>
+                <div className="detail-section full-width">
+                  <h4>Submitted Documents</h4>
+                  <div className="detail-description">
+                    <div className="documents-list">
+                      {selectedSeller.documents.map((doc, index) => (
+                        <div key={index} className="document-item">
+                          <div className="document-icon">📄</div>
+                          <div className="document-info">
+                            <div className="document-name">{doc}</div>
+                            <button className="action-button secondary small">
+                              View Document
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="detail-section">
+                  <h4>Verification Status</h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Current Status:</span>
+                    <span className="detail-value">
+                      {getStatusBadge(selectedSeller.status)}
+                    </span>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="action-button secondary" onClick={() => setShowDetailsModal(false)}>
+                Close
+              </button>
+              
+              {/* Always show all action buttons in modal */}
+              <button
+                className="action-button"
+                onClick={() => {
+                  handleVerify(selectedSeller.id);
+                  setShowDetailsModal(false);
+                }}
+              >
+                <FiCheckCircle /> Approve Seller
+              </button>
+              
+              <button
+                className="action-button danger"
+                onClick={() => {
+                  handleReject(selectedSeller.id);
+                  setShowDetailsModal(false);
+                }}
+              >
+                <FiXCircle /> Reject Application
+              </button>
+              
+              <button
+                className="action-button warning"
+                onClick={() => {
+                  handleUnverify(selectedSeller.id);
+                  setShowDetailsModal(false);
+                }}
+              >
+                <FiUserX /> Move to Pending
+              </button>
             </div>
           </div>
         </div>
-
-        <div className="modal-footer">
-          {seller.status === "pending" && (
-            <>
-              <button className="action-button success" onClick={onVerify}>
-                <FiCheckCircle className="button-icon" />
-                Approve Seller
-              </button>
-              <button className="action-button danger" onClick={onReject}>
-                <FiXCircle className="button-icon" />
-                Reject Application
-              </button>
-            </>
-          )}
-          <button className="action-button secondary" onClick={onClose}>
-            Close
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
