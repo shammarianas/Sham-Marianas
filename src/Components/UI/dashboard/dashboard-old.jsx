@@ -23,6 +23,7 @@ import UserInformation from "./users/UserInformation";
 import UserReport from "./users/UserReport";
 import PaymentPlan from "./users/PaymentPlan";
 import SellerAccountVerify from "./sellers/SellerAccountVerify";
+import AssetRequestsDashboard from "./sellers/AssetsRequest"
 import SellerEarning from "./sellers/SellerEarning";
 import SellerReports from "./sellers/SellerReports";
 import SellerAnalytics from "./sellers/SellerAnalytics";
@@ -838,12 +839,12 @@ const AdminDashboard = () => {
             {activeTab === 1 && selectedDashboard === "admin" && ""}
             {activeTab === 2 && ""}
             {activeTab === 3 && ""}
-            {activeTab === 4 && "Seller Account Verify"}
-            {activeTab === 5 && "Asset Request"}
-            {activeTab === 6 && "Seller Earning"}
-            {activeTab === 7 && "Seller Report"}
-            {activeTab === 8 && "Seller Analytic"}
-            {activeTab === 9 && "Seller Complains"}
+            {activeTab === 4 && ""}
+            {activeTab === 5 && ""}
+            {activeTab === 6 && ""}
+            {activeTab === 7 && ""}
+            {activeTab === 8 && ""}
+            {activeTab === 9 && ""}
             {activeTab === 10 && ""}
             {activeTab === 11 && ""}
             {activeTab === 12 && ""}
@@ -897,16 +898,7 @@ const AdminDashboard = () => {
 
             {activeTab === 4 && <SellerAccountVerify />}
 
-            {activeTab === 5 && (
-              <div className="content-card">
-                <div className="card-body">
-                  <h3>Asset Requests</h3>
-                  <p>
-                    Asset request management dashboard will be implemented here.
-                  </p>
-                </div>
-              </div>
-            )}
+            {activeTab === 5 && <AssetRequestsDashboard />}
 
             {activeTab === 6 && <SellerEarning />}
 
