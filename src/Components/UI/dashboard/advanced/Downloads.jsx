@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { 
-  FiDownload, 
-  FiTrendingUp, 
+import {
+  FiDownload,
+  FiTrendingUp,
   FiTrendingDown,
-  FiUsers, 
-  FiCalendar, 
-  FiFilter, 
-  FiSearch, 
-  FiEye, 
+  FiUsers,
+  FiCalendar,
+  FiFilter,
+  FiSearch,
+  FiEye,
   FiBarChart2,
   FiFileText,
   FiCheckCircle,
@@ -19,11 +19,12 @@ import {
   FiX,
   FiDollarSign,
   FiPackage,
-  FiUser
+  FiUser,
 } from "react-icons/fi";
 // import { db } from "../../firebase";
-// import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { useUser } from "../../../../Context/UserProvider";
+import { db } from "../../../../firebase";
 
 const Downloads = () => {
   const { currentUser } = useUser();
@@ -46,116 +47,87 @@ const Downloads = () => {
 
       try {
         setLoading(true);
-        
-        // Get all downloads from the downloads collection
-        const downloadsRef = collection(db, "downloads");
-        const downloadsSnapshot = await getDocs(downloadsRef);
 
-        if (downloadsSnapshot.empty) {
-          // If no downloads in main collection, check user's personal downloads
+        // Get all users
+        const profilesRef = collection(db, "Profiles");
+        const profilesSnapshot = await getDocs(profilesRef);
+
+        if (profilesSnapshot.empty) {
           await fetchUserDownloads();
           return;
         }
 
-        // Process download data to get asset-wise statistics
         const assetStats = {};
-        
-        downloadsSnapshot.docs.forEach(doc => {
-          const downloadData = doc.data();
-          const assetId = downloadData.assetId || doc.id;
-          
-          if (!assetStats[assetId]) {
-            assetStats[assetId] = {
-              id: assetId,
-              assetName: downloadData.title || downloadData.assetName || "Unknown Asset",
-              assetType: downloadData.type || downloadData.assetType || "Unknown",
-              publisher: downloadData.publisher || "Unknown",
-              totalDownloads: 0,
-              successfulDownloads: 0,
-              failedDownloads: 0,
-              fileSize: downloadData.fileSize || "0",
-              price: downloadData.price || 0,
-              license: downloadData.licenseType || downloadData.license || "Personal",
-              lastDownload: downloadData.downloadDate || new Date(),
-              category: downloadData.category || "General",
-              rating: downloadData.rating || 4.5,
-              revenue: 0,
-              trend: Math.random() > 0.5 ? "up" : "down",
-              trendPercentage: Math.floor(Math.random() * 30) + 5
-            };
-          }
-          
-          assetStats[assetId].totalDownloads++;
-          
-          if (downloadData.status === "completed" || !downloadData.status) {
-            assetStats[assetId].successfulDownloads++;
-            assetStats[assetId].revenue += downloadData.price || 0;
-          } else if (downloadData.status === "failed") {
-            assetStats[assetId].failedDownloads++;
-          }
-        });
 
-        // Calculate success rates and convert to array
-        const downloadsArray = Object.values(assetStats).map(asset => ({
-          ...asset,
-          successRate: asset.totalDownloads > 0 ? 
-            Math.round((asset.successfulDownloads / asset.totalDownloads) * 100) : 0
-        })).sort((a, b) => b.totalDownloads - a.totalDownloads);
+        // Loop each user and fetch their downloads
+        for (const userDoc of profilesSnapshot.docs) {
+          const userId = userDoc.id;
 
-        setDownloads(downloadsArray);
-        setLoading(false);
+          const downloadsRef = collection(db, `Profiles/${userId}/downloads`);
+          const downloadsSnapshot = await getDocs(downloadsRef);
 
-      } catch (error) {
-        console.error("Error fetching downloads:", error);
-        // Fallback to user's personal downloads
-        await fetchUserDownloads();
-      }
-    };
+          downloadsSnapshot.docs.forEach((doc) => {
+            const downloadData = doc.data();
+            const assetId = downloadData.assetId || doc.id;
 
-    // Fallback function to get user's personal downloads
-    const fetchUserDownloads = async () => {
-      try {
-        if (!currentUser) return;
+            if (!assetStats[assetId]) {
+              assetStats[assetId] = {
+                id: assetId,
+                assetName:
+                  downloadData.title ||
+                  downloadData.assetName ||
+                  "Unknown Asset",
+                assetType:
+                  downloadData.type || downloadData.assetType || "Unknown",
+                publisher: downloadData.cre || "Unknown",
+                totalDownloads: 0,
+                successfulDownloads: 0,
+                failedDownloads: 0,
+                fileSize: downloadData.fileSize || "0",
+                price: downloadData.price || 0,
+                license:
+                  downloadData.licenseType ||
+                  downloadData.license ||
+                  "Personal",
+                lastDownload: downloadData.downloadDate || new Date(),
+                category: downloadData.category || "General",
+                rating: downloadData.rating || 4.5,
+                revenue: 0,
+                trend: Math.random() > 0.5 ? "up" : "down",
+                trendPercentage: Math.floor(Math.random() * 30) + 5,
+              };
+            }
 
-        const userDownloadsRef = collection(db, `Profiles/${currentUser.uid}/downloads`);
-        const userDownloadsSnapshot = await getDocs(userDownloadsRef);
+            // Update stats
+            assetStats[assetId].totalDownloads++;
 
-        if (userDownloadsSnapshot.empty) {
-          setDownloads([]);
-          setLoading(false);
-          return;
-        }
-
-        const userDownloadsData = [];
-        for (const doc of userDownloadsSnapshot.docs) {
-          const assetData = doc.data();
-          userDownloadsData.push({
-            id: doc.id,
-            assetName: assetData.title || "Unknown Asset",
-            assetType: assetData.type || "Unknown",
-            publisher: assetData.publisher || currentUser?.displayName || "User",
-            totalDownloads: 1,
-            successfulDownloads: 1,
-            failedDownloads: 0,
-            successRate: 100,
-            fileSize: assetData.fileSize || "0",
-            price: assetData.price || 0,
-            license: assetData.licenseType || "Personal",
-            lastDownload: assetData.downloadDate ? 
-              new Date(assetData.downloadDate.seconds * 1000).toISOString().split('T')[0] : 
-              new Date().toISOString().split('T')[0],
-            category: assetData.category || "General",
-            rating: assetData.rating || 4.5,
-            revenue: assetData.price || 0,
-            trend: "up",
-            trendPercentage: 10
+            if (downloadData.status === "completed" || !downloadData.status) {
+              assetStats[assetId].successfulDownloads++;
+              assetStats[assetId].revenue += downloadData.price || 0;
+            } else {
+              assetStats[assetId].failedDownloads++;
+            }
           });
         }
 
-        setDownloads(userDownloadsData);
-        setLoading(false);
+        // Convert stats object into array
+        const downloadsArray = Object.values(assetStats)
+          .map((asset) => ({
+            ...asset,
+            successRate:
+              asset.totalDownloads > 0
+                ? Math.round(
+                    (asset.successfulDownloads / asset.totalDownloads) * 100
+                  )
+                : 0,
+          }))
+          .sort((a, b) => b.totalDownloads - a.totalDownloads);
+
+        setDownloads(downloadsArray);
       } catch (error) {
-        console.error("Error fetching user downloads:", error);
+        console.error("Error fetching downloads:", error);
+        await fetchUserDownloads();
+      } finally {
         setLoading(false);
       }
     };
@@ -164,19 +136,23 @@ const Downloads = () => {
   }, [currentUser]);
 
   // Filter downloads based on search and filters
-  const filteredDownloads = downloads.filter(download => {
-    const matchesSearch = 
+  const filteredDownloads = downloads.filter((download) => {
+    const matchesSearch =
       download.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       download.publisher.toLowerCase().includes(searchTerm.toLowerCase()) ||
       download.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || 
+
+    const matchesStatus =
+      statusFilter === "all" ||
       (statusFilter === "high" && download.successRate >= 95) ||
-      (statusFilter === "medium" && download.successRate >= 85 && download.successRate < 95) ||
+      (statusFilter === "medium" &&
+        download.successRate >= 85 &&
+        download.successRate < 95) ||
       (statusFilter === "low" && download.successRate < 85);
-    
-    const matchesType = typeFilter === "all" || download.assetType === typeFilter;
-    
+
+    const matchesType =
+      typeFilter === "all" || download.assetType === typeFilter;
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -184,9 +160,14 @@ const Downloads = () => {
   const stats = {
     totalDownloads: downloads.reduce((sum, d) => sum + d.totalDownloads, 0),
     totalRevenue: downloads.reduce((sum, d) => sum + d.revenue, 0),
-    avgSuccessRate: downloads.length > 0 ? 
-      Math.round(downloads.reduce((sum, d) => sum + d.successRate, 0) / downloads.length) : 0,
-    totalAssets: downloads.length
+    avgSuccessRate:
+      downloads.length > 0
+        ? Math.round(
+            downloads.reduce((sum, d) => sum + d.successRate, 0) /
+              downloads.length
+          )
+        : 0,
+    totalAssets: downloads.length,
   };
 
   // Calculate category distribution for pie chart
@@ -209,7 +190,9 @@ const Downloads = () => {
     } else if (successRate >= 85) {
       return <span className="report-status-badge in-progress">Good</span>;
     } else {
-      return <span className="report-status-badge pending">Needs Attention</span>;
+      return (
+        <span className="report-status-badge pending">Needs Attention</span>
+      );
     }
   };
 
@@ -218,7 +201,9 @@ const Downloads = () => {
       case "Commercial":
         return <span className="report-category-badge fraud">Commercial</span>;
       case "Enterprise":
-        return <span className="report-category-badge content">Enterprise</span>;
+        return (
+          <span className="report-category-badge content">Enterprise</span>
+        );
       case "Personal":
         return <span className="report-category-badge spam">Personal</span>;
       default:
@@ -228,9 +213,17 @@ const Downloads = () => {
 
   const getTrendBadge = (trend, percentage) => {
     return (
-      <div className={`report-stat-trend ${trend === 'up' ? 'positive' : 'negative'}`}>
+      <div
+        className={`report-stat-trend ${
+          trend === "up" ? "positive" : "negative"
+        }`}
+      >
         {percentage}%
-        {trend === 'up' ? <FiTrendingUp className="fi-pl" /> : <FiTrendingDown className="fi-pl" />}
+        {trend === "up" ? (
+          <FiTrendingUp className="fi-pl" />
+        ) : (
+          <FiTrendingDown className="fi-pl" />
+        )}
       </div>
     );
   };
@@ -246,24 +239,24 @@ const Downloads = () => {
 
   // Format currency
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount || 0);
   };
 
   // Format date
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
     } catch {
-      return 'Invalid Date';
+      return "Invalid Date";
     }
   };
 
@@ -309,7 +302,9 @@ const Downloads = () => {
           </p>
         </div>
         <div className="header-actions">
-          <span className="user-badge-count">{stats.totalDownloads.toLocaleString()} total downloads</span>
+          <span className="user-badge-count">
+            {stats.totalDownloads.toLocaleString()} total downloads
+          </span>
         </div>
       </div>
 
@@ -323,15 +318,15 @@ const Downloads = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Total Downloads</h3>
-              <div className="report-stat-value">{stats.totalDownloads.toLocaleString()}</div>
+              <div className="report-stat-value">
+                {stats.totalDownloads.toLocaleString()}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Across all assets
-            </div>
+            <div className="report-stat-subtext">Across all assets</div>
             <div className="report-stat-trend positive">
-              +12%  
+              +12%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -345,15 +340,15 @@ const Downloads = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Total Revenue</h3>
-              <div className="report-stat-value">{formatCurrency(stats.totalRevenue)}</div>
+              <div className="report-stat-value">
+                {formatCurrency(stats.totalRevenue)}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              From all downloads
-            </div>
+            <div className="report-stat-subtext">From all downloads</div>
             <div className="report-stat-trend positive">
-              +15%  
+              +15%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -371,11 +366,9 @@ const Downloads = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Download completion rate
-            </div>
+            <div className="report-stat-subtext">Download completion rate</div>
             <div className="report-stat-trend positive">
-              +2%  
+              +2%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -393,11 +386,9 @@ const Downloads = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Available for download
-            </div>
+            <div className="report-stat-subtext">Available for download</div>
             <div className="report-stat-trend positive">
-              +8%  
+              +8%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -414,7 +405,9 @@ const Downloads = () => {
               Downloads by Category
             </h3>
             <div className="satisfaction-score">
-              <span className="score-value">{Object.keys(categoryDistribution).length}</span>
+              <span className="score-value">
+                {Object.keys(categoryDistribution).length}
+              </span>
               <span className="score-label">Categories</span>
             </div>
           </div>
@@ -424,28 +417,45 @@ const Downloads = () => {
                 <div className="pie-chart">
                   <div className="pie-chart-center">
                     <div className="pie-chart-value">
-                      {stats.totalDownloads > 0 ? Math.round((Math.max(...Object.values(categoryDistribution)) / stats.totalDownloads) * 100) : 0}%
+                      {stats.totalDownloads > 0
+                        ? Math.round(
+                            (Math.max(...Object.values(categoryDistribution)) /
+                              stats.totalDownloads) *
+                              100
+                          )
+                        : 0}
+                      %
                     </div>
                     <div className="pie-chart-label">Top Category</div>
                   </div>
                 </div>
               </div>
-              
+
               <div className="pie-chart-labels">
-                {Object.entries(categoryDistribution).map(([category, count], index) => {
-                  const percentage = stats.totalDownloads > 0 ? 
-                    Math.round((count / stats.totalDownloads) * 100) : 0;
-                  const colors = ['excellent', 'good', 'average', 'poor'];
-                  return (
-                    <div key={category} className="pie-chart-label">
-                      <span className={`pie-label-dot ${colors[index % colors.length]}`}></span>
-                      <div className="pie-label-text">
-                        <span className="pie-label-name">{category}</span>
-                        <span className="pie-label-percentage">{percentage}% ({count})</span>
+                {Object.entries(categoryDistribution).map(
+                  ([category, count], index) => {
+                    const percentage =
+                      stats.totalDownloads > 0
+                        ? Math.round((count / stats.totalDownloads) * 100)
+                        : 0;
+                    const colors = ["excellent", "good", "average", "poor"];
+                    return (
+                      <div key={category} className="pie-chart-label">
+                        <span
+                          className={`pie-label-dot ${
+                            colors[index % colors.length]
+                          }`}
+                        ></span>
+                        <div className="pie-label-text">
+                          <span className="pie-label-name">{category}</span>
+                          <span className="pie-label-percentage">
+                            {percentage}% ({count})
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  }
+                )}
               </div>
             </div>
           </div>
@@ -461,21 +471,29 @@ const Downloads = () => {
           </div>
           <div className="reports-categories-body">
             {Object.entries(assetTypeDistribution).map(([type, count]) => {
-              const percentage = downloads.length > 0 ? (count / downloads.length) * 100 : 0;
+              const percentage =
+                downloads.length > 0 ? (count / downloads.length) * 100 : 0;
               return (
                 <div key={type} className="category-progress">
                   <div className="category-header">
                     <span className="category-name">{type}</span>
-                    <span className="category-count">{percentage.toFixed(1)}% ({count})</span>
+                    <span className="category-count">
+                      {percentage.toFixed(1)}% ({count})
+                    </span>
                   </div>
                   <div className="category-progress-bar">
-                    <div 
+                    <div
                       className={`category-progress-fill ${
-                        type === '3D Model' ? 'harassment' :
-                        type === 'UI Kit' ? 'spam' :
-                        type === 'Audio' ? 'fraud' :
-                        type === 'Icons' ? 'content' : 'other'
-                      }`} 
+                        type === "3D Model"
+                          ? "harassment"
+                          : type === "UI Kit"
+                          ? "spam"
+                          : type === "Audio"
+                          ? "fraud"
+                          : type === "Icons"
+                          ? "content"
+                          : "other"
+                      }`}
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
@@ -500,10 +518,12 @@ const Downloads = () => {
             Filter Assets
           </h3>
           <div className="filter-results">
-            <span className="filter-text">Showing {filteredDownloads.length} of {downloads.length} assets</span>
+            <span className="filter-text">
+              Showing {filteredDownloads.length} of {downloads.length} assets
+            </span>
           </div>
         </div>
-        
+
         <div className="filter-controls-grid">
           {/* Search by Asset/Publisher */}
           <div className="filter-search-wrapper">
@@ -516,9 +536,9 @@ const Downloads = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           {/* Success Rate Filter */}
-          <select 
+          <select
             className="filter-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -528,21 +548,23 @@ const Downloads = () => {
             <option value="medium">Medium (85-94%)</option>
             <option value="low">Low (&lt;85%)</option>
           </select>
-          
+
           {/* Type Filter */}
-          <select 
+          <select
             className="filter-select"
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
           >
             <option value="all">All Types</option>
-            {Object.keys(assetTypeDistribution).map(type => (
-              <option key={type} value={type}>{type}</option>
+            {Object.keys(assetTypeDistribution).map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
             ))}
           </select>
-          
+
           {/* Time Range Filter */}
-          <select 
+          <select
             className="filter-select"
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
@@ -551,14 +573,14 @@ const Downloads = () => {
             <option value="30d">Last 30 Days</option>
             <option value="90d">Last 90 Days</option>
           </select>
-          
+
           {/* Action Buttons */}
           <div className="filter-actions">
             <button className="filter-button primary">
               <FiFilter />
               Apply
             </button>
-            <button 
+            <button
               className="filter-button"
               onClick={() => {
                 setSearchTerm("");
@@ -606,11 +628,20 @@ const Downloads = () => {
                   <td>
                     <div className="report-user">
                       <div className="report-user-avatar">
-                        {download.assetName.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                        {download.assetName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .substring(0, 2)}
                       </div>
                       <div className="report-user-info">
-                        <div className="report-user-name comp-dis">{download.assetName}</div>
-                        <div className="report-user-email">{download.assetType} • {formatFileSize(download.fileSize)}</div>
+                        <div className="report-user-name comp-dis">
+                          {download.assetName}
+                        </div>
+                        <div className="report-user-email">
+                          {download.assetType} •{" "}
+                          {formatFileSize(download.fileSize)}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -619,10 +650,16 @@ const Downloads = () => {
                   </td>
                   <td>
                     <div className="download-count">
-                      <strong>{download.totalDownloads.toLocaleString()}</strong>
+                      <strong>
+                        {download.totalDownloads.toLocaleString()}
+                      </strong>
                       <div className="download-breakdown">
-                        <span className="success">{download.successfulDownloads} ✓</span>
-                        <span className="failed">{download.failedDownloads} ✗</span>
+                        <span className="success">
+                          {download.successfulDownloads} ✓
+                        </span>
+                        <span className="failed">
+                          {download.failedDownloads} ✗
+                        </span>
                       </div>
                     </div>
                   </td>
@@ -630,27 +667,27 @@ const Downloads = () => {
                     <div className="success-rate">
                       <div className="rate-value">{download.successRate}%</div>
                       <div className="rate-bar">
-                        <div 
-                          className="rate-fill" 
+                        <div
+                          className="rate-fill"
                           style={{ width: `${download.successRate}%` }}
                         ></div>
                       </div>
                     </div>
                   </td>
-                  
+
                   <td>
-                    <span className="report-category-badge content">{download.category}</span>
+                    <span className="report-category-badge content">
+                      {download.category}
+                    </span>
                   </td>
-                  <td>
-                    {getStatusBadge(download.successRate)}
-                  </td>
+                  <td>{getStatusBadge(download.successRate)}</td>
                   <td>
                     {getTrendBadge(download.trend, download.trendPercentage)}
                   </td>
                   <td>
                     <div className="report-actions">
-                      <button 
-                        className="action-button secondary small" 
+                      <button
+                        className="action-button secondary small"
                         title="View Details"
                         onClick={() => handleViewDetails(download)}
                       >
@@ -667,11 +704,13 @@ const Downloads = () => {
             <div className="empty-state">
               <FiDownload className="empty-icon" />
               <h3 className="empty-title">
-                {downloads.length === 0 ? "No download data available" : "No assets found"}
+                {downloads.length === 0
+                  ? "No download data available"
+                  : "No assets found"}
               </h3>
               <p className="empty-text">
-                {downloads.length === 0 
-                  ? "Download statistics will appear here once assets are downloaded." 
+                {downloads.length === 0
+                  ? "Download statistics will appear here once assets are downloaded."
                   : "No assets match your search criteria."}
               </p>
             </div>
@@ -692,7 +731,7 @@ const Downloads = () => {
                 <FiX />
               </button>
             </div>
-            
+
             <div className="modal-body">
               <div className="asset-details-grid">
                 <div className="detail-section">
@@ -702,15 +741,21 @@ const Downloads = () => {
                   </h4>
                   <div className="stats-grid-modal">
                     <div className="stat-card-modal">
-                      <div className="stat-value">{selectedAsset.totalDownloads.toLocaleString()}</div>
+                      <div className="stat-value">
+                        {selectedAsset.totalDownloads.toLocaleString()}
+                      </div>
                       <div className="stat-label">Total Downloads</div>
                     </div>
                     <div className="stat-card-modal">
-                      <div className="stat-value">{selectedAsset.successRate}%</div>
+                      <div className="stat-value">
+                        {selectedAsset.successRate}%
+                      </div>
                       <div className="stat-label">Success Rate</div>
                     </div>
                     <div className="stat-card-modal">
-                      <div className="stat-value currency">{formatCurrency(selectedAsset.revenue)}</div>
+                      <div className="stat-value currency">
+                        {formatCurrency(selectedAsset.revenue)}
+                      </div>
                       <div className="stat-label">Total Revenue</div>
                     </div>
                   </div>
@@ -724,35 +769,51 @@ const Downloads = () => {
                   <div className="info-grid">
                     <div className="info-item">
                       <span className="info-label">Publisher:</span>
-                      <span className="info-value">{selectedAsset.publisher}</span>
+                      <span className="info-value">
+                        {selectedAsset.publisher}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Asset Type:</span>
-                      <span className="info-value">{selectedAsset.assetType}</span>
+                      <span className="info-value">
+                        {selectedAsset.assetType}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Category:</span>
-                      <span className="info-value">{selectedAsset.category}</span>
+                      <span className="info-value">
+                        {selectedAsset.category}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">File Size:</span>
-                      <span className="info-value">{formatFileSize(selectedAsset.fileSize)}</span>
+                      <span className="info-value">
+                        {formatFileSize(selectedAsset.fileSize)}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Price:</span>
-                      <span className="info-value">{formatCurrency(selectedAsset.price)}</span>
+                      <span className="info-value">
+                        {formatCurrency(selectedAsset.price)}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">License:</span>
-                      <span className="info-value">{getLicenseBadge(selectedAsset.license)}</span>
+                      <span className="info-value">
+                        {getLicenseBadge(selectedAsset.license)}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Rating:</span>
-                      <span className="info-value">{selectedAsset.rating}/5.0</span>
+                      <span className="info-value">
+                        {selectedAsset.rating}/5.0
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Last Download:</span>
-                      <span className="info-value">{formatDate(selectedAsset.lastDownload)}</span>
+                      <span className="info-value">
+                        {formatDate(selectedAsset.lastDownload)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -764,27 +825,39 @@ const Downloads = () => {
                   </h4>
                   <div className="performance-metrics">
                     <div className="metric">
-                      <span className="metric-label">Successful Downloads:</span>
-                      <span className="metric-value">{selectedAsset.successfulDownloads.toLocaleString()}</span>
+                      <span className="metric-label">
+                        Successful Downloads:
+                      </span>
+                      <span className="metric-value">
+                        {selectedAsset.successfulDownloads.toLocaleString()}
+                      </span>
                     </div>
                     <div className="metric">
                       <span className="metric-label">Failed Downloads:</span>
-                      <span className="metric-value">{selectedAsset.failedDownloads.toLocaleString()}</span>
+                      <span className="metric-value">
+                        {selectedAsset.failedDownloads.toLocaleString()}
+                      </span>
                     </div>
                     <div className="metric">
                       <span className="metric-label">Trend:</span>
                       <span className="metric-value">
-                        {getTrendBadge(selectedAsset.trend, selectedAsset.trendPercentage)}
+                        {getTrendBadge(
+                          selectedAsset.trend,
+                          selectedAsset.trendPercentage
+                        )}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="modal-footer">
               <div className="modal-actions">
-                <button className="action-button secondary" onClick={handleCloseModal}>
+                <button
+                  className="action-button secondary"
+                  onClick={handleCloseModal}
+                >
                   Close
                 </button>
                 <button className="action-button">
@@ -796,7 +869,6 @@ const Downloads = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
