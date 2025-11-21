@@ -320,7 +320,9 @@ const showTemplateButton = [
         </Link>
 
         {/* SIRF EXPLORE + SEARCH admin mein hide */}
-        {currentPage !== "/admin" && (
+        {!["/Login", "/Upload", "/reset", "/admin",  "/Contributor", "/contributor/dashboard", "/contributordashboard"].includes(
+        currentPage
+      ) && (
           <>
             <Link to="/stock">
               <div className="d-none d-md-block  ml-auto vi-more">
@@ -379,7 +381,7 @@ const showTemplateButton = [
       </div>
 
       {/* Bottom bar ONLY on non-main pages */}
-      {!["/", "/Login", "/Upload", "/reset", "/admin"].includes(
+      {!["/", "/Login", "/Upload", "/reset", "/admin", "/Contributor", "/contributor/dashboard", "/contributordashboard"].includes(
         currentPage
       ) && (
         <div className="bottom-bar">
