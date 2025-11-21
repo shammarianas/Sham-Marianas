@@ -16,9 +16,12 @@ function Footer() {
     path.includes('/admin/dashboard') ||
     path.includes('/company-dashboard') ||
     path.includes('/company/dashboard') ||
+    path.includes('/contributor/dashboard') || 
+    path.includes('/contributordashboard') || 
     path === '/dashboard' ||
     path === '/admin' ||
-    path === '/company';
+    path === '/company' ||
+    path === '/contributor';
 
   // Debug: Console log to check what's happening
   console.log('Current path:', path);

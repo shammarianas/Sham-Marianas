@@ -686,7 +686,7 @@ const ContributorLogin = () => {
                   <button 
                     className="login_btn" 
                     type="button"
-                    onClick={() => navigate("/contributor/dashboard")}
+                    onClick={() => navigate("/ContributorDashboard")}
                     style={{backgroundColor: '#4caf50'}}
                   >
                     Go to Dashboard
