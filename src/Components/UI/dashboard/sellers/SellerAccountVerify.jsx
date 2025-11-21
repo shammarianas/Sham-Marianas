@@ -1,103 +1,122 @@
-import React, { useState } from "react";
-import { 
-  FiUserCheck, 
-  FiUserX, 
-  FiEye, 
-  FiMail, 
-  FiCalendar, 
-  FiMapPin, 
-  FiCheckCircle, 
-  FiXCircle, 
-  FiClock, 
-  FiSearch, 
+import React, { useState, useEffect } from "react";
+import {
+  FiUserCheck,
+  FiUserX,
+  FiEye,
+  FiMail,
+  FiCalendar,
+  FiMapPin,
+  FiCheckCircle,
+  FiXCircle,
+  FiClock,
+  FiSearch,
   FiFilter,
   FiRefreshCw,
   FiDownload,
   FiList,
   FiUsers,
   FiTrendingUp,
-  FiX
+  FiX,
 } from "react-icons/fi";
+import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import { db } from "../../../../firebase";
 
 const SellerAccountVerify = () => {
-  const [sellers, setSellers] = useState([
-    {
-      id: 1,
-      name: "Ali Ahmed",
-      email: "ali.ahmed@example.com",
-      businessName: "Ali Designs",
-      category: "3D Models",
-      joinDate: "2024-01-15",
-      status: "pending",
-      documents: ["id_card.pdf", "business_license.pdf"],
-      location: "Karachi, Pakistan"
-    },
-    {
-      id: 2,
-      name: "Sara Khan",
-      email: "sara.khan@example.com",
-      businessName: "Sara Creations",
-      category: "Graphics",
-      joinDate: "2024-01-10",
-      status: "verified",
-      documents: ["id_card.pdf", "tax_certificate.pdf"],
-      location: "Lahore, Pakistan"
-    },
-    {
-      id: 3,
-      name: "Usman Riaz",
-      email: "usman.riaz@example.com",
-      businessName: "UR Designs",
-      category: "Templates",
-      joinDate: "2024-01-20",
-      status: "rejected",
-      documents: ["id_card.pdf"],
-      location: "Islamabad, Pakistan"
-    }
-  ]);
+  const [sellers, setSellers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSellers = async () => {
+      try {
+        const ref = collection(db, "Contributors");
+        const snapshot = await getDocs(ref);
+
+        const data = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+
+          // Convert Firestore timestamp to readable date
+          joinDate: docSnap.data().joinDate?.toDate().toLocaleDateString(),
+          location: docSnap.data().countryCode || "N/A",
+          email: docSnap.data().email || "N/A",
+          name: docSnap.data().fullName || docSnap.data().username,
+          businessName: docSnap.data().specialization || "Unknown",
+          category: docSnap.data().specialization || "General",
+          documents: docSnap.data().documents || [], // If you add docs later
+        }));
+
+        setSellers(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching sellers:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchSellers();
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedSeller, setSelectedSeller] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  const handleVerify = (sellerId) => {
-    setSellers(sellers.map(seller => 
-      seller.id === sellerId ? { ...seller, status: "verified" } : seller
-    ));
+  const handleVerify = async (sellerId) => {
+    await updateDoc(doc(db, "Contributors", sellerId), { status: "verified" });
+
+    setSellers((prev) =>
+      prev.map((s) => (s.id === sellerId ? { ...s, status: "verified" } : s))
+    );
   };
 
-  const handleReject = (sellerId) => {
-    setSellers(sellers.map(seller => 
-      seller.id === sellerId ? { ...seller, status: "rejected" } : seller
-    ));
+  const handleReject = async (sellerId) => {
+    await updateDoc(doc(db, "Contributors", sellerId), { status: "rejected" });
+
+    setSellers((prev) =>
+      prev.map((s) => (s.id === sellerId ? { ...s, status: "rejected" } : s))
+    );
   };
 
-  const handleUnverify = (sellerId) => {
-    setSellers(sellers.map(seller => 
-      seller.id === sellerId ? { ...seller, status: "pending" } : seller
-    ));
+  const handleUnverify = async (sellerId) => {
+    await updateDoc(doc(db, "Contributors", sellerId), { status: "pending" });
+
+    setSellers((prev) =>
+      prev.map((s) => (s.id === sellerId ? { ...s, status: "pending" } : s))
+    );
   };
 
-  const filteredSellers = sellers.filter(seller => {
-    const matchesSearch = 
+  const filteredSellers = sellers.filter((seller) => {
+    const matchesSearch =
       seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       seller.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       seller.businessName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || seller.status === statusFilter;
-    
+
+    const matchesStatus =
+      statusFilter === "all" || seller.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "verified":
-        return <span className="report-status-badge resolved"><FiCheckCircle /> Verified</span>;
+        return (
+          <span className="report-status-badge resolved">
+            <FiCheckCircle /> Verified
+          </span>
+        );
       case "pending":
-        return <span className="report-status-badge pending"><FiClock /> Pending</span>;
+        return (
+          <span className="report-status-badge pending">
+            <FiClock /> Pending
+          </span>
+        );
       case "rejected":
-        return <span className="report-status-badge in-progress"><FiXCircle /> Rejected</span>;
+        return (
+          <span className="report-status-badge in-progress">
+            <FiXCircle /> Rejected
+          </span>
+        );
       default:
         return <span className="report-status-badge pending">Unknown</span>;
     }
@@ -105,9 +124,9 @@ const SellerAccountVerify = () => {
 
   const stats = {
     totalSellers: sellers.length,
-    verifiedSellers: sellers.filter(s => s.status === "verified").length,
-    pendingSellers: sellers.filter(s => s.status === "pending").length,
-    rejectedSellers: sellers.filter(s => s.status === "rejected").length
+    verifiedSellers: sellers.filter((s) => s.status === "verified").length,
+    pendingSellers: sellers.filter((s) => s.status === "pending").length,
+    rejectedSellers: sellers.filter((s) => s.status === "rejected").length,
   };
 
   const resetFilters = () => {
@@ -148,9 +167,7 @@ const SellerAccountVerify = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Approved seller accounts
-            </div>
+            <div className="report-stat-subtext">Approved seller accounts</div>
             <div className="report-stat-trend positive">
               +12% <FiTrendingUp className="fi-pl" />
             </div>
@@ -168,9 +185,7 @@ const SellerAccountVerify = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Awaiting verification
-            </div>
+            <div className="report-stat-subtext">Awaiting verification</div>
             <div className="report-stat-trend negative">
               +5% <FiTrendingUp className="fi-pl" />
             </div>
@@ -188,9 +203,7 @@ const SellerAccountVerify = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              All seller applications
-            </div>
+            <div className="report-stat-subtext">All seller applications</div>
             <div className="report-stat-trend positive">
               +8% <FiTrendingUp className="fi-pl" />
             </div>
@@ -208,9 +221,7 @@ const SellerAccountVerify = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Rejected applications
-            </div>
+            <div className="report-stat-subtext">Rejected applications</div>
             <div className="report-stat-trend negative">
               +3% <FiTrendingUp className="fi-pl" />
             </div>
@@ -312,28 +323,31 @@ const SellerAccountVerify = () => {
                     </div>
                   </td>
                   <td>
-                    <span className={`report-category-badge ${
-                      seller.category === '3D Models' ? 'technical' : 
-                      seller.category === 'Graphics' ? 'billing' : 'general'
-                    }`}>
+                    <span
+                      className={`report-category-badge ${
+                        seller.category === "3D Models"
+                          ? "technical"
+                          : seller.category === "Graphics"
+                          ? "billing"
+                          : "general"
+                      }`}
+                    >
                       {seller.category}
                     </span>
                   </td>
                   <td>
                     <div className="comp-dis">
-                      <FiMapPin style={{ marginRight: '4px' }} />
+                      <FiMapPin style={{ marginRight: "4px" }} />
                       {seller.location}
                     </div>
                   </td>
                   <td>
                     <div className="comp-dis">
-                      <FiCalendar style={{ marginRight: '4px' }} />
+                      <FiCalendar style={{ marginRight: "4px" }} />
                       {seller.joinDate}
                     </div>
                   </td>
-                  <td>
-                    {getStatusBadge(seller.status)}
-                  </td>
+                  <td>{getStatusBadge(seller.status)}</td>
                   <td>
                     <div className="report-actions">
                       <button
@@ -346,7 +360,7 @@ const SellerAccountVerify = () => {
                       >
                         <FiEye />
                       </button>
-                      
+
                       {/* Always show Verify button for non-verified sellers */}
                       {seller.status !== "verified" && (
                         <button
@@ -357,8 +371,7 @@ const SellerAccountVerify = () => {
                           <FiCheckCircle />
                         </button>
                       )}
-                      
-                     
+
                       {/* Always show Unverify button for verified sellers */}
                       {seller.status === "verified" && (
                         <button
@@ -369,7 +382,7 @@ const SellerAccountVerify = () => {
                           <FiUserX />
                         </button>
                       )}
-                       {/* Always show Reject button for non-rejected sellers */}
+                      {/* Always show Reject button for non-rejected sellers */}
                       {seller.status !== "rejected" && (
                         <button
                           className="action-button danger small"
@@ -379,7 +392,7 @@ const SellerAccountVerify = () => {
                           <FiXCircle />
                         </button>
                       )}
-                      
+
                       {/* Show Unverify button for rejected sellers to move them back to pending */}
                       {seller.status === "rejected" && (
                         <button
@@ -394,7 +407,7 @@ const SellerAccountVerify = () => {
                   </td>
                 </tr>
               ))}
-              
+
               {filteredSellers.length === 0 && (
                 <tr>
                   <td colSpan="7" className="no-reports">
@@ -409,15 +422,21 @@ const SellerAccountVerify = () => {
 
       {/* Seller Details Modal */}
       {showDetailsModal && selectedSeller && (
-        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowDetailsModal(false)}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Seller Application Details</h3>
-              <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
+              <button
+                className="modal-close"
+                onClick={() => setShowDetailsModal(false)}
+              >
                 <FiX />
               </button>
             </div>
-            
+
             <div className="modal-body">
               <div className="report-detail-grid">
                 <div className="detail-section">
@@ -432,7 +451,9 @@ const SellerAccountVerify = () => {
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Location:</span>
-                    <span className="detail-value">{selectedSeller.location}</span>
+                    <span className="detail-value">
+                      {selectedSeller.location}
+                    </span>
                   </div>
                 </div>
 
@@ -440,15 +461,21 @@ const SellerAccountVerify = () => {
                   <h4>Business Information</h4>
                   <div className="detail-item">
                     <span className="detail-label">Business Name:</span>
-                    <span className="detail-value">{selectedSeller.businessName}</span>
+                    <span className="detail-value">
+                      {selectedSeller.businessName}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Category:</span>
-                    <span className="detail-value">{selectedSeller.category}</span>
+                    <span className="detail-value">
+                      {selectedSeller.category}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Join Date:</span>
-                    <span className="detail-value">{selectedSeller.joinDate}</span>
+                    <span className="detail-value">
+                      {selectedSeller.joinDate}
+                    </span>
                   </div>
                 </div>
 
@@ -484,10 +511,13 @@ const SellerAccountVerify = () => {
             </div>
 
             <div className="modal-footer">
-              <button className="action-button secondary" onClick={() => setShowDetailsModal(false)}>
+              <button
+                className="action-button secondary"
+                onClick={() => setShowDetailsModal(false)}
+              >
                 Close
               </button>
-              
+
               {/* Always show all action buttons in modal */}
               <button
                 className="action-button"
@@ -498,7 +528,7 @@ const SellerAccountVerify = () => {
               >
                 <FiCheckCircle /> Approve Seller
               </button>
-              
+
               <button
                 className="action-button danger"
                 onClick={() => {
@@ -508,7 +538,7 @@ const SellerAccountVerify = () => {
               >
                 <FiXCircle /> Reject Application
               </button>
-              
+
               <button
                 className="action-button warning"
                 onClick={() => {

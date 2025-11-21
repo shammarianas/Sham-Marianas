@@ -48,7 +48,6 @@ const Downloads = () => {
       try {
         setLoading(true);
 
-        // Get all users
         const profilesRef = collection(db, "Profiles");
         const profilesSnapshot = await getDocs(profilesRef);
 
@@ -59,58 +58,54 @@ const Downloads = () => {
 
         const assetStats = {};
 
-        // Loop each user and fetch their downloads
-        for (const userDoc of profilesSnapshot.docs) {
+        // ------------ FAST FIX: Fetch all downloads in parallel -------------
+        const downloadPromises = profilesSnapshot.docs.map(async (userDoc) => {
           const userId = userDoc.id;
-
           const downloadsRef = collection(db, `Profiles/${userId}/downloads`);
-          const downloadsSnapshot = await getDocs(downloadsRef);
+          return await getDocs(downloadsRef);
+        });
 
-          downloadsSnapshot.docs.forEach((doc) => {
-            const downloadData = doc.data();
-            const assetId = downloadData.assetId || doc.id;
+        const allUsersDownloads = await Promise.all(downloadPromises);
+        // ---------------------------------------------------------------------
+
+        allUsersDownloads.forEach((downloadsSnapshot) => {
+          downloadsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            const assetId = data.assetId || doc.id;
 
             if (!assetStats[assetId]) {
               assetStats[assetId] = {
                 id: assetId,
-                assetName:
-                  downloadData.title ||
-                  downloadData.assetName ||
-                  "Unknown Asset",
-                assetType:
-                  downloadData.type || downloadData.assetType || "Unknown",
-                publisher: downloadData.cre || "Unknown",
+                assetName: data.title || data.assetName || "Unknown Asset",
+                assetType: data.type || data.assetType || "Unknown",
+                publisher: data.cre || "Unknown",
                 totalDownloads: 0,
                 successfulDownloads: 0,
                 failedDownloads: 0,
-                fileSize: downloadData.fileSize || "0",
-                price: downloadData.price || 0,
-                license:
-                  downloadData.licenseType ||
-                  downloadData.license ||
-                  "Personal",
-                lastDownload: downloadData.downloadDate || new Date(),
-                category: downloadData.category || "General",
-                rating: downloadData.rating || 4.5,
+                fileSize: data.fileSize || "0",
+                price: data.price || 0,
+                license: data.licenseType || data.license || "Personal",
+                lastDownload: data.downloadDate || new Date(),
+                category: data.category || "General",
+                rating: data.rating || 4.5,
                 revenue: 0,
                 trend: Math.random() > 0.5 ? "up" : "down",
                 trendPercentage: Math.floor(Math.random() * 30) + 5,
               };
             }
 
-            // Update stats
             assetStats[assetId].totalDownloads++;
 
-            if (downloadData.status === "completed" || !downloadData.status) {
+            if (data.status === "completed" || !data.status) {
               assetStats[assetId].successfulDownloads++;
-              assetStats[assetId].revenue += downloadData.price || 0;
+              assetStats[assetId].revenue += data.price || 0;
             } else {
               assetStats[assetId].failedDownloads++;
             }
           });
-        }
+        });
 
-        // Convert stats object into array
+        // Convert to array
         const downloadsArray = Object.values(assetStats)
           .map((asset) => ({
             ...asset,
@@ -125,7 +120,7 @@ const Downloads = () => {
 
         setDownloads(downloadsArray);
       } catch (error) {
-        console.error("Error fetching downloads:", error);
+        console.error("Error:", error);
         await fetchUserDownloads();
       } finally {
         setLoading(false);
