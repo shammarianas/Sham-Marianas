@@ -42,8 +42,8 @@ import {
 // Import Components
 import DashboardOverview from "../Contributor-tabs/DashboardOverview";
 // import FilesManagement from "../Contributor-tabs/FilesManagement";
-import Upload from "../../../../Pages/Upload";
-// import UnderRevision from "../Contributor-tabs/UnderRevision";
+// import UploadFiles from "../Contributor-tabs/UploadFiles";
+import UnderRevision from "../Contributor-tabs/UnderRevision";
 // import Rejections from "../Contributor-tabs/Rejections";
 // import PublishedFiles from "../Contributor-tabs/PublishedFiles";
 // import Statistics from "../Contributor-tabs/Statistics";
@@ -286,11 +286,8 @@ const SellerDashboard = () => {
       case "dashboard":
         return <DashboardOverview {...commonProps} />;
       
-      case "files":
-        return <FilesManagement {...commonProps} />;
-      
       case "upload":
-        return <Upload {...commonProps} />;
+        return <UploadFiles {...commonProps} />;
       
       case "under-revision":
         return <UnderRevision {...commonProps} />;
@@ -354,13 +351,6 @@ const SellerDashboard = () => {
               >
                 <FiHome className="nav-c-icon" />
                 <span className="nav-c-label">Dashboard</span>
-              </li>
-              <li
-                className={`nav-c-item ${activeTab === "files" ? "active" : ""}`}
-                onClick={() => setActiveTab("files")}
-              >
-                <FiFileText className="nav-c-icon" />
-                <span className="nav-c-label">Files</span>
               </li>
               <li
                 className={`nav-c-item ${activeTab === "upload" ? "active" : ""}`}
