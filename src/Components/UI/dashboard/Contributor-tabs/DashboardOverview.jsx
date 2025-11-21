@@ -16,29 +16,40 @@ import {
   FiPieChart,
   FiList,
   FiPlus,
-  FiX
+  FiX,
+  FiChevronRight,
+  FiChevronLeft,
 } from "react-icons/fi";
 import Upload from "../../../../Pages/Upload";
 
-const DashboardOverview = ({ 
-  userData, 
-  assets, 
-  stats, 
-  refreshData, 
-  formatCurrency, 
-  formatDate 
+const DashboardOverview = ({
+  userData,
+  assets,
+  stats,
+  refreshData,
+  formatCurrency,
+  formatDate,
 }) => {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadKey, setUploadKey] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Calculate additional stats
-  const approvalRate = stats.totalUploads > 0 
-    ? ((stats.published / stats.totalUploads) * 100).toFixed(1)
-    : 0;
+  const approvalRate =
+    stats.totalUploads > 0
+      ? ((stats.published / stats.totalUploads) * 100).toFixed(1)
+      : 0;
 
-  const recentAssets = assets.slice(0, 5);
+  // Pagination for recent assets
+  const totalPages = Math.ceil(assets.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const currentAssets = assets.slice(startIndex, endIndex);
+  const recentAssets = currentAssets.slice(0, 10); // Show 10 rows per page
+
   const topPerformingAssets = assets
-    .filter(asset => asset.status === 'published')
+    .filter((asset) => asset.status === "published")
     .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
     .slice(0, 3);
 
@@ -47,12 +58,12 @@ const DashboardOverview = ({
     totalUploads: { value: 12.5, isPositive: true },
     underRevision: { value: -5.2, isPositive: false },
     published: { value: 8.3, isPositive: true },
-    earnings: { value: 15.7, isPositive: true }
+    earnings: { value: 15.7, isPositive: true },
   };
 
   // Upload handlers
   const handleOpenUpload = () => {
-    setUploadKey(prev => prev + 1);
+    setUploadKey((prev) => prev + 1);
     setShowUploadDialog(true);
   };
 
@@ -63,6 +74,48 @@ const DashboardOverview = ({
 
   const handleUploadClose = () => {
     setShowUploadDialog(false);
+  };
+
+  // Pagination handlers
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handlePageClick = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleSeeMore = () => {
+    setRowsPerPage(rowsPerPage + 10);
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+    
+    return pages;
   };
 
   return (
@@ -124,9 +177,18 @@ const DashboardOverview = ({
             <div className="report-stat-subtext">
               All time content submissions
             </div>
-            <div className={`report-stat-trend ${trends.totalUploads.isPositive ? 'positive' : 'negative'}`}>
-              {trends.totalUploads.value > 0 ? '+' : ''}{trends.totalUploads.value.toFixed(1)}% 
-              {trends.totalUploads.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
+            <div
+              className={`report-stat-trend ${
+                trends.totalUploads.isPositive ? "positive" : "negative"
+              }`}
+            >
+              {trends.totalUploads.value > 0 ? "+" : ""}
+              {trends.totalUploads.value.toFixed(1)}%
+              {trends.totalUploads.isPositive ? (
+                <FiTrendingUp />
+              ) : (
+                <FiTrendingDown />
+              )}
             </div>
           </div>
         </div>
@@ -142,12 +204,19 @@ const DashboardOverview = ({
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              In review process
-            </div>
-            <div className={`report-stat-trend ${trends.underRevision.isPositive ? 'positive' : 'negative'}`}>
-              {trends.underRevision.value > 0 ? '+' : ''}{trends.underRevision.value.toFixed(1)}% 
-              {trends.underRevision.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
+            <div className="report-stat-subtext">In review process</div>
+            <div
+              className={`report-stat-trend ${
+                trends.underRevision.isPositive ? "positive" : "negative"
+              }`}
+            >
+              {trends.underRevision.value > 0 ? "+" : ""}
+              {trends.underRevision.value.toFixed(1)}%
+              {trends.underRevision.isPositive ? (
+                <FiTrendingDown />
+              ) : (
+                <FiTrendingUp />
+              )}
             </div>
           </div>
         </div>
@@ -166,9 +235,18 @@ const DashboardOverview = ({
             <div className="report-stat-subtext">
               {approvalRate}% approval rate
             </div>
-            <div className={`report-stat-trend ${trends.published.isPositive ? 'positive' : 'negative'}`}>
-              {trends.published.value > 0 ? '+' : ''}{trends.published.value.toFixed(1)}% 
-              {trends.published.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
+            <div
+              className={`report-stat-trend ${
+                trends.published.isPositive ? "positive" : "negative"
+              }`}
+            >
+              {trends.published.value > 0 ? "+" : ""}
+              {trends.published.value.toFixed(1)}%
+              {trends.published.isPositive ? (
+                <FiTrendingUp />
+              ) : (
+                <FiTrendingDown />
+              )}
             </div>
           </div>
         </div>
@@ -187,9 +265,18 @@ const DashboardOverview = ({
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">Lifetime earnings</div>
-            <div className={`report-stat-trend ${trends.earnings.isPositive ? 'positive' : 'negative'}`}>
-              {trends.earnings.value > 0 ? '+' : ''}{trends.earnings.value.toFixed(1)}% 
-              {trends.earnings.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
+            <div
+              className={`report-stat-trend ${
+                trends.earnings.isPositive ? "positive" : "negative"
+              }`}
+            >
+              {trends.earnings.value > 0 ? "+" : ""}
+              {trends.earnings.value.toFixed(1)}%
+              {trends.earnings.isPositive ? (
+                <FiTrendingUp />
+              ) : (
+                <FiTrendingDown />
+              )}
             </div>
           </div>
         </div>
@@ -232,19 +319,20 @@ const DashboardOverview = ({
                   <span className="metric-status poor">Poor</span>
                 </div>
                 <div className="metric-value">
-                  {stats.totalUploads > 0 
-                    ? ((stats.rejections / stats.totalUploads) * 100).toFixed(1) 
-                    : 0
-                  }%
+                  {stats.totalUploads > 0
+                    ? ((stats.rejections / stats.totalUploads) * 100).toFixed(1)
+                    : 0}
+                  %
                 </div>
                 <div className="metric-target">Target: Below 10%</div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill poor"
                     style={{
-                      width: `${stats.totalUploads > 0 
-                        ? (stats.rejections / stats.totalUploads) * 100 
-                        : 0
+                      width: `${
+                        stats.totalUploads > 0
+                          ? (stats.rejections / stats.totalUploads) * 100
+                          : 0
                       }%`,
                     }}
                   ></div>
@@ -257,19 +345,23 @@ const DashboardOverview = ({
                   <span className="metric-status average">Average</span>
                 </div>
                 <div className="metric-value">
-                  {stats.totalUploads > 0 
-                    ? ((stats.underRevision / stats.totalUploads) * 100).toFixed(1) 
-                    : 0
-                  }%
+                  {stats.totalUploads > 0
+                    ? (
+                        (stats.underRevision / stats.totalUploads) *
+                        100
+                      ).toFixed(1)
+                    : 0}
+                  %
                 </div>
                 <div className="metric-target">Target: Below 15%</div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill average"
                     style={{
-                      width: `${stats.totalUploads > 0 
-                        ? (stats.underRevision / stats.totalUploads) * 100 
-                        : 0
+                      width: `${
+                        stats.totalUploads > 0
+                          ? (stats.underRevision / stats.totalUploads) * 100
+                          : 0
                       }%`,
                     }}
                   ></div>
@@ -287,33 +379,30 @@ const DashboardOverview = ({
           </div>
           <div className="reports-categories-body">
             <div className="quick-actions">
-              <button 
-                className="action-button"
-                onClick={handleOpenUpload}
-              >
+              <button className="action-button" onClick={handleOpenUpload}>
                 <FiUpload className="button-icon" />
                 Upload New File
               </button>
-              
-              <button 
+
+              <button
                 className="action-button secondary"
-                onClick={() => console.log('View All Files')}
+                onClick={() => console.log("View All Files")}
               >
                 <FiEye className="button-icon" />
                 View All Files
               </button>
-              
-              <button 
+
+              <button
                 className="action-button secondary"
-                onClick={() => console.log('View Analytics')}
+                onClick={() => console.log("View Analytics")}
               >
                 <FiTrendingUp className="button-icon" />
                 View Analytics
               </button>
-              
-              <button 
+
+              <button
                 className="action-button secondary"
-                onClick={() => console.log('Guidelines')}
+                onClick={() => console.log("Guidelines")}
               >
                 <FiStar className="button-icon" />
                 Guidelines
@@ -329,9 +418,14 @@ const DashboardOverview = ({
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Recent Activity
           </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" /> Export Data
-          </button>
+          <div className="table-controls">
+            <div className="table-info">
+              Showing {startIndex + 1}-{Math.min(endIndex, assets.length)} of {assets.length} assets
+            </div>
+            <button className="action-button secondary">
+              <FiDownload className="button-icon" /> Export Data
+            </button>
+          </div>
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
@@ -351,26 +445,38 @@ const DashboardOverview = ({
                   <td>
                     <div className="report-user">
                       <div className="report-user-avatar">
-                        {asset.title?.charAt(0)?.toUpperCase() || 'A'}
+                        {asset.title?.charAt(0)?.toUpperCase() || "A"}
                       </div>
                       <div className="report-user-info">
                         <div className="report-user-name">
                           {asset.title || "Untitled Asset"}
                         </div>
-                        <div className="report-user-email">{asset.category || "No category"}</div>
+                        <div className="report-user-email">
+                          {asset.category || "No category"}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <span className={`report-status-badge ${asset.status || "pending"}`}>
-                      {asset.status === "published" ? "Published" : 
-                       asset.status === "rejected" ? "Rejected" : 
-                       asset.status === "under_review" ? "In Review" : "Pending"}
+                    <span
+                      className={`report-status-badge ${
+                        asset.status || "pending"
+                      }`}
+                    >
+                      {asset.status === "published"
+                        ? "Published"
+                        : asset.status === "rejected"
+                        ? "Rejected"
+                        : asset.status === "under_review"
+                        ? "In Review"
+                        : "Pending"}
                     </span>
                   </td>
                   <td>
                     <div className="download-count">
-                      <span className="metric-value">{asset.downloads || 0}</span>
+                      <span className="metric-value">
+                        {asset.downloads || 0}
+                      </span>
                     </div>
                   </td>
                   <td>
@@ -384,7 +490,7 @@ const DashboardOverview = ({
                       <button
                         className="action-button secondary small"
                         title="View Details"
-                        onClick={() => console.log('View asset details')}
+                        onClick={() => console.log("View asset details")}
                       >
                         <FiEye />
                       </button>
@@ -395,14 +501,71 @@ const DashboardOverview = ({
               {recentAssets.length === 0 && (
                 <tr>
                   <td colSpan="6" className="no-data">
-                    No assets found. <button className="action-button small" onClick={handleOpenUpload}>
+                    No assets found.{" "}
+                    <button
+                      className="action-button small"
+                      onClick={handleOpenUpload}
+                    >
                       Upload your first file
-                    </button> to get started.
+                    </button>{" "}
+                    to get started.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          {assets.length > 10 && (
+            <div className="table-footer">
+              <div className="pagination-controls">
+                <button
+                  className="pagination-button"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                >
+                  <FiChevronLeft />
+                  Previous
+                </button>
+                
+                <div className="pagination-numbers">
+                  {getPageNumbers().map((page) => (
+                    <button
+                      key={page}
+                      className={`pagination-number ${
+                        page === currentPage ? "active" : ""
+                      }`}
+                      onClick={() => handlePageClick(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  {totalPages > 5 && currentPage < totalPages - 2 && (
+                    <span className="pagination-ellipsis">...</span>
+                  )}
+                </div>
+                
+                <button
+                  className="pagination-button"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <FiChevronRight />
+                </button>
+              </div>
+
+              {/* See More Button */}
+              {endIndex < assets.length && (
+                <div className="see-more-section">
+                  <button className="see-more-button" onClick={handleSeeMore}>
+                    <FiPlus className="button-icon" />
+                    Load More Assets ({assets.length - endIndex} remaining)
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -414,7 +577,8 @@ const DashboardOverview = ({
           </h3>
           <div className="filter-results">
             <span className="filter-text">
-              Showing {topPerformingAssets.length} of {stats.published} published assets
+              Showing {topPerformingAssets.length} of {stats.published}{" "}
+              published assets
             </span>
           </div>
         </div>
@@ -423,9 +587,7 @@ const DashboardOverview = ({
           {topPerformingAssets.map((asset, index) => (
             <div key={asset.id} className="performer-card">
               <div className="performer-header">
-                <div className="performer-rank">
-                  #{index + 1}
-                </div>
+                <div className="performer-rank">#{index + 1}</div>
                 <div className="performer-title">
                   {asset.title || "Untitled Asset"}
                 </div>
@@ -445,7 +607,9 @@ const DashboardOverview = ({
                 )}
                 <div className="performer-stat">
                   <FiDollarSign className="stat-icon" />
-                  <span className="stat-value currency">{formatCurrency(asset.earnings || 0)}</span>
+                  <span className="stat-value currency">
+                    {formatCurrency(asset.earnings || 0)}
+                  </span>
                   <span className="stat-label">Earnings</span>
                 </div>
               </div>
@@ -463,16 +627,48 @@ const DashboardOverview = ({
               <p className="empty-text">
                 <button className="action-button" onClick={handleOpenUpload}>
                   Upload your first file
-                </button> to see your top performers here
+                </button>{" "}
+                to see your top performers here
               </p>
             </div>
           )}
         </div>
       </div>
 
+      {/* Footer */}
+      <div className="dashboard-footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h4>CONTRIBUTOR CONTENT</h4>
+            <p>Manage and track your content performance</p>
+          </div>
+          <div className="footer-section">
+            <h4>Quick Links</h4>
+            <div className="footer-links">
+              <a href="#upload" onClick={handleOpenUpload}>Upload New File</a>
+              <a href="#guidelines">Content Guidelines</a>
+              <a href="#support">Support</a>
+            </div>
+          </div>
+          <div className="footer-section">
+            <h4>Stats Summary</h4>
+            <div className="footer-stats">
+              <span>Total Uploads: {stats.totalUploads}</span>
+              <span>Published: {stats.published}</span>
+              <span>Earnings: {formatCurrency(stats.totalEarnings)}</span>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2024 Content Dashboard. All rights reserved.</p>
+        </div>
+      </div>
+
       <style jsx>{`
         .user-reports-dashboard {
           padding: 20px;
+          position: relative;
+          min-height: 100vh;
         }
 
         .dashboard-header {
@@ -520,6 +716,182 @@ const DashboardOverview = ({
           font-weight: 600;
           font-size: 14px;
           border: 1px solid rgba(82, 176, 180, 0.2);
+        }
+.reports-content-grid{
+grid-template-columns: 2fr 1fr;
+}
+.action-button{
+padding: 1rem;
+}
+        /* Table Controls */
+        .table-controls {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 24px;
+          background: var(--bg-secondary);
+          border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-info {
+          font-size: 14px;
+          color: var(--text-muted);
+        }
+
+        /* Table Footer */
+        .table-footer {
+          padding: 20px;
+          border-top: 1px solid var(--border-color);
+          background: var(--darker);
+        }
+
+        .pagination-controls {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+
+        .pagination-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          border: 1px solid var(--border-color);
+          background: var(--gray-dark);
+          color: var(--text-primary);
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+          background: var(--border-color);
+        }
+
+        .pagination-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .pagination-numbers {
+          display: flex;
+          gap: 4px;
+        }
+
+        .pagination-number {
+          padding: 8px 12px;
+          border: 1px solid var(--border-color);
+          background: var(--gray-dark);
+          color: var(--text-primary);
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          min-width: 40px;
+        }
+
+        .pagination-number:hover {
+          background: var(--border-color);
+        }
+
+        .pagination-number.active {
+          background: #52b0b4;
+          color: white;
+          border-color: #52b0b4;
+        }
+
+        .pagination-ellipsis {
+          padding: 8px 12px;
+          color: var(--text-secondary);
+        }
+
+        /* See More Section */
+        .see-more-section {
+          text-align: center;
+          padding: 16px 0;
+          border-top: 1px solid var(--border-color);
+        }
+
+        .see-more-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          background: transparent;
+          color: #52b0b4;
+          border: 2px solid #52b0b4;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-weight: 600;
+        }
+
+        .see-more-button:hover {
+          background: #52b0b4;
+          color: white;
+        }
+
+        /* Footer */
+        .dashboard-footer {
+          margin-top: 40px;
+          background: var(--darker);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          overflow: hidden;
+        }
+
+        .footer-content {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 30px;
+          padding: 40px;
+        }
+
+        .footer-section h4 {
+          color: var(--text-primary);
+          margin-bottom: 16px;
+          font-size: 18px;
+          font-weight: 600;
+        }
+
+        .footer-section p {
+          color: var(--text-secondary);
+          line-height: 1.6;
+        }
+
+        .footer-links {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .footer-links a {
+          color: var(--text-secondary);
+          text-decoration: none;
+          transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+          color: #52b0b4;
+        }
+
+        .footer-stats {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .footer-stats span {
+          color: var(--text-secondary);
+          font-size: 14px;
+        }
+
+        .footer-bottom {
+          padding: 20px 40px;
+          border-top: 1px solid var(--border-color);
+          text-align: center;
+          color: var(--text-secondary);
+          font-size: 14px;
         }
 
         /* Performance Metrics Grid */
@@ -706,8 +1078,11 @@ const DashboardOverview = ({
         }
 
         .empty-text {
+          display: flex;
           color: var(--text-secondary);
           font-size: 14px;
+          flex-direction: column;
+          align-items: center;
         }
 
         /* Responsive Design */
@@ -728,6 +1103,23 @@ const DashboardOverview = ({
           .performer-stats {
             grid-template-columns: 1fr;
             gap: 8px;
+          }
+
+          .pagination-controls {
+            flex-direction: column;
+            gap: 16px;
+          }
+
+          .footer-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 30px 20px;
+          }
+
+          .table-controls {
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
           }
         }
       `}</style>
