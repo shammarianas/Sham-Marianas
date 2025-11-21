@@ -33,20 +33,27 @@ import {
   FiUser,
   FiLogOut,
   FiMessageSquare,
-  FiAlertCircle,
   FiShoppingBag,
   FiDollarSign,
-  FiDownload,
   FiStar,
   FiClock,
-  FiFilter,
-  FiEye,
-  FiTrash2,
-  FiEdit,
-  FiPlus,
-  FiChevronDown,
-  FiChevronUp,
 } from "react-icons/fi";
+
+// Import Components
+import DashboardOverview from "../Contributor-tabs/DashboardOverview";
+// import FilesManagement from "../Contributor-tabs/FilesManagement";
+import Upload from "../../../../Pages/Upload";
+// import UnderRevision from "../Contributor-tabs/UnderRevision";
+// import Rejections from "../Contributor-tabs/Rejections";
+// import PublishedFiles from "../Contributor-tabs/PublishedFiles";
+// import Statistics from "../Contributor-tabs/Statistics";
+// import SearchTrends from "../Contributor-tabs/SearchTrends";
+// import VisualTrends from "../Contributor-tabs/VisualTrends";
+// import Guidelines from "../Contributor-tabs/Guidelines";
+// import ContactSupport from "../Contributor-tabs/ContactSupport";
+// import ProfileSettings from "../Contributor-tabs/ProfileSettings";
+// import BillingInvoices from "../Contributor-tabs/BillingInvoices";
+// import Feedback from "../Contributor-tabs/Feedback";
 
 import "../../../../assets/Styles/contribute-style.css";
 
@@ -253,9 +260,75 @@ const SellerDashboard = () => {
     return null;
   };
 
+  // Function to refresh data when needed
+  const refreshData = () => {
+    if (userData?.uid) {
+      fetchSellerData(userData.uid);
+    }
+  };
+
   if (error && !isSeller) {
     return <UnauthorizedAccess error={error} />;
   }
+
+  // Render active tab component
+  const renderActiveTab = () => {
+    const commonProps = {
+      userData,
+      assets,
+      stats,
+      refreshData,
+      formatCurrency,
+      formatDate
+    };
+
+    switch (activeTab) {
+      case "dashboard":
+        return <DashboardOverview {...commonProps} />;
+      
+      case "files":
+        return <FilesManagement {...commonProps} />;
+      
+      case "upload":
+        return <Upload {...commonProps} />;
+      
+      case "under-revision":
+        return <UnderRevision {...commonProps} />;
+      
+      case "rejections":
+        return <Rejections {...commonProps} />;
+      
+      case "published":
+        return <PublishedFiles {...commonProps} />;
+      
+      case "stats":
+        return <Statistics {...commonProps} />;
+      
+      case "search-trends":
+        return <SearchTrends {...commonProps} />;
+      
+      case "visual-trends":
+        return <VisualTrends {...commonProps} />;
+      
+      case "guidelines":
+        return <Guidelines {...commonProps} />;
+      
+      case "contact":
+        return <ContactSupport {...commonProps} />;
+      
+      case "profile":
+        return <ProfileSettings {...commonProps} />;
+      
+      case "billing":
+        return <BillingInvoices {...commonProps} />;
+      
+      case "feedback":
+        return <Feedback {...commonProps} />;
+      
+      default:
+        return <DashboardOverview {...commonProps} />;
+    }
+  };
 
   return (
     <div className="seller-dashboard">
@@ -264,223 +337,175 @@ const SellerDashboard = () => {
         <div className="seller-sidebar-header">
           <div className="seller-brand">
             <FiShoppingBag className="brand-icon" />
-            <span className="brand-text">FREEPIK Contributor</span>
+            <span className="brand-text">Contributor Dashboard</span>
           </div>
         </div>
 
-        <nav className="seller-sidebar-nav">
+        <nav className="seller-sidebar-nav-c">
           {/* Main Menu */}
-          <div className="nav-section">
-            <div className="nav-section-title">MAIN</div>
-            <ul className="nav-menu">
+          <div className="nav-c-section">
+            <div className="nav-c-section-title">MAIN</div>
+            <ul className="nav-c-menu">
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "dashboard" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("dashboard")}
               >
-                <FiHome className="nav-icon" />
-                <span className="nav-label">Dashboard</span>
+                <FiHome className="nav-c-icon" />
+                <span className="nav-c-label">Dashboard</span>
               </li>
               <li
-                className={`nav-item ${activeTab === "files" ? "active" : ""}`}
+                className={`nav-c-item ${activeTab === "files" ? "active" : ""}`}
                 onClick={() => setActiveTab("files")}
               >
-                <FiFileText className="nav-icon" />
-                <span className="nav-label">Files</span>
+                <FiFileText className="nav-c-icon" />
+                <span className="nav-c-label">Files</span>
               </li>
               <li
-                className={`nav-item ${activeTab === "upload" ? "active" : ""}`}
+                className={`nav-c-item ${activeTab === "upload" ? "active" : ""}`}
                 onClick={() => setActiveTab("upload")}
               >
-                <FiUpload className="nav-icon" />
-                <span className="nav-label">Upload</span>
+                <FiUpload className="nav-c-icon" />
+                <span className="nav-c-label">Upload</span>
               </li>
             </ul>
           </div>
 
           {/* Files Status */}
-          <div className="nav-section">
-            <div className="nav-section-title">FILES STATUS</div>
-            <ul className="nav-menu">
+          <div className="nav-c-section">
+            <div className="nav-c-section-title">FILES STATUS</div>
+            <ul className="nav-c-menu">
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "under-revision" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("under-revision")}
               >
-                <FiClock className="nav-icon" />
-                <span className="nav-label">Under revision</span>
+                <FiClock className="nav-c-icon" />
+                <span className="nav-c-label">Under revision</span>
                 {stats.underRevision > 0 && (
-                  <span className="nav-badge">{stats.underRevision}</span>
+                  <span className="nav-c-badge">{stats.underRevision}</span>
                 )}
               </li>
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "rejections" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("rejections")}
               >
-                <FiXCircle className="nav-icon" />
-                <span className="nav-label">Rejections</span>
+                <FiXCircle className="nav-c-icon" />
+                <span className="nav-c-label">Rejections</span>
                 {stats.rejections > 0 && (
-                  <span className="nav-badge">{stats.rejections}</span>
+                  <span className="nav-c-badge">{stats.rejections}</span>
                 )}
               </li>
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "published" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("published")}
               >
-                <FiCheckCircle className="nav-icon" />
-                <span className="nav-label">Published</span>
+                <FiCheckCircle className="nav-c-icon" />
+                <span className="nav-c-label">Published</span>
                 {stats.published > 0 && (
-                  <span className="nav-badge">{stats.published}</span>
+                  <span className="nav-c-badge">{stats.published}</span>
                 )}
               </li>
             </ul>
           </div>
 
           {/* Stats */}
-          <div className="nav-section">
-            <div className="nav-section-title">STATS</div>
-            <ul className="nav-menu">
+          <div className="nav-c-section">
+            <div className="nav-c-section-title">STATS</div>
+            <ul className="nav-c-menu">
               <li
-                className={`nav-item ${activeTab === "stats" ? "active" : ""}`}
+                className={`nav-c-item ${activeTab === "stats" ? "active" : ""}`}
                 onClick={() => setActiveTab("stats")}
               >
-                <FiTrendingUp className="nav-icon" />
-                <span className="nav-label">Stats</span>
+                <FiTrendingUp className="nav-c-icon" />
+                <span className="nav-c-label">Stats</span>
               </li>
             </ul>
           </div>
 
           {/* Resources and Help */}
-          <div className="nav-section">
-            <div className="nav-section-title">RESOURCES AND HELP</div>
-            <ul className="nav-menu">
+          <div className="nav-c-section">
+            <div className="nav-c-section-title">RESOURCES AND HELP</div>
+            <ul className="nav-c-menu">
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "search-trends" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("search-trends")}
               >
-                <FiSearch className="nav-icon" />
-                <span className="nav-label">Search Trends</span>
+                <FiSearch className="nav-c-icon" />
+                <span className="nav-c-label">Search Trends</span>
               </li>
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "visual-trends" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("visual-trends")}
               >
-                <FiPieChart className="nav-icon" />
-                <span className="nav-label">Visual Trends</span>
+                <FiPieChart className="nav-c-icon" />
+                <span className="nav-c-label">Visual Trends</span>
               </li>
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "guidelines" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("guidelines")}
               >
-                <FiList className="nav-icon" />
-                <span className="nav-label">Guidelines</span>
+                <FiList className="nav-c-icon" />
+                <span className="nav-c-label">Guidelines</span>
               </li>
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "contact" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("contact")}
               >
-                <FiMessageSquare className="nav-icon" />
-                <span className="nav-label">Contact</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Application */}
-          <div className="nav-section">
-            <div className="nav-section-title">APPLICATION</div>
-            <ul className="nav-menu">
-              <li
-                className={`nav-item ${
-                  activeTab === "app-store" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("app-store")}
-              >
-                <FiDownload className="nav-icon" />
-                <span className="nav-label">App store</span>
+                <FiMessageSquare className="nav-c-icon" />
+                <span className="nav-c-label">Contact</span>
               </li>
             </ul>
           </div>
 
           {/* Account */}
-          <div className="nav-section">
-            <div className="nav-section-title">ACCOUNT</div>
-            <ul className="nav-menu">
+          <div className="nav-c-section">
+            <div className="nav-c-section-title">ACCOUNT</div>
+            <ul className="nav-c-menu">
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "profile" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("profile")}
               >
-                <FiUser className="nav-icon" />
-                <span className="nav-label">Profile</span>
+                <FiUser className="nav-c-icon" />
+                <span className="nav-c-label">Profile</span>
               </li>
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "billing" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("billing")}
               >
-                <FiDollarSign className="nav-icon" />
-                <span className="nav-label">Billing and invoices</span>
+                <FiDollarSign className="nav-c-icon" />
+                <span className="nav-c-label">Billing and invoices</span>
               </li>
               <li
-                className={`nav-item ${
+                className={`nav-c-item ${
                   activeTab === "feedback" ? "active" : ""
                 }`}
                 onClick={() => setActiveTab("feedback")}
               >
-                <FiStar className="nav-icon" />
-                <span className="nav-label">Feedback</span>
+                <FiStar className="nav-c-icon" />
+                <span className="nav-c-label">Feedback</span>
               </li>
             </ul>
           </div>
         </nav>
-
-        {/* Footer */}
-        <div className="seller-sidebar-footer">
-          <div className="user-info">
-            <div className="user-avatar">
-              {userData?.profilePic ? (
-                <img src={userData.profilePic} alt={userData?.username} />
-              ) : (
-                <FiUser className="avatar-icon" />
-              )}
-            </div>
-            <div className="user-details">
-              <span className="user-name">
-                {userData?.username || "Seller"}
-              </span>
-              <span className="user-role">Contributor</span>
-            </div>
-          </div>
-          <button
-            className="logout-btn"
-            onClick={async () => {
-              try {
-                await signOut(auth);
-                navigate("/");
-              } catch (error) {
-                console.error("Logout error:", error);
-              }
-            }}
-          >
-            <FiLogOut className="logout-icon" />
-          </button>
-        </div>
       </div>
 
       {/* Main Content */}
@@ -499,7 +524,6 @@ const SellerDashboard = () => {
               {activeTab === "visual-trends" && "Visual Trends"}
               {activeTab === "guidelines" && "Guidelines"}
               {activeTab === "contact" && "Contact Support"}
-              {activeTab === "app-store" && "App Store"}
               {activeTab === "profile" && "Profile Settings"}
               {activeTab === "billing" && "Billing & Invoices"}
               {activeTab === "feedback" && "Feedback"}
@@ -527,123 +551,9 @@ const SellerDashboard = () => {
         {/* Dashboard Content */}
         <div className="seller-content">
           {loading && <div className="loading-overlay">Loading...</div>}
-
-          {/* Dashboard Tab */}
-          {activeTab === "dashboard" && (
-            <div className="dashboard-overview">
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-icon total-uploads">
-                    <FiUpload />
-                  </div>
-                  <div className="stat-info">
-                    <h3 className="stat-value">{stats.totalUploads}</h3>
-                    <p className="stat-label">Total Uploads</p>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon under-revision">
-                    <FiClock />
-                  </div>
-                  <div className="stat-info">
-                    <h3 className="stat-value">{stats.underRevision}</h3>
-                    <p className="stat-label">Under Revision</p>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon rejections">
-                    <FiXCircle />
-                  </div>
-                  <div className="stat-info">
-                    <h3 className="stat-value">{stats.rejections}</h3>
-                    <p className="stat-label">Rejections</p>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon published">
-                    <FiCheckCircle />
-                  </div>
-                  <div className="stat-info">
-                    <h3 className="stat-value">{stats.published}</h3>
-                    <p className="stat-label">Published</p>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon earnings">
-                    <FiDollarSign />
-                  </div>
-                  <div className="stat-info">
-                    <h3 className="stat-value">
-                      {formatCurrency(stats.totalEarnings)}
-                    </h3>
-                    <p className="stat-label">Total Earnings</p>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon pending">
-                    <FiClock />
-                  </div>
-                  <div className="stat-info">
-                    <h3 className="stat-value">
-                      {formatCurrency(stats.pendingEarnings)}
-                    </h3>
-                    <p className="stat-label">Pending Earnings</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="recent-activity">
-                <h2 className="section-title">Recent Activity</h2>
-                <div className="activity-list">
-                  {assets.slice(0, 5).map((asset) => (
-                    <div key={asset.id} className="activity-item">
-                      <div className="activity-icon">
-                        {asset.status === "published" && (
-                          <FiCheckCircle className="success" />
-                        )}
-                        {asset.status === "rejected" && (
-                          <FiXCircle className="error" />
-                        )}
-                        {asset.status === "under_review" && (
-                          <FiClock className="warning" />
-                        )}
-                      </div>
-                      <div className="activity-details">
-                        <p className="activity-title">
-                          {asset.title || "Untitled Asset"}
-                        </p>
-                        <span className="activity-date">
-                          {formatDate(asset.createdAt)}
-                        </span>
-                      </div>
-                      <div className="activity-status">
-                        <span className={`status-badge ${asset.status}`}>
-                          {asset.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {assets.length === 0 && (
-                    <p className="no-activity">No recent activity</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Other tabs can be implemented similarly */}
-          {activeTab !== "dashboard" && (
-            <div className="tab-content">
-              <h2>This is the {activeTab} tab</h2>
-              <p>Content for {activeTab} will be implemented here.</p>
-            </div>
-          )}
+          
+          {/* Render the active tab component */}
+          {renderActiveTab()}
         </div>
       </div>
     </div>
