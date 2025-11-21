@@ -88,14 +88,32 @@ const SellerDashboard = () => {
       try {
         const uid = currentUser.uid;
         const sellerDoc = await getDoc(doc(db, "Contributors", uid));
-        
+
         if (sellerDoc.exists()) {
           const sellerData = sellerDoc.data();
+
+          // Check if contributor is active
+          if (sellerData.status !== "verified") {
+            setError(
+              `Your contributor account is ${sellerData.status}. You cannot access the dashboard.`
+            );
+
+            if (sellerData.status === "pending") {
+              navigate("/contributor-pending"); // Your pending page
+            } else if (sellerData.status === "rejected") {
+              navigate("/contributor-rejected"); // Your rejected page
+            } else {
+              navigate("/become-contributor");
+            }
+            return;
+          }
+
+          // If status = active, allow access
           setIsSeller(true);
           setUserData(sellerData);
           await fetchSellerData(uid);
         } else {
-          setError("You are not registered as a seller/contributor");
+          setError("You are not registered as a contributor");
           navigate("/become-contributor");
         }
       } catch (error) {
@@ -110,10 +128,7 @@ const SellerDashboard = () => {
   const fetchSellerData = async (uid) => {
     setLoading(true);
     try {
-      await Promise.all([
-        fetchAssets(uid),
-        fetchStats(uid),
-      ]);
+      await Promise.all([fetchAssets(uid), fetchStats(uid)]);
     } catch (error) {
       setError(`Failed to load seller data: ${error.message}`);
     } finally {
@@ -148,7 +163,7 @@ const SellerDashboard = () => {
         where("contributorId", "==", uid)
       );
       const assetsSnapshot = await getDocs(assetsQuery);
-      
+
       let totalUploads = 0;
       let underRevision = 0;
       let rejections = 0;
@@ -157,20 +172,20 @@ const SellerDashboard = () => {
       assetsSnapshot.forEach((doc) => {
         const asset = doc.data();
         totalUploads++;
-        
+
         switch (asset.status?.toLowerCase()) {
-          case 'under_review':
-          case 'pending':
-          case 'review':
+          case "under_review":
+          case "pending":
+          case "review":
             underRevision++;
             break;
-          case 'rejected':
-          case 'declined':
+          case "rejected":
+          case "declined":
             rejections++;
             break;
-          case 'approved':
-          case 'published':
-          case 'active':
+          case "approved":
+          case "published":
+          case "active":
             published++;
             break;
         }
@@ -182,15 +197,15 @@ const SellerDashboard = () => {
         where("contributorId", "==", uid)
       );
       const earningsSnapshot = await getDocs(earningsQuery);
-      
+
       let totalEarnings = 0;
       let pendingEarnings = 0;
 
       earningsSnapshot.forEach((doc) => {
         const earning = doc.data();
-        if (earning.status === 'paid') {
+        if (earning.status === "paid") {
           totalEarnings += earning.amount || 0;
-        } else if (earning.status === 'pending') {
+        } else if (earning.status === "pending") {
           pendingEarnings += earning.amount || 0;
         }
       });
@@ -258,21 +273,23 @@ const SellerDashboard = () => {
           <div className="nav-section">
             <div className="nav-section-title">MAIN</div>
             <ul className="nav-menu">
-              <li 
-                className={`nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "dashboard" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("dashboard")}
               >
                 <FiHome className="nav-icon" />
                 <span className="nav-label">Dashboard</span>
               </li>
-              <li 
+              <li
                 className={`nav-item ${activeTab === "files" ? "active" : ""}`}
                 onClick={() => setActiveTab("files")}
               >
                 <FiFileText className="nav-icon" />
                 <span className="nav-label">Files</span>
               </li>
-              <li 
+              <li
                 className={`nav-item ${activeTab === "upload" ? "active" : ""}`}
                 onClick={() => setActiveTab("upload")}
               >
@@ -286,8 +303,10 @@ const SellerDashboard = () => {
           <div className="nav-section">
             <div className="nav-section-title">FILES STATUS</div>
             <ul className="nav-menu">
-              <li 
-                className={`nav-item ${activeTab === "under-revision" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "under-revision" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("under-revision")}
               >
                 <FiClock className="nav-icon" />
@@ -296,8 +315,10 @@ const SellerDashboard = () => {
                   <span className="nav-badge">{stats.underRevision}</span>
                 )}
               </li>
-              <li 
-                className={`nav-item ${activeTab === "rejections" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "rejections" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("rejections")}
               >
                 <FiXCircle className="nav-icon" />
@@ -306,8 +327,10 @@ const SellerDashboard = () => {
                   <span className="nav-badge">{stats.rejections}</span>
                 )}
               </li>
-              <li 
-                className={`nav-item ${activeTab === "published" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "published" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("published")}
               >
                 <FiCheckCircle className="nav-icon" />
@@ -323,7 +346,7 @@ const SellerDashboard = () => {
           <div className="nav-section">
             <div className="nav-section-title">STATS</div>
             <ul className="nav-menu">
-              <li 
+              <li
                 className={`nav-item ${activeTab === "stats" ? "active" : ""}`}
                 onClick={() => setActiveTab("stats")}
               >
@@ -337,29 +360,37 @@ const SellerDashboard = () => {
           <div className="nav-section">
             <div className="nav-section-title">RESOURCES AND HELP</div>
             <ul className="nav-menu">
-              <li 
-                className={`nav-item ${activeTab === "search-trends" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "search-trends" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("search-trends")}
               >
                 <FiSearch className="nav-icon" />
                 <span className="nav-label">Search Trends</span>
               </li>
-              <li 
-                className={`nav-item ${activeTab === "visual-trends" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "visual-trends" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("visual-trends")}
               >
                 <FiPieChart className="nav-icon" />
                 <span className="nav-label">Visual Trends</span>
               </li>
-              <li 
-                className={`nav-item ${activeTab === "guidelines" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "guidelines" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("guidelines")}
               >
                 <FiList className="nav-icon" />
                 <span className="nav-label">Guidelines</span>
               </li>
-              <li 
-                className={`nav-item ${activeTab === "contact" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "contact" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("contact")}
               >
                 <FiMessageSquare className="nav-icon" />
@@ -372,8 +403,10 @@ const SellerDashboard = () => {
           <div className="nav-section">
             <div className="nav-section-title">APPLICATION</div>
             <ul className="nav-menu">
-              <li 
-                className={`nav-item ${activeTab === "app-store" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "app-store" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("app-store")}
               >
                 <FiDownload className="nav-icon" />
@@ -386,22 +419,28 @@ const SellerDashboard = () => {
           <div className="nav-section">
             <div className="nav-section-title">ACCOUNT</div>
             <ul className="nav-menu">
-              <li 
-                className={`nav-item ${activeTab === "profile" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "profile" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("profile")}
               >
                 <FiUser className="nav-icon" />
                 <span className="nav-label">Profile</span>
               </li>
-              <li 
-                className={`nav-item ${activeTab === "billing" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "billing" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("billing")}
               >
                 <FiDollarSign className="nav-icon" />
                 <span className="nav-label">Billing and invoices</span>
               </li>
-              <li 
-                className={`nav-item ${activeTab === "feedback" ? "active" : ""}`}
+              <li
+                className={`nav-item ${
+                  activeTab === "feedback" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("feedback")}
               >
                 <FiStar className="nav-icon" />
@@ -422,11 +461,13 @@ const SellerDashboard = () => {
               )}
             </div>
             <div className="user-details">
-              <span className="user-name">{userData?.username || "Seller"}</span>
+              <span className="user-name">
+                {userData?.username || "Seller"}
+              </span>
               <span className="user-role">Contributor</span>
             </div>
           </div>
-          <button 
+          <button
             className="logout-btn"
             onClick={async () => {
               try {
@@ -500,7 +541,7 @@ const SellerDashboard = () => {
                     <p className="stat-label">Total Uploads</p>
                   </div>
                 </div>
-                
+
                 <div className="stat-card">
                   <div className="stat-icon under-revision">
                     <FiClock />
@@ -510,7 +551,7 @@ const SellerDashboard = () => {
                     <p className="stat-label">Under Revision</p>
                   </div>
                 </div>
-                
+
                 <div className="stat-card">
                   <div className="stat-icon rejections">
                     <FiXCircle />
@@ -520,7 +561,7 @@ const SellerDashboard = () => {
                     <p className="stat-label">Rejections</p>
                   </div>
                 </div>
-                
+
                 <div className="stat-card">
                   <div className="stat-icon published">
                     <FiCheckCircle />
@@ -530,23 +571,27 @@ const SellerDashboard = () => {
                     <p className="stat-label">Published</p>
                   </div>
                 </div>
-                
+
                 <div className="stat-card">
                   <div className="stat-icon earnings">
                     <FiDollarSign />
                   </div>
                   <div className="stat-info">
-                    <h3 className="stat-value">{formatCurrency(stats.totalEarnings)}</h3>
+                    <h3 className="stat-value">
+                      {formatCurrency(stats.totalEarnings)}
+                    </h3>
                     <p className="stat-label">Total Earnings</p>
                   </div>
                 </div>
-                
+
                 <div className="stat-card">
                   <div className="stat-icon pending">
                     <FiClock />
                   </div>
                   <div className="stat-info">
-                    <h3 className="stat-value">{formatCurrency(stats.pendingEarnings)}</h3>
+                    <h3 className="stat-value">
+                      {formatCurrency(stats.pendingEarnings)}
+                    </h3>
                     <p className="stat-label">Pending Earnings</p>
                   </div>
                 </div>
@@ -559,13 +604,23 @@ const SellerDashboard = () => {
                   {assets.slice(0, 5).map((asset) => (
                     <div key={asset.id} className="activity-item">
                       <div className="activity-icon">
-                        {asset.status === 'published' && <FiCheckCircle className="success" />}
-                        {asset.status === 'rejected' && <FiXCircle className="error" />}
-                        {asset.status === 'under_review' && <FiClock className="warning" />}
+                        {asset.status === "published" && (
+                          <FiCheckCircle className="success" />
+                        )}
+                        {asset.status === "rejected" && (
+                          <FiXCircle className="error" />
+                        )}
+                        {asset.status === "under_review" && (
+                          <FiClock className="warning" />
+                        )}
                       </div>
                       <div className="activity-details">
-                        <p className="activity-title">{asset.title || "Untitled Asset"}</p>
-                        <span className="activity-date">{formatDate(asset.createdAt)}</span>
+                        <p className="activity-title">
+                          {asset.title || "Untitled Asset"}
+                        </p>
+                        <span className="activity-date">
+                          {formatDate(asset.createdAt)}
+                        </span>
                       </div>
                       <div className="activity-status">
                         <span className={`status-badge ${asset.status}`}>
