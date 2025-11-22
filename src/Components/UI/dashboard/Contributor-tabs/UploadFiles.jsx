@@ -24,6 +24,7 @@ import {
 import {
   collection,
   query,
+  where,
   getDocs,
   doc,
   updateDoc,
@@ -240,7 +241,11 @@ const UploadFiles = () => {
   const fetchAssets = useCallback(() => {
     setLoading(true);
     try {
-      const q = query(collection(db, "Assets"));
+      // Contributor sirf apni assets fetch kare
+      const q = query(
+        collection(db, "Assets"),
+        where("createdBy", "==", currentUser.uid)
+      );
 
       const unsubscribe = onSnapshot(
         q,
@@ -264,7 +269,7 @@ const UploadFiles = () => {
       setError(`Failed to load assets: ${error.message}`);
       setLoading(false);
     }
-  }, []);
+  }, [currentUser.uid]);
 
   useEffect(() => {
     const unsubscribe = fetchAssets();

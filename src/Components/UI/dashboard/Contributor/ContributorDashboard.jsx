@@ -148,7 +148,7 @@ const SellerDashboard = () => {
     try {
       const q = query(
         collection(db, "Assets"),
-        where("contributorId", "==", uid),
+        where("ownerId", "==", uid), // <-- change here
         orderBy("createdAt", "desc")
       );
       const querySnapshot = await getDocs(q);
@@ -198,24 +198,25 @@ const SellerDashboard = () => {
         }
       });
 
-      // Fetch earnings data (you'll need to implement this based on your database structure)
-      const earningsQuery = query(
-        collection(db, "Earnings"),
-        where("contributorId", "==", uid)
-      );
-      const earningsSnapshot = await getDocs(earningsQuery);
-
+      // Only fetch earnings if the collection exists
       let totalEarnings = 0;
       let pendingEarnings = 0;
 
-      earningsSnapshot.forEach((doc) => {
-        const earning = doc.data();
-        if (earning.status === "paid") {
-          totalEarnings += earning.amount || 0;
-        } else if (earning.status === "pending") {
-          pendingEarnings += earning.amount || 0;
-        }
-      });
+      const earningsCollection = collection(db, "Earnings");
+      const earningsSnapshot = await getDocs(earningsCollection).catch(
+        () => null
+      );
+
+      if (earningsSnapshot) {
+        earningsSnapshot.forEach((doc) => {
+          const earning = doc.data();
+          if (earning.status === "paid") {
+            totalEarnings += earning.amount || 0;
+          } else if (earning.status === "pending") {
+            pendingEarnings += earning.amount || 0;
+          }
+        });
+      }
 
       setStats({
         totalUploads,
@@ -279,49 +280,49 @@ const SellerDashboard = () => {
       stats,
       refreshData,
       formatCurrency,
-      formatDate
+      formatDate,
     };
 
     switch (activeTab) {
       case "dashboard":
         return <DashboardOverview {...commonProps} />;
-      
+
       case "upload":
         return <UploadFiles {...commonProps} />;
-      
+
       case "under-revision":
         return <UnderRevision {...commonProps} />;
-      
+
       case "rejections":
         return <Rejections {...commonProps} />;
-      
+
       case "published":
         return <PublishedFiles {...commonProps} />;
-      
+
       case "stats":
         return <Statistics {...commonProps} />;
-      
+
       case "search-trends":
         return <SearchTrends {...commonProps} />;
-      
+
       case "visual-trends":
         return <VisualTrends {...commonProps} />;
-      
+
       case "guidelines":
         return <Guidelines {...commonProps} />;
-      
+
       case "contact":
         return <ContactSupport {...commonProps} />;
-      
+
       case "profile":
         return <ProfileSettings {...commonProps} />;
-      
+
       case "billing":
         return <BillingInvoices {...commonProps} />;
-      
+
       case "feedback":
         return <Feedback {...commonProps} />;
-      
+
       default:
         return <DashboardOverview {...commonProps} />;
     }
@@ -353,7 +354,9 @@ const SellerDashboard = () => {
                 <span className="nav-c-label">Dashboard</span>
               </li>
               <li
-                className={`nav-c-item ${activeTab === "upload" ? "active" : ""}`}
+                className={`nav-c-item ${
+                  activeTab === "upload" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("upload")}
               >
                 <FiUpload className="nav-c-icon" />
@@ -410,7 +413,9 @@ const SellerDashboard = () => {
             <div className="nav-c-section-title">STATS</div>
             <ul className="nav-c-menu">
               <li
-                className={`nav-c-item ${activeTab === "stats" ? "active" : ""}`}
+                className={`nav-c-item ${
+                  activeTab === "stats" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("stats")}
               >
                 <FiTrendingUp className="nav-c-icon" />
@@ -541,7 +546,7 @@ const SellerDashboard = () => {
         {/* Dashboard Content */}
         <div className="seller-content">
           {loading && <div className="loading-overlay">Loading...</div>}
-          
+
           {/* Render the active tab component */}
           {renderActiveTab()}
         </div>

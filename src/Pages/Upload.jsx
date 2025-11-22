@@ -651,13 +651,20 @@ const Upload = ({
     if (!currentUser?.uid) return null;
 
     try {
-      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      // Pehle Contributors check karo
+      let userDoc = await getDoc(doc(db, "Contributors", currentUser.uid));
+      if (!userDoc.exists()) {
+        // Agar contributor nahi, phir Profiles check karo
+        userDoc = await getDoc(doc(db, "Profiles", currentUser.uid));
+      }
+
       if (userDoc.exists()) {
         return userDoc.data();
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
+
     return null;
   };
 
@@ -849,52 +856,53 @@ const Upload = ({
   };
 
   // Thumbnail file handling
- const handleThumbnailChange = (event) => {
-  const file = event.target.files[0];
-  
-  if (file) {
-    // Check if it's a 3D model file
-    const is3DFile = file.name.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
-    
-    if (is3DFile) {
-      // 3D Model file hai - automatically set type to models
-      setFormData((prev) => ({
-        ...prev,
-        thumbnail: file,
-        type: "models", // Automatically set type to models
-        category: prev.category || "Props / Miscellaneous",
-        // 👇 MODEL FIELD KO TOUCH MAT KARO - SIRF THUMBNAIL SET KARO
-      }));
-      
-      setThumbnailType("3dmodel");
-      setThumbnailPreview(null);
-      console.log("✅ 3D Model file selected in thumbnail - PREVIEW ke liye");
-      
-    } else if (file.type.startsWith("video/")) {
-      setFormData((prev) => ({
-        ...prev,
-        thumbnail: file,
-      }));
-      
-      setThumbnailType("video");
-      const videoURL = URL.createObjectURL(file);
-      setThumbnailPreview(videoURL);
-      setIsVideoPlaying(false);
-    } else if (file.type.startsWith("image/")) {
-      setFormData((prev) => ({
-        ...prev,
-        thumbnail: file,
-      }));
-      
-      setThumbnailType("image");
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setThumbnailPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleThumbnailChange = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      // Check if it's a 3D model file
+      const is3DFile = file.name
+        .toLowerCase()
+        .match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
+
+      if (is3DFile) {
+        // 3D Model file hai - automatically set type to models
+        setFormData((prev) => ({
+          ...prev,
+          thumbnail: file,
+          type: "models", // Automatically set type to models
+          category: prev.category || "Props / Miscellaneous",
+          // 👇 MODEL FIELD KO TOUCH MAT KARO - SIRF THUMBNAIL SET KARO
+        }));
+
+        setThumbnailType("3dmodel");
+        setThumbnailPreview(null);
+        console.log("✅ 3D Model file selected in thumbnail - PREVIEW ke liye");
+      } else if (file.type.startsWith("video/")) {
+        setFormData((prev) => ({
+          ...prev,
+          thumbnail: file,
+        }));
+
+        setThumbnailType("video");
+        const videoURL = URL.createObjectURL(file);
+        setThumbnailPreview(videoURL);
+        setIsVideoPlaying(false);
+      } else if (file.type.startsWith("image/")) {
+        setFormData((prev) => ({
+          ...prev,
+          thumbnail: file,
+        }));
+
+        setThumbnailType("image");
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setThumbnailPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
-  }
-};
+  };
 
   // Clean up URL when component unmounts
   useEffect(() => {
@@ -1168,6 +1176,8 @@ const Upload = ({
         date: formData.date,
         userId: currentUser?.uid ?? "anonymous",
 
+        ownerId: currentUser.uid, // <-- THIS MAKES THE ASSET PRIVATE TO THE CONTRIBUTOR
+
         // ✅ CONSISTENT NAME FIELD
         authorName: userName,
         author: userName,
@@ -1185,36 +1195,41 @@ const Upload = ({
         docData.createdAt = serverTimestamp();
       }
 
-     if (formData.thumbnail && typeof formData.thumbnail !== "string") {
-  const is3DFile = formData.thumbnail.name.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
-  
-  if (is3DFile && formData.type === "models") {
-    console.log("🔄 Thumbnail se 3D model - PREVIEW ke liye");
-    
-    // ✅ THUMBNAIL SE 3D MODEL KO 'thumbnailModel' FIELD MEIN SAVE KARO
-    const thumbnailModelUrl = await uploadFile(formData.thumbnail, "models");
-    docData.thumbnailModel = thumbnailModelUrl; // 👈 YEH LINE ZAROORI HAI
-    
-    // Thumbnail ke liye default image set karo
-    docData.thumbnail = "/default-model-thumbnail.jpg";
-    
-    console.log("✅ ThumbnailModel saved:", docData.thumbnailModel);
-  } else {
-    // Regular image/video thumbnail hai
-    console.log("🖼️ Uploading regular thumbnail");
-    docData.thumbnail = await uploadThumbnail(formData.thumbnail);
-  }
-} else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
-  docData.thumbnail = assetToEdit.thumbnail;
-}
+      if (formData.thumbnail && typeof formData.thumbnail !== "string") {
+        const is3DFile = formData.thumbnail.name
+          .toLowerCase()
+          .match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
 
-// ✅ MODEL FIELD - SIRF DOWNLOAD KE LIYE
-if (formData.model && formData.model instanceof File) {
-  console.log("📥 Uploading model for DOWNLOAD:", formData.model.name);
-  docData.model = await uploadFile(formData.model, "models");
-} else if (editMode && assetToEdit.model && !formData.model) {
-  docData.model = assetToEdit.model;
-}
+        if (is3DFile && formData.type === "models") {
+          console.log("🔄 Thumbnail se 3D model - PREVIEW ke liye");
+
+          // ✅ THUMBNAIL SE 3D MODEL KO 'thumbnailModel' FIELD MEIN SAVE KARO
+          const thumbnailModelUrl = await uploadFile(
+            formData.thumbnail,
+            "models"
+          );
+          docData.thumbnailModel = thumbnailModelUrl; // 👈 YEH LINE ZAROORI HAI
+
+          // Thumbnail ke liye default image set karo
+          docData.thumbnail = "/default-model-thumbnail.jpg";
+
+          console.log("✅ ThumbnailModel saved:", docData.thumbnailModel);
+        } else {
+          // Regular image/video thumbnail hai
+          console.log("🖼️ Uploading regular thumbnail");
+          docData.thumbnail = await uploadThumbnail(formData.thumbnail);
+        }
+      } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
+        docData.thumbnail = assetToEdit.thumbnail;
+      }
+
+      // ✅ MODEL FIELD - SIRF DOWNLOAD KE LIYE
+      if (formData.model && formData.model instanceof File) {
+        console.log("📥 Uploading model for DOWNLOAD:", formData.model.name);
+        docData.model = await uploadFile(formData.model, "models");
+      } else if (editMode && assetToEdit.model && !formData.model) {
+        docData.model = assetToEdit.model;
+      }
 
       // ✅ FIXED: handle assets by type
       if (formData.type === "images") {
@@ -1278,31 +1293,36 @@ if (formData.model && formData.model instanceof File) {
         }
       }
 
-// ✅ THUMBNAIL FIELD - SIRF PREVIEW KE LIYE (IMAGE/VIDEO/3D MODEL)
-if (formData.thumbnail && typeof formData.thumbnail !== "string") {
-  const is3DFile = formData.thumbnail.name.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
-  
-  if (is3DFile && formData.type === "models") {
-    console.log("🔄 Thumbnail se 3D model - PREVIEW ke liye");
-    // THUMBNAIL SE 3D MODEL KO 'thumbnailModel' FIELD MEIN SAVE KARO
-    docData.thumbnailModel = await uploadFile(formData.thumbnail, "models");
-    docData.thumbnail = "/default-model-thumbnail.jpg"; // Default image
-  } else {
-    // Regular image/video thumbnail hai
-    console.log("🖼️ Uploading regular thumbnail");
-    docData.thumbnail = await uploadThumbnail(formData.thumbnail);
-  }
-} else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
-  docData.thumbnail = assetToEdit.thumbnail;
-}
+      // ✅ THUMBNAIL FIELD - SIRF PREVIEW KE LIYE (IMAGE/VIDEO/3D MODEL)
+      if (formData.thumbnail && typeof formData.thumbnail !== "string") {
+        const is3DFile = formData.thumbnail.name
+          .toLowerCase()
+          .match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
 
-// ✅ MODEL FIELD - SIRF DOWNLOAD KE LIYE (ALAG SE)
-if (formData.model && formData.model instanceof File) {
-  console.log("📥 Uploading model for DOWNLOAD:", formData.model.name);
-  docData.model = await uploadFile(formData.model, "models");
-} else if (editMode && assetToEdit.model && !formData.model) {
-  docData.model = assetToEdit.model;
-}
+        if (is3DFile && formData.type === "models") {
+          console.log("🔄 Thumbnail se 3D model - PREVIEW ke liye");
+          // THUMBNAIL SE 3D MODEL KO 'thumbnailModel' FIELD MEIN SAVE KARO
+          docData.thumbnailModel = await uploadFile(
+            formData.thumbnail,
+            "models"
+          );
+          docData.thumbnail = "/default-model-thumbnail.jpg"; // Default image
+        } else {
+          // Regular image/video thumbnail hai
+          console.log("🖼️ Uploading regular thumbnail");
+          docData.thumbnail = await uploadThumbnail(formData.thumbnail);
+        }
+      } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
+        docData.thumbnail = assetToEdit.thumbnail;
+      }
+
+      // ✅ MODEL FIELD - SIRF DOWNLOAD KE LIYE (ALAG SE)
+      if (formData.model && formData.model instanceof File) {
+        console.log("📥 Uploading model for DOWNLOAD:", formData.model.name);
+        docData.model = await uploadFile(formData.model, "models");
+      } else if (editMode && assetToEdit.model && !formData.model) {
+        docData.model = assetToEdit.model;
+      }
       if (formData.type === "scripts" && formData.script) {
         docData.script = await uploadFile(formData.script, "scripts");
       } else if (editMode && assetToEdit.script && !formData.script) {
@@ -2031,7 +2051,8 @@ if (formData.model && formData.model instanceof File) {
                   className="blog-form-file"
                 />
                 <p className="blog-form-hint">
-                  JPG, PNG, MP4, (.glb for 3d model) • Max 500KB • 705x472px recommended
+                  JPG, PNG, MP4, (.glb for 3d model) • Max 500KB • 705x472px
+                  recommended
                 </p>
 
                 {thumbnailPreview && thumbnailType === "image" && (
@@ -2270,34 +2291,36 @@ if (formData.model && formData.model instanceof File) {
               {renderFilterSelect("objectType", "Object Type", "objectType")}
               {renderFilterSelect("fileFormat", "File Format", "fileFormat")}
 
-            {formData.type === "models" && (
-  <>
-    {/* Model Field - VISIBLE but OPTIONAL since we're using thumbnail field */}
-    <div className="blog-form-group">
-      <label className="blog-form-label">
-        3D Model File (Optional)
-        {/* Required star hata do */}
-      </label>
-      <input
-        type="file"
-        name="model"
-        onChange={handleChange}
-        accept=".glb,.gltf,.stl,.obj,.fbx,.blend,.zip"
-        className="blog-form-file"
-        // required={!editMode} 👈 REQUIRED HATA DO
-      />
-      <p className="blog-form-hint">
-        Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend, .zip
-      </p>
-      {renderFilePreview("model", "3D Model")}
-      {editMode && assetToEdit.model && (
-        <p className="current-image-note">
-          Current model file will be kept if no new file is selected
-        </p>
-      )}
-    </div>
-  </>
-)}
+              {formData.type === "models" && (
+                <>
+                  {/* Model Field - VISIBLE but OPTIONAL since we're using thumbnail field */}
+                  <div className="blog-form-group">
+                    <label className="blog-form-label">
+                      3D Model File (Optional)
+                      {/* Required star hata do */}
+                    </label>
+                    <input
+                      type="file"
+                      name="model"
+                      onChange={handleChange}
+                      accept=".glb,.gltf,.stl,.obj,.fbx,.blend,.zip"
+                      className="blog-form-file"
+                      // required={!editMode} 👈 REQUIRED HATA DO
+                    />
+                    <p className="blog-form-hint">
+                      Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend,
+                      .zip
+                    </p>
+                    {renderFilePreview("model", "3D Model")}
+                    {editMode && assetToEdit.model && (
+                      <p className="current-image-note">
+                        Current model file will be kept if no new file is
+                        selected
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
 
               {formData.type === "images" && (
                 <div className="blog-form-group">
