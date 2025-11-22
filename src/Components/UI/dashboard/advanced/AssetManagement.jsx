@@ -426,47 +426,75 @@ const AssetManagement = () => {
       )}
 
       {/* Statistics Cards */}
-      <div className="stats-grid">
-        <div className="stat-card primary">
-          <div className="stat-icon">
-            <FiBox />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total Assets</div>
-          </div>
-        </div>
-
-        <div className="stat-card success">
-          <div className="stat-icon">
-            <FiDownload />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.totalDownloads}</div>
-            <div className="stat-label">Total Downloads</div>
-          </div>
-        </div>
-
-        <div className="stat-card warning">
-          <div className="stat-icon">
-            <FiDollarSign />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.freeAssets}</div>
-            <div className="stat-label">Free Assets</div>
-          </div>
-        </div>
-
-        <div className="stat-card info">
-          <div className="stat-icon">
-            <FiUsers />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats.paidAssets}</div>
-            <div className="stat-label">Paid Assets</div>
-          </div>
-        </div>
+      <div className="reports-stats-grid">
+  <div className="report-stat-card primary">
+    <div className="report-stat-header">
+      <div className="report-stat-icon">
+        <FiBox />
       </div>
+      <div>
+        <h3 className="report-stat-title">Total Assets</h3>
+        <div className="report-stat-value">{stats.total}</div>
+      </div>
+    </div>
+    <div className="report-stat-content">
+      <div className="report-stat-subtext">
+        All platform assets
+      </div>
+    </div>
+  </div>
+
+  <div className="report-stat-card success">
+    <div className="report-stat-header">
+      <div className="report-stat-icon">
+        <FiDownload />
+      </div>
+      <div>
+        <h3 className="report-stat-title">Total Downloads</h3>
+        <div className="report-stat-value">{stats.totalDownloads}</div>
+      </div>
+    </div>
+    <div className="report-stat-content">
+      <div className="report-stat-subtext">
+        All time downloads
+      </div>
+    </div>
+  </div>
+
+  <div className="report-stat-card warning">
+    <div className="report-stat-header">
+      <div className="report-stat-icon">
+        <FiDollarSign />
+      </div>
+      <div>
+        <h3 className="report-stat-title">Free Assets</h3>
+        <div className="report-stat-value">{stats.freeAssets}</div>
+      </div>
+    </div>
+    <div className="report-stat-content">
+      <div className="report-stat-subtext">
+        Available for free
+      </div>
+    </div>
+  </div>
+
+  <div className="report-stat-card info">
+    <div className="report-stat-header">
+      <div className="report-stat-icon">
+        <FiUsers />
+      </div>
+      <div>
+        <h3 className="report-stat-title">Paid Assets</h3>
+        <div className="report-stat-value">{stats.paidAssets}</div>
+      </div>
+    </div>
+    <div className="report-stat-content">
+      <div className="report-stat-subtext">
+        Premium content
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* Filters */}
       <div className="content-card filters-card">
