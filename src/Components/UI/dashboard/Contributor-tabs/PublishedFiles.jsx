@@ -493,7 +493,7 @@ const PublishedFiles = () => {
     return `${stars} (${rating.toFixed(1)})`;
   };
 
- // ✅ UPDATED: Get category display name
+  // ✅ UPDATED: Get category display name
   const getCategoryDisplayName = (type) => {
     switch (type) {
       case "models":
@@ -624,7 +624,7 @@ const PublishedFiles = () => {
                   <div className="detail-item">
                     <span className="detail-label">Category:</span>
                     <span className="detail-value">
-                             {getCategoryDisplayName(selectedAsset.type)}
+                      {getCategoryDisplayName(selectedAsset.type)}
                     </span>
                   </div>
                   <div className="detail-item">

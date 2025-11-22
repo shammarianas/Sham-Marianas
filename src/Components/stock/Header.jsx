@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { getDocs, collection, query } from "firebase/firestore";
+import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../../../firebase";
 import ListedItemCard from "../UI/ListedItemCard";
 import PageTitle from "../UI/PageTitle";
@@ -31,14 +31,26 @@ const HeroSection = () => {
   // Fetch Search Results
   const fetchSearchResults = useCallback(async () => {
     if (searchTerm.trim() === "") return;
+
     setLoading(true);
-    const q = query(collection(db, "Assets"));
+
+    const q = query(
+      collection(db, "Assets"),
+      where("status", "==", "approved") // ✅ Only approved assets
+    );
+
     const querySnapshot = await getDocs(q);
     const allResults = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    const newResults = allResults.filter((result) => result.title.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 7);
+
+    const newResults = allResults
+      .filter((result) =>
+        result.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .slice(0, 7);
+
     setSearchResults(newResults);
     setLoading(false);
     setDisplayResults(searchTerm !== "");
@@ -47,14 +59,20 @@ const HeroSection = () => {
   // Fetch All Assets
   const fetchAssets = useCallback(async () => {
     try {
-      const q = query(collection(db, "Assets"));
+      const q = query(
+        collection(db, "Assets"),
+        where("status", "==", "approved") // ✅ Only approved assets
+      );
+
       const querySnapshot = await getDocs(q);
+
       const assetsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+
       setAssets(assetsData);
-      setFilteredAssets(assetsData); // Initialize filtered assets
+      setFilteredAssets(assetsData);
     } catch (error) {
       setError(error.message);
     }
@@ -94,7 +112,9 @@ const HeroSection = () => {
     console.log({ searchResults });
   }, [searchResults]);
 
-  const sortedResults = searchResults.sort((a, b) => a.type.localeCompare(b.type));
+  const sortedResults = searchResults.sort((a, b) =>
+    a.type.localeCompare(b.type)
+  );
 
   const groupedResults = sortedResults.reduce((acc, item) => {
     if (!acc[item.type]) {
@@ -114,7 +134,8 @@ const HeroSection = () => {
             const overlay = document.querySelector(".search_overlay");
             overlay.classList.add("fade");
             setTimeout(() => setOverlay(false), 190);
-          }}></div>
+          }}
+        ></div>
       )}
 
       {/* Hero Section */}
@@ -124,7 +145,10 @@ const HeroSection = () => {
         <div className="hero-background"></div>
         <div className="hero-content">
           <h1 className="hero-title">Smarter creativity, faster designs</h1>
-          <p className="hero-subtitle">Everything you need, from stock images and videos to AI-powered design tools.</p>
+          <p className="hero-subtitle">
+            Everything you need, from stock images and videos to AI-powered
+            design tools.
+          </p>
 
           {/* Search Component */}
           <div className="search-container">
@@ -193,7 +217,11 @@ const HeroSection = () => {
                   <div className="listing_section">
                     <div className="item_listing">
                       {groupedResults[type].map((item) => (
-                        <ListedItemCard key={item.id} id={item.id} data={item} />
+                        <ListedItemCard
+                          key={item.id}
+                          id={item.id}
+                          data={item}
+                        />
                       ))}
                     </div>
                   </div>

@@ -22,22 +22,37 @@ const Search = () => {
 
   const fetchResults = useCallback(async () => {
     if (searchTerm.trim() === "") return;
+
     setLoading(true);
     setDisplayResults(true);
-    const q = query(collection(db, "Assets"));
-    const querySnapshot = await getDocs(q);
-    const allResults = [];
-    querySnapshot.forEach((doc) => {
-      allResults.push({ id: doc.id, ...doc.data() });
-    });
-    const newResults = allResults
-      .filter((result) =>
-        result.title.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .slice(0, 7);
-    setResults(newResults);
-    setLoading(false);
-    setDisplayResults(searchTerm !== "");
+
+    try {
+      // ✅ Only approved assets
+      const q = query(
+        collection(db, "Assets"),
+        where("status", "==", "approved")
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      const allResults = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const newResults = allResults
+        .filter((result) =>
+          result.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .slice(0, 7); // Limit top 7 results
+
+      setResults(newResults);
+    } catch (err) {
+      console.error("Error fetching search results:", err);
+    } finally {
+      setLoading(false);
+      setDisplayResults(searchTerm !== "");
+    }
   }, [searchTerm]);
 
   useEffect(() => {
@@ -148,7 +163,6 @@ const Search = () => {
   );
 };
 
-
 const useAssets = () => {
   const [assets, setAssets] = useState([]);
   const [error, setError] = useState(null);
@@ -157,9 +171,9 @@ const useAssets = () => {
     const fetchAssets = async () => {
       try {
         let assetsQuery = query(collection(db, "Assets"));
-  
+
         // You can add additional query constraints here if needed
-  
+
         const snapshot = await getDocs(assetsQuery);
         const assetsData = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -170,39 +184,36 @@ const useAssets = () => {
         setError(error.message);
       }
     };
-  
+
     fetchAssets();
   }, []);
 
   return { assets, error };
 };
 
-
 const HeroSection = () => {
-
   const { assets, error } = useAssets();
   if (assets) {
-    console.log({assets})
+    console.log({ assets });
   }
 
   useEffect(() => {
-    console.log({assets})
-  }, [assets, useUser])
+    console.log({ assets });
+  }, [assets, useUser]);
 
   return (
     <div className="hero-container">
       {/* Background image with overlay */}
       <div className="hero-background"></div>
-      
+
       {/* Content */}
       <div className="hero-content">
-        <h1 className="hero-title">
-          Smarter creativity, faster designs
-        </h1>
+        <h1 className="hero-title">Smarter creativity, faster designs</h1>
         <p className="hero-subtitle">
-          Everything you need, from stock images and videos to AI-powered design tools.
+          Everything you need, from stock images and videos to AI-powered design
+          tools.
         </p>
-        
+
         {/* Search component */}
         <div className="search-container">
           <Search />
