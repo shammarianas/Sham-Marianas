@@ -148,7 +148,7 @@ const SellerDashboard = () => {
     try {
       const q = query(
         collection(db, "Assets"),
-        where("ownerId", "==", uid), // <-- change here
+        where("ownerId", "==", uid),
         orderBy("createdAt", "desc")
       );
       const querySnapshot = await getDocs(q);
@@ -162,12 +162,12 @@ const SellerDashboard = () => {
     }
   };
 
-  // Fetch seller stats
+  // ✅ UPDATED: Fetch seller stats with proper status checking
   const fetchStats = async (uid) => {
     try {
       const assetsQuery = query(
         collection(db, "Assets"),
-        where("contributorId", "==", uid)
+        where("ownerId", "==", uid)
       );
       const assetsSnapshot = await getDocs(assetsQuery);
 
@@ -180,20 +180,30 @@ const SellerDashboard = () => {
         const asset = doc.data();
         totalUploads++;
 
-        switch (asset.status?.toLowerCase()) {
-          case "under_review":
+        // ✅ PROPER STATUS CHECKING - Match Upload component status values
+        const status = asset.status?.toLowerCase() || "pending"; // Default to pending if no status
+        
+        console.log(`Asset ${asset.title}: status = ${status}`); // Debug log
+
+        switch (status) {
           case "pending":
-          case "review":
             underRevision++;
             break;
           case "rejected":
-          case "declined":
             rejections++;
             break;
           case "approved":
-          case "published":
-          case "active":
             published++;
+            break;
+          default:
+            // Handle any other status values
+            if (status.includes("reject") || status.includes("decline")) {
+              rejections++;
+            } else if (status.includes("approve") || status.includes("publish") || status.includes("active")) {
+              published++;
+            } else {
+              underRevision++; // Default to under revision for unknown status
+            }
             break;
         }
       });
@@ -202,12 +212,13 @@ const SellerDashboard = () => {
       let totalEarnings = 0;
       let pendingEarnings = 0;
 
-      const earningsCollection = collection(db, "Earnings");
-      const earningsSnapshot = await getDocs(earningsCollection).catch(
-        () => null
-      );
+      try {
+        const earningsQuery = query(
+          collection(db, "Earnings"),
+          where("contributorId", "==", uid)
+        );
+        const earningsSnapshot = await getDocs(earningsQuery);
 
-      if (earningsSnapshot) {
         earningsSnapshot.forEach((doc) => {
           const earning = doc.data();
           if (earning.status === "paid") {
@@ -216,6 +227,8 @@ const SellerDashboard = () => {
             pendingEarnings += earning.amount || 0;
           }
         });
+      } catch (error) {
+        console.log("Earnings collection not found or error:", error);
       }
 
       setStats({
@@ -226,10 +239,46 @@ const SellerDashboard = () => {
         totalEarnings,
         pendingEarnings,
       });
+
+      console.log("Updated Stats:", { // Debug log
+        totalUploads,
+        underRevision,
+        rejections,
+        published
+      });
+
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
   };
+
+  // ✅ ADDED: Real-time listener for assets updates
+  useEffect(() => {
+    if (!userData?.uid) return;
+
+    const assetsQuery = query(
+      collection(db, "Assets"),
+      where("ownerId", "==", userData.uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(assetsQuery, (snapshot) => {
+      const assetsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAssets(assetsData);
+      
+      // Recalculate stats when assets change
+      if (userData?.uid) {
+        fetchStats(userData.uid);
+      }
+    }, (error) => {
+      console.error("Error in real-time assets listener:", error);
+    });
+
+    return () => unsubscribe();
+  }, [userData?.uid]);
 
   // Format currency
   const formatCurrency = (amount) => {
@@ -268,6 +317,24 @@ const SellerDashboard = () => {
     }
   };
 
+  // ✅ ADDED: Get assets by status for different tabs
+  const getAssetsByStatus = (statusType) => {
+    return assets.filter(asset => {
+      const status = asset.status?.toLowerCase() || "pending";
+      
+      switch (statusType) {
+        case "pending":
+          return status === "pending";
+        case "rejected":
+          return status === "rejected";
+        case "approved":
+          return status === "approved";
+        default:
+          return false;
+      }
+    });
+  };
+
   if (error && !isSeller) {
     return <UnauthorizedAccess error={error} />;
   }
@@ -281,6 +348,7 @@ const SellerDashboard = () => {
       refreshData,
       formatCurrency,
       formatDate,
+      getAssetsByStatus, // ✅ ADDED: Pass the helper function
     };
 
     switch (activeTab) {
