@@ -1,25 +1,26 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  FiPackage,
   FiRefreshCw,
   FiAlertTriangle,
   FiClock,
   FiTrendingUp,
   FiTrendingDown,
-  FiStar,
-  FiPieChart,
   FiFilter,
   FiSearch,
   FiDownload,
   FiList,
   FiEye,
-  FiCheckCircle,
   FiCornerUpLeft,
   FiX,
-  FiEdit,
   FiUser,
-  FiCalendar,
   FiXCircle,
+  FiVideo,
+  FiImage,
+  FiCode,
+  FiBox,
+  FiLayers,
+  FiType,
+  FiFile,
 } from "react-icons/fi";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
@@ -198,14 +199,14 @@ const Rejections = () => {
     return allAssets.filter((asset) => {
       if (
         filters.search &&
-        !`${asset.title || ""} ${asset.description || ""} ${asset.category || ""} ${asset.rejectionNotes || ""}`
+        !`${asset.title || ""} ${asset.description || ""} ${asset.type || ""} ${asset.rejectionNotes || ""}`
           .toLowerCase()
           .includes(filters.search.toLowerCase())
       ) {
         return false;
       }
 
-      if (filters.category && asset.category !== filters.category) {
+      if (filters.category && asset.type !== filters.category) {
         return false;
       }
 
@@ -381,18 +382,27 @@ const Rejections = () => {
     setSearchInput("");
   };
 
+  // ✅ UPDATED: All categories from your upload form
   const getCategoryStats = () => {
     if (loading || !currentUser) return [];
 
     const categories = {
-      "3d_model": { name: "3D Models", count: 0, color: "excellent" },
-      texture: { name: "Textures", count: 0, color: "good" },
-      audio: { name: "Audio", count: 0, color: "average" },
-      other: { name: "Other", count: 0, color: "poor" },
+      models: { name: "3D Models", count: 0, color: "excellent", icon: <FiBox /> },
+      videos: { name: "Videos", count: 0, color: "good", icon: <FiVideo /> },
+      images: { name: "Images", count: 0, color: "average", icon: <FiImage /> },
+      scripts: { name: "Scripts", count: 0, color: "poor", icon: <FiCode /> },
+      textures: { name: "Textures", count: 0, color: "excellent", icon: <FiLayers /> },
+      hdris: { name: "HDRIs", count: 0, color: "good", icon: <FiImage /> },
+      icons: { name: "Icons", count: 0, color: "average", icon: <FiLayers /> },
+      graphics: { name: "Graphics Templates", count: 0, color: "poor", icon: <FiFile /> },
+      mockups: { name: "Mockups", count: 0, color: "excellent", icon: <FiBox /> },
+      fonts: { name: "Fonts", count: 0, color: "good", icon: <FiType /> },
+      "video-templates": { name: "Video Templates", count: 0, color: "average", icon: <FiVideo /> },
+      other: { name: "Other", count: 0, color: "poor", icon: <FiFile /> },
     };
 
     allAssets.forEach((a) => {
-      const category = a.category || "other";
+      const category = a.type || "other";
       if (categories[category]) {
         categories[category].count++;
       } else {
@@ -416,18 +426,7 @@ const Rejections = () => {
     return date.toLocaleDateString();
   };
 
-  const getAssetTypeIcon = (category) => {
-    switch (category) {
-      case "3d_model":
-        return "📦";
-      case "texture":
-        return "🎨";
-      case "audio":
-        return "🎵";
-      default:
-        return "📁";
-    }
-  };
+ 
 
   const getRejectionReasonText = (reason) => {
     switch (reason) {
@@ -443,6 +442,36 @@ const Rejections = () => {
         return "Copyright Issues";
       default:
         return "Other Reasons";
+    }
+  };
+
+  // ✅ UPDATED: Get category display name
+  const getCategoryDisplayName = (type) => {
+    switch (type) {
+      case "models":
+        return "3D Models";
+      case "videos":
+        return "Videos";
+      case "images":
+        return "Images";
+      case "scripts":
+        return "Scripts";
+      case "textures":
+        return "Textures";
+      case "hdris":
+        return "HDRIs";
+      case "icons":
+        return "Icons";
+      case "graphics":
+        return "Graphics Templates";
+      case "mockups":
+        return "Mockups";
+      case "fonts":
+        return "Fonts";
+      case "video-templates":
+        return "Video Templates";
+      default:
+        return "Other";
     }
   };
 
@@ -524,10 +553,7 @@ const Rejections = () => {
                   <div className="detail-item">
                     <span className="detail-label">Category:</span>
                     <span className="detail-value">
-                      {selectedAsset.category === "3d_model" && "3D Model"}
-                      {selectedAsset.category === "texture" && "Texture"}
-                      {selectedAsset.category === "audio" && "Audio"}
-                      {!selectedAsset.category && "Other"}
+                      {getCategoryDisplayName(selectedAsset.type)}
                     </span>
                   </div>
                   <div className="detail-item">
@@ -726,113 +752,6 @@ const Rejections = () => {
             </div>
           </div>
 
-          {/* Charts and Categories
-          <div className="reports-content-grid">
-            <div className="reports-chart-card">
-              <div className="reports-chart-header">
-                <h3 className="panel-title">
-                  <FiStar className="panel-icon" /> Your Rejection Analysis
-                </h3>
-                <div className="satisfaction-score">
-                  <span className="score-value">{stats.rejectionScore}/10</span>
-                  <span className="score-label">Your Recovery Score</span>
-                </div>
-              </div>
-              <div className="reports-chart-body">
-                <div className="pie-chart-container">
-                  <div className="pie-chart-wrapper">
-                    <div 
-                      className="pie-chart"
-                      style={{
-                        background: `conic-gradient(
-                          #ef4444 0% ${rejectionPercentages.quality}%,
-                          #f59e0b ${rejectionPercentages.quality}% ${rejectionPercentages.quality + rejectionPercentages.guidelines}%,
-                          #3b82f6 ${rejectionPercentages.quality + rejectionPercentages.guidelines}% ${rejectionPercentages.quality + rejectionPercentages.guidelines + rejectionPercentages.technical}%,
-                          #6b7280 ${rejectionPercentages.quality + rejectionPercentages.guidelines + rejectionPercentages.technical}% 100%
-                        )`
-                      }}
-                    >
-                      <div className="pie-chart-center">
-                        <div className="pie-chart-value">
-                          {stats.rejectionScore}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="pie-chart-labels">
-                    <div className="pie-chart-label">
-                      <span className="pie-label-dot poor"></span>
-                      <div className="pie-label-text">
-                        <span className="pie-label-name">Quality Issues</span>
-                        <span className="pie-label-percentage">
-                          {Math.round(rejectionPercentages.quality)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="pie-chart-label">
-                      <span className="pie-label-dot average"></span>
-                      <div className="pie-label-text">
-                        <span className="pie-label-name">Guidelines</span>
-                        <span className="pie-label-percentage">
-                          {Math.round(rejectionPercentages.guidelines)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="pie-chart-label">
-                      <span className="pie-label-dot good"></span>
-                      <div className="pie-label-text">
-                        <span className="pie-label-name">Technical</span>
-                        <span className="pie-label-percentage">
-                          {Math.round(rejectionPercentages.technical)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="pie-chart-label">
-                      <span className="pie-label-dot excellent"></span>
-                      <div className="pie-label-text">
-                        <span className="pie-label-name">Other</span>
-                        <span className="pie-label-percentage">
-                          {Math.round(rejectionPercentages.other)}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="reports-categories-card">
-              <div className="reports-categories-header">
-                <h3 className="panel-title">
-                  <FiPieChart className="panel-icon" /> Your Rejected Categories
-                </h3>
-              </div>
-              <div className="reports-categories-body">
-                {categoryStats.map((cat, i) => {
-                  const percentage = stats.totalRejections > 0 ? (cat.count / stats.totalRejections) * 100 : 0;
-                  return (
-                    <div key={i} className="category-progress">
-                      <div className="category-header">
-                        <span className="category-name">{cat.name}</span>
-                        <span className="category-count">
-                          {Math.round(percentage)}% ({cat.count})
-                        </span>
-                      </div>
-                      <div className="category-progress-bar">
-                        <div
-                          className={`category-progress-fill ${cat.color}`}
-                          style={{
-                            width: `${percentage}%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div> */}
-
           {/* Filter Bar */}
           <div className="reports-filter-bar">
             <div className="filter-bar-header">
@@ -858,15 +777,24 @@ const Rejections = () => {
                 />
               </div>
 
+              {/* ✅ UPDATED: All categories from upload form */}
               <select
                 className="filter-select"
                 value={filters.category}
                 onChange={(e) => handleFilterChange("category", e.target.value)}
               >
                 <option value="">All Categories</option>
-                <option value="3d_model">3D Models</option>
-                <option value="texture">Textures</option>
-                <option value="audio">Audio</option>
+                <option value="models">3D Models</option>
+                <option value="videos">Videos</option>
+                <option value="images">Images</option>
+                <option value="scripts">Scripts</option>
+                <option value="textures">Textures</option>
+                <option value="hdris">HDRIs</option>
+                <option value="icons">Icons</option>
+                <option value="graphics">Graphics Templates</option>
+                <option value="mockups">Mockups</option>
+                <option value="fonts">Fonts</option>
+                <option value="video-templates">Video Templates</option>
                 <option value="other">Other</option>
               </select>
 
@@ -931,9 +859,7 @@ const Rejections = () => {
                     <tr key={asset.id}>
                       <td>
                         <div className="report-user">
-                          <div className="report-user-avatar">
-                            {getAssetTypeIcon(asset.category)}
-                          </div>
+                          
                           <div className="report-user-info">
                             <div className="report-user-name">
                               {asset.title || "Untitled Asset"}
@@ -943,11 +869,8 @@ const Rejections = () => {
                         </div>
                       </td>
                       <td>
-                        <span className={`report-category-badge ${asset.category || "other"}`}>
-                          {asset.category === "3d_model" && "3D Model"}
-                          {asset.category === "texture" && "Texture"}
-                          {asset.category === "audio" && "Audio"}
-                          {!asset.category && "Other"}
+                        <span className={`report-category-badge ${asset.type || "other"}`}>
+                          {getCategoryDisplayName(asset.type)}
                         </span>
                       </td>
                       <td>

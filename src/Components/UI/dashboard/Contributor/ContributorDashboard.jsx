@@ -41,19 +41,15 @@ import {
 
 // Import Components
 import DashboardOverview from "../Contributor-tabs/DashboardOverview";
-// import FilesManagement from "../Contributor-tabs/FilesManagement";
 import UploadFiles from "../Contributor-tabs/UploadFiles";
 import UnderRevision from "../Contributor-tabs/UnderRevision";
 import Rejections from "../Contributor-tabs/Rejections";
 import PublishedFiles from "../Contributor-tabs/PublishedFiles";
 import Statistics from "../Contributor-tabs/Statistics";
 import SearchTrends from "../Contributor-tabs/SearchTrends";
-// import VisualTrends from "../Contributor-tabs/VisualTrends";
-// import Guidelines from "../Contributor-tabs/Guidelines";
-// import ContactSupport from "../Contributor-tabs/ContactSupport";
-// import ProfileSettings from "../Contributor-tabs/ProfileSettings";
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
-// import Feedback from "../Contributor-tabs/Feedback";
+// ✅ ADDED: Import Profile component
+import Profile from "../../../../Pages/Profile"; // Adjust path as needed
 
 import "../../../../assets/Styles/contribute-style.css";
 
@@ -65,6 +61,16 @@ const UnauthorizedAccess = ({ error }) => {
     </div>
   );
 };
+const ProfileWrapper = ({ userId }) => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (userId) {
+      // Direct profile page par navigate karo
+      navigate(`/profile/${userId}`);
+    }
+  }, [userId, navigate]);
+}
 
 const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -82,6 +88,11 @@ const SellerDashboard = () => {
   const [error, setError] = useState(null);
   const [isSeller, setIsSeller] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ ADDED: Profile tab handler
+  const handleProfileTab = () => {
+    setActiveTab("profile");
+  };
 
   // Check seller status and fetch data
   useEffect(() => {
@@ -106,9 +117,9 @@ const SellerDashboard = () => {
             );
 
             if (sellerData.status === "pending") {
-              navigate("/contributor-pending"); // Your pending page
+              navigate("/contributor-pending");
             } else if (sellerData.status === "rejected") {
-              navigate("/contributor-rejected"); // Your rejected page
+              navigate("/contributor-rejected");
             } else {
               navigate("/become-contributor");
             }
@@ -162,7 +173,7 @@ const SellerDashboard = () => {
     }
   };
 
-  // ✅ UPDATED: Fetch seller stats with proper status checking
+  // Fetch seller stats
   const fetchStats = async (uid) => {
     try {
       const assetsQuery = query(
@@ -180,11 +191,8 @@ const SellerDashboard = () => {
         const asset = doc.data();
         totalUploads++;
 
-        // ✅ PROPER STATUS CHECKING - Match Upload component status values
-        const status = asset.status?.toLowerCase() || "pending"; // Default to pending if no status
+        const status = asset.status?.toLowerCase() || "pending";
         
-        console.log(`Asset ${asset.title}: status = ${status}`); // Debug log
-
         switch (status) {
           case "pending":
             underRevision++;
@@ -196,19 +204,17 @@ const SellerDashboard = () => {
             published++;
             break;
           default:
-            // Handle any other status values
             if (status.includes("reject") || status.includes("decline")) {
               rejections++;
             } else if (status.includes("approve") || status.includes("publish") || status.includes("active")) {
               published++;
             } else {
-              underRevision++; // Default to under revision for unknown status
+              underRevision++;
             }
             break;
         }
       });
 
-      // Only fetch earnings if the collection exists
       let totalEarnings = 0;
       let pendingEarnings = 0;
 
@@ -240,19 +246,12 @@ const SellerDashboard = () => {
         pendingEarnings,
       });
 
-      console.log("Updated Stats:", { // Debug log
-        totalUploads,
-        underRevision,
-        rejections,
-        published
-      });
-
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
   };
 
-  // ✅ ADDED: Real-time listener for assets updates
+  // Real-time listener for assets updates
   useEffect(() => {
     if (!userData?.uid) return;
 
@@ -269,7 +268,6 @@ const SellerDashboard = () => {
       }));
       setAssets(assetsData);
       
-      // Recalculate stats when assets change
       if (userData?.uid) {
         fetchStats(userData.uid);
       }
@@ -317,7 +315,7 @@ const SellerDashboard = () => {
     }
   };
 
-  // ✅ ADDED: Get assets by status for different tabs
+  // Get assets by status for different tabs
   const getAssetsByStatus = (statusType) => {
     return assets.filter(asset => {
       const status = asset.status?.toLowerCase() || "pending";
@@ -339,7 +337,8 @@ const SellerDashboard = () => {
     return <UnauthorizedAccess error={error} />;
   }
 
-  // Render active tab component
+  
+  // ✅ UPDATED: Render active tab component with Profile
   const renderActiveTab = () => {
     const commonProps = {
       userData,
@@ -348,7 +347,7 @@ const SellerDashboard = () => {
       refreshData,
       formatCurrency,
       formatDate,
-      getAssetsByStatus, // ✅ ADDED: Pass the helper function
+      getAssetsByStatus,
     };
 
     switch (activeTab) {
@@ -382,8 +381,9 @@ const SellerDashboard = () => {
       case "contact":
         return <ContactSupport {...commonProps} />;
 
+      // ✅ ADDED: Profile tab
       case "profile":
-        return <ProfileSettings {...commonProps} />;
+        return <ProfileWrapper userId={userData?.uid} />;
 
       case "billing":
         return <BillingInvoices {...commonProps} />;
@@ -543,7 +543,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "profile" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("profile")}
+                onClick={handleProfileTab}
               >
                 <FiUser className="nav-c-icon" />
                 <span className="nav-c-label">Profile</span>
@@ -587,7 +587,7 @@ const SellerDashboard = () => {
               {activeTab === "visual-trends" && "Visual Trends"}
               {activeTab === "guidelines" && "Guidelines"}
               {activeTab === "contact" && "Contact Support"}
-              {activeTab === "profile" && "Profile Settings"}
+              {activeTab === "profile" && "Profile"} {/* ✅ ADDED */}
               {activeTab === "billing" && "Billing & Invoices"}
               {activeTab === "feedback" && "Feedback"}
             </h1>
