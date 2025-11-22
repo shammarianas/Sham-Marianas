@@ -6,8 +6,6 @@ import {
   FiClock,
   FiTrendingUp,
   FiTrendingDown,
-  FiStar,
-  FiPieChart,
   FiFilter,
   FiSearch,
   FiDownload,
@@ -16,9 +14,7 @@ import {
   FiCheckCircle,
   FiCornerUpLeft,
   FiX,
-  FiEdit,
   FiUser,
-  FiCalendar,
   FiVideo,
   FiImage,
   FiCode,
@@ -504,35 +500,7 @@ const UnderRevisionAssets = () => {
     return date.toLocaleDateString();
   };
 
-  // ✅ UPDATED: Get asset type icon based on type
-  const getAssetTypeIcon = (type) => {
-    switch (type) {
-      case "models":
-        return <FiBox />;
-      case "videos":
-        return <FiVideo />;
-      case "images":
-        return <FiImage />;
-      case "scripts":
-        return <FiCode />;
-      case "textures":
-        return <FiLayers />;
-      case "hdris":
-        return <FiImage />;
-      case "icons":
-        return <FiLayers />;
-      case "graphics":
-        return <FiFile />;
-      case "mockups":
-        return <FiBox />;
-      case "fonts":
-        return <FiType />;
-      case "video-templates":
-        return <FiVideo />;
-      default:
-        return <FiFile />;
-    }
-  };
+ 
 
   // ✅ UPDATED: Get category display name
   const getCategoryDisplayName = (type) => {
@@ -1035,9 +1003,7 @@ const UnderRevisionAssets = () => {
                   <tr key={asset.id}>
                     <td>
                       <div className="report-user">
-                        <div className="report-user-avatar">
-                          {getAssetTypeIcon(asset.type)}
-                        </div>
+                       
                         <div className="report-user-info">
                           <div className="report-user-name">
                             {asset.title || "Untitled Asset"}

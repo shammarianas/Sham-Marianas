@@ -15,49 +15,66 @@ import {
   FiClock,
   FiBarChart2,
   FiPieChart,
+  FiVideo,
+  FiImage,
+  FiCode,
+  FiBox,
+  FiLayers,
+  FiType,
+  FiFile,
 } from "react-icons/fi";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { useUser } from "../../../../Context/UserProvider";
 
 const Statistics = () => {
+  const { currentUser } = useUser();
   const [allAssets, setAllAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState("all"); // all, today, week, month, custom
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
 
-  // Fetch all assets
+  // ✅ UPDATED: Fetch only current user's assets
   useEffect(() => {
-    const fetchAllAssets = async () => {
+    const fetchUserAssets = async () => {
       try {
         setLoading(true);
         const assetsRef = collection(db, "Assets");
         const assetsSnapshot = await getDocs(assetsRef);
 
-        const assetsData = [];
+        const userAssets = [];
 
         assetsSnapshot.forEach((doc) => {
           const data = doc.data();
-          assetsData.push({
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt || data.uploadDate || new Date(),
-            publishedAt: data.publishedAt || data.approvedAt || null,
-            rejectedAt: data.rejectedAt || null,
-          });
+          
+          // ✅ Only include current user's assets
+          if (data.ownerId === currentUser?.uid) {
+            userAssets.push({
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt || data.uploadDate || new Date(),
+              publishedAt: data.publishedAt || data.approvedAt || null,
+              rejectedAt: data.rejectedAt || null,
+            });
+          }
         });
 
-        setAllAssets(assetsData);
+        setAllAssets(userAssets);
       } catch (error) {
-        console.error("Error loading assets:", error);
-        alert("Failed to load assets");
+        console.error("Error loading user assets:", error);
+        alert("Failed to load your assets");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAllAssets();
-  }, []);
+    if (currentUser) {
+      fetchUserAssets();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser]);
 
   // Filter assets based on date range
   const filteredAssets = useMemo(() => {
@@ -291,32 +308,44 @@ const Statistics = () => {
     }));
   }, [filteredAssets, Statistics.totalAssets, loading]);
 
-  // Category distribution
-  const categoryDistribution = useMemo(() => {
-    if (loading) return [];
+  // ✅ UPDATED: All categories from upload form
+  // ✅ UPDATED: Category Distribution - Only show categories that have assets
+const categoryDistribution = useMemo(() => {
+  if (loading) return [];
 
-    const categories = {
-      "3d_model": 0,
-      texture: 0,
-      audio: 0,
-      other: 0,
-    };
+  const categories = {
+    models: 0,
+    videos: 0,
+    images: 0,
+    scripts: 0,
+    textures: 0,
+    hdris: 0,
+    icons: 0,
+    graphics: 0,
+    mockups: 0,
+    fonts: 0,
+    "video-templates": 0,
+    other: 0,
+  };
 
-    filteredAssets.forEach((a) => {
-      const category = a.category || "other";
-      if (categories[category] !== undefined) {
-        categories[category]++;
-      } else {
-        categories.other++;
-      }
-    });
+  filteredAssets.forEach((a) => {
+    const category = a.type || "other";
+    if (categories[category] !== undefined) {
+      categories[category]++;
+    } else {
+      categories.other++;
+    }
+  });
 
-    return Object.entries(categories).map(([category, count]) => ({
+  // ✅ FILTER: Only return categories that have assets
+  return Object.entries(categories)
+    .filter(([category, count]) => count > 0) // Only categories with assets
+    .map(([category, count]) => ({
       category,
       count,
       percentage: Statistics.totalAssets > 0 ? (count / Statistics.totalAssets) * 100 : 0
     }));
-  }, [filteredAssets, Statistics.totalAssets, loading]);
+}, [filteredAssets, Statistics.totalAssets, loading]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -339,14 +368,23 @@ const Statistics = () => {
     }
   };
 
+  // ✅ UPDATED: Category colors for all categories
   const getCategoryColor = (category) => {
-    switch (category) {
-      case "3d_model": return "#3b82f6";
-      case "texture": return "#8b5cf6";
-      case "audio": return "#06b6d4";
-      case "other": return "#6b7280";
-      default: return "#6b7280";
-    }
+    const colors = {
+      models: "#3b82f6",
+      videos: "#ef4444", 
+      images: "#10b981",
+      scripts: "#f59e0b",
+      textures: "#8b5cf6",
+      hdris: "#06b6d4",
+      icons: "#84cc16",
+      graphics: "#f97316",
+      mockups: "#ec4899",
+      fonts: "#14b8a6",
+      "video-templates": "#a855f7",
+      other: "#6b7280"
+    };
+    return colors[category] || "#6b7280";
   };
 
   const getStatusText = (status) => {
@@ -359,13 +397,40 @@ const Statistics = () => {
     }
   };
 
-  const getCategoryText = (category) => {
+  // ✅ UPDATED: Get category display name
+  const getCategoryDisplayName = (category) => {
     switch (category) {
-      case "3d_model": return "3D Models";
-      case "texture": return "Textures";
-      case "audio": return "Audio";
+      case "models": return "3D Models";
+      case "videos": return "Videos";
+      case "images": return "Images";
+      case "scripts": return "Scripts";
+      case "textures": return "Textures";
+      case "hdris": return "HDRIs";
+      case "icons": return "Icons";
+      case "graphics": return "Graphics Templates";
+      case "mockups": return "Mockups";
+      case "fonts": return "Fonts";
+      case "video-templates": return "Video Templates";
       case "other": return "Other";
       default: return "Other";
+    }
+  };
+
+  // ✅ UPDATED: Get asset type icon
+  const getAssetTypeIcon = (type) => {
+    switch (type) {
+      case "models": return <FiBox />;
+      case "videos": return <FiVideo />;
+      case "images": return <FiImage />;
+      case "scripts": return <FiCode />;
+      case "textures": return <FiLayers />;
+      case "hdris": return <FiImage />;
+      case "icons": return <FiLayers />;
+      case "graphics": return <FiFile />;
+      case "mockups": return <FiBox />;
+      case "fonts": return <FiType />;
+      case "video-templates": return <FiVideo />;
+      default: return <FiFile />;
     }
   };
 
@@ -375,6 +440,30 @@ const Statistics = () => {
     setCustomEndDate("");
   };
 
+  // Show message if no user is logged in
+  if (!currentUser) {
+    return (
+      <div className="user-reports-dashboard">
+        <div className="dashboard-header">
+          <div className="header-content">
+            <h2 className="header-title">
+              <FiBarChart2 className="header-icon" />
+              Statistics Dashboard
+            </h2>
+            <p className="header-subtitle">
+              Please log in to view your statistics
+            </p>
+          </div>
+        </div>
+        <div className="no-data-message">
+          <FiUsers size={48} />
+          <h3>Authentication Required</h3>
+          <p>You need to be logged in to view your statistics.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="user-reports-dashboard">
       {/* Loading Overlay */}
@@ -382,7 +471,7 @@ const Statistics = () => {
         <div className="loading-overlay">
           <div className="loading-content">
             <div className="loading-spinner"></div>
-            <p className="loading-text">Loading statistics...</p>
+            <p className="loading-text">Loading your statistics...</p>
           </div>
         </div>
       )}
@@ -392,7 +481,7 @@ const Statistics = () => {
         <div className="header-content">
           <h2 className="header-title">
             <FiBarChart2 className="header-icon" />
-            Statistics Dashboard
+            Your Statistics Dashboard
           </h2>
           <p className="header-subtitle">
             Comprehensive overview of your content performance and analytics
@@ -400,7 +489,7 @@ const Statistics = () => {
         </div>
         <div className="header-actions">
           <span className="user-badge-count">
-            {formatNumber(Statistics.totalAssets)} total assets
+            {formatNumber(Statistics.totalAssets)} of your assets
           </span>
         </div>
       </div>
@@ -413,7 +502,7 @@ const Statistics = () => {
           </h3>
           <div className="filter-results">
             <span className="filter-text">
-              Showing data for selected period
+              Showing your data for selected period
             </span>
           </div>
         </div>
@@ -459,20 +548,20 @@ const Statistics = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="reports-Statistics-grid">
+      <div className="reports-stats-grid">
         <div className="report-stat-card primary">
           <div className="report-stat-header">
             <div className="report-stat-icon">
               <FiPackage />
             </div>
             <div>
-              <h3 className="report-stat-title">Total Assets</h3>
+              <h3 className="report-stat-title">Your Total Assets</h3>
               <div className="report-stat-value">{formatNumber(Statistics.totalAssets)}</div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              All content submissions
+              Your content submissions
             </div>
             <div className={`report-stat-trend ${trends.totalAssets.isPositive ? 'positive' : 'negative'}`}>
               {trends.totalAssets.value > 0 ? '+' : ''}{trends.totalAssets.value.toFixed(1)}% 
@@ -487,13 +576,13 @@ const Statistics = () => {
               <FiCheckCircle />
             </div>
             <div>
-              <h3 className="report-stat-title">Published</h3>
+              <h3 className="report-stat-title">Your Published</h3>
               <div className="report-stat-value">{formatNumber(Statistics.published)}</div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              {Statistics.approvalRate}% approval rate
+              {Statistics.approvalRate}% of your approval rate
             </div>
             <div className={`report-stat-trend ${trends.published.isPositive ? 'positive' : 'negative'}`}>
               {trends.published.value > 0 ? '+' : ''}{trends.published.value.toFixed(1)}% 
@@ -508,13 +597,13 @@ const Statistics = () => {
               <FiDownload />
             </div>
             <div>
-              <h3 className="report-stat-title">Total Downloads</h3>
+              <h3 className="report-stat-title">Your Total Downloads</h3>
               <div className="report-stat-value">{formatNumber(Statistics.totalDownloads)}</div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              All-time downloads
+              Your all-time downloads
             </div>
             <div className={`report-stat-trend ${trends.downloads.isPositive ? 'positive' : 'negative'}`}>
               {trends.downloads.value > 0 ? '+' : ''}{trends.downloads.value.toFixed(1)}% 
@@ -529,13 +618,13 @@ const Statistics = () => {
               <FiDollarSign />
             </div>
             <div>
-              <h3 className="report-stat-title">Total Earnings</h3>
+              <h3 className="report-stat-title">Your Total Earnings</h3>
               <div className="report-stat-value">{formatCurrency(Statistics.totalEarnings)}</div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              Lifetime earnings
+              Your lifetime earnings
             </div>
             <div className={`report-stat-trend ${trends.earnings.isPositive ? 'positive' : 'negative'}`}>
               {trends.earnings.value > 0 ? '+' : ''}{trends.earnings.value.toFixed(1)}% 
@@ -551,7 +640,7 @@ const Statistics = () => {
         <div className="reports-chart-card">
           <div className="reports-chart-header">
             <h3 className="panel-title">
-              <FiPieChart className="panel-icon" /> Status Distribution
+              <FiPieChart className="panel-icon" /> Your Status Distribution
             </h3>
           </div>
           <div className="reports-chart-body">
@@ -572,7 +661,7 @@ const Statistics = () => {
                     <div className="pie-chart-value">
                       {Statistics.totalAssets}
                     </div>
-                    <div className="pie-chart-label">Total</div>
+                    <div className="pie-chart-label">Your Assets</div>
                   </div>
                 </div>
               </div>
@@ -597,34 +686,41 @@ const Statistics = () => {
         </div>
 
         {/* Category Distribution */}
-        <div className="reports-categories-card">
-          <div className="reports-categories-header">
-            <h3 className="panel-title">
-              <FiPackage className="panel-icon" /> Category Distribution
-            </h3>
+       {/* Category Distribution */}
+<div className="reports-categories-card">
+  <div className="reports-categories-header">
+    <h3 className="panel-title">
+      <FiPackage className="panel-icon" /> Your Category Distribution
+    </h3>
+  </div>
+  <div className="reports-categories-body">
+    {categoryDistribution.length > 0 ? (
+      categoryDistribution.map((item, index) => (
+        <div key={index} className="category-progress">
+          <div className="category-header">
+            <span className="category-name">{getCategoryDisplayName(item.category)}</span>
+            <span className="category-count">
+              {Math.round(item.percentage)}% ({formatNumber(item.count)})
+            </span>
           </div>
-          <div className="reports-categories-body">
-            {categoryDistribution.map((item, index) => (
-              <div key={index} className="category-progress">
-                <div className="category-header">
-                  <span className="category-name">{getCategoryText(item.category)}</span>
-                  <span className="category-count">
-                    {Math.round(item.percentage)}% ({formatNumber(item.count)})
-                  </span>
-                </div>
-                <div className="category-progress-bar">
-                  <div
-                    className="category-progress-fill"
-                    style={{
-                      width: `${item.percentage}%`,
-                      backgroundColor: getCategoryColor(item.category)
-                    }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+          <div className="category-progress-bar">
+            <div
+              className="category-progress-fill"
+              style={{
+                width: `${item.percentage}%`,
+                backgroundColor: getCategoryColor(item.category)
+              }}
+            ></div>
           </div>
         </div>
+      ))
+    ) : (
+      <div className="no-categories-message">
+        <p>No assets found in any category for the selected period.</p>
+      </div>
+    )}
+  </div>
+</div>
       </div>
 
       {/* Top Performing Assets */}
@@ -632,7 +728,7 @@ const Statistics = () => {
         <div className="recent-reports-card">
           <div className="recent-reports-header">
             <h3 className="panel-title">
-              <FiTrendingUp className="panel-icon" /> Top Downloading Assets
+              <FiTrendingUp className="panel-icon" /> Your Top Downloading Assets
             </h3>
           </div>
           <div className="recent-reports-body">
@@ -652,9 +748,7 @@ const Statistics = () => {
                     <td>
                       <div className="report-user">
                         <div className="report-user-avatar">
-                          {asset.category === "3d_model" ? "📦" : 
-                           asset.category === "texture" ? "🎨" : 
-                           asset.category === "audio" ? "🎵" : "📁"}
+                          {getAssetTypeIcon(asset.type)}
                         </div>
                         <div className="report-user-info">
                           <div className="report-user-name">
@@ -667,8 +761,8 @@ const Statistics = () => {
                       </div>
                     </td>
                     <td>
-                      <span className={`report-category-badge ${asset.category || "other"}`}>
-                        {getCategoryText(asset.category)}
+                      <span className={`report-category-badge ${asset.type || "other"}`}>
+                        {getCategoryDisplayName(asset.type)}
                       </span>
                     </td>
                     <td>
@@ -706,7 +800,7 @@ const Statistics = () => {
         <div className="recent-reports-card">
           <div className="recent-reports-header">
             <h3 className="panel-title">
-              <FiStar className="panel-icon" /> Top Trending Assets
+              <FiStar className="panel-icon" /> Your Top Trending Assets
             </h3>
           </div>
           <div className="recent-reports-body">
@@ -726,9 +820,7 @@ const Statistics = () => {
                     <td>
                       <div className="report-user">
                         <div className="report-user-avatar">
-                          {asset.category === "3d_model" ? "📦" : 
-                           asset.category === "texture" ? "🎨" : 
-                           asset.category === "audio" ? "🎵" : "📁"}
+                          {getAssetTypeIcon(asset.type)}
                         </div>
                         <div className="report-user-info">
                           <div className="report-user-name">
@@ -741,8 +833,8 @@ const Statistics = () => {
                       </div>
                     </td>
                     <td>
-                      <span className={`report-category-badge ${asset.category || "other"}`}>
-                        {getCategoryText(asset.category)}
+                      <span className={`report-category-badge ${asset.type || "other"}`}>
+                        {getCategoryDisplayName(asset.type)}
                       </span>
                     </td>
                     <td>
@@ -782,14 +874,14 @@ const Statistics = () => {
         <div className="reports-chart-card">
           <div className="reports-chart-header">
             <h3 className="panel-title">
-              <FiUsers className="panel-icon" /> Performance Summary
+              <FiUsers className="panel-icon" /> Your Performance Summary
             </h3>
           </div>
           <div className="reports-chart-body">
             <div className="performance-metrics-grid">
               <div className="performance-metric">
                 <div className="metric-header">
-                  <span className="metric-name">Approval Rate</span>
+                  <span className="metric-name">Your Approval Rate</span>
                   <span className={`metric-status ${Statistics.approvalRate > 80 ? 'excellent' : Statistics.approvalRate > 60 ? 'good' : 'average'}`}>
                     {Statistics.approvalRate > 80 ? 'Excellent' : Statistics.approvalRate > 60 ? 'Good' : 'Needs Improvement'}
                   </span>
@@ -808,7 +900,7 @@ const Statistics = () => {
 
               <div className="performance-metric">
                 <div className="metric-header">
-                  <span className="metric-name">Average Rating</span>
+                  <span className="metric-name">Your Average Rating</span>
                   <span className={`metric-status ${Statistics.averageRating > 4.5 ? 'excellent' : Statistics.averageRating > 4.0 ? 'good' : 'average'}`}>
                     {Statistics.averageRating > 4.5 ? 'Excellent' : Statistics.averageRating > 4.0 ? 'Good' : 'Average'}
                   </span>
@@ -827,7 +919,7 @@ const Statistics = () => {
 
               <div className="performance-metric">
                 <div className="metric-header">
-                  <span className="metric-name">Revenue per Asset</span>
+                  <span className="metric-name">Your Revenue per Asset</span>
                   <span className={`metric-status ${(Statistics.totalEarnings / Statistics.published) > 50 ? 'excellent' : (Statistics.totalEarnings / Statistics.published) > 20 ? 'good' : 'average'}`}>
                     {Statistics.published > 0 ? 'Good' : 'N/A'}
                   </span>
