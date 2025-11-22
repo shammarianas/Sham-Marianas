@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   FiAlertTriangle, 
   FiCheckCircle, 
@@ -17,75 +17,91 @@ import {
   FiMail,
   FiCalendar
 } from "react-icons/fi";
+import { collection, getDocs, query, where, orderBy, updateDoc, doc } from "firebase/firestore";
+import { db } from "../../../../firebase"; // Adjust path as needed
 
 const SellerComplaints = () => {
-  const [complaints, setComplaints] = useState([
-    {
-      id: 1,
-      sellerName: "Ali Designs",
-      sellerEmail: "ali.ahmed@example.com",
-      complainant: "John Smith",
-      complainantEmail: "john.smith@example.com",
-      type: "Product Quality",
-      subject: "Low quality 3D model",
-      description: "The purchased 3D model has poor texture quality and doesn't match the preview images. The textures are blurry and the model has several mesh issues that make it unusable for professional projects.",
-      status: "open",
-      createdAt: "2024-02-15",
-      updatedAt: "2024-02-15",
-      orderId: "ORD-001234",
-      product: "Modern Office Building 3D Model"
-    },
-    {
-      id: 2,
-      sellerName: "Sara Creations",
-      sellerEmail: "sara.khan@example.com",
-      complainant: "Emma Wilson",
-      complainantEmail: "emma.wilson@example.com",
-      type: "Delivery Issue",
-      subject: "File not delivered",
-      description: "Paid for the graphics pack but didn't receive download link after payment. The transaction was completed successfully but no files were accessible.",
-      status: "in_progress",
-      createdAt: "2024-02-14",
-      updatedAt: "2024-02-15",
-      orderId: "ORD-001235",
-      product: "Professional Graphics Pack"
-    },
-    {
-      id: 3,
-      sellerName: "UR Designs",
-      sellerEmail: "usman.riaz@example.com",
-      complainant: "Mike Johnson",
-      complainantEmail: "mike.johnson@example.com",
-      type: "Refund Request",
-      subject: "Wrong product delivered",
-      description: "Received different template than what was shown in the product listing. The features and design elements are completely different from the advertised product.",
-      status: "resolved",
-      createdAt: "2024-02-10",
-      updatedAt: "2024-02-12",
-      orderId: "ORD-001236",
-      product: "Dashboard UI Template"
-    },
-    {
-      id: 4,
-      sellerName: "Digital Assets Co",
-      sellerEmail: "fatima.noor@example.com",
-      complainant: "Sarah Brown",
-      complainantEmail: "sarah.brown@example.com",
-      type: "Copyright Issue",
-      subject: "Possible copyright violation",
-      description: "Seller might be using copyrighted material without permission. The 3D model appears to be copied from a commercial product.",
-      status: "open",
-      createdAt: "2024-02-16",
-      updatedAt: "2024-02-16",
-      orderId: "ORD-001237",
-      product: "Character Model Pack"
-    }
-  ]);
-
+  const [complaints, setComplaints] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ FETCH REAL COMPLAINTS DATA
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      try {
+        setLoading(true);
+        
+        // Get all users who have support tickets
+        const usersSnapshot = await getDocs(collection(db, "Profiles"));
+        const allComplaints = [];
+
+        for (const userDoc of usersSnapshot.docs) {
+          const userId = userDoc.id;
+          const userData = userDoc.data();
+          
+          // Check if user has support collection
+          const supportQuery = query(
+            collection(db, `Profiles/${userId}/Support`),
+            orderBy("createdAt", "desc")
+          );
+          
+          try {
+            const supportSnapshot = await getDocs(supportQuery);
+            
+            supportSnapshot.forEach((supportDoc) => {
+              const complaintData = supportDoc.data();
+              
+              // ✅ ONLY SHOW CONTRIBUTOR COMPLAINTS
+              if (complaintData.userType === "contributor") {
+                allComplaints.push({
+                  id: supportDoc.id,
+                  userId: userId,
+                  sellerName: userData.username || userData.displayName || "Unknown Seller",
+                  sellerEmail: userData.email || "No email",
+                  complainant: complaintData.email || "Unknown",
+                  complainantEmail: complaintData.email || "No email",
+                  type: getComplaintType(complaintData.issueType),
+                  subject: complaintData.subject || "No subject",
+                  description: complaintData.description || "No description",
+                  status: complaintData.status || "pending",
+                  createdAt: complaintData.createdAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
+                  updatedAt: complaintData.updatedAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
+                  orderId: complaintData.orderId || "N/A",
+                  product: complaintData.product || "General Issue",
+                  originalData: complaintData
+                });
+              }
+            });
+          } catch (error) {
+            console.log(`No support collection for user ${userId}`);
+          }
+        }
+
+        setComplaints(allComplaints);
+      } catch (error) {
+        console.error("Error fetching complaints:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComplaints();
+  }, []);
+
+  const getComplaintType = (issueType) => {
+    const typeMap = {
+      technical: "Technical Issue",
+      billing: "Billing Issue", 
+      general: "General Inquiry",
+      content_approval: "Content Approval",
+      earnings: "Earnings Issue",
+      account_verification: "Account Verification"
+    };
+    return typeMap[issueType] || "General Inquiry";
+  };
 
   const filteredComplaints = complaints.filter(complaint => {
     const matchesSearch = 
@@ -104,13 +120,15 @@ const SellerComplaints = () => {
     total: complaints.length,
     open: complaints.filter(c => c.status === "open").length,
     inProgress: complaints.filter(c => c.status === "in_progress").length,
-    resolved: complaints.filter(c => c.status === "resolved").length
+    resolved: complaints.filter(c => c.status === "resolved").length,
+    pending: complaints.filter(c => c.status === "pending").length
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "open":
-        return <span className="report-status-badge pending"><FiClock /> Open</span>;
+      case "pending":
+        return <span className="report-status-badge pending"><FiClock /> {status === "pending" ? "Pending" : "Open"}</span>;
       case "in_progress":
         return <span className="report-status-badge in-progress"><FiMessageSquare /> In Progress</span>;
       case "resolved":
@@ -124,10 +142,12 @@ const SellerComplaints = () => {
 
   const getTypeBadge = (type) => {
     const typeClasses = {
-      "Product Quality": "technical",
-      "Delivery Issue": "billing",
-      "Refund Request": "general",
-      "Copyright Issue": "feature"
+      "Technical Issue": "technical",
+      "Billing Issue": "billing", 
+      "General Inquiry": "general",
+      "Content Approval": "feature",
+      "Earnings Issue": "warning",
+      "Account Verification": "info"
     };
     
     return (
@@ -137,18 +157,50 @@ const SellerComplaints = () => {
     );
   };
 
-  const handleStatusChange = (complaintId, newStatus) => {
-    setComplaints(complaints.map(complaint => 
-      complaint.id === complaintId 
-        ? { ...complaint, status: newStatus, updatedAt: new Date().toISOString().split('T')[0] }
-        : complaint
-    ));
+  // ✅ UPDATE COMPLAINT STATUS IN FIRESTORE
+  const handleStatusChange = async (complaintId, userId, newStatus) => {
+    try {
+      const complaintRef = doc(db, `Profiles/${userId}/Support`, complaintId);
+      await updateDoc(complaintRef, {
+        status: newStatus,
+        updatedAt: new Date()
+      });
+
+      // Update local state
+      setComplaints(complaints.map(complaint => 
+        complaint.id === complaintId && complaint.userId === userId
+          ? { 
+              ...complaint, 
+              status: newStatus, 
+              updatedAt: new Date().toISOString().split('T')[0] 
+            }
+          : complaint
+      ));
+
+      alert(`Complaint status updated to ${newStatus}`);
+    } catch (error) {
+      console.error("Error updating complaint status:", error);
+      alert("Failed to update complaint status");
+    }
   };
 
   const resetFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
   };
+
+  if (loading) {
+    return (
+      <div className="user-reports-dashboard">
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p>Loading contributor complaints...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="user-reports-dashboard">
@@ -157,15 +209,15 @@ const SellerComplaints = () => {
         <div className="header-content">
           <h2 className="header-title">
             <FiAlertTriangle className="header-icon" />
-            Seller Complaints Management
+            Contributor Support Requests
           </h2>
           <p className="header-subtitle">
-            Manage and resolve customer complaints against sellers
+            Manage and resolve support requests from verified contributors
           </p>
         </div>
         <div className="header-actions">
           <span className="user-badge-count">
-            {stats.total} total complaints
+            {stats.total} contributor requests
           </span>
         </div>
       </div>
@@ -178,16 +230,13 @@ const SellerComplaints = () => {
               <FiAlertTriangle />
             </div>
             <div>
-              <h3 className="report-stat-title">Total Complaints</h3>
+              <h3 className="report-stat-title">Total Requests</h3>
               <div className="report-stat-value">{stats.total}</div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              All complaints received
-            </div>
-            <div className="report-stat-trend negative">
-              +12% <FiTrendingUp className="fi-pl" />
+              All contributor requests
             </div>
           </div>
         </div>
@@ -198,16 +247,13 @@ const SellerComplaints = () => {
               <FiClock />
             </div>
             <div>
-              <h3 className="report-stat-title">Open Complaints</h3>
-              <div className="report-stat-value">{stats.open}</div>
+              <h3 className="report-stat-title">Pending</h3>
+              <div className="report-stat-value">{stats.pending}</div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              Awaiting resolution
-            </div>
-            <div className="report-stat-trend negative">
-              +8% <FiTrendingUp className="fi-pl" />
+              Awaiting response
             </div>
           </div>
         </div>
@@ -226,9 +272,6 @@ const SellerComplaints = () => {
             <div className="report-stat-subtext">
               Under investigation
             </div>
-            <div className="report-stat-trend positive">
-              +15% <FiTrendingUp className="fi-pl" />
-            </div>
           </div>
         </div>
 
@@ -246,9 +289,6 @@ const SellerComplaints = () => {
             <div className="report-stat-subtext">
               Successfully resolved
             </div>
-            <div className="report-stat-trend positive">
-              +22% <FiTrendingUp className="fi-pl" />
-            </div>
           </div>
         </div>
       </div>
@@ -257,11 +297,11 @@ const SellerComplaints = () => {
       <div className="reports-filter-bar">
         <div className="filter-bar-header">
           <h3 className="filter-bar-title">
-            <FiFilter className="panel-icon" /> Filter Complaints
+            <FiFilter className="panel-icon" /> Filter Requests
           </h3>
           <div className="filter-results">
             <span className="filter-text">
-              Showing {filteredComplaints.length} of {stats.total} complaints
+              Showing {filteredComplaints.length} of {stats.total} requests
             </span>
           </div>
         </div>
@@ -272,7 +312,7 @@ const SellerComplaints = () => {
             <input
               type="text"
               className="filter-search-input"
-              placeholder="Search complaints by seller, complainant, or subject..."
+              placeholder="Search requests by seller, complainant, or subject..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -284,6 +324,7 @@ const SellerComplaints = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">All Status</option>
+            <option value="pending">Pending</option>
             <option value="open">Open</option>
             <option value="in_progress">In Progress</option>
             <option value="resolved">Resolved</option>
@@ -304,7 +345,7 @@ const SellerComplaints = () => {
       <div className="recent-reports-card">
         <div className="recent-reports-header">
           <h3 className="panel-title">
-            <FiList className="panel-icon" /> Customer Complaints
+            <FiList className="panel-icon" /> Contributor Support Requests
           </h3>
           <button className="action-button secondary">
             <FiDownload className="button-icon" /> Export List
@@ -314,8 +355,8 @@ const SellerComplaints = () => {
           <table className="report-table">
             <thead>
               <tr>
-                <th>Seller</th>
-                <th>Complainant</th>
+                <th>Contributor</th>
+                <th>Contact Email</th>
                 <th>Type</th>
                 <th>Subject</th>
                 <th>Created</th>
@@ -328,7 +369,6 @@ const SellerComplaints = () => {
                 <tr key={complaint.id}>
                   <td>
                     <div className="report-user">
-                     
                       <div className="report-user-info">
                         <div className="report-user-name">{complaint.sellerName}</div>
                         <div className="report-user-email">{complaint.sellerEmail}</div>
@@ -336,12 +376,8 @@ const SellerComplaints = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="report-user">
-                      
-                      <div className="report-user-info">
-                        <div className="report-user-name">{complaint.complainant}</div>
-                        <div className="report-user-email">{complaint.complainantEmail}</div>
-                      </div>
+                    <div className="report-user-email-single">
+                      {complaint.complainantEmail}
                     </div>
                   </td>
                   <td>
@@ -374,11 +410,11 @@ const SellerComplaints = () => {
                         <FiEye />
                       </button>
                       
-                      {complaint.status === "open" && (
+                      {complaint.status === "pending" && (
                         <button
                           className="action-button small"
                           title="Start Investigation"
-                          onClick={() => handleStatusChange(complaint.id, "in_progress")}
+                          onClick={() => handleStatusChange(complaint.id, complaint.userId, "in_progress")}
                         >
                           <FiMessageSquare />
                         </button>
@@ -388,7 +424,7 @@ const SellerComplaints = () => {
                         <button
                           className="action-button success small"
                           title="Mark Resolved"
-                          onClick={() => handleStatusChange(complaint.id, "resolved")}
+                          onClick={() => handleStatusChange(complaint.id, complaint.userId, "resolved")}
                         >
                           <FiCheckCircle />
                         </button>
@@ -396,8 +432,8 @@ const SellerComplaints = () => {
                       
                       <button
                         className="action-button warning small"
-                        title="Contact Parties"
-                        onClick={() => alert(`Contacting ${complaint.sellerName} and ${complaint.complainant}`)}
+                        title="Contact Contributor"
+                        onClick={() => alert(`Contacting ${complaint.sellerName} at ${complaint.complainantEmail}`)}
                       >
                         <FiMail />
                       </button>
@@ -409,7 +445,7 @@ const SellerComplaints = () => {
               {filteredComplaints.length === 0 && (
                 <tr>
                   <td colSpan="7" className="no-reports">
-                    No complaints found matching your filters
+                    {complaints.length === 0 ? "No contributor support requests found" : "No requests found matching your filters"}
                   </td>
                 </tr>
               )}
@@ -423,7 +459,7 @@ const SellerComplaints = () => {
         <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Complaint Details</h3>
+              <h3 className="modal-title">Support Request Details</h3>
               <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
                 <FiX />
               </button>
@@ -432,45 +468,29 @@ const SellerComplaints = () => {
             <div className="modal-body">
               <div className="report-detail-grid">
                 <div className="detail-section">
-                  <h4>Seller Information</h4>
+                  <h4>Contributor Information</h4>
                   <div className="detail-item">
-                    <span className="detail-label">Seller Name:</span>
+                    <span className="detail-label">Contributor Name:</span>
                     <span className="detail-value">{selectedComplaint.sellerName}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Seller Email:</span>
+                    <span className="detail-label">Contributor Email:</span>
                     <span className="detail-value">{selectedComplaint.sellerEmail}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Product:</span>
-                    <span className="detail-value">{selectedComplaint.product}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Order ID:</span>
-                    <span className="detail-value">{selectedComplaint.orderId}</span>
+                    <span className="detail-label">Contact Email:</span>
+                    <span className="detail-value">{selectedComplaint.complainantEmail}</span>
                   </div>
                 </div>
 
                 <div className="detail-section">
-                  <h4>Complainant Information</h4>
+                  <h4>Request Details</h4>
                   <div className="detail-item">
-                    <span className="detail-label">Name:</span>
-                    <span className="detail-value">{selectedComplaint.complainant}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Email:</span>
-                    <span className="detail-value">{selectedComplaint.complainantEmail}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Complaint Type:</span>
+                    <span className="detail-label">Request Type:</span>
                     <span className="detail-value">
                       {getTypeBadge(selectedComplaint.type)}
                     </span>
                   </div>
-                </div>
-
-                <div className="detail-section">
-                  <h4>Complaint Details</h4>
                   <div className="detail-item">
                     <span className="detail-label">Status:</span>
                     <span className="detail-value">
@@ -502,7 +522,7 @@ const SellerComplaints = () => {
                   <h4>Admin Response</h4>
                   <textarea
                     className="response-textarea"
-                    placeholder="Type your response to the complainant here..."
+                    placeholder="Type your response to the contributor here..."
                     rows="4"
                     style={{
                       width: '100%',
@@ -523,11 +543,11 @@ const SellerComplaints = () => {
                 Close
               </button>
               
-              {selectedComplaint.status === "open" && (
+              {selectedComplaint.status === "pending" && (
                 <button
                   className="action-button"
                   onClick={() => {
-                    handleStatusChange(selectedComplaint.id, "in_progress");
+                    handleStatusChange(selectedComplaint.id, selectedComplaint.userId, "in_progress");
                     setShowDetailsModal(false);
                   }}
                 >
@@ -539,7 +559,7 @@ const SellerComplaints = () => {
                 <button
                   className="action-button success"
                   onClick={() => {
-                    handleStatusChange(selectedComplaint.id, "resolved");
+                    handleStatusChange(selectedComplaint.id, selectedComplaint.userId, "resolved");
                     setShowDetailsModal(false);
                   }}
                 >
@@ -554,7 +574,7 @@ const SellerComplaints = () => {
                   setShowDetailsModal(false);
                 }}
               >
-                <FiMail /> Contact Complainant
+                <FiMail /> Contact Contributor
               </button>
             </div>
           </div>
