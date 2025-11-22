@@ -42,7 +42,7 @@ import {
 // Import Components
 import DashboardOverview from "../Contributor-tabs/DashboardOverview";
 // import FilesManagement from "../Contributor-tabs/FilesManagement";
-// import UploadFiles from "../Contributor-tabs/UploadFiles";
+import UploadFiles from "../Contributor-tabs/UploadFiles";
 import UnderRevision from "../Contributor-tabs/UnderRevision";
 import Rejections from "../Contributor-tabs/Rejections";
 import PublishedFiles from "../Contributor-tabs/PublishedFiles";
