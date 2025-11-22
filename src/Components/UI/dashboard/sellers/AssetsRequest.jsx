@@ -16,77 +16,79 @@ import {
   FiDollarSign,
   FiFileText
 } from "react-icons/fi";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../../../../firebase";
 
 const AssetRequestsDashboard = () => {
-  const [assetRequests, setAssetRequests] = useState([
-    {
-      id: 1,
-      title: "Modern Office Building 3D Model",
-      type: "models",
-      category: "Architecture / Buildings",
-      author: "Ali Ahmed",
-      authorEmail: "ali.ahmed@example.com",
-      submitDate: "2024-01-15",
-      status: "pending",
-      priceType: "free",
-      fileSize: "45.2 MB",
-      description: "High-quality modern office building with detailed interior and exterior.",
-      files: ["office_building.glb", "textures.zip"],
-      thumbnail: "office_thumbnail.jpg"
-    },
-    {
-      id: 2,
-      title: "Character Animation Pack",
-      type: "videos",
-      category: "Characters",
-      author: "Sara Khan",
-      authorEmail: "sara.khan@example.com",
-      submitDate: "2024-01-12",
-      status: "approved",
-      priceType: "paid",
-      fileSize: "120.5 MB",
-      description: "Complete character animation pack with 15 different animations.",
-      files: ["animations.zip", "demo.mp4"],
-      thumbnail: "character_animations.jpg"
-    },
-    {
-      id: 3,
-      title: "UI Dashboard Template",
-      type: "graphics",
-      category: "Social Media",
-      author: "Usman Riaz",
-      authorEmail: "usman.riaz@example.com",
-      submitDate: "2024-01-18",
-      status: "rejected",
-      priceType: "free",
-      fileSize: "8.7 MB",
-      description: "Modern UI dashboard template for web applications.",
-      files: ["dashboard_template.psd"],
-      thumbnail: "ui_dashboard.jpg",
-      rejectionReason: "Low quality design and improper file organization"
-    },
-    {
-      id: 4,
-      title: "Nature Sound Pack",
-      type: "other",
-      category: "Audio",
-      author: "Fatima Noor",
-      authorEmail: "fatima.noor@example.com",
-      submitDate: "2024-01-20",
-      status: "pending",
-      priceType: "paid",
-      fileSize: "89.3 MB",
-      description: "Collection of high-quality nature sounds for video projects.",
-      files: ["nature_sounds.zip"],
-      thumbnail: "sound_pack.jpg"
-    }
-  ]);
-
+  const [assetRequests, setAssetRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Fetch only contributor assets from Firebase
+  useEffect(() => {
+    const fetchAssetRequests = async () => {
+      try {
+        setLoading(true);
+        const assetsRef = collection(db, "Assets");
+        
+        // Query to get only contributor assets (not admin uploaded)
+        const q = query(
+          assetsRef, 
+          where("uploadedBy", "!=", "admin")
+        );
+        
+        const assetsSnapshot = await getDocs(q);
+
+        const contributorAssets = [];
+
+        assetsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          
+          // Only include assets from contributors
+          if (data.uploadedBy !== "admin" && data.uploadedBy !== "Admin") {
+            contributorAssets.push({
+              id: doc.id,
+              ...data,
+              title: data.title || "Untitled Asset",
+              type: data.category || "other",
+              category: data.category || "Other",
+              author: data.authorName || data.author || data.uploadedBy || "Unknown Contributor",
+              authorEmail: data.authorEmail || data.email || "No email provided",
+              submitDate: data.createdAt || data.uploadDate || new Date(),
+              status: data.status || "pending",
+              priceType: data.isFree ? "free" : "paid",
+              fileSize: data.fileSize || "Unknown",
+              description: data.description || "No description provided",
+              files: data.files || [],
+              thumbnail: data.thumbnail || data.imageUrl || "",
+              rejectionReason: data.rejectionReason || ""
+            });
+          }
+        });
+
+        // Sort by creation date (newest first)
+        contributorAssets.sort((a, b) => {
+          const timeA = a.submitDate?.toDate?.() || new Date(a.submitDate);
+          const timeB = b.submitDate?.toDate?.() || new Date(b.submitDate);
+          return timeB - timeA;
+        });
+
+        setAssetRequests(contributorAssets);
+      } catch (error) {
+        console.error("Error loading contributor asset requests:", error);
+        // Fallback to empty array if no contributor assets found
+        setAssetRequests([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssetRequests();
+  }, []);
 
   // Handle approve asset
   const handleApprove = (assetId) => {
@@ -146,14 +148,23 @@ const AssetRequestsDashboard = () => {
   // Asset type icon and label
   const getAssetTypeInfo = (type) => {
     const types = {
-      models: { icon: "📦", label: "3D Model" },
-      videos: { icon: "🎥", label: "Video" },
-      images: { icon: "🖼️", label: "Image" },
-      graphics: { icon: "🎨", label: "Graphics" },
-      scripts: { icon: "💻", label: "Script" },
-      other: { icon: "📄", label: "Other" }
+      "3d_model": { icon: "📦", label: "3D Model" },
+      "texture": { icon: "🎨", label: "Texture" },
+      "audio": { icon: "🎵", label: "Audio" },
+      "video": { icon: "🎥", label: "Video" },
+      "image": { icon: "🖼️", label: "Image" },
+      "graphics": { icon: "🎨", label: "Graphics" },
+      "script": { icon: "💻", label: "Script" },
+      "other": { icon: "📄", label: "Other" }
     };
     return types[type] || { icon: "📄", label: "Asset" };
+  };
+
+  // Format date for display
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    const date = timestamp?.toDate?.() || new Date(timestamp);
+    return date.toLocaleDateString();
   };
 
   // Statistics
@@ -171,6 +182,19 @@ const AssetRequestsDashboard = () => {
     setTypeFilter("all");
   };
 
+  if (loading) {
+    return (
+      <div className="user-reports-dashboard">
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading contributor assets...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="user-reports-dashboard">
       {/* Header */}
@@ -178,15 +202,15 @@ const AssetRequestsDashboard = () => {
         <div className="header-content">
           <h2 className="header-title">
             <FiPackage className="header-icon" />
-            Asset Requests Management
+            Contributor Asset Requests
           </h2>
           <p className="header-subtitle">
-            Review and manage asset upload requests from sellers
+            Review and manage asset upload requests from contributors
           </p>
         </div>
         <div className="header-actions">
           <span className="user-badge-count">
-            {stats.totalAssets} total requests
+            {stats.totalAssets} contributor requests
           </span>
         </div>
       </div>
@@ -245,7 +269,7 @@ const AssetRequestsDashboard = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              All asset submissions
+              Contributor submissions
             </div>
             <div className="report-stat-trend positive">
               +12% <FiTrendingUp className="fi-pl" />
@@ -282,7 +306,7 @@ const AssetRequestsDashboard = () => {
           </h3>
           <div className="filter-results">
             <span className="filter-text">
-              Showing {filteredAssets.length} of {stats.totalAssets} requests
+              Showing {filteredAssets.length} of {stats.totalAssets} contributor requests
             </span>
           </div>
         </div>
@@ -293,7 +317,7 @@ const AssetRequestsDashboard = () => {
             <input
               type="text"
               className="filter-search-input"
-              placeholder="Search assets by title, author, or description..."
+              placeholder="Search contributor assets by title, author, or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -316,11 +340,13 @@ const AssetRequestsDashboard = () => {
             onChange={(e) => setTypeFilter(e.target.value)}
           >
             <option value="all">All Types</option>
-            <option value="models">3D Models</option>
-            <option value="videos">Videos</option>
-            <option value="images">Images</option>
+            <option value="3d_model">3D Models</option>
+            <option value="texture">Textures</option>
+            <option value="audio">Audio</option>
+            <option value="video">Videos</option>
+            <option value="image">Images</option>
             <option value="graphics">Graphics</option>
-            <option value="scripts">Scripts</option>
+            <option value="script">Scripts</option>
             <option value="other">Other</option>
           </select>
 
@@ -336,7 +362,7 @@ const AssetRequestsDashboard = () => {
       <div className="recent-reports-card">
         <div className="recent-reports-header">
           <h3 className="panel-title">
-            <FiList className="panel-icon" /> Asset Requests
+            <FiList className="panel-icon" /> Contributor Asset Requests
           </h3>
           <button className="action-button secondary">
             <FiDownload className="button-icon" /> Export Data
@@ -348,7 +374,7 @@ const AssetRequestsDashboard = () => {
               <tr>
                 <th>Asset</th>
                 <th>Type</th>
-                <th>Author</th>
+                <th>Contributor</th>
                 <th>Price</th>
                 <th>Size</th>
                 <th>Submit Date</th>
@@ -363,7 +389,6 @@ const AssetRequestsDashboard = () => {
                   <tr key={asset.id}>
                     <td>
                       <div className="report-user">
-                        
                         <div className="report-user-info">
                           <div className="report-user-name">{asset.title}</div>
                           <div className="report-user-email">{asset.category}</div>
@@ -372,9 +397,9 @@ const AssetRequestsDashboard = () => {
                     </td>
                     <td>
                       <span className={`report-category-badge ${
-                        asset.type === 'models' ? 'technical' : 
-                        asset.type === 'videos' ? 'billing' : 
-                        asset.type === 'images' ? 'general' : 'feature'
+                        asset.type === '3d_model' ? 'technical' : 
+                        asset.type === 'video' ? 'billing' : 
+                        asset.type === 'image' ? 'general' : 'feature'
                       }`}>
                         {typeInfo.label}
                       </span>
@@ -397,7 +422,7 @@ const AssetRequestsDashboard = () => {
                     <td>
                       <div className="comp-dis">
                         <FiClock style={{ marginRight: '4px' }} />
-                        {asset.submitDate}
+                        {formatDate(asset.submitDate)}
                       </div>
                     </td>
                     <td>
@@ -415,8 +440,6 @@ const AssetRequestsDashboard = () => {
                         >
                           <FiEye />
                         </button>
-                        
-                        
                         
                         {/* Always show Reject button for non-rejected assets */}
                         {asset.status !== "rejected" && (
@@ -460,7 +483,7 @@ const AssetRequestsDashboard = () => {
               {filteredAssets.length === 0 && (
                 <tr>
                   <td colSpan="8" className="no-reports">
-                    No asset requests found matching your filters
+                    {assetRequests.length === 0 ? 'No contributor asset requests found' : 'No contributor assets found matching your filters'}
                   </td>
                 </tr>
               )}
@@ -474,7 +497,7 @@ const AssetRequestsDashboard = () => {
         <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Asset Request Details</h3>
+              <h3 className="modal-title">Contributor Asset Details</h3>
               <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
                 <FiX />
               </button>
@@ -511,9 +534,9 @@ const AssetRequestsDashboard = () => {
                 </div>
 
                 <div className="detail-section">
-                  <h4>Author Information</h4>
+                  <h4>Contributor Information</h4>
                   <div className="detail-item">
-                    <span className="detail-label">Author:</span>
+                    <span className="detail-label">Contributor:</span>
                     <span className="detail-value">{selectedAsset.author}</span>
                   </div>
                   <div className="detail-item">
@@ -522,7 +545,7 @@ const AssetRequestsDashboard = () => {
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Submit Date:</span>
-                    <span className="detail-value">{selectedAsset.submitDate}</span>
+                    <span className="detail-value">{formatDate(selectedAsset.submitDate)}</span>
                   </div>
                 </div>
 
@@ -536,17 +559,21 @@ const AssetRequestsDashboard = () => {
                 <div className="detail-section full-width">
                   <h4>Submitted Files</h4>
                   <div className="documents-list">
-                    {selectedAsset.files.map((file, index) => (
-                      <div key={index} className="document-item">
-                        <div className="document-icon">📄</div>
-                        <div className="document-info">
-                          <div className="document-name">{file}</div>
-                          <button className="action-button secondary small">
-                            Download File
-                          </button>
+                    {selectedAsset.files && selectedAsset.files.length > 0 ? (
+                      selectedAsset.files.map((file, index) => (
+                        <div key={index} className="document-item">
+                          <div className="document-icon">📄</div>
+                          <div className="document-info">
+                            <div className="document-name">{file}</div>
+                            <button className="action-button secondary small">
+                              Download File
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <div className="no-files">No files submitted</div>
+                    )}
                   </div>
                 </div>
 
@@ -613,7 +640,6 @@ const AssetRequestsDashboard = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
