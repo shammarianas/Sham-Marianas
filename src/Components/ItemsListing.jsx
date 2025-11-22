@@ -16,46 +16,41 @@ const ItemsListing = (props) => {
 
   useEffect(() => {
     const fetchItems = async () => {
-      let itemsQuery;
+      try {
+        let itemsQuery;
 
-      if (props.userId) {
-        // Create a query to fetch items for a specific user
+        const baseQuery = [
+          where("type", "==", asset_type),
+          where("status", "==", "approved"),
+        ];
+
+        if (props.userId) {
+          baseQuery.push(where("ownerId", "==", props.userId)); // optional if you want user-specific items
+        }
+
         if (props?.limit) {
           itemsQuery = query(
             collection(db, "Assets"),
-            where("type", "==", asset_type),
-            limit(props?.limit)
+            ...baseQuery,
+            limit(props.limit)
           );
         } else {
-          itemsQuery = query(
-            collection(db, "Assets"),
-            where("type", "==", asset_type)
-          );
+          itemsQuery = query(collection(db, "Assets"), ...baseQuery);
         }
-      } else {
-        // Create a query to fetch all items
-        if (props?.limit) {
-          itemsQuery = query(
-            collection(db, "Assets"),
-            where("type", "==", asset_type),
-            limit(props?.limit)
-          );
-        } else {
-          itemsQuery = query(
-            collection(db, "Assets"),
-            where("type", "==", asset_type)
-          );
-        }
+
+        const snapshot = await getDocs(itemsQuery);
+        const itemsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setItems(itemsData);
+        setLoading(false);
+        if (itemsData.length === 0) setLoading("no_item");
+      } catch (err) {
+        console.error("Error fetching items:", err);
+        setLoading(false);
       }
-
-      const snapshot = await getDocs(itemsQuery);
-      const itemsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setItems(itemsData);
-      itemsData && setLoading(false);
-      itemsData.length === 0 && setLoading("no_item");
     };
 
     fetchItems();

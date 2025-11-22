@@ -89,15 +89,25 @@ const View = () => {
 
   useEffect(() => {
     const fetchItem = async () => {
-      const itemDocRef = doc(db, "Assets", docId);
-      const itemDocSnap = await getDoc(itemDocRef);
+      const itemRef = doc(db, "Assets", docId);
+      const snap = await getDoc(itemRef);
 
-      if (itemDocSnap.exists()) {
-        setItem({ id: itemDocSnap.id, ...itemDocSnap.data() });
-        setMarkdown(itemDocSnap.data().description);
-        setIs3d(itemDocSnap.data().is3d);
-      } else {
+      if (!snap.exists()) {
+        setItem(null);
+        return;
       }
+
+      const data = snap.data();
+
+      // Only show approved assets
+      if (data.status !== "approved") {
+        setItem(null);
+        return;
+      }
+
+      setItem({ id: snap.id, ...data });
+      setMarkdown(data.description);
+      setIs3d(data.is3d);
     };
 
     fetchItem();
@@ -172,7 +182,7 @@ const View = () => {
                 <div className="left">
                   {item.type === "models" || item.type === "printables" ? (
                     <ModelViewer
-                      thumbnailModel={item.thumbnailModel} 
+                      thumbnailModel={item.thumbnailModel}
                       model={item.model}
                       type={item.type}
                       alt={item.title}
