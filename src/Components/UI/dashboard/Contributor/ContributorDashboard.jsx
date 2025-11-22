@@ -47,6 +47,7 @@ import Rejections from "../Contributor-tabs/Rejections";
 import PublishedFiles from "../Contributor-tabs/PublishedFiles";
 import Statistics from "../Contributor-tabs/Statistics";
 import SearchTrends from "../Contributor-tabs/SearchTrends";
+import Support from "../../../../Pages/Support"
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
 // ✅ ADDED: Import Profile component
 import Profile from "../../../../Pages/Profile"; // Adjust path as needed
@@ -379,7 +380,7 @@ const SellerDashboard = () => {
         return <Guidelines {...commonProps} />;
 
       case "contact":
-        return <ContactSupport {...commonProps} />;
+        return <Support {...commonProps} />;
 
       // ✅ ADDED: Profile tab
       case "profile":
