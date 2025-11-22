@@ -23,7 +23,7 @@ import UserInformation from "./users/UserInformation";
 import UserReport from "./users/UserReport";
 import PaymentPlan from "./users/PaymentPlan";
 import SellerAccountVerify from "./sellers/SellerAccountVerify";
-import AssetRequestsDashboard from "./sellers/AssetsRequest"
+import AssetRequestsDashboard from "./sellers/AssetsRequest";
 import SellerEarning from "./sellers/SellerEarning";
 import SellerReports from "./sellers/SellerReports";
 import SellerAnalytics from "./sellers/SellerAnalytics";
@@ -214,38 +214,7 @@ const AdminDashboard = () => {
   };
 
   // Paste yeh functions AdminDashboard ke andar (kisi bhi jagah, upar ya neeche)
-  const changeUserRole = async (userId, newRole, email) => {
-    try {
-      await updateDoc(doc(db, "Profiles", userId), {
-        role: newRole,
-        admin: newRole === "admin",
-      });
-      return { success: true };
-    } catch (error) {
-      console.error("Role change error:", error);
-      return { success: false, error };
-    }
-  };
 
-  const changeUserStatus = async (userId, newStatus) => {
-    try {
-      await updateDoc(doc(db, "Profiles", userId), { status: newStatus });
-      return { success: true };
-    } catch (error) {
-      console.error("Status change error:", error);
-      return { success: false, error };
-    }
-  };
-
-  const deleteUserAccount = async (userId) => {
-    try {
-      await deleteDoc(doc(db, "Profiles", userId));
-      return { success: true };
-    } catch (error) {
-      console.error("Delete error:", error);
-      return { success: false, error };
-    }
-  };
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -884,17 +853,19 @@ const AdminDashboard = () => {
 
             {activeTab === 2 && <UserReport />}
 
-             {activeTab === 3 && (
-      <PaymentPlan 
-        users={users}
-        formatCurrency={(amount) => `$${amount?.toFixed(2) || '0.00'}`}
-        formatDate={(date) => {
-          if (!date) return "N/A";
-          const normalizedDate = normalizeDate(date);
-          return normalizedDate ? normalizedDate.toLocaleDateString() : "N/A";
-        }}
-      />
-    )}
+            {activeTab === 3 && (
+              <PaymentPlan
+                users={users}
+                formatCurrency={(amount) => `$${amount?.toFixed(2) || "0.00"}`}
+                formatDate={(date) => {
+                  if (!date) return "N/A";
+                  const normalizedDate = normalizeDate(date);
+                  return normalizedDate
+                    ? normalizedDate.toLocaleDateString()
+                    : "N/A";
+                }}
+              />
+            )}
 
             {activeTab === 4 && <SellerAccountVerify />}
 
