@@ -8,6 +8,7 @@ function Footer() {
 
   // Check if the current page is /stock or a category template page
   const isTemplatePage = path === "/stock" || path.includes("/category");
+
   
   // Check if current page is any dashboard page - ALL POSSIBLE DASHBOARD ROUTES
   const isDashboardPage = 
