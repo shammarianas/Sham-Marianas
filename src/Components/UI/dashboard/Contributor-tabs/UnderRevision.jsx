@@ -19,11 +19,20 @@ import {
   FiEdit,
   FiUser,
   FiCalendar,
+  FiVideo,
+  FiImage,
+  FiCode,
+  FiBox,
+  FiLayers,
+  FiType,
+  FiFile,
 } from "react-icons/fi";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { useUser } from "../../../../Context/UserProvider"; // Import user context
 
 const UnderRevisionAssets = () => {
+  const { currentUser } = useUser(); // Get current user
   const [allAssets, setAllAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -46,7 +55,7 @@ const UnderRevisionAssets = () => {
     setFilters((prev) => ({ ...prev, search: searchInput }));
   }, [debouncedSearch, searchInput]);
 
-  // Fetch assets under revision
+  // ✅ UPDATED: Fetch only current user's pending assets
   useEffect(() => {
     const fetchAssetsUnderRevision = async () => {
       try {
@@ -58,8 +67,15 @@ const UnderRevisionAssets = () => {
 
         assetsSnapshot.forEach((doc) => {
           const data = doc.data();
-          // Filter assets that are under revision
-          if (data.status === "under_revision" || data.underRevision === true) {
+
+          // ✅ UPDATED: Filter assets that are:
+          // 1. Under revision (pending status)
+          // 2. Belong to current user
+          // 3. NOT approved
+          const isCurrentUserAsset = data.ownerId === currentUser?.uid;
+          const isPendingAsset = data.status === "pending";
+
+          if (isCurrentUserAsset && isPendingAsset) {
             revisionAssets.push({
               id: doc.id,
               ...data,
@@ -76,6 +92,7 @@ const UnderRevisionAssets = () => {
         });
 
         setAllAssets(revisionAssets);
+        console.log("✅ Loaded user's pending assets:", revisionAssets.length);
       } catch (error) {
         console.error("Error loading assets under revision:", error);
         alert("Failed to load assets under revision");
@@ -84,99 +101,150 @@ const UnderRevisionAssets = () => {
       }
     };
 
-    fetchAssetsUnderRevision();
-  }, []);
+    if (currentUser) {
+      fetchAssetsUnderRevision();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser]);
 
   // Calculate trends compared to previous period
   const trends = useMemo(() => {
-    if (loading) return {
-      total: { value: 0, isPositive: true },
-      highPriority: { value: 0, isPositive: true },
-      completed: { value: 0, isPositive: true },
-      averageTime: { value: 0, isPositive: true }
-    };
+    if (loading || !currentUser)
+      return {
+        total: { value: 0, isPositive: true },
+        highPriority: { value: 0, isPositive: true },
+        completed: { value: 0, isPositive: true },
+        averageTime: { value: 0, isPositive: true },
+      };
 
     const now = new Date();
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const previous30Days = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-    
-    const currentPeriodAssets = allAssets.filter(asset => {
-      const assetDate = asset.createdAt?.toDate?.() || new Date(asset.createdAt);
+
+    const currentPeriodAssets = allAssets.filter((asset) => {
+      const assetDate =
+        asset.createdAt?.toDate?.() || new Date(asset.createdAt);
       return assetDate >= last30Days;
     });
-    
-    const previousPeriodAssets = allAssets.filter(asset => {
-      const assetDate = asset.createdAt?.toDate?.() || new Date(asset.createdAt);
+
+    const previousPeriodAssets = allAssets.filter((asset) => {
+      const assetDate =
+        asset.createdAt?.toDate?.() || new Date(asset.createdAt);
       return assetDate >= previous30Days && assetDate < last30Days;
     });
 
     const currentTotal = currentPeriodAssets.length;
     const previousTotal = previousPeriodAssets.length;
-    const totalTrend = previousTotal > 0 ? ((currentTotal - previousTotal) / previousTotal) * 100 : 0;
+    const totalTrend =
+      previousTotal > 0
+        ? ((currentTotal - previousTotal) / previousTotal) * 100
+        : 0;
 
-    const currentHighPriority = currentPeriodAssets.filter(a => a.priority === "high").length;
-    const previousHighPriority = previousPeriodAssets.filter(a => a.priority === "high").length;
-    const highPriorityTrend = previousHighPriority > 0 ? ((currentHighPriority - previousHighPriority) / previousHighPriority) * 100 : 0;
+    const currentHighPriority = currentPeriodAssets.filter(
+      (a) => a.priority === "high"
+    ).length;
+    const previousHighPriority = previousPeriodAssets.filter(
+      (a) => a.priority === "high"
+    ).length;
+    const highPriorityTrend =
+      previousHighPriority > 0
+        ? ((currentHighPriority - previousHighPriority) /
+            previousHighPriority) *
+          100
+        : 0;
 
-    const currentCompleted = currentPeriodAssets.filter(a => a.revisionStatus === "completed").length;
-    const previousCompleted = previousPeriodAssets.filter(a => a.revisionStatus === "completed").length;
-    const completedTrend = previousCompleted > 0 ? ((currentCompleted - previousCompleted) / previousCompleted) * 100 : 0;
+    const currentCompleted = currentPeriodAssets.filter(
+      (a) => a.revisionStatus === "completed"
+    ).length;
+    const previousCompleted = previousPeriodAssets.filter(
+      (a) => a.revisionStatus === "completed"
+    ).length;
+    const completedTrend =
+      previousCompleted > 0
+        ? ((currentCompleted - previousCompleted) / previousCompleted) * 100
+        : 0;
 
     // Calculate revision time trend
     const currentCompletedWithTime = currentPeriodAssets
-      .filter(a => a.revisionStatus === "completed" && a.revisionCompletedAt && a.createdAt)
-      .map(a => {
+      .filter(
+        (a) =>
+          a.revisionStatus === "completed" &&
+          a.revisionCompletedAt &&
+          a.createdAt
+      )
+      .map((a) => {
         const created = a.createdAt?.toDate?.() || new Date(a.createdAt);
-        const completed = a.revisionCompletedAt?.toDate?.() || new Date(a.revisionCompletedAt) || new Date();
+        const completed =
+          a.revisionCompletedAt?.toDate?.() ||
+          new Date(a.revisionCompletedAt) ||
+          new Date();
         return (completed - created) / (1000 * 60 * 60 * 24); // Convert to days
       });
 
     const previousCompletedWithTime = previousPeriodAssets
-      .filter(a => a.revisionStatus === "completed" && a.revisionCompletedAt && a.createdAt)
-      .map(a => {
+      .filter(
+        (a) =>
+          a.revisionStatus === "completed" &&
+          a.revisionCompletedAt &&
+          a.createdAt
+      )
+      .map((a) => {
         const created = a.createdAt?.toDate?.() || new Date(a.createdAt);
-        const completed = a.revisionCompletedAt?.toDate?.() || new Date(a.revisionCompletedAt) || new Date();
+        const completed =
+          a.revisionCompletedAt?.toDate?.() ||
+          new Date(a.revisionCompletedAt) ||
+          new Date();
         return (completed - created) / (1000 * 60 * 60 * 24);
       });
 
-    const currentAvgTime = currentCompletedWithTime.length > 0 
-      ? currentCompletedWithTime.reduce((a, b) => a + b, 0) / currentCompletedWithTime.length 
-      : 0;
-    
-    const previousAvgTime = previousCompletedWithTime.length > 0 
-      ? previousCompletedWithTime.reduce((a, b) => a + b, 0) / previousCompletedWithTime.length 
-      : 0;
+    const currentAvgTime =
+      currentCompletedWithTime.length > 0
+        ? currentCompletedWithTime.reduce((a, b) => a + b, 0) /
+          currentCompletedWithTime.length
+        : 0;
 
-    const averageTimeTrend = previousAvgTime > 0 ? ((previousAvgTime - currentAvgTime) / previousAvgTime) * 100 : 0;
+    const previousAvgTime =
+      previousCompletedWithTime.length > 0
+        ? previousCompletedWithTime.reduce((a, b) => a + b, 0) /
+          previousCompletedWithTime.length
+        : 0;
+
+    const averageTimeTrend =
+      previousAvgTime > 0
+        ? ((previousAvgTime - currentAvgTime) / previousAvgTime) * 100
+        : 0;
 
     return {
       total: {
         value: totalTrend,
-        isPositive: totalTrend <= 0 // Lower growth is better
+        isPositive: totalTrend <= 0, // Lower growth is better
       },
       highPriority: {
         value: highPriorityTrend,
-        isPositive: highPriorityTrend <= 0 // Lower high priority is better
+        isPositive: highPriorityTrend <= 0, // Lower high priority is better
       },
       completed: {
         value: completedTrend,
-        isPositive: completedTrend >= 0 // Higher completion is better
+        isPositive: completedTrend >= 0, // Higher completion is better
       },
       averageTime: {
         value: averageTimeTrend,
-        isPositive: averageTimeTrend >= 0 // Lower revision time is better
-      }
+        isPositive: averageTimeTrend >= 0, // Lower revision time is better
+      },
     };
-  }, [allAssets, loading]);
+  }, [allAssets, loading, currentUser]);
 
   // Client-side filtering
   const assets = useMemo(() => {
-    if (loading) return [];
-    
+    if (loading || !currentUser) return [];
+
     return allAssets.filter((asset) => {
       if (
         filters.search &&
-        !`${asset.title || ""} ${asset.description || ""} ${asset.category || ""}`
+        !`${asset.title || ""} ${asset.description || ""} ${
+          asset.category || ""
+        }`
           .toLowerCase()
           .includes(filters.search.toLowerCase())
       ) {
@@ -192,7 +260,8 @@ const UnderRevisionAssets = () => {
       }
 
       if (filters.date && asset.createdAt) {
-        const assetDate = asset.createdAt?.toDate?.() || new Date(asset.createdAt);
+        const assetDate =
+          asset.createdAt?.toDate?.() || new Date(asset.createdAt);
         const now = new Date();
 
         switch (filters.date) {
@@ -208,7 +277,9 @@ const UnderRevisionAssets = () => {
             if (assetDate < monthAgo) return false;
             break;
           case "older":
-            const olderThanMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const olderThanMonth = new Date(
+              now.getTime() - 30 * 24 * 60 * 60 * 1000
+            );
             if (assetDate >= olderThanMonth) return false;
             break;
           default:
@@ -218,24 +289,26 @@ const UnderRevisionAssets = () => {
 
       return true;
     });
-  }, [allAssets, filters, loading]);
+  }, [allAssets, filters, loading, currentUser]);
 
   // Calculate quality metrics
   const qualityMetrics = useMemo(() => {
-    if (loading) {
+    if (loading || !currentUser) {
       return {
         overall: 0,
         distribution: {
           excellent: 0,
           good: 0,
           average: 0,
-          poor: 0
-        }
+          poor: 0,
+        },
       };
     }
 
-    const completedRevisions = allAssets.filter(a => a.revisionStatus === "completed");
-    
+    const completedRevisions = allAssets.filter(
+      (a) => a.revisionStatus === "completed"
+    );
+
     if (completedRevisions.length === 0) {
       return {
         overall: 0,
@@ -243,8 +316,8 @@ const UnderRevisionAssets = () => {
           excellent: 0,
           good: 0,
           average: 0,
-          poor: 0
-        }
+          poor: 0,
+        },
       };
     }
 
@@ -259,16 +332,20 @@ const UnderRevisionAssets = () => {
 
     // Adjust based on average revision time
     const revisionTimes = completedRevisions
-      .filter(a => a.revisionCompletedAt && a.createdAt)
-      .map(a => {
+      .filter((a) => a.revisionCompletedAt && a.createdAt)
+      .map((a) => {
         const created = a.createdAt?.toDate?.() || new Date(a.createdAt);
-        const completed = a.revisionCompletedAt?.toDate?.() || new Date(a.revisionCompletedAt) || new Date();
+        const completed =
+          a.revisionCompletedAt?.toDate?.() ||
+          new Date(a.revisionCompletedAt) ||
+          new Date();
         return (completed - created) / (1000 * 60 * 60 * 24);
       });
 
-    const avgRevisionTime = revisionTimes.length > 0 
-      ? revisionTimes.reduce((a, b) => a + b, 0) / revisionTimes.length 
-      : 0;
+    const avgRevisionTime =
+      revisionTimes.length > 0
+        ? revisionTimes.reduce((a, b) => a + b, 0) / revisionTimes.length
+        : 0;
 
     if (avgRevisionTime <= 2) overall += 1.0; // Fast revisions
     else if (avgRevisionTime > 7) overall -= 1.0; // Slow revisions
@@ -278,10 +355,10 @@ const UnderRevisionAssets = () => {
 
     // Calculate distribution
     const distribution = {
-      excellent: Math.round(completedRevisions.length * 0.30),
+      excellent: Math.round(completedRevisions.length * 0.3),
       good: Math.round(completedRevisions.length * 0.45),
-      average: Math.round(completedRevisions.length * 0.20),
-      poor: Math.round(completedRevisions.length * 0.05)
+      average: Math.round(completedRevisions.length * 0.2),
+      poor: Math.round(completedRevisions.length * 0.05),
     };
 
     // Adjust distribution based on actual performance
@@ -295,13 +372,13 @@ const UnderRevisionAssets = () => {
 
     return {
       overall: parseFloat(overall.toFixed(1)),
-      distribution
+      distribution,
     };
-  }, [allAssets, loading]);
+  }, [allAssets, loading, currentUser]);
 
   // Recalculate stats from filtered assets
   const stats = useMemo(() => {
-    if (loading) {
+    if (loading || !currentUser) {
       return {
         totalAssets: 0,
         highPriority: 0,
@@ -315,19 +392,32 @@ const UnderRevisionAssets = () => {
     const filteredTotal = assets.length;
 
     const highPriority = assets.filter((a) => a.priority === "high").length;
-    const completedRevisions = assets.filter((a) => a.revisionStatus === "completed").length;
+    const completedRevisions = assets.filter(
+      (a) => a.revisionStatus === "completed"
+    ).length;
 
     const completedWithTime = assets
-      .filter((a) => a.revisionStatus === "completed" && a.revisionCompletedAt && a.createdAt)
+      .filter(
+        (a) =>
+          a.revisionStatus === "completed" &&
+          a.revisionCompletedAt &&
+          a.createdAt
+      )
       .map((a) => {
         const created = a.createdAt?.toDate?.() || new Date(a.createdAt);
-        const completed = a.revisionCompletedAt?.toDate?.() || new Date(a.revisionCompletedAt) || new Date();
+        const completed =
+          a.revisionCompletedAt?.toDate?.() ||
+          new Date(a.revisionCompletedAt) ||
+          new Date();
         return (completed - created) / (1000 * 60 * 60 * 24);
       });
 
     const averageRevisionTime =
       completedWithTime.length > 0
-        ? (completedWithTime.reduce((a, b) => a + b, 0) / completedWithTime.length).toFixed(1)
+        ? (
+            completedWithTime.reduce((a, b) => a + b, 0) /
+            completedWithTime.length
+          ).toFixed(1)
         : "N/A";
 
     return {
@@ -337,7 +427,7 @@ const UnderRevisionAssets = () => {
       averageRevisionTime,
       qualityScore: qualityMetrics.overall,
     };
-  }, [allAssets, assets, qualityMetrics, loading]);
+  }, [allAssets, assets, qualityMetrics, loading, currentUser]);
 
   const updateAssetStatus = async (assetId, newStatus) => {
     try {
@@ -353,9 +443,7 @@ const UnderRevisionAssets = () => {
       await updateDoc(assetRef, updateData);
 
       setAllAssets((prev) =>
-        prev.map((a) =>
-          a.id === assetId ? { ...a, ...updateData } : a
-        )
+        prev.map((a) => (a.id === assetId ? { ...a, ...updateData } : a))
       );
     } catch (error) {
       console.error("Error updating asset status:", error);
@@ -372,18 +460,27 @@ const UnderRevisionAssets = () => {
     setSearchInput("");
   };
 
+  // ✅ UPDATED: All categories from your upload form
   const getCategoryStats = () => {
-    if (loading) return [];
+    if (loading || !currentUser) return [];
 
     const categories = {
-      "3d_model": { name: "3D Models", count: 0, color: "excellent" },
-      texture: { name: "Textures", count: 0, color: "good" },
-      audio: { name: "Audio", count: 0, color: "average" },
-      other: { name: "Other", count: 0, color: "poor" },
+      models: { name: "3D Models", count: 0, color: "excellent", icon: <FiBox /> },
+      videos: { name: "Videos", count: 0, color: "good", icon: <FiVideo /> },
+      images: { name: "Images", count: 0, color: "average", icon: <FiImage /> },
+      scripts: { name: "Scripts", count: 0, color: "poor", icon: <FiCode /> },
+      textures: { name: "Textures", count: 0, color: "excellent", icon: <FiLayers /> },
+      hdris: { name: "HDRIs", count: 0, color: "good", icon: <FiImage /> },
+      icons: { name: "Icons", count: 0, color: "average", icon: <FiLayers /> },
+      graphics: { name: "Graphics Templates", count: 0, color: "poor", icon: <FiFile /> },
+      mockups: { name: "Mockups", count: 0, color: "excellent", icon: <FiBox /> },
+      fonts: { name: "Fonts", count: 0, color: "good", icon: <FiType /> },
+      "video-templates": { name: "Video Templates", count: 0, color: "average", icon: <FiVideo /> },
+      other: { name: "Other", count: 0, color: "poor", icon: <FiFile /> },
     };
 
     allAssets.forEach((a) => {
-      const category = a.category || "other";
+      const category = a.type || "other";
       if (categories[category]) {
         categories[category].count++;
       } else {
@@ -407,16 +504,63 @@ const UnderRevisionAssets = () => {
     return date.toLocaleDateString();
   };
 
-  const getAssetTypeIcon = (category) => {
-    switch (category) {
-      case "3d_model":
-        return "📦";
-      case "texture":
-        return "🎨";
-      case "audio":
-        return "🎵";
+  // ✅ UPDATED: Get asset type icon based on type
+  const getAssetTypeIcon = (type) => {
+    switch (type) {
+      case "models":
+        return <FiBox />;
+      case "videos":
+        return <FiVideo />;
+      case "images":
+        return <FiImage />;
+      case "scripts":
+        return <FiCode />;
+      case "textures":
+        return <FiLayers />;
+      case "hdris":
+        return <FiImage />;
+      case "icons":
+        return <FiLayers />;
+      case "graphics":
+        return <FiFile />;
+      case "mockups":
+        return <FiBox />;
+      case "fonts":
+        return <FiType />;
+      case "video-templates":
+        return <FiVideo />;
       default:
-        return "📁";
+        return <FiFile />;
+    }
+  };
+
+  // ✅ UPDATED: Get category display name
+  const getCategoryDisplayName = (type) => {
+    switch (type) {
+      case "models":
+        return "3D Models";
+      case "videos":
+        return "Videos";
+      case "images":
+        return "Images";
+      case "scripts":
+        return "Scripts";
+      case "textures":
+        return "Textures";
+      case "hdris":
+        return "HDRIs";
+      case "icons":
+        return "Icons";
+      case "graphics":
+        return "Graphics Templates";
+      case "mockups":
+        return "Mockups";
+      case "fonts":
+        return "Fonts";
+      case "video-templates":
+        return "Video Templates";
+      default:
+        return "Other";
     }
   };
 
@@ -431,15 +575,54 @@ const UnderRevisionAssets = () => {
   };
 
   const categoryStats = getCategoryStats();
-  const totalRatedAssets = Object.values(qualityMetrics.distribution).reduce((a, b) => a + b, 0);
+  const totalRatedAssets = Object.values(qualityMetrics.distribution).reduce(
+    (a, b) => a + b,
+    0
+  );
 
   // Calculate percentages for quality distribution
   const qualityPercentages = {
-    excellent: totalRatedAssets > 0 ? (qualityMetrics.distribution.excellent / totalRatedAssets) * 100 : 0,
-    good: totalRatedAssets > 0 ? (qualityMetrics.distribution.good / totalRatedAssets) * 100 : 0,
-    average: totalRatedAssets > 0 ? (qualityMetrics.distribution.average / totalRatedAssets) * 100 : 0,
-    poor: totalRatedAssets > 0 ? (qualityMetrics.distribution.poor / totalRatedAssets) * 100 : 0,
+    excellent:
+      totalRatedAssets > 0
+        ? (qualityMetrics.distribution.excellent / totalRatedAssets) * 100
+        : 0,
+    good:
+      totalRatedAssets > 0
+        ? (qualityMetrics.distribution.good / totalRatedAssets) * 100
+        : 0,
+    average:
+      totalRatedAssets > 0
+        ? (qualityMetrics.distribution.average / totalRatedAssets) * 100
+        : 0,
+    poor:
+      totalRatedAssets > 0
+        ? (qualityMetrics.distribution.poor / totalRatedAssets) * 100
+        : 0,
   };
+
+  // Show message if no user is logged in
+  if (!currentUser) {
+    return (
+      <div className="user-reports-dashboard">
+        <div className="dashboard-header">
+          <div className="header-content">
+            <h2 className="header-title">
+              <FiPackage className="header-icon" />
+              Assets Under Revision
+            </h2>
+            <p className="header-subtitle">
+              Please log in to view your assets under revision
+            </p>
+          </div>
+        </div>
+        <div className="no-data-message">
+          <FiUser size={48} />
+          <h3>Authentication Required</h3>
+          <p>You need to be logged in to view your assets under revision.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="user-reports-dashboard">
@@ -448,7 +631,9 @@ const UnderRevisionAssets = () => {
         <div className="loading-overlay">
           <div className="loading-content">
             <div className="loading-spinner"></div>
-            <p className="loading-text">Loading assets under revision...</p>
+            <p className="loading-text">
+              Loading your assets under revision...
+            </p>
           </div>
         </div>
       )}
@@ -458,7 +643,7 @@ const UnderRevisionAssets = () => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Asset Revision Details</h3>
+              <h3 className="modal-title">Your Asset Revision Details</h3>
               <button className="modal-close" onClick={closeModal}>
                 <FiX />
               </button>
@@ -469,15 +654,14 @@ const UnderRevisionAssets = () => {
                   <h4>Asset Information</h4>
                   <div className="detail-item">
                     <span className="detail-label">Title:</span>
-                    <span className="detail-value">{selectedAsset.title || "Untitled Asset"}</span>
+                    <span className="detail-value">
+                      {selectedAsset.title || "Untitled Asset"}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Category:</span>
                     <span className="detail-value">
-                      {selectedAsset.category === "3d_model" && "3D Model"}
-                      {selectedAsset.category === "texture" && "Texture"}
-                      {selectedAsset.category === "audio" && "Audio"}
-                      {!selectedAsset.category && "Other"}
+                      {getCategoryDisplayName(selectedAsset.type)}
                     </span>
                   </div>
                   <div className="detail-item">
@@ -490,22 +674,38 @@ const UnderRevisionAssets = () => {
                   <h4>Revision Information</h4>
                   <div className="detail-item">
                     <span className="detail-label">Status:</span>
-                    <span className={`detail-value report-status-badge ${selectedAsset.revisionStatus || "pending"}`}>
-                      {selectedAsset.revisionStatus === "completed" ? "Completed" : 
-                       selectedAsset.revisionStatus === "in-progress" ? "In Progress" : "Pending Review"}
+                    <span
+                      className={`detail-value report-status-badge ${
+                        selectedAsset.revisionStatus || "pending"
+                      }`}
+                    >
+                      {selectedAsset.revisionStatus === "completed"
+                        ? "Completed"
+                        : selectedAsset.revisionStatus === "in-progress"
+                        ? "In Progress"
+                        : "Pending Review"}
                     </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Priority:</span>
-                    <span className={`detail-value report-status-badge ${selectedAsset.priority || "medium"}`}>
-                      {selectedAsset.priority === "high" ? "High Priority" : 
-                       selectedAsset.priority === "medium" ? "Medium Priority" : "Low Priority"}
+                    <span
+                      className={`detail-value report-status-badge ${
+                        selectedAsset.priority || "medium"
+                      }`}
+                    >
+                      {selectedAsset.priority === "high"
+                        ? "High Priority"
+                        : selectedAsset.priority === "medium"
+                        ? "Medium Priority"
+                        : "Low Priority"}
                     </span>
                   </div>
                   {selectedAsset.revisionNotes && (
                     <div className="detail-item">
                       <span className="detail-label">Revision Notes:</span>
-                      <span className="detail-value">{selectedAsset.revisionNotes}</span>
+                      <span className="detail-value">
+                        {selectedAsset.revisionNotes}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -521,18 +721,24 @@ const UnderRevisionAssets = () => {
                   <h4>Timeline</h4>
                   <div className="detail-item">
                     <span className="detail-label">Created:</span>
-                    <span className="detail-value">{formatDate(selectedAsset.createdAt)}</span>
+                    <span className="detail-value">
+                      {formatDate(selectedAsset.createdAt)}
+                    </span>
                   </div>
                   {selectedAsset.updatedAt && (
                     <div className="detail-item">
                       <span className="detail-label">Last Updated:</span>
-                      <span className="detail-value">{formatDate(selectedAsset.updatedAt)}</span>
+                      <span className="detail-value">
+                        {formatDate(selectedAsset.updatedAt)}
+                      </span>
                     </div>
                   )}
                   {selectedAsset.revisionCompletedAt && (
                     <div className="detail-item">
                       <span className="detail-label">Revision Completed:</span>
-                      <span className="detail-value">{formatDate(selectedAsset.revisionCompletedAt)}</span>
+                      <span className="detail-value">
+                        {formatDate(selectedAsset.revisionCompletedAt)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -573,397 +779,362 @@ const UnderRevisionAssets = () => {
         <div className="header-content">
           <h2 className="header-title">
             <FiPackage className="header-icon" />
-            Assets Under Revision
+            Your Assets Under Revision
           </h2>
           <p className="header-subtitle">
-            Monitor and manage assets currently undergoing revision and quality review
+            Monitor and manage your assets currently undergoing revision and
+            quality review
           </p>
         </div>
         <div className="header-actions">
           <span className="user-badge-count">
-            {stats.totalAssets} assets in revision
+            {stats.totalAssets} of your assets in revision
           </span>
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="reports-stats-grid">
-        <div className="report-stat-card primary">
-          <div className="report-stat-header">
-            <div className="report-stat-icon">
-              <FiPackage />
+      <>
+        {/* Statistics Cards */}
+        <div className="reports-stats-grid">
+          <div className="report-stat-card primary">
+            <div className="report-stat-header">
+              <div className="report-stat-icon">
+                <FiPackage />
+              </div>
+              <div>
+                <h3 className="report-stat-title">Your Pending Assets</h3>
+                <div className="report-stat-value">{stats.totalAssets}</div>
+              </div>
             </div>
-            <div>
-              <h3 className="report-stat-title">Total Assets</h3>
-              <div className="report-stat-value">{stats.totalAssets}</div>
-            </div>
-          </div>
-          <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Assets currently under revision
-            </div>
-            <div className={`report-stat-trend ${trends.total.isPositive ? 'positive' : 'negative'}`}>
-              {trends.total.value > 0 ? '+' : ''}{trends.total.value.toFixed(1)}% 
-              {trends.total.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
-            </div>
-          </div>
-        </div>
-
-        <div className="report-stat-card warning">
-          <div className="report-stat-header">
-            <div className="report-stat-icon">
-              <FiAlertTriangle />
-            </div>
-            <div>
-              <h3 className="report-stat-title">High Priority</h3>
-              <div className="report-stat-value">{stats.highPriority}</div>
-            </div>
-          </div>
-          <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              {stats.totalAssets > 0
-                ? `${((stats.highPriority / assets.length) * 100).toFixed(1)}% of filtered`
-                : "0% of total assets"}
-            </div>
-            <div className={`report-stat-trend ${trends.highPriority.isPositive ? 'positive' : 'negative'}`}>
-              {trends.highPriority.value > 0 ? '+' : ''}{trends.highPriority.value.toFixed(1)}% 
-              {trends.highPriority.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
-            </div>
-          </div>
-        </div>
-
-        <div className="report-stat-card success">
-          <div className="report-stat-header">
-            <div className="report-stat-icon">
-              <FiCheckCircle />
-            </div>
-            <div>
-              <h3 className="report-stat-title">Completed Revisions</h3>
-              <div className="report-stat-value">{stats.completedRevisions}</div>
-            </div>
-          </div>
-          <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              {assets.length > 0
-                ? `${((stats.completedRevisions / assets.length) * 100).toFixed(1)}% completion rate`
-                : "0% completion rate"}
-            </div>
-            <div className={`report-stat-trend ${trends.completed.isPositive ? 'positive' : 'negative'}`}>
-              {trends.completed.value > 0 ? '+' : ''}{trends.completed.value.toFixed(1)}% 
-              {trends.completed.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
-            </div>
-          </div>
-        </div>
-
-        <div className="report-stat-card info">
-          <div className="report-stat-header">
-            <div className="report-stat-icon">
-              <FiClock />
-            </div>
-            <div>
-              <h3 className="report-stat-title">Avg. Revision Time</h3>
-              <div className="report-stat-value">
-                {stats.averageRevisionTime === "N/A"
-                  ? "N/A"
-                  : `${stats.averageRevisionTime} days`}
+            <div className="report-stat-content">
+              <div className="report-stat-subtext">
+                Your assets awaiting review
+              </div>
+              <div
+                className={`report-stat-trend ${
+                  trends.total.isPositive ? "positive" : "negative"
+                }`}
+              >
+                {trends.total.value > 0 ? "+" : ""}
+                {trends.total.value.toFixed(1)}%
+                {trends.total.isPositive ? (
+                  <FiTrendingUp />
+                ) : (
+                  <FiTrendingDown />
+                )}
               </div>
             </div>
           </div>
-          <div className="report-stat-content">
-            <div className="report-stat-subtext">days average revision</div>
-            <div className={`report-stat-trend ${trends.averageTime.isPositive ? 'positive' : 'negative'}`}>
-              {trends.averageTime.value > 0 ? '+' : ''}{trends.averageTime.value.toFixed(1)}% 
-              {trends.averageTime.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
+
+          <div className="report-stat-card warning">
+            <div className="report-stat-header">
+              <div className="report-stat-icon">
+                <FiAlertTriangle />
+              </div>
+              <div>
+                <h3 className="report-stat-title">High Priority</h3>
+                <div className="report-stat-value">{stats.highPriority}</div>
+              </div>
+            </div>
+            <div className="report-stat-content">
+              <div className="report-stat-subtext">
+                {stats.totalAssets > 0
+                  ? `${((stats.highPriority / assets.length) * 100).toFixed(
+                      1
+                    )}% of your assets`
+                  : "0% of your assets"}
+              </div>
+              <div
+                className={`report-stat-trend ${
+                  trends.highPriority.isPositive ? "positive" : "negative"
+                }`}
+              >
+                {trends.highPriority.value > 0 ? "+" : ""}
+                {trends.highPriority.value.toFixed(1)}%
+                {trends.highPriority.isPositive ? (
+                  <FiTrendingDown />
+                ) : (
+                  <FiTrendingUp />
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="report-stat-card success">
+            <div className="report-stat-header">
+              <div className="report-stat-icon">
+                <FiCheckCircle />
+              </div>
+              <div>
+                <h3 className="report-stat-title">Completed Revisions</h3>
+                <div className="report-stat-value">
+                  {stats.completedRevisions}
+                </div>
+              </div>
+            </div>
+            <div className="report-stat-content">
+              <div className="report-stat-subtext">
+                {assets.length > 0
+                  ? `${(
+                      (stats.completedRevisions / assets.length) *
+                      100
+                    ).toFixed(1)}% completion rate`
+                  : "0% completion rate"}
+              </div>
+              <div
+                className={`report-stat-trend ${
+                  trends.completed.isPositive ? "positive" : "negative"
+                }`}
+              >
+                {trends.completed.value > 0 ? "+" : ""}
+                {trends.completed.value.toFixed(1)}%
+                {trends.completed.isPositive ? (
+                  <FiTrendingUp />
+                ) : (
+                  <FiTrendingDown />
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="report-stat-card info">
+            <div className="report-stat-header">
+              <div className="report-stat-icon">
+                <FiClock />
+              </div>
+              <div>
+                <h3 className="report-stat-title">Avg. Revision Time</h3>
+                <div className="report-stat-value">
+                  {stats.averageRevisionTime === "N/A"
+                    ? "N/A"
+                    : `${stats.averageRevisionTime} days`}
+                </div>
+              </div>
+            </div>
+            <div className="report-stat-content">
+              <div className="report-stat-subtext">days average revision</div>
+              <div
+                className={`report-stat-trend ${
+                  trends.averageTime.isPositive ? "positive" : "negative"
+                }`}
+              >
+                {trends.averageTime.value > 0 ? "+" : ""}
+                {trends.averageTime.value.toFixed(1)}%
+                {trends.averageTime.isPositive ? (
+                  <FiTrendingDown />
+                ) : (
+                  <FiTrendingUp />
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Charts and Categories */}
-      <div className="reports-content-grid">
-        <div className="reports-chart-card">
-          <div className="reports-chart-header">
-            <h3 className="panel-title">
-              <FiStar className="panel-icon" /> Revision Quality Score
+        {/* Filter Bar */}
+        <div className="reports-filter-bar">
+          <div className="filter-bar-header">
+            <h3 className="filter-bar-title">
+              <FiFilter className="panel-icon" /> Filter Your Assets
             </h3>
-            <div className="satisfaction-score">
-              <span className="score-value">{stats.qualityScore}/10</span>
-              <span className="score-label">Overall Quality</span>
+            <div className="filter-results">
+              <span className="filter-text">
+                Showing {assets.length} of {stats.totalAssets} of your assets
+              </span>
             </div>
           </div>
-          <div className="reports-chart-body">
-            <div className="pie-chart-container">
-              <div className="pie-chart-wrapper">
-                <div 
-                  className="pie-chart"
-                  style={{
-                    background: `conic-gradient(
-                      #10b981 0% ${qualityPercentages.excellent}%,
-                      #3b82f6 ${qualityPercentages.excellent}% ${qualityPercentages.excellent + qualityPercentages.good}%,
-                      #f59e0b ${qualityPercentages.excellent + qualityPercentages.good}% ${qualityPercentages.excellent + qualityPercentages.good + qualityPercentages.average}%,
-                      #ef4444 ${qualityPercentages.excellent + qualityPercentages.good + qualityPercentages.average}% 100%
-                    )`
-                  }}
-                >
-                  <div className="pie-chart-center">
-                    <div className="pie-chart-value">
-                      {stats.qualityScore}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="pie-chart-labels">
-                <div className="pie-chart-label">
-                  <span className="pie-label-dot excellent"></span>
-                  <div className="pie-label-text">
-                    <span className="pie-label-name">Excellent</span>
-                    <span className="pie-label-percentage">
-                      {Math.round(qualityPercentages.excellent)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="pie-chart-label">
-                  <span className="pie-label-dot good"></span>
-                  <div className="pie-label-text">
-                    <span className="pie-label-name">Good</span>
-                    <span className="pie-label-percentage">
-                      {Math.round(qualityPercentages.good)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="pie-chart-label">
-                  <span className="pie-label-dot average"></span>
-                  <div className="pie-label-text">
-                    <span className="pie-label-name">Average</span>
-                    <span className="pie-label-percentage">
-                      {Math.round(qualityPercentages.average)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="pie-chart-label">
-                  <span className="pie-label-dot poor"></span>
-                  <div className="pie-label-text">
-                    <span className="pie-label-name">Poor</span>
-                    <span className="pie-label-percentage">
-                      {Math.round(qualityPercentages.poor)}%
-                    </span>
-                  </div>
-                </div>
-              </div>
+
+          <div className="filter-controls-grid">
+            <div className="filter-search-wrapper">
+              <FiSearch className="filter-search-icon" />
+              <input
+                type="text"
+                className="filter-search-input"
+                placeholder="Search your assets by title, description, or category..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+            </div>
+
+            {/* ✅ UPDATED: All categories from upload form */}
+            <select
+              className="filter-select"
+              value={filters.category}
+              onChange={(e) => handleFilterChange("category", e.target.value)}
+            >
+              <option value="">All Categories</option>
+              <option value="models">3D Models</option>
+              <option value="videos">Videos</option>
+              <option value="images">Images</option>
+              <option value="scripts">Scripts</option>
+              <option value="textures">Textures</option>
+              <option value="hdris">HDRIs</option>
+              <option value="icons">Icons</option>
+              <option value="graphics">Graphics Templates</option>
+              <option value="mockups">Mockups</option>
+              <option value="fonts">Fonts</option>
+              <option value="video-templates">Video Templates</option>
+              <option value="other">Other</option>
+            </select>
+
+            <select
+              className="filter-select"
+              value={filters.status}
+              onChange={(e) => handleFilterChange("status", e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="pending">Pending Review</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+
+            <select
+              className="filter-select"
+              value={filters.date}
+              onChange={(e) => handleFilterChange("date", e.target.value)}
+            >
+              <option value="">Any Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="older">Older</option>
+            </select>
+
+            <div className="filter-actions">
+              <button className="filter-button" onClick={resetFilters}>
+                <FiRefreshCw /> Reset
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="reports-categories-card">
-          <div className="reports-categories-header">
+        {/* Assets Table */}
+        <div className="recent-reports-card">
+          <div className="recent-reports-header">
             <h3 className="panel-title">
-              <FiPieChart className="panel-icon" /> Asset Categories
+              <FiList className="panel-icon" /> Your Assets Under Revision
             </h3>
-          </div>
-          <div className="reports-categories-body">
-            {categoryStats.map((cat, i) => {
-              const percentage = stats.totalAssets > 0 ? (cat.count / stats.totalAssets) * 100 : 0;
-              return (
-                <div key={i} className="category-progress">
-                  <div className="category-header">
-                    <span className="category-name">{cat.name}</span>
-                    <span className="category-count">
-                      {Math.round(percentage)}% ({cat.count})
-                    </span>
-                  </div>
-                  <div className="category-progress-bar">
-                    <div
-                      className={`category-progress-fill ${cat.color}`}
-                      style={{
-                        width: `${percentage}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="reports-filter-bar">
-        <div className="filter-bar-header">
-          <h3 className="filter-bar-title">
-            <FiFilter className="panel-icon" /> Filter Assets
-          </h3>
-          <div className="filter-results">
-            <span className="filter-text">
-              Showing {assets.length} of {stats.totalAssets} assets
-            </span>
-          </div>
-        </div>
-
-        <div className="filter-controls-grid">
-          <div className="filter-search-wrapper">
-            <FiSearch className="filter-search-icon" />
-            <input
-              type="text"
-              className="filter-search-input"
-              placeholder="Search by title, description, or category..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-          </div>
-
-          <select
-            className="filter-select"
-            value={filters.category}
-            onChange={(e) => handleFilterChange("category", e.target.value)}
-          >
-            <option value="">All Categories</option>
-            <option value="3d_model">3D Models</option>
-            <option value="texture">Textures</option>
-            <option value="audio">Audio</option>
-            <option value="other">Other</option>
-          </select>
-
-          <select
-            className="filter-select"
-            value={filters.status}
-            onChange={(e) => handleFilterChange("status", e.target.value)}
-          >
-            <option value="">All Status</option>
-            <option value="pending">Pending Review</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
-
-          <select
-            className="filter-select"
-            value={filters.date}
-            onChange={(e) => handleFilterChange("date", e.target.value)}
-          >
-            <option value="">Any Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="older">Older</option>
-          </select>
-
-          <div className="filter-actions">
-            <button className="filter-button" onClick={resetFilters}>
-              <FiRefreshCw /> Reset
+            <button className="action-button secondary">
+              <FiDownload className="button-icon" /> Export Report
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Assets Table */}
-      <div className="recent-reports-card">
-        <div className="recent-reports-header">
-          <h3 className="panel-title">
-            <FiList className="panel-icon" /> Assets Under Revision
-          </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" /> Export Report
-          </button>
-        </div>
-        <div className="recent-reports-body">
-          <table className="report-table">
-            <thead>
-              <tr>
-                <th>Asset</th>
-                <th>Category</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assets.slice(0, 10).map((asset) => (
-                <tr key={asset.id}>
-                  <td>
-                    <div className="report-user">
-                      <div className="report-user-avatar">
-                        {getAssetTypeIcon(asset.category)}
-                      </div>
-                      <div className="report-user-info">
-                        <div className="report-user-name">
-                          {asset.title || "Untitled Asset"}
-                        </div>
-                        <div className="report-user-email">ID: {asset.id.substring(0, 8)}...</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`report-category-badge ${asset.category || "other"}`}>
-                      {asset.category === "3d_model" && "3D Model"}
-                      {asset.category === "texture" && "Texture"}
-                      {asset.category === "audio" && "Audio"}
-                      {!asset.category && "Other"}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="comp-dis" title={asset.description}>
-                      {asset.description || "No description"}
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`report-status-badge ${asset.revisionStatus || "pending"}`}>
-                      {asset.revisionStatus === "completed" ? "Completed" : 
-                       asset.revisionStatus === "in-progress" ? "In Progress" : "Pending"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`report-status-badge ${asset.priority || "medium"}`}>
-                      {asset.priority === "high" ? "High" : 
-                       asset.priority === "medium" ? "Medium" : "Low"}
-                    </span>
-                  </td>
-                  <td>{formatDate(asset.createdAt)}</td>
-                  <td>
-                    <div className="report-actions">
-                      <button
-                        className="action-button secondary small"
-                        title="View Details"
-                        onClick={() => openAssetDetails(asset)}
-                      >
-                        <FiEye />
-                      </button>
-                      {asset.revisionStatus !== "completed" ? (
-                        <button
-                          className="action-button small"
-                          title="Mark Complete"
-                          onClick={() =>
-                            updateAssetStatus(asset.id, "completed")
-                          }
-                        >
-                          <FiCheckCircle />
-                        </button>
-                      ) : (
-                        <button
-                          className="action-button small"
-                          title="Reopen"
-                          onClick={() =>
-                            updateAssetStatus(asset.id, "pending")
-                          }
-                        >
-                          <FiCornerUpLeft />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {assets.length === 0 && !loading && (
+          <div className="recent-reports-body">
+            <table className="report-table">
+              <thead>
                 <tr>
-                  <td colSpan="7" className="no-reports">
-                    No assets found matching your filters
-                  </td>
+                  <th>Asset</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Date</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {assets.slice(0, 10).map((asset) => (
+                  <tr key={asset.id}>
+                    <td>
+                      <div className="report-user">
+                        <div className="report-user-avatar">
+                          {getAssetTypeIcon(asset.type)}
+                        </div>
+                        <div className="report-user-info">
+                          <div className="report-user-name">
+                            {asset.title || "Untitled Asset"}
+                          </div>
+                          <div className="report-user-email">
+                            ID: {asset.id.substring(0, 8)}...
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`report-category-badge ${
+                          asset.type || "other"
+                        }`}
+                      >
+                        {getCategoryDisplayName(asset.type)}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="comp-dis" title={asset.description}>
+                        {asset.description || "No description"}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`report-status-badge ${
+                          asset.revisionStatus || "pending"
+                        }`}
+                      >
+                        {asset.revisionStatus === "completed"
+                          ? "Completed"
+                          : asset.revisionStatus === "in-progress"
+                          ? "In Progress"
+                          : "Pending"}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`report-status-badge ${
+                          asset.priority || "medium"
+                        }`}
+                      >
+                        {asset.priority === "high"
+                          ? "High"
+                          : asset.priority === "medium"
+                          ? "Medium"
+                          : "Low"}
+                      </span>
+                    </td>
+                    <td>{formatDate(asset.createdAt)}</td>
+                    <td>
+                      <div className="report-actions">
+                        <button
+                          className="action-button secondary small"
+                          title="View Details"
+                          onClick={() => openAssetDetails(asset)}
+                        >
+                          <FiEye />
+                        </button>
+                        {asset.revisionStatus !== "completed" ? (
+                          <button
+                            className="action-button small"
+                            title="Mark Complete"
+                            onClick={() =>
+                              updateAssetStatus(asset.id, "completed")
+                            }
+                          >
+                            <FiCheckCircle />
+                          </button>
+                        ) : (
+                          <button
+                            className="action-button small"
+                            title="Reopen"
+                            onClick={() =>
+                              updateAssetStatus(asset.id, "pending")
+                            }
+                          >
+                            <FiCornerUpLeft />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {assets.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan="7" className="no-reports">
+                      No assets found matching your filters
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </>
     </div>
   );
 };

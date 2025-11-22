@@ -23,8 +23,10 @@ import {
 } from "react-icons/fi";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { useUser } from "../../../../Context/UserProvider"; // Import user context
 
 const Rejections = () => {
+  const { currentUser } = useUser(); // Get current user
   const [allAssets, setAllAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -47,7 +49,7 @@ const Rejections = () => {
     setFilters((prev) => ({ ...prev, search: searchInput }));
   }, [debouncedSearch, searchInput]);
 
-  // Fetch rejected assets
+  // ✅ UPDATED: Fetch only current user's rejected assets
   useEffect(() => {
     const fetchRejectedAssets = async () => {
       try {
@@ -59,8 +61,14 @@ const Rejections = () => {
 
         assetsSnapshot.forEach((doc) => {
           const data = doc.data();
-          // Filter assets that are rejected
-          if (data.status === "rejected" || data.isRejected === true) {
+          
+          // ✅ UPDATED: Filter assets that are:
+          // 1. Rejected
+          // 2. Belong to current user
+          const isCurrentUserAsset = data.ownerId === currentUser?.uid;
+          const isRejectedAsset = data.status === "rejected" || data.isRejected === true;
+          
+          if (isCurrentUserAsset && isRejectedAsset) {
             rejectedAssets.push({
               id: doc.id,
               ...data,
@@ -78,6 +86,7 @@ const Rejections = () => {
         });
 
         setAllAssets(rejectedAssets);
+        console.log("✅ Loaded user's rejected assets:", rejectedAssets.length);
       } catch (error) {
         console.error("Error loading rejected assets:", error);
         alert("Failed to load rejected assets");
@@ -86,12 +95,16 @@ const Rejections = () => {
       }
     };
 
-    fetchRejectedAssets();
-  }, []);
+    if (currentUser) {
+      fetchRejectedAssets();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser]);
 
   // Calculate trends compared to previous period
   const trends = useMemo(() => {
-    if (loading) return {
+    if (loading || !currentUser) return {
       total: { value: 0, isPositive: true },
       qualityIssues: { value: 0, isPositive: true },
       resubmitted: { value: 0, isPositive: true },
@@ -176,11 +189,11 @@ const Rejections = () => {
         isPositive: averageTimeTrend >= 0 // Faster review time is better
       }
     };
-  }, [allAssets, loading]);
+  }, [allAssets, loading, currentUser]);
 
   // Client-side filtering
   const assets = useMemo(() => {
-    if (loading) return [];
+    if (loading || !currentUser) return [];
     
     return allAssets.filter((asset) => {
       if (
@@ -227,11 +240,11 @@ const Rejections = () => {
 
       return true;
     });
-  }, [allAssets, filters, loading]);
+  }, [allAssets, filters, loading, currentUser]);
 
   // Calculate rejection metrics
   const rejectionMetrics = useMemo(() => {
-    if (loading) {
+    if (loading || !currentUser) {
       return {
         overall: 0,
         distribution: {
@@ -288,11 +301,11 @@ const Rejections = () => {
       overall: parseFloat(overall.toFixed(1)),
       distribution
     };
-  }, [allAssets, loading]);
+  }, [allAssets, loading, currentUser]);
 
   // Recalculate stats from filtered assets
   const stats = useMemo(() => {
-    if (loading) {
+    if (loading || !currentUser) {
       return {
         totalRejections: 0,
         qualityIssues: 0,
@@ -331,7 +344,7 @@ const Rejections = () => {
       averageTimeToReject,
       rejectionScore: rejectionMetrics.overall,
     };
-  }, [allAssets, assets, rejectionMetrics, loading]);
+  }, [allAssets, assets, rejectionMetrics, loading, currentUser]);
 
   const updateAssetStatus = async (assetId, newStatus) => {
     try {
@@ -369,7 +382,7 @@ const Rejections = () => {
   };
 
   const getCategoryStats = () => {
-    if (loading) return [];
+    if (loading || !currentUser) return [];
 
     const categories = {
       "3d_model": { name: "3D Models", count: 0, color: "excellent" },
@@ -454,6 +467,30 @@ const Rejections = () => {
     other: totalRejectedAssets > 0 ? (rejectionMetrics.distribution.other / totalRejectedAssets) * 100 : 0,
   };
 
+  // Show message if no user is logged in
+  if (!currentUser) {
+    return (
+      <div className="user-reports-dashboard">
+        <div className="dashboard-header">
+          <div className="header-content">
+            <h2 className="header-title">
+              <FiXCircle className="header-icon" />
+              Rejected Assets
+            </h2>
+            <p className="header-subtitle">
+              Please log in to view your rejected assets
+            </p>
+          </div>
+        </div>
+        <div className="no-data-message">
+          <FiUser size={48} />
+          <h3>Authentication Required</h3>
+          <p>You need to be logged in to view your rejected assets.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="user-reports-dashboard">
       {/* Loading Overlay */}
@@ -461,7 +498,7 @@ const Rejections = () => {
         <div className="loading-overlay">
           <div className="loading-content">
             <div className="loading-spinner"></div>
-            <p className="loading-text">Loading rejected assets...</p>
+            <p className="loading-text">Loading your rejected assets...</p>
           </div>
         </div>
       )}
@@ -471,7 +508,7 @@ const Rejections = () => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Rejection Details</h3>
+              <h3 className="modal-title">Your Rejection Details</h3>
               <button className="modal-close" onClick={closeModal}>
                 <FiX />
               </button>
@@ -582,392 +619,395 @@ const Rejections = () => {
         <div className="header-content">
           <h2 className="header-title">
             <FiXCircle className="header-icon" />
-            Rejected Assets
+            Your Rejected Assets
           </h2>
           <p className="header-subtitle">
-            Review and manage assets that have been rejected and need attention
+            Review and manage your assets that have been rejected and need attention
           </p>
         </div>
         <div className="header-actions">
           <span className="user-badge-count">
-            {stats.totalRejections} rejected assets
+            {stats.totalRejections} of your rejected assets
           </span>
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="reports-stats-grid">
-        <div className="report-stat-card primary">
-          <div className="report-stat-header">
-            <div className="report-stat-icon">
-              <FiXCircle />
-            </div>
-            <div>
-              <h3 className="report-stat-title">Total Rejections</h3>
-              <div className="report-stat-value">{stats.totalRejections}</div>
-            </div>
-          </div>
-          <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Assets rejected overall
-            </div>
-            <div className={`report-stat-trend ${trends.total.isPositive ? 'positive' : 'negative'}`}>
-              {trends.total.value > 0 ? '+' : ''}{trends.total.value.toFixed(1)}% 
-              {trends.total.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
-            </div>
-          </div>
-        </div>
-
-        <div className="report-stat-card warning">
-          <div className="report-stat-header">
-            <div className="report-stat-icon">
-              <FiAlertTriangle />
-            </div>
-            <div>
-              <h3 className="report-stat-title">Quality Issues</h3>
-              <div className="report-stat-value">{stats.qualityIssues}</div>
-            </div>
-          </div>
-          <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              {stats.totalRejections > 0
-                ? `${((stats.qualityIssues / assets.length) * 100).toFixed(1)}% of filtered`
-                : "0% of total"}
-            </div>
-            <div className={`report-stat-trend ${trends.qualityIssues.isPositive ? 'positive' : 'negative'}`}>
-              {trends.qualityIssues.value > 0 ? '+' : ''}{trends.qualityIssues.value.toFixed(1)}% 
-              {trends.qualityIssues.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
-            </div>
-          </div>
-        </div>
-
-        <div className="report-stat-card success">
-          <div className="report-stat-header">
-            <div className="report-stat-icon">
-              <FiRefreshCw />
-            </div>
-            <div>
-              <h3 className="report-stat-title">Resubmitted</h3>
-              <div className="report-stat-value">{stats.resubmitted}</div>
-            </div>
-          </div>
-          <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              {assets.length > 0
-                ? `${((stats.resubmitted / assets.length) * 100).toFixed(1)}% resubmission rate`
-                : "0% resubmission rate"}
-            </div>
-            <div className={`report-stat-trend ${trends.resubmitted.isPositive ? 'positive' : 'negative'}`}>
-              {trends.resubmitted.value > 0 ? '+' : ''}{trends.resubmitted.value.toFixed(1)}% 
-              {trends.resubmitted.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
-            </div>
-          </div>
-        </div>
-
-        <div className="report-stat-card info">
-          <div className="report-stat-header">
-            <div className="report-stat-icon">
-              <FiClock />
-            </div>
-            <div>
-              <h3 className="report-stat-title">Avg. Review Time</h3>
-              <div className="report-stat-value">
-                {stats.averageTimeToReject === "N/A"
-                  ? "N/A"
-                  : `${stats.averageTimeToReject} days`}
+        <>
+          {/* Statistics Cards */}
+          <div className="reports-stats-grid">
+            <div className="report-stat-card primary">
+              <div className="report-stat-header">
+                <div className="report-stat-icon">
+                  <FiXCircle />
+                </div>
+                <div>
+                  <h3 className="report-stat-title">Your Total Rejections</h3>
+                  <div className="report-stat-value">{stats.totalRejections}</div>
+                </div>
+              </div>
+              <div className="report-stat-content">
+                <div className="report-stat-subtext">
+                  Your assets rejected overall
+                </div>
+                <div className={`report-stat-trend ${trends.total.isPositive ? 'positive' : 'negative'}`}>
+                  {trends.total.value > 0 ? '+' : ''}{trends.total.value.toFixed(1)}% 
+                  {trends.total.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
+                </div>
               </div>
             </div>
-          </div>
-          <div className="report-stat-content">
-            <div className="report-stat-subtext">days to rejection</div>
-            <div className={`report-stat-trend ${trends.averageTimeToReject.isPositive ? 'positive' : 'negative'}`}>
-              {trends.averageTimeToReject.value > 0 ? '+' : ''}{trends.averageTimeToReject.value.toFixed(1)}% 
-              {trends.averageTimeToReject.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Charts and Categories */}
-      <div className="reports-content-grid">
-        <div className="reports-chart-card">
-          <div className="reports-chart-header">
-            <h3 className="panel-title">
-              <FiStar className="panel-icon" /> Rejection Analysis
-            </h3>
-            <div className="satisfaction-score">
-              <span className="score-value">{stats.rejectionScore}/10</span>
-              <span className="score-label">Recovery Score</span>
+            <div className="report-stat-card warning">
+              <div className="report-stat-header">
+                <div className="report-stat-icon">
+                  <FiAlertTriangle />
+                </div>
+                <div>
+                  <h3 className="report-stat-title">Your Quality Issues</h3>
+                  <div className="report-stat-value">{stats.qualityIssues}</div>
+                </div>
+              </div>
+              <div className="report-stat-content">
+                <div className="report-stat-subtext">
+                  {stats.totalRejections > 0
+                    ? `${((stats.qualityIssues / assets.length) * 100).toFixed(1)}% of your rejections`
+                    : "0% of your rejections"}
+                </div>
+                <div className={`report-stat-trend ${trends.qualityIssues.isPositive ? 'positive' : 'negative'}`}>
+                  {trends.qualityIssues.value > 0 ? '+' : ''}{trends.qualityIssues.value.toFixed(1)}% 
+                  {trends.qualityIssues.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="reports-chart-body">
-            <div className="pie-chart-container">
-              <div className="pie-chart-wrapper">
-                <div 
-                  className="pie-chart"
-                  style={{
-                    background: `conic-gradient(
-                      #ef4444 0% ${rejectionPercentages.quality}%,
-                      #f59e0b ${rejectionPercentages.quality}% ${rejectionPercentages.quality + rejectionPercentages.guidelines}%,
-                      #3b82f6 ${rejectionPercentages.quality + rejectionPercentages.guidelines}% ${rejectionPercentages.quality + rejectionPercentages.guidelines + rejectionPercentages.technical}%,
-                      #6b7280 ${rejectionPercentages.quality + rejectionPercentages.guidelines + rejectionPercentages.technical}% 100%
-                    )`
-                  }}
-                >
-                  <div className="pie-chart-center">
-                    <div className="pie-chart-value">
-                      {stats.rejectionScore}
-                    </div>
+
+            <div className="report-stat-card success">
+              <div className="report-stat-header">
+                <div className="report-stat-icon">
+                  <FiRefreshCw />
+                </div>
+                <div>
+                  <h3 className="report-stat-title">Your Resubmitted</h3>
+                  <div className="report-stat-value">{stats.resubmitted}</div>
+                </div>
+              </div>
+              <div className="report-stat-content">
+                <div className="report-stat-subtext">
+                  {assets.length > 0
+                    ? `${((stats.resubmitted / assets.length) * 100).toFixed(1)}% of your resubmission rate`
+                    : "0% resubmission rate"}
+                </div>
+                <div className={`report-stat-trend ${trends.resubmitted.isPositive ? 'positive' : 'negative'}`}>
+                  {trends.resubmitted.value > 0 ? '+' : ''}{trends.resubmitted.value.toFixed(1)}% 
+                  {trends.resubmitted.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
+                </div>
+              </div>
+            </div>
+
+            <div className="report-stat-card info">
+              <div className="report-stat-header">
+                <div className="report-stat-icon">
+                  <FiClock />
+                </div>
+                <div>
+                  <h3 className="report-stat-title">Avg. Review Time</h3>
+                  <div className="report-stat-value">
+                    {stats.averageTimeToReject === "N/A"
+                      ? "N/A"
+                      : `${stats.averageTimeToReject} days`}
                   </div>
                 </div>
               </div>
-              <div className="pie-chart-labels">
-                <div className="pie-chart-label">
-                  <span className="pie-label-dot poor"></span>
-                  <div className="pie-label-text">
-                    <span className="pie-label-name">Quality Issues</span>
-                    <span className="pie-label-percentage">
-                      {Math.round(rejectionPercentages.quality)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="pie-chart-label">
-                  <span className="pie-label-dot average"></span>
-                  <div className="pie-label-text">
-                    <span className="pie-label-name">Guidelines</span>
-                    <span className="pie-label-percentage">
-                      {Math.round(rejectionPercentages.guidelines)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="pie-chart-label">
-                  <span className="pie-label-dot good"></span>
-                  <div className="pie-label-text">
-                    <span className="pie-label-name">Technical</span>
-                    <span className="pie-label-percentage">
-                      {Math.round(rejectionPercentages.technical)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="pie-chart-label">
-                  <span className="pie-label-dot excellent"></span>
-                  <div className="pie-label-text">
-                    <span className="pie-label-name">Other</span>
-                    <span className="pie-label-percentage">
-                      {Math.round(rejectionPercentages.other)}%
-                    </span>
-                  </div>
+              <div className="report-stat-content">
+                <div className="report-stat-subtext">days to rejection</div>
+                <div className={`report-stat-trend ${trends.averageTimeToReject.isPositive ? 'positive' : 'negative'}`}>
+                  {trends.averageTimeToReject.value > 0 ? '+' : ''}{trends.averageTimeToReject.value.toFixed(1)}% 
+                  {trends.averageTimeToReject.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="reports-categories-card">
-          <div className="reports-categories-header">
-            <h3 className="panel-title">
-              <FiPieChart className="panel-icon" /> Rejected Categories
-            </h3>
-          </div>
-          <div className="reports-categories-body">
-            {categoryStats.map((cat, i) => {
-              const percentage = stats.totalRejections > 0 ? (cat.count / stats.totalRejections) * 100 : 0;
-              return (
-                <div key={i} className="category-progress">
-                  <div className="category-header">
-                    <span className="category-name">{cat.name}</span>
-                    <span className="category-count">
-                      {Math.round(percentage)}% ({cat.count})
-                    </span>
-                  </div>
-                  <div className="category-progress-bar">
-                    <div
-                      className={`category-progress-fill ${cat.color}`}
+          {/* Charts and Categories
+          <div className="reports-content-grid">
+            <div className="reports-chart-card">
+              <div className="reports-chart-header">
+                <h3 className="panel-title">
+                  <FiStar className="panel-icon" /> Your Rejection Analysis
+                </h3>
+                <div className="satisfaction-score">
+                  <span className="score-value">{stats.rejectionScore}/10</span>
+                  <span className="score-label">Your Recovery Score</span>
+                </div>
+              </div>
+              <div className="reports-chart-body">
+                <div className="pie-chart-container">
+                  <div className="pie-chart-wrapper">
+                    <div 
+                      className="pie-chart"
                       style={{
-                        width: `${percentage}%`,
+                        background: `conic-gradient(
+                          #ef4444 0% ${rejectionPercentages.quality}%,
+                          #f59e0b ${rejectionPercentages.quality}% ${rejectionPercentages.quality + rejectionPercentages.guidelines}%,
+                          #3b82f6 ${rejectionPercentages.quality + rejectionPercentages.guidelines}% ${rejectionPercentages.quality + rejectionPercentages.guidelines + rejectionPercentages.technical}%,
+                          #6b7280 ${rejectionPercentages.quality + rejectionPercentages.guidelines + rejectionPercentages.technical}% 100%
+                        )`
                       }}
-                    ></div>
+                    >
+                      <div className="pie-chart-center">
+                        <div className="pie-chart-value">
+                          {stats.rejectionScore}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pie-chart-labels">
+                    <div className="pie-chart-label">
+                      <span className="pie-label-dot poor"></span>
+                      <div className="pie-label-text">
+                        <span className="pie-label-name">Quality Issues</span>
+                        <span className="pie-label-percentage">
+                          {Math.round(rejectionPercentages.quality)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="pie-chart-label">
+                      <span className="pie-label-dot average"></span>
+                      <div className="pie-label-text">
+                        <span className="pie-label-name">Guidelines</span>
+                        <span className="pie-label-percentage">
+                          {Math.round(rejectionPercentages.guidelines)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="pie-chart-label">
+                      <span className="pie-label-dot good"></span>
+                      <div className="pie-label-text">
+                        <span className="pie-label-name">Technical</span>
+                        <span className="pie-label-percentage">
+                          {Math.round(rejectionPercentages.technical)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="pie-chart-label">
+                      <span className="pie-label-dot excellent"></span>
+                      <div className="pie-label-text">
+                        <span className="pie-label-name">Other</span>
+                        <span className="pie-label-percentage">
+                          {Math.round(rejectionPercentages.other)}%
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+              </div>
+            </div>
 
-      {/* Filter Bar */}
-      <div className="reports-filter-bar">
-        <div className="filter-bar-header">
-          <h3 className="filter-bar-title">
-            <FiFilter className="panel-icon" /> Filter Rejected Assets
-          </h3>
-          <div className="filter-results">
-            <span className="filter-text">
-              Showing {assets.length} of {stats.totalRejections} assets
-            </span>
-          </div>
-        </div>
-
-        <div className="filter-controls-grid">
-          <div className="filter-search-wrapper">
-            <FiSearch className="filter-search-icon" />
-            <input
-              type="text"
-              className="filter-search-input"
-              placeholder="Search by title, description, category, or rejection notes..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-          </div>
-
-          <select
-            className="filter-select"
-            value={filters.category}
-            onChange={(e) => handleFilterChange("category", e.target.value)}
-          >
-            <option value="">All Categories</option>
-            <option value="3d_model">3D Models</option>
-            <option value="texture">Textures</option>
-            <option value="audio">Audio</option>
-            <option value="other">Other</option>
-          </select>
-
-          <select
-            className="filter-select"
-            value={filters.rejectionReason}
-            onChange={(e) => handleFilterChange("rejectionReason", e.target.value)}
-          >
-            <option value="">All Reasons</option>
-            <option value="quality">Quality Issues</option>
-            <option value="guidelines_violation">Guidelines Violation</option>
-            <option value="technical_issues">Technical Issues</option>
-            <option value="duplicate">Duplicate Content</option>
-            <option value="copyright">Copyright Issues</option>
-            <option value="other">Other Reasons</option>
-          </select>
-
-          <select
-            className="filter-select"
-            value={filters.date}
-            onChange={(e) => handleFilterChange("date", e.target.value)}
-          >
-            <option value="">Any Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="older">Older</option>
-          </select>
-
-          <div className="filter-actions">
-            <button className="filter-button" onClick={resetFilters}>
-              <FiRefreshCw /> Reset
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Assets Table */}
-      <div className="recent-reports-card">
-        <div className="recent-reports-header">
-          <h3 className="panel-title">
-            <FiList className="panel-icon" /> Rejected Assets
-          </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" /> Export Report
-          </button>
-        </div>
-        <div className="recent-reports-body">
-          <table className="report-table">
-            <thead>
-              <tr>
-                <th>Asset</th>
-                <th>Category</th>
-                <th>Rejection Reason</th>
-                <th>Resubmitted</th>
-                <th>Rejection Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assets.slice(0, 10).map((asset) => (
-                <tr key={asset.id}>
-                  <td>
-                    <div className="report-user">
-                      <div className="report-user-avatar">
-                        {getAssetTypeIcon(asset.category)}
+            <div className="reports-categories-card">
+              <div className="reports-categories-header">
+                <h3 className="panel-title">
+                  <FiPieChart className="panel-icon" /> Your Rejected Categories
+                </h3>
+              </div>
+              <div className="reports-categories-body">
+                {categoryStats.map((cat, i) => {
+                  const percentage = stats.totalRejections > 0 ? (cat.count / stats.totalRejections) * 100 : 0;
+                  return (
+                    <div key={i} className="category-progress">
+                      <div className="category-header">
+                        <span className="category-name">{cat.name}</span>
+                        <span className="category-count">
+                          {Math.round(percentage)}% ({cat.count})
+                        </span>
                       </div>
-                      <div className="report-user-info">
-                        <div className="report-user-name">
-                          {asset.title || "Untitled Asset"}
+                      <div className="category-progress-bar">
+                        <div
+                          className={`category-progress-fill ${cat.color}`}
+                          style={{
+                            width: `${percentage}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div> */}
+
+          {/* Filter Bar */}
+          <div className="reports-filter-bar">
+            <div className="filter-bar-header">
+              <h3 className="filter-bar-title">
+                <FiFilter className="panel-icon" /> Filter Your Rejected Assets
+              </h3>
+              <div className="filter-results">
+                <span className="filter-text">
+                  Showing {assets.length} of {stats.totalRejections} of your assets
+                </span>
+              </div>
+            </div>
+
+            <div className="filter-controls-grid">
+              <div className="filter-search-wrapper">
+                <FiSearch className="filter-search-icon" />
+                <input
+                  type="text"
+                  className="filter-search-input"
+                  placeholder="Search your assets by title, description, category, or rejection notes..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                />
+              </div>
+
+              <select
+                className="filter-select"
+                value={filters.category}
+                onChange={(e) => handleFilterChange("category", e.target.value)}
+              >
+                <option value="">All Categories</option>
+                <option value="3d_model">3D Models</option>
+                <option value="texture">Textures</option>
+                <option value="audio">Audio</option>
+                <option value="other">Other</option>
+              </select>
+
+              <select
+                className="filter-select"
+                value={filters.rejectionReason}
+                onChange={(e) => handleFilterChange("rejectionReason", e.target.value)}
+              >
+                <option value="">All Reasons</option>
+                <option value="quality">Quality Issues</option>
+                <option value="guidelines_violation">Guidelines Violation</option>
+                <option value="technical_issues">Technical Issues</option>
+                <option value="duplicate">Duplicate Content</option>
+                <option value="copyright">Copyright Issues</option>
+                <option value="other">Other Reasons</option>
+              </select>
+
+              <select
+                className="filter-select"
+                value={filters.date}
+                onChange={(e) => handleFilterChange("date", e.target.value)}
+              >
+                <option value="">Any Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="older">Older</option>
+              </select>
+
+              <div className="filter-actions">
+                <button className="filter-button" onClick={resetFilters}>
+                  <FiRefreshCw /> Reset
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Assets Table */}
+          <div className="recent-reports-card">
+            <div className="recent-reports-header">
+              <h3 className="panel-title">
+                <FiList className="panel-icon" /> Your Rejected Assets
+              </h3>
+              <button className="action-button secondary">
+                <FiDownload className="button-icon" /> Export Report
+              </button>
+            </div>
+            <div className="recent-reports-body">
+              <table className="report-table">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Category</th>
+                    <th>Rejection Reason</th>
+                    <th>Resubmitted</th>
+                    <th>Rejection Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assets.slice(0, 10).map((asset) => (
+                    <tr key={asset.id}>
+                      <td>
+                        <div className="report-user">
+                          <div className="report-user-avatar">
+                            {getAssetTypeIcon(asset.category)}
+                          </div>
+                          <div className="report-user-info">
+                            <div className="report-user-name">
+                              {asset.title || "Untitled Asset"}
+                            </div>
+                            <div className="report-user-email">ID: {asset.id.substring(0, 8)}...</div>
+                          </div>
                         </div>
-                        <div className="report-user-email">ID: {asset.id.substring(0, 8)}...</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`report-category-badge ${asset.category || "other"}`}>
-                      {asset.category === "3d_model" && "3D Model"}
-                      {asset.category === "texture" && "Texture"}
-                      {asset.category === "audio" && "Audio"}
-                      {!asset.category && "Other"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`report-status-badge rejected`}>
-                      {getRejectionReasonText(asset.rejectionReason)}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`report-status-badge ${asset.resubmitted ? 'success' : 'warning'}`}>
-                      {asset.resubmitted ? "Resubmitted" : "Not Resubmitted"}
-                    </span>
-                  </td>
-                  <td>{formatDate(asset.rejectedAt)}</td>
-                  <td>
-                    <div className="report-actions">
-                      <button
-                        className="action-button secondary small"
-                        title="View Details"
-                        onClick={() => openAssetDetails(asset)}
-                      >
-                        <FiEye />
-                      </button>
-                      {!asset.resubmitted ? (
-                        <button
-                          className="action-button small"
-                          title="Resubmit"
-                          onClick={() =>
-                            updateAssetStatus(asset.id, "pending")
-                          }
-                        >
-                          <FiCornerUpLeft />
-                        </button>
-                      ) : (
-                        <button
-                          className="action-button small warning"
-                          title="Mark Not Resubmitted"
-                          onClick={() =>
-                            updateAssetStatus(asset.id, "rejected")
-                          }
-                        >
-                          <FiXCircle />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {assets.length === 0 && !loading && (
-                <tr>
-                  <td colSpan="6" className="no-reports">
-                    No rejected assets found matching your filters
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                      </td>
+                      <td>
+                        <span className={`report-category-badge ${asset.category || "other"}`}>
+                          {asset.category === "3d_model" && "3D Model"}
+                          {asset.category === "texture" && "Texture"}
+                          {asset.category === "audio" && "Audio"}
+                          {!asset.category && "Other"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`report-status-badge rejected`}>
+                          {getRejectionReasonText(asset.rejectionReason)}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`report-status-badge ${asset.resubmitted ? 'success' : 'warning'}`}>
+                          {asset.resubmitted ? "Resubmitted" : "Not Resubmitted"}
+                        </span>
+                      </td>
+                      <td>{formatDate(asset.rejectedAt)}</td>
+                      <td>
+                        <div className="report-actions">
+                          <button
+                            className="action-button secondary small"
+                            title="View Details"
+                            onClick={() => openAssetDetails(asset)}
+                          >
+                            <FiEye />
+                          </button>
+                          {!asset.resubmitted ? (
+                            <button
+                              className="action-button small"
+                              title="Resubmit"
+                              onClick={() =>
+                                updateAssetStatus(asset.id, "pending")
+                              }
+                            >
+                              <FiCornerUpLeft />
+                            </button>
+                          ) : (
+                            <button
+                              className="action-button small warning"
+                              title="Mark Not Resubmitted"
+                              onClick={() =>
+                                updateAssetStatus(asset.id, "rejected")
+                              }
+                            >
+                              <FiXCircle />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {assets.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan="6" className="no-reports">
+                        No rejected assets found matching your filters
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+    
     </div>
   );
 };
