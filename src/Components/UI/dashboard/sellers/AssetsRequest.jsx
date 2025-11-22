@@ -16,7 +16,7 @@ import {
   FiDollarSign,
   FiFileText
 } from "react-icons/fi";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 
 const AssetRequestsDashboard = () => {
@@ -28,44 +28,49 @@ const AssetRequestsDashboard = () => {
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  // Fetch only contributor assets from Firebase
+  // ✅ UPDATED: Fetch ONLY contributor assets (not admin uploaded)
   useEffect(() => {
     const fetchAssetRequests = async () => {
       try {
         setLoading(true);
         const assetsRef = collection(db, "Assets");
         
-        // Query to get only contributor assets (not admin uploaded)
-        const q = query(
-          assetsRef, 
-          where("uploadedBy", "!=", "admin")
-        );
-        
-        const assetsSnapshot = await getDocs(q);
+        // ✅ GET ALL ASSETS first, then filter for contributors only
+        const assetsSnapshot = await getDocs(assetsRef);
 
         const contributorAssets = [];
 
         assetsSnapshot.forEach((doc) => {
           const data = doc.data();
           
-          // Only include assets from contributors
-          if (data.uploadedBy !== "admin" && data.uploadedBy !== "Admin") {
+          // ✅ CONDITION: Only include contributor assets (not admin uploaded)
+          const isContributorAsset = 
+            data.uploadedBy !== "admin" && 
+            data.uploadedBy !== "Admin" &&
+            data.ownerId && // Contributor assets have ownerId
+            data.status !== "admin_uploaded"; // Exclude admin uploaded status
+
+          if (isContributorAsset) {
             contributorAssets.push({
               id: doc.id,
               ...data,
               title: data.title || "Untitled Asset",
-              type: data.category || "other",
+              type: data.type || data.category || "other",
               category: data.category || "Other",
-              author: data.authorName || data.author || data.uploadedBy || "Unknown Contributor",
+              author: data.authorName || data.author || data.createdBy || data.uploadedBy || "Unknown Contributor",
               authorEmail: data.authorEmail || data.email || "No email provided",
               submitDate: data.createdAt || data.uploadDate || new Date(),
               status: data.status || "pending",
-              priceType: data.isFree ? "free" : "paid",
+              priceType: data.price === "paid" ? "paid" : "free",
               fileSize: data.fileSize || "Unknown",
               description: data.description || "No description provided",
               files: data.files || [],
               thumbnail: data.thumbnail || data.imageUrl || "",
-              rejectionReason: data.rejectionReason || ""
+              rejectionReason: data.rejectionReason || "",
+              ownerId: data.ownerId,
+              uploadedBy: data.uploadedBy,
+              is3d: data.is3d || false,
+              tags: data.tags || []
             });
           }
         });
@@ -77,10 +82,10 @@ const AssetRequestsDashboard = () => {
           return timeB - timeA;
         });
 
+        console.log("✅ Loaded contributor assets:", contributorAssets.length);
         setAssetRequests(contributorAssets);
       } catch (error) {
         console.error("Error loading contributor asset requests:", error);
-        // Fallback to empty array if no contributor assets found
         setAssetRequests([]);
       } finally {
         setLoading(false);
@@ -90,33 +95,77 @@ const AssetRequestsDashboard = () => {
     fetchAssetRequests();
   }, []);
 
-  // Handle approve asset
-  const handleApprove = (assetId) => {
-    setAssetRequests(assetRequests.map(asset => 
-      asset.id === assetId ? { ...asset, status: "approved" } : asset
-    ));
+  // ✅ Handle approve asset - Update Firestore
+  const handleApprove = async (assetId) => {
+    try {
+      const assetRef = doc(db, "Assets", assetId);
+      await updateDoc(assetRef, {
+        status: "approved",
+        updatedAt: new Date()
+      });
+
+      // Update local state
+      setAssetRequests(assetRequests.map(asset => 
+        asset.id === assetId ? { ...asset, status: "approved" } : asset
+      ));
+      
+      console.log("✅ Asset approved:", assetId);
+    } catch (error) {
+      console.error("Error approving asset:", error);
+      alert("Failed to approve asset");
+    }
   };
 
-  // Handle reject asset
-  const handleReject = (assetId, reason = "") => {
-    setAssetRequests(assetRequests.map(asset => 
-      asset.id === assetId ? { ...asset, status: "rejected", rejectionReason: reason } : asset
-    ));
+  // ✅ Handle reject asset - Update Firestore
+  const handleReject = async (assetId, reason = "") => {
+    try {
+      const assetRef = doc(db, "Assets", assetId);
+      await updateDoc(assetRef, {
+        status: "rejected",
+        rejectionReason: reason,
+        updatedAt: new Date()
+      });
+
+      // Update local state
+      setAssetRequests(assetRequests.map(asset => 
+        asset.id === assetId ? { ...asset, status: "rejected", rejectionReason: reason } : asset
+      ));
+      
+      console.log("✅ Asset rejected:", assetId);
+    } catch (error) {
+      console.error("Error rejecting asset:", error);
+      alert("Failed to reject asset");
+    }
   };
 
-  // Handle move back to pending
-  const handleMoveToPending = (assetId) => {
-    setAssetRequests(assetRequests.map(asset => 
-      asset.id === assetId ? { ...asset, status: "pending", rejectionReason: "" } : asset
-    ));
+  // ✅ Handle move back to pending - Update Firestore
+  const handleMoveToPending = async (assetId) => {
+    try {
+      const assetRef = doc(db, "Assets", assetId);
+      await updateDoc(assetRef, {
+        status: "pending",
+        rejectionReason: "",
+        updatedAt: new Date()
+      });
+
+      // Update local state
+      setAssetRequests(assetRequests.map(asset => 
+        asset.id === assetId ? { ...asset, status: "pending", rejectionReason: "" } : asset
+      ));
+      
+      console.log("✅ Asset moved to pending:", assetId);
+    } catch (error) {
+      console.error("Error moving asset to pending:", error);
+      alert("Failed to move asset to pending");
+    }
   };
 
-  // Filter assets based on search and filters
+  // ✅ Filter assets based on search and filters
   const filteredAssets = assetRequests.filter(asset => {
     const matchesSearch = 
       asset.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      asset.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (asset.author && asset.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (asset.description && asset.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === "all" || asset.status === statusFilter;
     const matchesType = typeFilter === "all" || asset.type === typeFilter;
@@ -148,23 +197,37 @@ const AssetRequestsDashboard = () => {
   // Asset type icon and label
   const getAssetTypeInfo = (type) => {
     const types = {
-      "3d_model": { icon: "📦", label: "3D Model" },
-      "texture": { icon: "🎨", label: "Texture" },
-      "audio": { icon: "🎵", label: "Audio" },
-      "video": { icon: "🎥", label: "Video" },
-      "image": { icon: "🖼️", label: "Image" },
-      "graphics": { icon: "🎨", label: "Graphics" },
-      "script": { icon: "💻", label: "Script" },
-      "other": { icon: "📄", label: "Other" }
+      "models": { label: "3D Model" },
+      "3d_model": { label: "3D Model" },
+      "texture": { label: "Texture" },
+      "textures": { label: "Texture" },
+      "audio": { label: "Audio" },
+      "video": { label: "Video" },
+      "videos": { label: "Video" },
+      "image": { label: "Image" },
+      "images": { label: "Image" },
+      "graphics": { label: "Graphics" },
+      "script": { label: "Script" },
+      "scripts": { label: "Script" },
+      "hdris": { label: "HDRI" },
+      "icons": { label: "Icons" },
+      "mockups": { label: "Mockup" },
+      "fonts": { label: "Font" },
+      "video-templates": { label: "Video Template" },
+      "other": { label: "Other" }
     };
-    return types[type] || { icon: "📄", label: "Asset" };
+    return types[type] || {label: type || "Asset" };
   };
 
   // Format date for display
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
-    const date = timestamp?.toDate?.() || new Date(timestamp);
-    return date.toLocaleDateString();
+    try {
+      const date = timestamp?.toDate?.() || new Date(timestamp);
+      return date.toLocaleDateString();
+    } catch (error) {
+      return "Invalid Date";
+    }
   };
 
   // Statistics
@@ -182,18 +245,6 @@ const AssetRequestsDashboard = () => {
     setTypeFilter("all");
   };
 
-  if (loading) {
-    return (
-      <div className="user-reports-dashboard">
-        <div className="loading-overlay">
-          <div className="loading-content">
-            <div className="loading-spinner"></div>
-            <p className="loading-text">Loading contributor assets...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="user-reports-dashboard">
@@ -205,7 +256,7 @@ const AssetRequestsDashboard = () => {
             Contributor Asset Requests
           </h2>
           <p className="header-subtitle">
-            Review and manage asset upload requests from contributors
+            Review and manage asset upload requests from contributors only
           </p>
         </div>
         <div className="header-actions">
@@ -231,9 +282,6 @@ const AssetRequestsDashboard = () => {
             <div className="report-stat-subtext">
               Published to marketplace
             </div>
-            <div className="report-stat-trend positive">
-              +15% <FiTrendingUp className="fi-pl" />
-            </div>
           </div>
         </div>
 
@@ -250,9 +298,6 @@ const AssetRequestsDashboard = () => {
           <div className="report-stat-content">
             <div className="report-stat-subtext">
               Awaiting approval
-            </div>
-            <div className="report-stat-trend negative">
-              +8% <FiTrendingUp className="fi-pl" />
             </div>
           </div>
         </div>
@@ -271,9 +316,6 @@ const AssetRequestsDashboard = () => {
             <div className="report-stat-subtext">
               Contributor submissions
             </div>
-            <div className="report-stat-trend positive">
-              +12% <FiTrendingUp className="fi-pl" />
-            </div>
           </div>
         </div>
 
@@ -290,9 +332,6 @@ const AssetRequestsDashboard = () => {
           <div className="report-stat-content">
             <div className="report-stat-subtext">
               Rejected submissions
-            </div>
-            <div className="report-stat-trend negative">
-              +5% <FiTrendingUp className="fi-pl" />
             </div>
           </div>
         </div>
@@ -340,13 +379,15 @@ const AssetRequestsDashboard = () => {
             onChange={(e) => setTypeFilter(e.target.value)}
           >
             <option value="all">All Types</option>
-            <option value="3d_model">3D Models</option>
-            <option value="texture">Textures</option>
+            <option value="models">3D Models</option>
+            <option value="textures">Textures</option>
             <option value="audio">Audio</option>
-            <option value="video">Videos</option>
-            <option value="image">Images</option>
+            <option value="videos">Videos</option>
+            <option value="images">Images</option>
             <option value="graphics">Graphics</option>
-            <option value="script">Scripts</option>
+            <option value="scripts">Scripts</option>
+            <option value="hdris">HDRIs</option>
+            <option value="icons">Icons</option>
             <option value="other">Other</option>
           </select>
 
@@ -376,7 +417,6 @@ const AssetRequestsDashboard = () => {
                 <th>Type</th>
                 <th>Contributor</th>
                 <th>Price</th>
-                <th>Size</th>
                 <th>Submit Date</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -397,11 +437,11 @@ const AssetRequestsDashboard = () => {
                     </td>
                     <td>
                       <span className={`report-category-badge ${
-                        asset.type === '3d_model' ? 'technical' : 
-                        asset.type === 'video' ? 'billing' : 
-                        asset.type === 'image' ? 'general' : 'feature'
+                        asset.type === 'models' ? 'technical' : 
+                        asset.type === 'videos' ? 'billing' : 
+                        asset.type === 'images' ? 'general' : 'feature'
                       }`}>
-                        {typeInfo.label}
+                        {typeInfo.icon} {typeInfo.label}
                       </span>
                     </td>
                     <td>
@@ -412,12 +452,6 @@ const AssetRequestsDashboard = () => {
                     </td>
                     <td>
                       {getPriceBadge(asset.priceType)}
-                    </td>
-                    <td>
-                      <div className="comp-dis">
-                        <FiFileText style={{ marginRight: '4px' }} />
-                        {asset.fileSize}
-                      </div>
                     </td>
                     <td>
                       <div className="comp-dis">
@@ -482,7 +516,7 @@ const AssetRequestsDashboard = () => {
               
               {filteredAssets.length === 0 && (
                 <tr>
-                  <td colSpan="8" className="no-reports">
+                  <td colSpan="7" className="no-reports">
                     {assetRequests.length === 0 ? 'No contributor asset requests found' : 'No contributor assets found matching your filters'}
                   </td>
                 </tr>
@@ -528,8 +562,8 @@ const AssetRequestsDashboard = () => {
                     </span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">File Size:</span>
-                    <span className="detail-value">{selectedAsset.fileSize}</span>
+                    <span className="detail-label">Asset ID:</span>
+                    <span className="detail-value">{selectedAsset.id}</span>
                   </div>
                 </div>
 
@@ -547,6 +581,10 @@ const AssetRequestsDashboard = () => {
                     <span className="detail-label">Submit Date:</span>
                     <span className="detail-value">{formatDate(selectedAsset.submitDate)}</span>
                   </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Owner ID:</span>
+                    <span className="detail-value">{selectedAsset.ownerId || "N/A"}</span>
+                  </div>
                 </div>
 
                 <div className="detail-section full-width">
@@ -556,26 +594,16 @@ const AssetRequestsDashboard = () => {
                   </div>
                 </div>
 
-                <div className="detail-section full-width">
-                  <h4>Submitted Files</h4>
-                  <div className="documents-list">
-                    {selectedAsset.files && selectedAsset.files.length > 0 ? (
-                      selectedAsset.files.map((file, index) => (
-                        <div key={index} className="document-item">
-                          <div className="document-icon">📄</div>
-                          <div className="document-info">
-                            <div className="document-name">{file}</div>
-                            <button className="action-button secondary small">
-                              Download File
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="no-files">No files submitted</div>
-                    )}
+                {selectedAsset.tags && selectedAsset.tags.length > 0 && (
+                  <div className="detail-section">
+                    <h4>Tags</h4>
+                    <div className="tags-container">
+                      {selectedAsset.tags.map((tag, index) => (
+                        <span key={index} className="tag-badge">#{tag}</span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {selectedAsset.rejectionReason && (
                   <div className="detail-section full-width">
@@ -604,38 +632,44 @@ const AssetRequestsDashboard = () => {
               </button>
               
               {/* Always show all action buttons in modal */}
-              <button
-                className="action-button"
-                onClick={() => {
-                  handleApprove(selectedAsset.id);
-                  setShowDetailsModal(false);
-                }}
-              >
-                <FiCheckCircle /> Approve Asset
-              </button>
-              
-              <button
-                className="action-button danger"
-                onClick={() => {
-                  const reason = prompt("Enter rejection reason:");
-                  if (reason) {
-                    handleReject(selectedAsset.id, reason);
+              {selectedAsset.status !== "approved" && (
+                <button
+                  className="action-button"
+                  onClick={() => {
+                    handleApprove(selectedAsset.id);
                     setShowDetailsModal(false);
-                  }
-                }}
-              >
-                <FiXCircle /> Reject Asset
-              </button>
+                  }}
+                >
+                  <FiCheckCircle /> Approve Asset
+                </button>
+              )}
               
-              <button
-                className="action-button warning"
-                onClick={() => {
-                  handleMoveToPending(selectedAsset.id);
-                  setShowDetailsModal(false);
-                }}
-              >
-                <FiClock /> Move to Pending
-              </button>
+              {selectedAsset.status !== "rejected" && (
+                <button
+                  className="action-button danger"
+                  onClick={() => {
+                    const reason = prompt("Enter rejection reason:");
+                    if (reason) {
+                      handleReject(selectedAsset.id, reason);
+                      setShowDetailsModal(false);
+                    }
+                  }}
+                >
+                  <FiXCircle /> Reject Asset
+                </button>
+              )}
+              
+              {(selectedAsset.status === "approved" || selectedAsset.status === "rejected") && (
+                <button
+                  className="action-button warning"
+                  onClick={() => {
+                    handleMoveToPending(selectedAsset.id);
+                    setShowDetailsModal(false);
+                  }}
+                >
+                  <FiClock /> Move to Pending
+                </button>
+              )}
             </div>
           </div>
         </div>

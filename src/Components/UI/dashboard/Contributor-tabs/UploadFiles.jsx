@@ -237,39 +237,47 @@ const UploadFiles = () => {
     return "Free";
   };
 
-  // Fetch All Assets with Real-time Updates
-  const fetchAssets = useCallback(() => {
-    setLoading(true);
-    try {
-      // Contributor sirf apni assets fetch kare
-      const q = query(
-        collection(db, "Assets"),
-        where("createdBy", "==", currentUser.uid)
-      );
+  
+ // ✅ UPDATED: Fetch assets by userId field (jo aapke data mein hai)
+const fetchAssets = useCallback(() => {
+  if (!currentUser?.uid) {
+    setAssets([]);
+    return;
+  }
 
-      const unsubscribe = onSnapshot(
-        q,
-        (querySnapshot) => {
-          const assetsData = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setAssets(assetsData);
-          setLoading(false);
-        },
-        (error) => {
-          console.error("Assets real-time listener error:", error);
-          setError(`Failed to load assets: ${error.message}`);
-          setLoading(false);
-        }
-      );
+  setLoading(true);
+  try {
+    // ✅ Use userId field instead of ownerId (jo aapke data mein hai)
+    const q = query(
+      collection(db, "Assets"),
+      where("userId", "==", currentUser.uid)
+    );
 
-      return unsubscribe;
-    } catch (error) {
-      setError(`Failed to load assets: ${error.message}`);
-      setLoading(false);
-    }
-  }, [currentUser.uid]);
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const assetsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("✅ Current user assets loaded:", assetsData.length);
+        console.log("🔍 Assets data:", assetsData);
+        setAssets(assetsData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Assets real-time listener error:", error);
+        setError(`Failed to load assets: ${error.message}`);
+        setLoading(false);
+      }
+    );
+
+    return unsubscribe;
+  } catch (error) {
+    setError(`Failed to load assets: ${error.message}`);
+    setLoading(false);
+  }
+}, [currentUser?.uid]);
 
   useEffect(() => {
     const unsubscribe = fetchAssets();
@@ -282,31 +290,36 @@ const UploadFiles = () => {
     };
   }, [fetchAssets]);
 
-  // Manual refresh function
-  const refreshAssets = useCallback(() => {
-    console.log("🔄 Manual refresh triggered");
-    setRefreshKey((prev) => prev + 1);
-    setLoading(true);
+  // ✅ UPDATED: Manual refresh function
+const refreshAssets = useCallback(() => {
+  if (!currentUser?.uid) return;
 
-    // Force re-fetch
-    const q = query(collection(db, "Assets"));
-    getDocs(q)
-      .then((querySnapshot) => {
-        const assetsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log("✅ Assets refreshed:", assetsData.length);
-        setAssets(assetsData);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("❌ Refresh failed:", error);
-        setError(`Failed to refresh assets: ${error.message}`);
-        setLoading(false);
-      });
-  }, []);
+  console.log("🔄 Manual refresh triggered for current user");
+  setRefreshKey((prev) => prev + 1);
+  setLoading(true);
 
+  // Use userId field
+  const q = query(
+    collection(db, "Assets"),
+    where("userId", "==", currentUser.uid)
+  );
+  
+  getDocs(q)
+    .then((querySnapshot) => {
+      const assetsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log("✅ Current user assets refreshed:", assetsData.length);
+      setAssets(assetsData);
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error("❌ Refresh failed:", error);
+      setError(`Failed to refresh assets: ${error.message}`);
+      setLoading(false);
+    });
+}, [currentUser?.uid]);
   // Asset management handlers
   const handleToggleAssetFeatured = async (assetId) => {
     const asset = assets.find((a) => a.id === assetId);
@@ -376,7 +389,7 @@ const UploadFiles = () => {
     return matchesText && matchesCategory;
   });
 
-  // Statistics
+  // Statistics - Only for current user's assets
   const stats = {
     total: assets.length,
     featured: assets.filter((a) => a.isFeatured).length,
@@ -391,6 +404,23 @@ const UploadFiles = () => {
     ).length,
   };
 
+  // Show message if user is not logged in
+  if (!currentUser) {
+    return (
+      <div className="asset-management-enhanced">
+        <div className="content-card">
+          <div className="card-body empty-state">
+            <FiUser className="empty-icon" />
+            <h3 className="empty-title">Please Log In</h3>
+            <p className="empty-text">
+              You need to be logged in to view and manage your assets.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="asset-management-enhanced">
       {/* Header */}
@@ -398,15 +428,15 @@ const UploadFiles = () => {
         <div className="header-content">
           <h2 className="header-title">
             <FiBox className="header-icon asset-icon" />
-            Asset Management
+            My Assets
           </h2>
           <p className="header-subtitle">
-            Manage and monitor all digital assets on the platform
+            Manage and monitor your uploaded digital assets
           </p>
         </div>
         <div className="header-actions">
           <span className="asset-badge-count">
-            {filteredAssets.length} assets
+            {filteredAssets.length} of my assets
           </span>
           <button
             className="action-button secondary"
@@ -446,12 +476,12 @@ const UploadFiles = () => {
               <FiBox />
             </div>
             <div>
-              <h3 className="report-stat-title">Total Assets</h3>
+              <h3 className="report-stat-title">My Assets</h3>
               <div className="report-stat-value">{stats.total}</div>
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">All platform assets</div>
+            <div className="report-stat-subtext">Total uploaded by me</div>
           </div>
         </div>
 
@@ -466,7 +496,7 @@ const UploadFiles = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">All time downloads</div>
+            <div className="report-stat-subtext">Downloads of my assets</div>
           </div>
         </div>
 
@@ -481,7 +511,7 @@ const UploadFiles = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">Available for free</div>
+            <div className="report-stat-subtext">My free assets</div>
           </div>
         </div>
 
@@ -496,7 +526,7 @@ const UploadFiles = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">Premium content</div>
+            <div className="report-stat-subtext">My premium content</div>
           </div>
         </div>
       </div>
@@ -509,7 +539,7 @@ const UploadFiles = () => {
               <FiSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Search assets..."
+                placeholder="Search my assets..."
                 value={assetSearchTerm}
                 onChange={(e) => setAssetSearchTerm(e.target.value)}
                 className="search-input"
@@ -530,7 +560,7 @@ const UploadFiles = () => {
             <div className="filter-result">
               <FiFilter className="filter-icon" />
               <span className="filter-text">
-                {filteredAssets.length} results
+                {filteredAssets.length} of my assets
               </span>
             </div>
           </div>
@@ -544,16 +574,16 @@ const UploadFiles = () => {
             <FiBox className="empty-icon" />
             <h3 className="empty-title">No assets found</h3>
             <p className="empty-text">
-              {assetSearchTerm
+              {assetSearchTerm || selectedCategory !== "all"
                 ? "No assets match your search criteria."
-                : "No assets are currently available."}
+                : "You haven't uploaded any assets yet."}
             </p>
             <button
               className="action-button upload-button"
               onClick={() => setShowCreateAssetDialog(true)}
             >
               <FiUpload className="button-icon" />
-              Upload First Asset
+              Upload Your First Asset
             </button>
           </div>
         </div>
@@ -563,15 +593,15 @@ const UploadFiles = () => {
             const modelUrl = get3DModelUrl(asset);
             const is3D = modelUrl !== null;
 
-            console.log("🔍 Asset Debug:", {
+            console.log("🔍 My Asset Debug:", {
               assetId: asset.id,
               assetTitle: asset.title,
               is3D: is3D,
               modelUrl: modelUrl,
-              thumbnailModel: asset.thumbnailModel,
-              model: asset.model,
-              thumbnail: asset.thumbnail,
+              ownerId: asset.ownerId,
+              createdBy: asset.createdBy,
             });
+            
             return (
               <div key={asset.id} className="asset-card">
                 <div className="asset-image-wrapper">
@@ -822,7 +852,7 @@ const AssetDetailsModal = ({
         <div className="modal-header">
           <h3 className="modal-title">
             <FiBox className="modal-icon" />
-            Asset Details
+            My Asset Details
           </h3>
           <button onClick={onClose} className="close-button">
             <FiX />
@@ -1015,7 +1045,7 @@ const EditAssetModal = ({ asset, isOpen, onClose, onAssetUpdated }) => {
         <div className="modal-header">
           <h3 className="modal-title">
             <FiEdit className="modal-icon" />
-            Edit Asset
+            Edit My Asset
           </h3>
           <button onClick={onClose} className="close-button">
             <FiX />
