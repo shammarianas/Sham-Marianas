@@ -667,7 +667,19 @@ const Upload = ({
 
     return null;
   };
+  const fetchUserRole = async () => {
+    if (!currentUser) return "contributor"; // default
 
+    // Check Profiles collection for admin
+    const profileDoc = await getDoc(doc(db, "Profiles", currentUser.uid));
+    if (profileDoc.exists()) {
+      const profileData = profileDoc.data();
+      if (profileData.role === "admin") return "admin";
+    }
+
+    // Agar admin nahi mila, to contributor hai
+    return "contributor";
+  };
   // Function to generate slug from title
   const generateSlug = (title) => {
     if (!title) return "";
@@ -1130,7 +1142,8 @@ const Upload = ({
   // ✅ MAIN SUBMIT FUNCTION - UPDATED WITH getUserProfileData
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const currentUserRole = await fetchUserRole();
+    let assetStatus = currentUserRole === "admin" ? "approved" : "pending";
     if (editMode) setIsUpdating(true);
     else setIsSubmitting(true);
 
@@ -1177,6 +1190,7 @@ const Upload = ({
         userId: currentUser?.uid ?? "anonymous",
 
         ownerId: currentUser.uid, // <-- THIS MAKES THE ASSET PRIVATE TO THE CONTRIBUTOR
+        status: assetStatus, // default
 
         // ✅ CONSISTENT NAME FIELD
         authorName: userName,
