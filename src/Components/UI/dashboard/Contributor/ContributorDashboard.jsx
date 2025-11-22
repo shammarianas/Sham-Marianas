@@ -52,7 +52,7 @@ import SearchTrends from "../Contributor-tabs/SearchTrends";
 // import Guidelines from "../Contributor-tabs/Guidelines";
 // import ContactSupport from "../Contributor-tabs/ContactSupport";
 // import ProfileSettings from "../Contributor-tabs/ProfileSettings";
-// import BillingInvoices from "../Contributor-tabs/BillingInvoices";
+import BillingInvoices from "../Contributor-tabs/BillingInvoices";
 // import Feedback from "../Contributor-tabs/Feedback";
 
 import "../../../../assets/Styles/contribute-style.css";

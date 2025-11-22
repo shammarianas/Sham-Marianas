@@ -211,46 +211,77 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
       </div>
 
       {/* ── Stats Cards ── */}
-      <div className="stats-grid">
-        <div className="stat-card primary">
-          <div className="stat-icon">
-            <FiUsers />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{userStats.total}</div>
-            <div className="stat-label">Total Users</div>
-          </div>
-        </div>
-        <div className="stat-card success">
-          <div className="stat-icon">
-            <FiUserCheck />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{userStats.active}</div>
-            <div className="stat-label">Active Users</div>
-          </div>
-        </div>
-        <div className="stat-card warning">
-          <div className="stat-icon">
-            <FiShield />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{userStats.admins}</div>
-            <div className="stat-label">Administrators</div>
-          </div>
-        </div>
-        <div className="stat-card info">
-          <div className="stat-icon">
-            <FiMapPin />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">
-              {Object.keys(userStats.countries).length}
-            </div>
-            <div className="stat-label">Countries</div>
-          </div>
+      <div className="reports-stats-grid">
+  <div className="report-stat-card primary">
+    <div className="report-stat-header">
+      <div className="report-stat-icon">
+        <FiUsers />
+      </div>
+      <div>
+        <h3 className="report-stat-title">Total Users</h3>
+        <div className="report-stat-value">{userStats.total}</div>
+      </div>
+    </div>
+    <div className="report-stat-content">
+      <div className="report-stat-subtext">
+        All registered users
+      </div>
+    </div>
+  </div>
+
+  <div className="report-stat-card success">
+    <div className="report-stat-header">
+      <div className="report-stat-icon">
+        <FiUserCheck />
+      </div>
+      <div>
+        <h3 className="report-stat-title">Active Users</h3>
+        <div className="report-stat-value">{userStats.active}</div>
+      </div>
+    </div>
+    <div className="report-stat-content">
+      <div className="report-stat-subtext">
+        Currently active users
+      </div>
+    </div>
+  </div>
+
+  <div className="report-stat-card warning">
+    <div className="report-stat-header">
+      <div className="report-stat-icon">
+        <FiShield />
+      </div>
+      <div>
+        <h3 className="report-stat-title">Administrators</h3>
+        <div className="report-stat-value">{userStats.admins}</div>
+      </div>
+    </div>
+    <div className="report-stat-content">
+      <div className="report-stat-subtext">
+        System administrators
+      </div>
+    </div>
+  </div>
+
+  <div className="report-stat-card info">
+    <div className="report-stat-header">
+      <div className="report-stat-icon">
+        <FiMapPin />
+      </div>
+      <div>
+        <h3 className="report-stat-title">Countries</h3>
+        <div className="report-stat-value">
+          {Object.keys(userStats.countries).length}
         </div>
       </div>
+    </div>
+    <div className="report-stat-content">
+      <div className="report-stat-subtext">
+        Total countries represented
+      </div>
+    </div>
+  </div>
+</div>
 
       <div className="dashboard-content">
         {/* ── LEFT – Analytics ── */}
