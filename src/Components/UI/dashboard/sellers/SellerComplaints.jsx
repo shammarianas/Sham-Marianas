@@ -1,23 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { 
-  FiAlertTriangle, 
-  FiCheckCircle, 
+import {
+  FiAlertTriangle,
+  FiCheckCircle,
   FiTrendingUp,
-  FiClock, 
-  FiSearch, 
-  FiFilter, 
-  FiEye, 
-  FiMessageSquare, 
-  FiUser, 
+  FiClock,
+  FiSearch,
+  FiFilter,
+  FiEye,
+  FiMessageSquare,
+  FiUser,
   FiXCircle,
   FiRefreshCw,
   FiDownload,
   FiList,
   FiX,
   FiMail,
-  FiCalendar
+  FiCalendar,
 } from "react-icons/fi";
-import { collection, getDocs, query, where, orderBy, updateDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../../../../firebase"; // Adjust path as needed
 
 const SellerComplaints = () => {
@@ -29,162 +37,119 @@ const SellerComplaints = () => {
   const [loading, setLoading] = useState(true);
 
   // ✅ FETCH REAL COMPLAINTS DATA
-useEffect(() => {
-  const fetchComplaints = async () => {
-    try {
-      setLoading(true);
-      const allComplaints = [];
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      try {
+        setLoading(true);
+        const allComplaints = [];
 
-      // ✅ METHOD 1: First get all contributors
-      const contributorsSnapshot = await getDocs(collection(db, "Contributors"));
-      const contributorIds = [];
-      
-      contributorsSnapshot.forEach((doc) => {
-        contributorIds.push(doc.id);
-      });
+        // Get all contributors
+        const contributorsSnapshot = await getDocs(
+          collection(db, "Contributors")
+        );
 
-      // ✅ METHOD 2: Then fetch their support tickets
-      for (const contributorId of contributorIds) {
-        try {
+        for (const contributorDoc of contributorsSnapshot.docs) {
+          const contributorId = contributorDoc.id;
+          const contributorData = contributorDoc.data();
+
+          // Fetch their support tickets
           const supportQuery = query(
-            collection(db, `Profiles/${contributorId}/Support`),
+            collection(db, `Contributors/${contributorId}/Support`),
             orderBy("createdAt", "desc")
           );
-          
           const supportSnapshot = await getDocs(supportQuery);
-          
+
           supportSnapshot.forEach((supportDoc) => {
-            const complaintData = supportDoc.data();
-            const userData = contributorsSnapshot.docs.find(doc => doc.id === contributorId)?.data() || {};
-            
+            const data = supportDoc.data();
             allComplaints.push({
               id: supportDoc.id,
               userId: contributorId,
-              sellerName: userData.username || userData.displayName || userData.businessName || "Unknown Contributor",
-              sellerEmail: userData.email || "No email",
-              complainant: complaintData.email || "Unknown",
-              complainantEmail: complaintData.email || "No email",
-              type: getComplaintType(complaintData.issueType),
-              subject: complaintData.subject || "No subject",
-              description: complaintData.description || "No description",
-              status: complaintData.status || "pending",
-              createdAt: complaintData.createdAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
-              updatedAt: complaintData.updatedAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
-              orderId: complaintData.orderId || "N/A",
-              product: complaintData.product || "General Issue",
-              originalData: complaintData
+              sellerName:
+                contributorData.username ||
+                contributorData.displayName ||
+                "Unknown Contributor",
+              sellerEmail: contributorData.email || "No email",
+              complainantEmail: data.email || "No email",
+              type: getComplaintType(data.issueType),
+              subject: data.subject || "No subject",
+              description: data.description || "No description",
+              status: data.status || "pending",
+              createdAt:
+                data.createdAt?.toDate?.()?.toISOString().split("T")[0] ||
+                "Unknown date",
+              updatedAt:
+                data.updatedAt?.toDate?.()?.toISOString().split("T")[0] ||
+                "Unknown date",
             });
           });
-        } catch (error) {
-          console.log(`No support collection for contributor ${contributorId}`);
         }
+
+        setComplaints(allComplaints);
+      } catch (error) {
+        console.error("Error fetching complaints:", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // ✅ METHOD 3: Also check Profiles for users with contributor-specific issues
-      const usersSnapshot = await getDocs(collection(db, "Profiles"));
-      
-      for (const userDoc of usersSnapshot.docs) {
-        const userId = userDoc.id;
-        const userData = userDoc.data();
-        
-        // Skip if already processed as contributor
-        if (contributorIds.includes(userId)) continue;
-        
-        try {
-          const supportQuery = query(
-            collection(db, `Profiles/${userId}/Support`),
-            orderBy("createdAt", "desc")
-          );
-          
-          const supportSnapshot = await getDocs(supportQuery);
-          
-          supportSnapshot.forEach((supportDoc) => {
-            const complaintData = supportDoc.data();
-            
-            // Check for contributor-specific issue types
-            const isContributorIssue = 
-              complaintData.issueType === "content_approval" ||
-              complaintData.issueType === "earnings" || 
-              complaintData.issueType === "account_verification";
-            
-            if (isContributorIssue) {
-              allComplaints.push({
-                id: supportDoc.id,
-                userId: userId,
-                sellerName: userData.username || userData.displayName || "Unknown User",
-                sellerEmail: userData.email || "No email",
-                complainant: complaintData.email || "Unknown",
-                complainantEmail: complaintData.email || "No email",
-                type: getComplaintType(complaintData.issueType),
-                subject: complaintData.subject || "No subject",
-                description: complaintData.description || "No description",
-                status: complaintData.status || "pending",
-                createdAt: complaintData.createdAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
-                updatedAt: complaintData.updatedAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
-                orderId: complaintData.orderId || "N/A",
-                product: complaintData.product || "General Issue",
-                originalData: complaintData
-              });
-            }
-          });
-        } catch (error) {
-          // No support collection for this user
-        }
-      }
-
-      setComplaints(allComplaints);
-    } catch (error) {
-      console.error("Error fetching complaints:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchComplaints();
-}, []);
+    fetchComplaints();
+  }, []);
 
   const getComplaintType = (issueType) => {
     const typeMap = {
       technical: "Technical Issue",
-      billing: "Billing Issue", 
+      billing: "Billing Issue",
       general: "General Inquiry",
       content_approval: "Content Approval",
       earnings: "Earnings Issue",
-      account_verification: "Account Verification"
+      account_verification: "Account Verification",
     };
     return typeMap[issueType] || "General Inquiry";
   };
 
-  const filteredComplaints = complaints.filter(complaint => {
-    const matchesSearch = 
+  const filteredComplaints = complaints.filter((complaint) => {
+    const matchesSearch =
       complaint.sellerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       complaint.complainant.toLowerCase().includes(searchTerm.toLowerCase()) ||
       complaint.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       complaint.type.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || complaint.status === statusFilter;
-    
+
+    const matchesStatus =
+      statusFilter === "all" || complaint.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
   // Statistics
   const stats = {
     total: complaints.length,
-    open: complaints.filter(c => c.status === "open").length,
-    inProgress: complaints.filter(c => c.status === "in_progress").length,
-    resolved: complaints.filter(c => c.status === "resolved").length,
-    pending: complaints.filter(c => c.status === "pending").length
+    open: complaints.filter((c) => c.status === "open").length,
+    inProgress: complaints.filter((c) => c.status === "in_progress").length,
+    resolved: complaints.filter((c) => c.status === "resolved").length,
+    pending: complaints.filter((c) => c.status === "pending").length,
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "open":
       case "pending":
-        return <span className="report-status-badge pending"><FiClock /> {status === "pending" ? "Pending" : "Open"}</span>;
+        return (
+          <span className="report-status-badge pending">
+            <FiClock /> {status === "pending" ? "Pending" : "Open"}
+          </span>
+        );
       case "in_progress":
-        return <span className="report-status-badge in-progress"><FiMessageSquare /> In Progress</span>;
+        return (
+          <span className="report-status-badge in-progress">
+            <FiMessageSquare /> In Progress
+          </span>
+        );
       case "resolved":
-        return <span className="report-status-badge resolved"><FiCheckCircle /> Resolved</span>;
+        return (
+          <span className="report-status-badge resolved">
+            <FiCheckCircle /> Resolved
+          </span>
+        );
       case "closed":
         return <span className="report-status-badge">Closed</span>;
       default:
@@ -195,15 +160,17 @@ useEffect(() => {
   const getTypeBadge = (type) => {
     const typeClasses = {
       "Technical Issue": "technical",
-      "Billing Issue": "billing", 
+      "Billing Issue": "billing",
       "General Inquiry": "general",
       "Content Approval": "feature",
       "Earnings Issue": "warning",
-      "Account Verification": "info"
+      "Account Verification": "info",
     };
-    
+
     return (
-      <span className={`report-category-badge ${typeClasses[type] || 'general'}`}>
+      <span
+        className={`report-category-badge ${typeClasses[type] || "general"}`}
+      >
         {type}
       </span>
     );
@@ -212,22 +179,28 @@ useEffect(() => {
   // ✅ UPDATE COMPLAINT STATUS IN FIRESTORE
   const handleStatusChange = async (complaintId, userId, newStatus) => {
     try {
-      const complaintRef = doc(db, `Profiles/${userId}/Support`, complaintId);
+      const complaintRef = doc(
+        db,
+        `Contributors/${userId}/Support`,
+        complaintId
+      );
       await updateDoc(complaintRef, {
         status: newStatus,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
 
       // Update local state
-      setComplaints(complaints.map(complaint => 
-        complaint.id === complaintId && complaint.userId === userId
-          ? { 
-              ...complaint, 
-              status: newStatus, 
-              updatedAt: new Date().toISOString().split('T')[0] 
-            }
-          : complaint
-      ));
+      setComplaints(
+        complaints.map((complaint) =>
+          complaint.id === complaintId && complaint.userId === userId
+            ? {
+                ...complaint,
+                status: newStatus,
+                updatedAt: new Date().toISOString().split("T")[0],
+              }
+            : complaint
+        )
+      );
 
       alert(`Complaint status updated to ${newStatus}`);
     } catch (error) {
@@ -287,9 +260,7 @@ useEffect(() => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              All contributor requests
-            </div>
+            <div className="report-stat-subtext">All contributor requests</div>
           </div>
         </div>
 
@@ -304,9 +275,7 @@ useEffect(() => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Awaiting response
-            </div>
+            <div className="report-stat-subtext">Awaiting response</div>
           </div>
         </div>
 
@@ -321,9 +290,7 @@ useEffect(() => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Under investigation
-            </div>
+            <div className="report-stat-subtext">Under investigation</div>
           </div>
         </div>
 
@@ -338,9 +305,7 @@ useEffect(() => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Successfully resolved
-            </div>
+            <div className="report-stat-subtext">Successfully resolved</div>
           </div>
         </div>
       </div>
@@ -422,8 +387,12 @@ useEffect(() => {
                   <td>
                     <div className="report-user">
                       <div className="report-user-info">
-                        <div className="report-user-name">{complaint.sellerName}</div>
-                        <div className="report-user-email">{complaint.sellerEmail}</div>
+                        <div className="report-user-name">
+                          {complaint.sellerName}
+                        </div>
+                        <div className="report-user-email">
+                          {complaint.sellerEmail}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -432,9 +401,7 @@ useEffect(() => {
                       {complaint.complainantEmail}
                     </div>
                   </td>
-                  <td>
-                    {getTypeBadge(complaint.type)}
-                  </td>
+                  <td>{getTypeBadge(complaint.type)}</td>
                   <td>
                     <div className="comp-dis" title={complaint.subject}>
                       {complaint.subject}
@@ -442,13 +409,11 @@ useEffect(() => {
                   </td>
                   <td>
                     <div className="comp-dis">
-                      <FiCalendar style={{ marginRight: '4px' }} />
+                      <FiCalendar style={{ marginRight: "4px" }} />
                       {complaint.createdAt}
                     </div>
                   </td>
-                  <td>
-                    {getStatusBadge(complaint.status)}
-                  </td>
+                  <td>{getStatusBadge(complaint.status)}</td>
                   <td>
                     <div className="report-actions">
                       <button
@@ -461,31 +426,47 @@ useEffect(() => {
                       >
                         <FiEye />
                       </button>
-                      
+
                       {complaint.status === "pending" && (
                         <button
                           className="action-button small"
                           title="Start Investigation"
-                          onClick={() => handleStatusChange(complaint.id, complaint.userId, "in_progress")}
+                          onClick={() =>
+                            handleStatusChange(
+                              complaint.id,
+                              complaint.userId,
+                              "in_progress"
+                            )
+                          }
                         >
                           <FiMessageSquare />
                         </button>
                       )}
-                      
+
                       {complaint.status === "in_progress" && (
                         <button
                           className="action-button success small"
                           title="Mark Resolved"
-                          onClick={() => handleStatusChange(complaint.id, complaint.userId, "resolved")}
+                          onClick={() =>
+                            handleStatusChange(
+                              complaint.id,
+                              complaint.userId,
+                              "resolved"
+                            )
+                          }
                         >
                           <FiCheckCircle />
                         </button>
                       )}
-                      
+
                       <button
                         className="action-button warning small"
                         title="Contact Contributor"
-                        onClick={() => alert(`Contacting ${complaint.sellerName} at ${complaint.complainantEmail}`)}
+                        onClick={() =>
+                          alert(
+                            `Contacting ${complaint.sellerName} at ${complaint.complainantEmail}`
+                          )
+                        }
                       >
                         <FiMail />
                       </button>
@@ -493,11 +474,13 @@ useEffect(() => {
                   </td>
                 </tr>
               ))}
-              
+
               {filteredComplaints.length === 0 && (
                 <tr>
                   <td colSpan="7" className="no-reports">
-                    {complaints.length === 0 ? "No contributor support requests found" : "No requests found matching your filters"}
+                    {complaints.length === 0
+                      ? "No contributor support requests found"
+                      : "No requests found matching your filters"}
                   </td>
                 </tr>
               )}
@@ -508,30 +491,42 @@ useEffect(() => {
 
       {/* Complaint Details Modal */}
       {showDetailsModal && selectedComplaint && (
-        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowDetailsModal(false)}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Support Request Details</h3>
-              <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
+              <button
+                className="modal-close"
+                onClick={() => setShowDetailsModal(false)}
+              >
                 <FiX />
               </button>
             </div>
-            
+
             <div className="modal-body">
               <div className="report-detail-grid">
                 <div className="detail-section">
                   <h4>Contributor Information</h4>
                   <div className="detail-item">
                     <span className="detail-label">Contributor Name:</span>
-                    <span className="detail-value">{selectedComplaint.sellerName}</span>
+                    <span className="detail-value">
+                      {selectedComplaint.sellerName}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Contributor Email:</span>
-                    <span className="detail-value">{selectedComplaint.sellerEmail}</span>
+                    <span className="detail-value">
+                      {selectedComplaint.sellerEmail}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Contact Email:</span>
-                    <span className="detail-value">{selectedComplaint.complainantEmail}</span>
+                    <span className="detail-value">
+                      {selectedComplaint.complainantEmail}
+                    </span>
                   </div>
                 </div>
 
@@ -551,11 +546,15 @@ useEffect(() => {
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Created:</span>
-                    <span className="detail-value">{selectedComplaint.createdAt}</span>
+                    <span className="detail-value">
+                      {selectedComplaint.createdAt}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Last Updated:</span>
-                    <span className="detail-value">{selectedComplaint.updatedAt}</span>
+                    <span className="detail-value">
+                      {selectedComplaint.updatedAt}
+                    </span>
                   </div>
                 </div>
 
@@ -563,7 +562,9 @@ useEffect(() => {
                   <h4>Subject & Description</h4>
                   <div className="detail-item">
                     <span className="detail-label">Subject:</span>
-                    <span className="detail-value">{selectedComplaint.subject}</span>
+                    <span className="detail-value">
+                      {selectedComplaint.subject}
+                    </span>
                   </div>
                   <div className="detail-description">
                     {selectedComplaint.description}
@@ -577,13 +578,13 @@ useEffect(() => {
                     placeholder="Type your response to the contributor here..."
                     rows="4"
                     style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '8px',
-                      background: 'var(--darker)',
-                      color: 'var(--text-primary)',
-                      resize: 'vertical'
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "8px",
+                      background: "var(--darker)",
+                      color: "var(--text-primary)",
+                      resize: "vertical",
                     }}
                   />
                 </div>
@@ -591,38 +592,51 @@ useEffect(() => {
             </div>
 
             <div className="modal-footer">
-              <button className="action-button secondary" onClick={() => setShowDetailsModal(false)}>
+              <button
+                className="action-button secondary"
+                onClick={() => setShowDetailsModal(false)}
+              >
                 Close
               </button>
-              
+
               {selectedComplaint.status === "pending" && (
                 <button
                   className="action-button"
                   onClick={() => {
-                    handleStatusChange(selectedComplaint.id, selectedComplaint.userId, "in_progress");
+                    handleStatusChange(
+                      selectedComplaint.id,
+                      selectedComplaint.userId,
+                      "in_progress"
+                    );
                     setShowDetailsModal(false);
                   }}
                 >
                   <FiMessageSquare /> Start Investigation
                 </button>
               )}
-              
+
               {selectedComplaint.status === "in_progress" && (
                 <button
                   className="action-button success"
                   onClick={() => {
-                    handleStatusChange(selectedComplaint.id, selectedComplaint.userId, "resolved");
+                    handleStatusChange(
+                      selectedComplaint.id,
+                      selectedComplaint.userId,
+                      "resolved"
+                    );
                     setShowDetailsModal(false);
                   }}
                 >
                   <FiCheckCircle /> Mark Resolved
                 </button>
               )}
-              
+
               <button
                 className="action-button warning"
                 onClick={() => {
-                  alert(`Sending email to ${selectedComplaint.complainantEmail}`);
+                  alert(
+                    `Sending email to ${selectedComplaint.complainantEmail}`
+                  );
                   setShowDetailsModal(false);
                 }}
               >

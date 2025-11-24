@@ -5,6 +5,7 @@ import ListedItemCard from "../Components/UI/ListedItemCard";
 import {
   doc,
   getDoc,
+  setDoc,
   updateDoc,
   onSnapshot,
   query,
@@ -31,27 +32,29 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const isOwnProfile = currentUser?.uid === id;
 
-const getAuthorName = (assetData) => {
+  const getAuthorName = (assetData) => {
     if (!assetData) return "Unknown Author";
-    
+
     // Priority order for author name - same as AssetManagement.jsx
-    if (assetData.authorName && assetData.authorName !== "Unknown Author") return assetData.authorName;
-    if (assetData.author && assetData.author !== "Unknown Author") return assetData.author;
+    if (assetData.authorName && assetData.authorName !== "Unknown Author")
+      return assetData.authorName;
+    if (assetData.author && assetData.author !== "Unknown Author")
+      return assetData.author;
     if (assetData.userDisplayName) return assetData.userDisplayName;
     if (assetData.userName) return assetData.userName;
     if (assetData.displayName) return assetData.displayName;
     if (assetData.uploadedBy) return assetData.uploadedBy;
     if (assetData.createdBy) return assetData.createdBy;
     if (assetData.updatedBy) return assetData.updatedBy;
-    
+
     // Fallback to username if no name found (instead of email)
     if (assetData.username) return assetData.username;
-    
-    return "Unknown Author";
-};
 
-// Get author name from user
-const authorName = getAuthorName(user);
+    return "Unknown Author";
+  };
+
+  // Get author name from user
+  const authorName = getAuthorName(user);
 
   const followUser = async () => {
     if (!user) {
@@ -87,8 +90,16 @@ const authorName = getAuthorName(user);
         const data = docSnap.data();
         setUser(data);
         if (currentUser && currentUser.uid === id) {
-          setFirstName(data.firstName || (currentUser?.displayName || "").split(" ")[0] || "");
-          setLastName(data.lastName || (currentUser?.displayName || "").split(" ")[1] || "");
+          setFirstName(
+            data.firstName ||
+              (currentUser?.displayName || "").split(" ")[0] ||
+              ""
+          );
+          setLastName(
+            data.lastName ||
+              (currentUser?.displayName || "").split(" ")[1] ||
+              ""
+          );
           setUsername(data.username || currentUser?.displayName || "");
         }
 
@@ -125,22 +136,27 @@ const authorName = getAuthorName(user);
 
     fetchItems();
   }, []);
-
   const handleSaveAccount = async () => {
     if (!isOwnProfile) return;
     const trimmedUsername = (username || "").trim();
-    const updates = { firstName: firstName.trim(), lastName: lastName.trim(), username: trimmedUsername };
 
     try {
       setSaving(true);
       const profileRef = doc(db, "Profiles", id);
       const snap = await getDoc(profileRef);
-      let changeCount = 0;
-      let changeYear = new Date().getFullYear();
+
+      let updates = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        username: trimmedUsername,
+      };
+
       if (snap.exists()) {
+        // Document exists, check username change limit
         const d = snap.data();
-        changeCount = d.usernameChangeCount || 0;
-        changeYear = d.usernameChangeYear || changeYear;
+        let changeCount = d.usernameChangeCount || 0;
+        let changeYear = d.usernameChangeYear || new Date().getFullYear();
+
         if (d.username !== trimmedUsername) {
           const nowYear = new Date().getFullYear();
           if (changeYear !== nowYear) {
@@ -148,15 +164,27 @@ const authorName = getAuthorName(user);
             changeCount = 0;
           }
           if (changeCount >= 3) {
-            alert("You have reached the maximum of 3 username changes this year.");
+            alert(
+              "You have reached the maximum of 3 username changes this year."
+            );
             setSaving(false);
             return;
           }
           updates.usernameChangeCount = changeCount + 1;
           updates.usernameChangeYear = changeYear;
         }
+
+        // Update existing document
+        await updateDoc(profileRef, updates);
+      } else {
+        // Document doesn't exist, create new
+        updates.uid = currentUser.uid; // ✅ Add this
+        updates.createdAt = new Date();
+        updates.usernameChangeCount = 0;
+        updates.usernameChangeYear = new Date().getFullYear();
+        await setDoc(profileRef, updates);
       }
-      await updateDoc(profileRef, updates);
+
       alert("Changes saved");
     } catch (e) {
       alert(e.message || "Failed to save changes");
@@ -228,7 +256,10 @@ const authorName = getAuthorName(user);
         />
         <meta name="twitter:card" content="summary_large_image" />
 
-        <link rel="canonical" href={`https://shammarianas.me/#/profile/${id}`} />
+        <link
+          rel="canonical"
+          href={`https://shammarianas.me/#/profile/${id}`}
+        />
       </Helmet>
       <div className="page_content">
         <div className="profile_background">
@@ -322,16 +353,27 @@ const authorName = getAuthorName(user);
             <div className="account-details-card">
               <div className="info-banner">
                 <span className="icon">i</span>
-                <span>Some fields are not editable here. Please update them via your Google account.</span>
+                <span>
+                  Some fields are not editable here. Please update them via your
+                  Google account.
+                </span>
               </div>
               <div className="form-grid">
                 <div className="form-field">
                   <label>First name</label>
-                  <input value={firstName} onChange={(e)=>setFirstName(e.target.value)} placeholder="First name" />
+                  <input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="First name"
+                  />
                 </div>
                 <div className="form-field">
                   <label>Last name</label>
-                  <input value={lastName} onChange={(e)=>setLastName(e.target.value)} placeholder="Last name" />
+                  <input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Last name"
+                  />
                 </div>
                 <div className="form-field full">
                   <label>Email</label>
@@ -339,15 +381,34 @@ const authorName = getAuthorName(user);
                 </div>
                 <div className="form-field full">
                   <label>Username</label>
-                  <input value={username} onChange={(e)=>setUsername(e.target.value)} placeholder="username" />
-                  <small>We allow 3 username changes per year. You have {Math.max(0, 3 - (user?.usernameChangeCount || 0))} changes remaining.</small>
+                  <input
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="username"
+                  />
+                  <small>
+                    We allow 3 username changes per year. You have{" "}
+                    {Math.max(0, 3 - (user?.usernameChangeCount || 0))} changes
+                    remaining.
+                  </small>
                 </div>
               </div>
               <div className="form-actions">
-                <button className="butn butn-sm butn-bg main-colorbg radius-5" onClick={handleSaveAccount} disabled={saving}>
-                  <span>{saving?"Saving...":"Save Changes"}</span>
+                <button
+                  className="butn butn-sm butn-bg main-colorbg radius-5"
+                  onClick={handleSaveAccount}
+                  disabled={saving}
+                >
+                  <span>{saving ? "Saving..." : "Save Changes"}</span>
                 </button>
-                <button className="butn butn-sm butn-bord radius-5" onClick={()=>{ setFirstName(user?.firstName||""); setLastName(user?.lastName||""); setUsername(user?.username||""); }}>
+                <button
+                  className="butn butn-sm butn-bord radius-5"
+                  onClick={() => {
+                    setFirstName(user?.firstName || "");
+                    setLastName(user?.lastName || "");
+                    setUsername(user?.username || "");
+                  }}
+                >
                   <span>Cancel</span>
                 </button>
               </div>
@@ -364,14 +425,10 @@ const authorName = getAuthorName(user);
                   </h2>
                 </div>
                 <div className="item_listing">
-  {groupedItems[category].map((item, index) => (
-    <ListedItemCard 
-      key={item.id} 
-      id={item.id} 
-      data={item} 
-    />
-  ))}
-</div>
+                  {groupedItems[category].map((item, index) => (
+                    <ListedItemCard key={item.id} id={item.id} data={item} />
+                  ))}
+                </div>
               </div>
             ))}
           </div>
