@@ -7,16 +7,30 @@ const UserCard = ({ userId }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    if (!userId) return; // Exit early if userId is not provided
+    if (!userId) return;
 
     const fetchUser = async () => {
       try {
-        const userRef = doc(db, "Profiles", userId);
-        const docSnap = await getDoc(userRef);
-        if (docSnap.exists()) {
-          setUser(docSnap.data());
+        // ✅ PEHLE PROFILES COLLECTION CHECK KARO
+        const profileRef = doc(db, "Profiles", userId);
+        const profileSnap = await getDoc(profileRef);
+        
+        if (profileSnap.exists()) {
+          setUser(profileSnap.data());
         } else {
-          setUser(null);
+          // ✅ AGAR PROFILES MAI NAHI MILA, TO CONTRIBUTORS CHECK KARO
+          const contributorRef = doc(db, "Contributors", userId);
+          const contributorSnap = await getDoc(contributorRef);
+          
+          if (contributorSnap.exists()) {
+            const contributorData = contributorSnap.data();
+            setUser({
+              username: contributorData.username || contributorData.displayName || "Contributor",
+              profilePic: contributorData.profilePic || "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png"
+            });
+          } else {
+            setUser(null);
+          }
         }
       } catch (error) {
         if (error?.code === 'permission-denied') {
@@ -30,22 +44,21 @@ const UserCard = ({ userId }) => {
     };
 
     fetchUser();
-  }, [userId]); // Dependency array ensures this effect runs only when userId changes
+  }, [userId]);
 
   return (
     <div className="user">
       <div className="user_image">
         <img
           src={
-            user
-              ? user.profilePic
-              : "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png"
+            user?.profilePic || 
+            "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png"
           }
-          alt={user ? user.username : "User"}
+          alt={user?.username || "User"}
         />
       </div>
       <Link to={`/Profile/${userId}`}>
-        <span className="username">{user ? user.username : "User"}</span>
+        <span className="username">{user?.username || "User"}</span>
       </Link>
     </div>
   );
