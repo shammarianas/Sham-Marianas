@@ -15,9 +15,17 @@ import {
   FiFileText,
   FiTrendingUp,
   FiXCircle,
-  FiList
+  FiList,
 } from "react-icons/fi";
-import { collection, getDocs, query, where, orderBy, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { useUser } from "../../../../Context/UserProvider";
 
@@ -41,10 +49,10 @@ const ReportTrack = () => {
       try {
         setLoading(true);
         const supportQuery = query(
-          collection(db, `Profiles/${currentUser.uid}/Support`),
+          collection(db, `Contributors/${currentUser.uid}/Support`),
           orderBy("createdAt", "desc")
         );
-        
+
         const supportSnapshot = await getDocs(supportQuery);
         const userReports = [];
 
@@ -54,7 +62,7 @@ const ReportTrack = () => {
             id: doc.id,
             ...reportData,
             createdAt: reportData.createdAt?.toDate?.() || new Date(),
-            updatedAt: reportData.updatedAt?.toDate?.() || new Date()
+            updatedAt: reportData.updatedAt?.toDate?.() || new Date(),
           });
         });
 
@@ -70,36 +78,53 @@ const ReportTrack = () => {
   }, [currentUser]);
 
   // Filter reports
-  const filteredReports = reports.filter(report => {
-    const matchesSearch = 
+  const filteredReports = reports.filter((report) => {
+    const matchesSearch =
       report.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.issueType?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || report.status === statusFilter;
-    
+
+    const matchesStatus =
+      statusFilter === "all" || report.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
   // Statistics
   const stats = {
     total: reports.length,
-    pending: reports.filter(r => r.status === "pending").length,
-    in_progress: reports.filter(r => r.status === "in_progress").length,
-    resolved: reports.filter(r => r.status === "resolved").length
+    pending: reports.filter((r) => r.status === "pending").length,
+    in_progress: reports.filter((r) => r.status === "in_progress").length,
+    resolved: reports.filter((r) => r.status === "resolved").length,
   };
 
   // Get status badge
   const getStatusBadge = (status) => {
     switch (status) {
       case "pending":
-        return <span className="report-status-badge pending"><FiClock /> Pending</span>;
+        return (
+          <span className="report-status-badge pending">
+            <FiClock /> Pending
+          </span>
+        );
       case "in_progress":
-        return <span className="report-status-badge in-progress"><FiMessageSquare /> In Progress</span>;
+        return (
+          <span className="report-status-badge in-progress">
+            <FiMessageSquare /> In Progress
+          </span>
+        );
       case "resolved":
-        return <span className="report-status-badge resolved"><FiCheckCircle /> Resolved</span>;
+        return (
+          <span className="report-status-badge resolved">
+            <FiCheckCircle /> Resolved
+          </span>
+        );
       default:
-        return <span className="report-status-badge pending"><FiClock /> Pending</span>;
+        return (
+          <span className="report-status-badge pending">
+            <FiClock /> Pending
+          </span>
+        );
     }
   };
 
@@ -107,26 +132,30 @@ const ReportTrack = () => {
   const getTypeBadge = (issueType) => {
     const typeMap = {
       technical: "Technical Issue",
-      billing: "Billing Issue", 
+      billing: "Billing Issue",
       general: "General Inquiry",
       content_approval: "Content Approval",
       earnings: "Earnings Issue",
-      account_verification: "Account Verification"
+      account_verification: "Account Verification",
     };
-    
+
     const typeClasses = {
       "Technical Issue": "technical",
-      "Billing Issue": "billing", 
+      "Billing Issue": "billing",
       "General Inquiry": "general",
       "Content Approval": "feature",
       "Earnings Issue": "warning",
-      "Account Verification": "info"
+      "Account Verification": "info",
     };
-    
+
     const typeName = typeMap[issueType] || "General Inquiry";
-    
+
     return (
-      <span className={`report-category-badge ${typeClasses[typeName] || 'general'}`}>
+      <span
+        className={`report-category-badge ${
+          typeClasses[typeName] || "general"
+        }`}
+      >
         {typeName}
       </span>
     );
@@ -136,10 +165,10 @@ const ReportTrack = () => {
   const formatDate = (date) => {
     if (!date) return "N/A";
     const d = date?.toDate?.() || new Date(date);
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -194,9 +223,7 @@ const ReportTrack = () => {
           </p>
         </div>
         <div className="header-actions">
-          <span className="user-badge-count">
-            {stats.total} total reports
-          </span>
+          <span className="user-badge-count">{stats.total} total reports</span>
         </div>
       </div>
 
@@ -213,9 +240,7 @@ const ReportTrack = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              All your support requests
-            </div>
+            <div className="report-stat-subtext">All your support requests</div>
           </div>
         </div>
 
@@ -230,9 +255,7 @@ const ReportTrack = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Awaiting response
-            </div>
+            <div className="report-stat-subtext">Awaiting response</div>
           </div>
         </div>
 
@@ -247,9 +270,7 @@ const ReportTrack = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Under investigation
-            </div>
+            <div className="report-stat-subtext">Under investigation</div>
           </div>
         </div>
 
@@ -264,9 +285,7 @@ const ReportTrack = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Successfully resolved
-            </div>
+            <div className="report-stat-subtext">Successfully resolved</div>
           </div>
         </div>
       </div>
@@ -342,21 +361,17 @@ const ReportTrack = () => {
                       {report.subject}
                     </div>
                   </td>
-                  <td>
-                    {getTypeBadge(report.issueType)}
-                  </td>
-                  <td>
-                    {getStatusBadge(report.status)}
-                  </td>
+                  <td>{getTypeBadge(report.issueType)}</td>
+                  <td>{getStatusBadge(report.status)}</td>
                   <td>
                     <div className="report-date">
-                      <FiCalendar style={{ marginRight: '4px' }} />
+                      <FiCalendar style={{ marginRight: "4px" }} />
                       {formatDate(report.createdAt)}
                     </div>
                   </td>
                   <td>
                     <div className="report-date">
-                      <FiCalendar style={{ marginRight: '4px' }} />
+                      <FiCalendar style={{ marginRight: "4px" }} />
                       {formatDate(report.updatedAt)}
                     </div>
                   </td>
@@ -373,11 +388,13 @@ const ReportTrack = () => {
                   </td>
                 </tr>
               ))}
-              
+
               {filteredReports.length === 0 && !loading && (
                 <tr>
                   <td colSpan="6" className="no-reports">
-                    {reports.length === 0 ? "No support reports found" : "No reports found matching your filters"}
+                    {reports.length === 0
+                      ? "No support reports found"
+                      : "No reports found matching your filters"}
                   </td>
                 </tr>
               )}
@@ -396,14 +413,16 @@ const ReportTrack = () => {
                 <FiXCircle />
               </button>
             </div>
-            
+
             <div className="modal-body">
               <div className="report-detail-grid">
                 <div className="detail-section">
                   <h4>Report Information</h4>
                   <div className="detail-item">
                     <span className="detail-label">Subject:</span>
-                    <span className="detail-value">{selectedReport.subject}</span>
+                    <span className="detail-value">
+                      {selectedReport.subject}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Type:</span>
@@ -423,11 +442,15 @@ const ReportTrack = () => {
                   <h4>Timeline</h4>
                   <div className="detail-item">
                     <span className="detail-label">Created:</span>
-                    <span className="detail-value">{formatDate(selectedReport.createdAt)}</span>
+                    <span className="detail-value">
+                      {formatDate(selectedReport.createdAt)}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Last Updated:</span>
-                    <span className="detail-value">{formatDate(selectedReport.updatedAt)}</span>
+                    <span className="detail-value">
+                      {formatDate(selectedReport.updatedAt)}
+                    </span>
                   </div>
                 </div>
 
@@ -443,7 +466,9 @@ const ReportTrack = () => {
                     <h4>Attachment</h4>
                     <div className="detail-item">
                       <span className="detail-label">File:</span>
-                      <span className="detail-value">{selectedReport.file}</span>
+                      <span className="detail-value">
+                        {selectedReport.file}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -460,7 +485,9 @@ const ReportTrack = () => {
                   // Email support functionality
                   const subject = `Follow up: ${selectedReport.subject}`;
                   const body = `Report ID: ${selectedReport.id}\n\nOriginal Description: ${selectedReport.description}`;
-                  window.location.href = `mailto:support@shammarianas.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                  window.location.href = `mailto:support@shammarianas.com?subject=${encodeURIComponent(
+                    subject
+                  )}&body=${encodeURIComponent(body)}`;
                 }}
               >
                 <FiMail /> Follow Up

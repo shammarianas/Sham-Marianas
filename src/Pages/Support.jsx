@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useUser } from "../Context/UserProvider";
 import { db } from "../../firebase";
-import { collection, addDoc, serverTimestamp, getDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  getDoc,
+  doc,
+} from "firebase/firestore";
 import PageTitle from "../Components/UI/PageTitle";
 import plus_icon from "../assets/Icons/upload.jpg";
 import DescriptionBox from "../Components/DescriptionBox";
@@ -21,7 +27,9 @@ const Support = () => {
     const checkContributorStatus = async () => {
       if (currentUser?.uid) {
         try {
-          const contributorDoc = await getDoc(doc(db, "Contributors", currentUser.uid));
+          const contributorDoc = await getDoc(
+            doc(db, "Contributors", currentUser.uid)
+          );
           setIsContributor(contributorDoc.exists());
         } catch (error) {
           console.error("Error checking contributor status:", error);
@@ -42,17 +50,39 @@ const Support = () => {
 
     setLoading(true);
     try {
-      await addDoc(collection(db, `Profiles/${currentUser.uid}/Support`), {
-        userId: currentUser.uid,
-        email: currentUser.email,
-        subject,
-        description,
-        issueType,
-        file: file ? file.name : "",
-        createdAt: serverTimestamp(),
-        userType: isContributor ? "contributor" : "regular", // ✅ ADD USER TYPE
-        status: "pending"
-      });
+      // 1️⃣ Save complaint in user's Support subcollection
+      const userSupportRef = await addDoc(
+        collection(db, `Profiles/${currentUser.uid}/Support`),
+        {
+          userId: currentUser.uid,
+          email: currentUser.email,
+          subject,
+          description,
+          issueType,
+          file: file ? file.name : "",
+          createdAt: serverTimestamp(),
+          userType: isContributor ? "contributor" : "regular",
+          status: "pending",
+        }
+      );
+
+      // 2️⃣ ALSO save complaint in Contributors collection if user is a contributor
+      if (isContributor) {
+        await addDoc(
+          collection(db, `Contributors/${currentUser.uid}/Support`),
+          {
+            userId: currentUser.uid,
+            email: currentUser.email,
+            subject,
+            description,
+            issueType,
+            file: file ? file.name : "",
+            createdAt: serverTimestamp(),
+            status: "pending",
+          }
+        );
+      }
+
       alert("Your report has been submitted successfully!");
       setSubject("");
       setDescription("");
@@ -60,7 +90,9 @@ const Support = () => {
       setFile(null);
     } catch (error) {
       console.error("Error submitting report:", error);
-      alert("We encountered an issue while submitting your report. Please try again.");
+      alert(
+        "We encountered an issue while submitting your report. Please try again."
+      );
     }
     setLoading(false);
   };
@@ -76,21 +108,24 @@ const Support = () => {
     <>
       <Helmet>
         <title>Support | Shammarianas</title>
-        <meta name="description" content="Get support and report issues to Shammarianas" />
+        <meta
+          name="description"
+          content="Get support and report issues to Shammarianas"
+        />
       </Helmet>
 
       {currentUser ? (
         <div className="page_content support-page">
-          
-
           <div className="support_section">
             <form onSubmit={handleSubmit} className="support_form">
               <PageTitle title="Report an Issue" />
-              
+
               <div className="form_content">
                 <div className="form_left">
                   <div className="form_group">
-                    <label htmlFor="subject" className="form_label">Subject</label>
+                    <label htmlFor="subject" className="form_label">
+                      Subject
+                    </label>
                     <input
                       id="subject"
                       name="subject"
@@ -104,7 +139,9 @@ const Support = () => {
                   </div>
 
                   <div className="form_group">
-                    <label htmlFor="issueType" className="form_label">Issue Type</label>
+                    <label htmlFor="issueType" className="form_label">
+                      Issue Type
+                    </label>
                     <select
                       id="issueType"
                       name="issueType"
@@ -113,16 +150,22 @@ const Support = () => {
                       onChange={(e) => setIssueType(e.target.value)}
                       className="form_select"
                     >
-                      <option value="" disabled>Select the type of issue</option>
+                      <option value="" disabled>
+                        Select the type of issue
+                      </option>
                       <option value="technical">Technical Issue</option>
                       <option value="billing">Billing Issue</option>
                       <option value="general">General Inquiry</option>
                       {/* ✅ ADDITIONAL OPTIONS FOR CONTRIBUTORS */}
                       {isContributor && (
                         <>
-                          <option value="content_approval">Content Approval</option>
+                          <option value="content_approval">
+                            Content Approval
+                          </option>
                           <option value="earnings">Earnings Issue</option>
-                          <option value="account_verification">Account Verification</option>
+                          <option value="account_verification">
+                            Account Verification
+                          </option>
                         </>
                       )}
                     </select>
@@ -139,7 +182,11 @@ const Support = () => {
                         className="file_input"
                       />
                       <label htmlFor="file" className="file_upload_label">
-                        <img className="upload_icon" src={plus_icon} alt="Upload" />
+                        <img
+                          className="upload_icon"
+                          src={plus_icon}
+                          alt="Upload"
+                        />
                         <span className="file_placeholder">
                           {file ? file.name : "Choose file to attach"}
                         </span>
@@ -150,14 +197,16 @@ const Support = () => {
 
                 <div className="form_right">
                   <div className="form_group">
-                    <label htmlFor="description" className="form_label">Description</label>
+                    <label htmlFor="description" className="form_label">
+                      Description
+                    </label>
                     <DescriptionBox
                       id="description"
                       name="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder={
-                        isContributor 
+                        isContributor
                           ? "Please provide detailed information about your issue. As a contributor, you can mention specific concerns about your content, earnings, or account status..."
                           : "Please provide detailed information about your issue..."
                       }
@@ -168,17 +217,14 @@ const Support = () => {
               </div>
 
               <div className="form_actions">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={loading}
                   className="submit_button"
                 >
                   {loading ? "Submitting..." : "Submit Report"}
                 </button>
               </div>
-
-             
-              
             </form>
           </div>
         </div>
