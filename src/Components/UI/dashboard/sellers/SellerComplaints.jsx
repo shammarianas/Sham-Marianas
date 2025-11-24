@@ -29,67 +29,119 @@ const SellerComplaints = () => {
   const [loading, setLoading] = useState(true);
 
   // ✅ FETCH REAL COMPLAINTS DATA
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      try {
-        setLoading(true);
-        
-        // Get all users who have support tickets
-        const usersSnapshot = await getDocs(collection(db, "Profiles"));
-        const allComplaints = [];
+useEffect(() => {
+  const fetchComplaints = async () => {
+    try {
+      setLoading(true);
+      const allComplaints = [];
 
-        for (const userDoc of usersSnapshot.docs) {
-          const userId = userDoc.id;
-          const userData = userDoc.data();
+      // ✅ METHOD 1: First get all contributors
+      const contributorsSnapshot = await getDocs(collection(db, "Contributors"));
+      const contributorIds = [];
+      
+      contributorsSnapshot.forEach((doc) => {
+        contributorIds.push(doc.id);
+      });
+
+      // ✅ METHOD 2: Then fetch their support tickets
+      for (const contributorId of contributorIds) {
+        try {
+          const supportQuery = query(
+            collection(db, `Profiles/${contributorId}/Support`),
+            orderBy("createdAt", "desc")
+          );
           
-          // Check if user has support collection
+          const supportSnapshot = await getDocs(supportQuery);
+          
+          supportSnapshot.forEach((supportDoc) => {
+            const complaintData = supportDoc.data();
+            const userData = contributorsSnapshot.docs.find(doc => doc.id === contributorId)?.data() || {};
+            
+            allComplaints.push({
+              id: supportDoc.id,
+              userId: contributorId,
+              sellerName: userData.username || userData.displayName || userData.businessName || "Unknown Contributor",
+              sellerEmail: userData.email || "No email",
+              complainant: complaintData.email || "Unknown",
+              complainantEmail: complaintData.email || "No email",
+              type: getComplaintType(complaintData.issueType),
+              subject: complaintData.subject || "No subject",
+              description: complaintData.description || "No description",
+              status: complaintData.status || "pending",
+              createdAt: complaintData.createdAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
+              updatedAt: complaintData.updatedAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
+              orderId: complaintData.orderId || "N/A",
+              product: complaintData.product || "General Issue",
+              originalData: complaintData
+            });
+          });
+        } catch (error) {
+          console.log(`No support collection for contributor ${contributorId}`);
+        }
+      }
+
+      // ✅ METHOD 3: Also check Profiles for users with contributor-specific issues
+      const usersSnapshot = await getDocs(collection(db, "Profiles"));
+      
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+        const userData = userDoc.data();
+        
+        // Skip if already processed as contributor
+        if (contributorIds.includes(userId)) continue;
+        
+        try {
           const supportQuery = query(
             collection(db, `Profiles/${userId}/Support`),
             orderBy("createdAt", "desc")
           );
           
-          try {
-            const supportSnapshot = await getDocs(supportQuery);
+          const supportSnapshot = await getDocs(supportQuery);
+          
+          supportSnapshot.forEach((supportDoc) => {
+            const complaintData = supportDoc.data();
             
-            supportSnapshot.forEach((supportDoc) => {
-              const complaintData = supportDoc.data();
-              
-              // ✅ ONLY SHOW CONTRIBUTOR COMPLAINTS
-              if (complaintData.userType === "contributor") {
-                allComplaints.push({
-                  id: supportDoc.id,
-                  userId: userId,
-                  sellerName: userData.username || userData.displayName || "Unknown Seller",
-                  sellerEmail: userData.email || "No email",
-                  complainant: complaintData.email || "Unknown",
-                  complainantEmail: complaintData.email || "No email",
-                  type: getComplaintType(complaintData.issueType),
-                  subject: complaintData.subject || "No subject",
-                  description: complaintData.description || "No description",
-                  status: complaintData.status || "pending",
-                  createdAt: complaintData.createdAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
-                  updatedAt: complaintData.updatedAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
-                  orderId: complaintData.orderId || "N/A",
-                  product: complaintData.product || "General Issue",
-                  originalData: complaintData
-                });
-              }
-            });
-          } catch (error) {
-            console.log(`No support collection for user ${userId}`);
-          }
+            // Check for contributor-specific issue types
+            const isContributorIssue = 
+              complaintData.issueType === "content_approval" ||
+              complaintData.issueType === "earnings" || 
+              complaintData.issueType === "account_verification";
+            
+            if (isContributorIssue) {
+              allComplaints.push({
+                id: supportDoc.id,
+                userId: userId,
+                sellerName: userData.username || userData.displayName || "Unknown User",
+                sellerEmail: userData.email || "No email",
+                complainant: complaintData.email || "Unknown",
+                complainantEmail: complaintData.email || "No email",
+                type: getComplaintType(complaintData.issueType),
+                subject: complaintData.subject || "No subject",
+                description: complaintData.description || "No description",
+                status: complaintData.status || "pending",
+                createdAt: complaintData.createdAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
+                updatedAt: complaintData.updatedAt?.toDate?.()?.toISOString().split('T')[0] || "Unknown date",
+                orderId: complaintData.orderId || "N/A",
+                product: complaintData.product || "General Issue",
+                originalData: complaintData
+              });
+            }
+          });
+        } catch (error) {
+          // No support collection for this user
         }
-
-        setComplaints(allComplaints);
-      } catch (error) {
-        console.error("Error fetching complaints:", error);
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchComplaints();
-  }, []);
+      setComplaints(allComplaints);
+    } catch (error) {
+      console.error("Error fetching complaints:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchComplaints();
+}, []);
 
   const getComplaintType = (issueType) => {
     const typeMap = {
