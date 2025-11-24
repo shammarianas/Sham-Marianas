@@ -56,23 +56,21 @@ const useSaveToDownloads = (assetId, assetData = null) => {
           dataToStore = assetDoc.data();
         }
 
-        const cleanData = Object.fromEntries(
-          Object.entries(dataToStore).filter(
-            ([_, value]) =>
-              value !== null &&
-              value !== undefined &&
-              typeof value !== "function" &&
-              !(
-                typeof value === "object" &&
-                !(value instanceof Date || Array.isArray(value))
-              )
-          )
-        );
-
-        await setDoc(downloadDocRef, {
-          ...cleanData,
+        // Merge author info without breaking nested objects
+        const finalData = {
+          ...dataToStore,
+          authorName:
+            dataToStore.authorName ||
+            dataToStore.author ||
+            dataToStore.createdBy ||
+            dataToStore.userDisplayName ||
+            "",
+          authorId: dataToStore.userId || dataToStore.authorId || "",
           downloaded_at: new Date(),
-        });
+        };
+
+        await setDoc(downloadDocRef, finalData);
+
         setIsDownloaded(true);
       } catch (error) {
         console.error("Error saving to downloads:", error);
