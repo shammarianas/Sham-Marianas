@@ -18,6 +18,9 @@ import {
 } from "react-icons/fi";
 import { collection, getDocs, query, where, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import ExportButton from "../../../ExportButton";
+import { reportsExportConfig } from "../../../../utils/exportUtils";
+
 
 const AssetRequestsDashboard = () => {
   const [assetRequests, setAssetRequests] = useState([]);
@@ -158,6 +161,23 @@ const AssetRequestsDashboard = () => {
       console.error("Error moving asset to pending:", error);
       alert("Failed to move asset to pending");
     }
+  };
+
+   // Export handler with callbacks
+  const handleExportStart = () => {
+    console.log("Export started...");
+  };
+
+  const handleExportComplete = (success) => {
+    if (success) {
+      console.log("Export completed successfully");
+    } else {
+      console.log("Export failed");
+    }
+  };
+
+  const handleExportError = (error) => {
+    console.error("Export error:", error);
   };
 
   // ✅ Filter assets based on search and filters
@@ -405,9 +425,15 @@ const AssetRequestsDashboard = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Contributor Asset Requests
           </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" /> Export Data
-          </button>
+         <ExportButton
+            data={filteredAssets.length > 0 ? filteredAssets : stats}
+            filename="assets-request-reports"
+            exportConfig={reportsExportConfig}
+            variant="secondary"
+            onExportStart={handleExportStart}
+            onExportComplete={handleExportComplete}
+            onExportError={handleExportError}
+          />
         </div>
         <div className="recent-reports-body">
           <table className="report-table">

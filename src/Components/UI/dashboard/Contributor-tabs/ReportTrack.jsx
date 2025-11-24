@@ -16,6 +16,7 @@ import {
   FiTrendingUp,
   FiXCircle,
   FiList,
+  FiTrash2, // ✅ Delete icon add kiya
 } from "react-icons/fi";
 import {
   collection,
@@ -25,6 +26,7 @@ import {
   orderBy,
   doc,
   updateDoc,
+  deleteDoc, // ✅ Delete function import kiya
 } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { useUser } from "../../../../Context/UserProvider";
@@ -37,6 +39,7 @@ const ReportTrack = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedReport, setSelectedReport] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(null); // ✅ Delete loading state
 
   // Fetch user's reports
   useEffect(() => {
@@ -76,6 +79,75 @@ const ReportTrack = () => {
 
     fetchUserReports();
   }, [currentUser]);
+
+  // ✅ Delete report function
+  const deleteReport = async (reportId) => {
+    if (!currentUser?.uid) return;
+
+    // Confirmation dialog
+    if (!window.confirm("Are you sure you want to delete this report? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setDeleteLoading(reportId);
+      
+      // Firestore se report delete karo
+      await deleteDoc(doc(db, `Contributors/${currentUser.uid}/Support`, reportId));
+      
+      // Local state update karo
+      setReports(prev => prev.filter(report => report.id !== reportId));
+      
+      // Modal close karo agar delete hone wala report open hai
+      if (selectedReport?.id === reportId) {
+        setShowDetailsModal(false);
+        setSelectedReport(null);
+      }
+      
+      alert("Report deleted successfully!");
+      
+    } catch (error) {
+      console.error("Error deleting report:", error);
+      alert("Failed to delete report. Please try again.");
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
+
+  // ✅ Delete multiple reports function
+  const deleteMultipleReports = async (reportIds) => {
+    if (!currentUser?.uid || reportIds.length === 0) return;
+
+    const confirmMessage = reportIds.length === 1 
+      ? "Are you sure you want to delete this report?" 
+      : `Are you sure you want to delete ${reportIds.length} reports? This action cannot be undone.`;
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setDeleteLoading('bulk');
+      
+      // Sabhi selected reports delete karo
+      const deletePromises = reportIds.map(reportId => 
+        deleteDoc(doc(db, `Contributors/${currentUser.uid}/Support`, reportId))
+      );
+      
+      await Promise.all(deletePromises);
+      
+      // Local state update karo
+      setReports(prev => prev.filter(report => !reportIds.includes(report.id)));
+      
+      alert(`Successfully deleted ${reportIds.length} report(s)!`);
+      
+    } catch (error) {
+      console.error("Error deleting reports:", error);
+      alert("Failed to delete reports. Please try again.");
+    } finally {
+      setDeleteLoading(null);
+    }
+  };
 
   // Filter reports
   const filteredReports = reports.filter((report) => {
@@ -384,6 +456,20 @@ const ReportTrack = () => {
                       >
                         <FiEye />
                       </button>
+                      
+                      {/* ✅ DELETE BUTTON ADDED HERE */}
+                      <button
+                        className="action-button danger small"
+                        title="Delete Report"
+                        onClick={() => deleteReport(report.id)}
+                        disabled={deleteLoading === report.id}
+                      >
+                        {deleteLoading === report.id ? (
+                          <FiRefreshCw className="spinning" />
+                        ) : (
+                          <FiTrash2 />
+                        )}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -479,6 +565,26 @@ const ReportTrack = () => {
               <button className="action-button secondary" onClick={closeModal}>
                 Close
               </button>
+              
+              {/* ✅ DELETE BUTTON IN MODAL */}
+              <button
+                className="action-button danger"
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to delete this report? This action cannot be undone.")) {
+                    deleteReport(selectedReport.id);
+                    closeModal();
+                  }
+                }}
+                disabled={deleteLoading === selectedReport.id}
+              >
+                {deleteLoading === selectedReport.id ? (
+                  <FiRefreshCw className="spinning" />
+                ) : (
+                  <FiTrash2 />
+                )}
+                Delete Report
+              </button>
+              
               <button
                 className="action-button warning"
                 onClick={() => {

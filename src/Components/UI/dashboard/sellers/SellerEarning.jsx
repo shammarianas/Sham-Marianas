@@ -20,6 +20,9 @@ import {
   FiUser,
   FiFileText
 } from "react-icons/fi";
+import ExportButton from "../../../ExportButton";
+import { reportsExportConfig } from "../../../../utils/exportUtils";
+
 
 const SellerEarning = () => {
   const [timeRange, setTimeRange] = useState("monthly");
@@ -93,6 +96,23 @@ const SellerEarning = () => {
       style: 'currency',
       currency: 'USD'
     }).format(amount);
+  };
+
+ // Export handler with callbacks
+  const handleExportStart = () => {
+    console.log("Export started...");
+  };
+
+  const handleExportComplete = (success) => {
+    if (success) {
+      console.log("Export completed successfully");
+    } else {
+      console.log("Export failed");
+    }
+  };
+
+  const handleExportError = (error) => {
+    console.error("Export error:", error);
   };
 
   // Filter sellers based on search and filters
@@ -299,9 +319,7 @@ const SellerEarning = () => {
             <button className="filter-button" onClick={resetFilters}>
               <FiRefreshCw /> Reset
             </button>
-            <button className="filter-button primary">
-              <FiDownload /> Export Report
-            </button>
+           
           </div>
         </div>
       </div>
@@ -312,9 +330,15 @@ const SellerEarning = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Seller Earnings Breakdown
           </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" /> Export Data
-          </button>
+          <ExportButton
+            data={filteredSellers.length > 0 ? filteredSellers : stats}
+            filename="seller-earning-reports"
+            exportConfig={reportsExportConfig}
+            variant="secondary"
+            onExportStart={handleExportStart}
+            onExportComplete={handleExportComplete}
+            onExportError={handleExportError}
+          />
         </div>
         <div className="recent-reports-body">
           <table className="report-table">

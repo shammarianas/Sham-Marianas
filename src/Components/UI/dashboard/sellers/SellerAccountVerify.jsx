@@ -20,6 +20,8 @@ import {
 } from "react-icons/fi";
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import ExportButton from "../../../ExportButton";
+import { reportsExportConfig } from "../../../../utils/exportUtils";
 
 const SellerAccountVerify = () => {
   const [sellers, setSellers] = useState([]);
@@ -83,6 +85,23 @@ const SellerAccountVerify = () => {
     setSellers((prev) =>
       prev.map((s) => (s.id === sellerId ? { ...s, status: "pending" } : s))
     );
+  };
+
+  // Export handler with callbacks
+  const handleExportStart = () => {
+    console.log("Export started...");
+  };
+
+  const handleExportComplete = (success) => {
+    if (success) {
+      console.log("Export completed successfully");
+    } else {
+      console.log("Export failed");
+    }
+  };
+
+  const handleExportError = (error) => {
+    console.error("Export error:", error);
   };
 
   const filteredSellers = sellers.filter((seller) => {
@@ -286,9 +305,15 @@ const SellerAccountVerify = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Seller Management
           </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" /> Export Data
-          </button>
+          <ExportButton
+            data={filteredSellers.length > 0 ? filteredSellers : stats}
+            filename="seller-verify-reports"
+            exportConfig={reportsExportConfig}
+            variant="secondary"
+            onExportStart={handleExportStart}
+            onExportComplete={handleExportComplete}
+            onExportError={handleExportError}
+          />
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
