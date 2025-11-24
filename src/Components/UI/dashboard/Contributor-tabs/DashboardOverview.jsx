@@ -101,7 +101,7 @@ const DashboardOverview = ({
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -109,12 +109,12 @@ const DashboardOverview = ({
     } else {
       const startPage = Math.max(1, currentPage - 2);
       const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-      
+
       for (let i = startPage; i <= endPage; i++) {
         pages.push(i);
       }
     }
-    
+
     return pages;
   };
 
@@ -420,7 +420,8 @@ const DashboardOverview = ({
           </h3>
           <div className="table-controls">
             <div className="table-info">
-              Showing {startIndex + 1}-{Math.min(endIndex, assets.length)} of {assets.length} assets
+              Showing {startIndex + 1}-{Math.min(endIndex, assets.length)} of{" "}
+              {assets.length} assets
             </div>
             <button className="action-button secondary">
               <FiDownload className="button-icon" /> Export Data
@@ -463,12 +464,12 @@ const DashboardOverview = ({
                         asset.status || "pending"
                       }`}
                     >
-                      {asset.status === "published"
-                        ? "Published"
+                      {asset.status === "approved"
+                        ? "Approved"
+                        : asset.status === "pending"
+                        ? "Pending"
                         : asset.status === "rejected"
                         ? "Rejected"
-                        : asset.status === "under_review"
-                        ? "In Review"
                         : "Pending"}
                     </span>
                   </td>
@@ -527,7 +528,7 @@ const DashboardOverview = ({
                   <FiChevronLeft />
                   Previous
                 </button>
-                
+
                 <div className="pagination-numbers">
                   {getPageNumbers().map((page) => (
                     <button
@@ -544,7 +545,7 @@ const DashboardOverview = ({
                     <span className="pagination-ellipsis">...</span>
                   )}
                 </div>
-                
+
                 <button
                   className="pagination-button"
                   onClick={handleNextPage}
@@ -645,7 +646,9 @@ const DashboardOverview = ({
           <div className="footer-section">
             <h4>Quick Links</h4>
             <div className="footer-links">
-              <a href="#upload" onClick={handleOpenUpload}>Upload New File</a>
+              <a href="#upload" onClick={handleOpenUpload}>
+                Upload New File
+              </a>
               <a href="#guidelines">Content Guidelines</a>
               <a href="#support">Support</a>
             </div>
@@ -663,8 +666,6 @@ const DashboardOverview = ({
           <p>&copy; 2024 Content Dashboard. All rights reserved.</p>
         </div>
       </div>
-
-      
     </div>
   );
 };
