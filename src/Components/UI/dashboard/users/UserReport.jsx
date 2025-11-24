@@ -20,6 +20,8 @@ import {
 } from "react-icons/fi";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import ExportButton from "../../../ExportButton";
+import { reportsExportConfig } from "../../../../utils/exportUtils";
 
 const UserReport = () => {
   const [allReports, setAllReports] = useState([]);
@@ -89,6 +91,8 @@ const UserReport = () => {
     fetchAllReports();
   }, []);
 
+
+  
   // Calculate trends compared to previous period (last 30 days vs previous 30 days)
   const trends = useMemo(() => {
     if (loading) return {
@@ -172,7 +176,7 @@ const UserReport = () => {
   }, [allReports, loading]);
 
   // Client-side filtering with useMemo
-  const reports = useMemo(() => {
+   const reports = useMemo(() => {
     if (loading) return [];
     
     return allReports.filter((report) => {
@@ -221,6 +225,24 @@ const UserReport = () => {
       return true;
     });
   }, [allReports, filters, loading]);
+
+  // Export handler with callbacks
+  const handleExportStart = () => {
+    console.log("Export started...");
+  };
+
+  const handleExportComplete = (success) => {
+    if (success) {
+      console.log("Export completed successfully");
+    } else {
+      console.log("Export failed");
+    }
+  };
+
+  const handleExportError = (error) => {
+    console.error("Export error:", error);
+  };
+
 
   // Calculate user satisfaction from resolution time and response quality
   const userSatisfactionData = useMemo(() => {
@@ -846,9 +868,15 @@ const UserReport = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Recent Reports
           </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" /> Export Reports
-          </button>
+          <ExportButton 
+            data={reports.length > 0 ? reports : allReports}
+            filename="user-reports"
+            exportConfig={reportsExportConfig}
+            variant="secondary"
+            onExportStart={handleExportStart}
+            onExportComplete={handleExportComplete}
+            onExportError={handleExportError}
+          />
         </div>
         <div className="recent-reports-body">
           <table className="report-table">

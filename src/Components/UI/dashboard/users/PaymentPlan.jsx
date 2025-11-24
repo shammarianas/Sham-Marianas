@@ -26,6 +26,9 @@ import {
   FiAlertCircle,
   FiPieChart
 } from "react-icons/fi";
+import ExportButton from "../../../ExportButton";
+import { reportsExportConfig } from "../../../../utils/exportUtils";
+
 
 const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const [subscriptionData, setSubscriptionData] = useState([]);
@@ -37,6 +40,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const [expandedSubscription, setExpandedSubscription] = useState(null);
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  
 
   // Default format functions agar props mein nahi aaye
   const defaultFormatCurrency = (amount) => {
@@ -245,6 +249,24 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
     setShowSubscriptionModal(false);
     setSelectedSubscription(null);
   };
+ // Export handler with callbacks
+  const handleExportStart = () => {
+    console.log("Export started...");
+  };
+
+  const handleExportComplete = (success) => {
+    if (success) {
+      console.log("Export completed successfully");
+    } else {
+      console.log("Export failed");
+    }
+  };
+
+  const handleExportError = (error) => {
+    console.error("Export error:", error);
+  };
+
+
 
   return (
     <div className="user-reports-dashboard">
@@ -440,10 +462,15 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             <FiList className="panel-icon" />
             Subscription Management
           </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" />
-            Export Data
-          </button>
+        <ExportButton 
+    data={subscriptionData.length > 0 ? subscriptionData : mockSubscriptions}
+    filename="subscription-reports"
+    exportConfig={reportsExportConfig}
+    variant="secondary"
+    onExportStart={handleExportStart}
+    onExportComplete={handleExportComplete}
+    onExportError={handleExportError}
+/>
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
