@@ -48,6 +48,7 @@ import PublishedFiles from "../Contributor-tabs/PublishedFiles";
 import Statistics from "../Contributor-tabs/Statistics";
 import SearchTrends from "../Contributor-tabs/SearchTrends";
 import Support from "../../../../Pages/Support"
+import ReportTrack from "../Contributor-tabs/ReportTrack";
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
 // ✅ ADDED: Import Profile component
 import Profile from "../../../../Pages/Profile"; // Adjust path as needed
@@ -77,6 +78,7 @@ const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [userData, setUserData] = useState(null);
   const [assets, setAssets] = useState([]);
+   const [reports, setReports] = useState([]);
   const [stats, setStats] = useState({
     totalUploads: 0,
     underRevision: 0,
@@ -94,9 +96,12 @@ const SellerDashboard = () => {
   const handleProfileTab = () => {
     setActiveTab("profile");
   };
-
+// ✅ ADDED: Report track handler
+  const handleReportTrack = () => {
+    setActiveTab("report-track");
+  };
   // Check seller status and fetch data
-  useEffect(() => {
+ useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
         setError("Please log in to access the seller dashboard");
@@ -130,7 +135,10 @@ const SellerDashboard = () => {
           // If status = active, allow access
           setIsSeller(true);
           setUserData(sellerData);
-          await fetchSellerData(uid);
+          await Promise.all([
+            fetchSellerData(uid),
+            fetchUserReports(uid) // ✅ ADDED: Fetch reports
+          ]);
         } else {
           setError("You are not registered as a contributor");
           navigate("/become-contributor");
@@ -142,6 +150,31 @@ const SellerDashboard = () => {
 
     return () => unsubscribe();
   }, [navigate]);
+
+// ✅ ADDED: Fetch user reports function
+  const fetchUserReports = async (uid) => {
+    try {
+      const supportQuery = query(
+        collection(db, `Profiles/${uid}/Support`),
+        orderBy("createdAt", "desc")
+      );
+      
+      const supportSnapshot = await getDocs(supportQuery);
+      const userReports = [];
+
+      supportSnapshot.forEach((doc) => {
+        const reportData = doc.data();
+        userReports.push({
+          id: doc.id,
+          ...reportData
+        });
+      });
+
+      setReports(userReports);
+    } catch (error) {
+      console.error("Error fetching user reports:", error);
+    }
+  };
 
   // Fetch seller data
   const fetchSellerData = async (uid) => {
@@ -342,13 +375,14 @@ const SellerDashboard = () => {
   // ✅ UPDATED: Render active tab component with Profile
   const renderActiveTab = () => {
     const commonProps = {
-      userData,
+     userData,
       assets,
       stats,
       refreshData,
       formatCurrency,
       formatDate,
       getAssetsByStatus,
+       currentUser: userData,
     };
 
     switch (activeTab) {
@@ -381,6 +415,9 @@ const SellerDashboard = () => {
 
       case "contact":
         return <Support {...commonProps} />;
+
+      case "report-track":
+        return <ReportTrack {...commonProps} />;
 
       // ✅ ADDED: Profile tab
       case "profile":
@@ -533,8 +570,22 @@ const SellerDashboard = () => {
                 <FiMessageSquare className="nav-c-icon" />
                 <span className="nav-c-label">Contact</span>
               </li>
+              <li
+                className={`nav-c-item ${
+                  activeTab === "report-track" ? "active" : ""
+                }`}
+                onClick={handleReportTrack}
+              >
+                <FiFileText className="nav-c-icon" />
+                <span className="nav-c-label">Track Reports</span>
+                {reports.length > 0 && (
+                  <span className="nav-c-badge">{reports.length}</span>
+                )}
+              </li>
             </ul>
           </div>
+
+
 
           {/* Account */}
           <div className="nav-c-section">
@@ -588,6 +639,7 @@ const SellerDashboard = () => {
               {activeTab === "visual-trends" && "Visual Trends"}
               {activeTab === "guidelines" && "Guidelines"}
               {activeTab === "contact" && "Contact Support"}
+              {activeTab === "report-track" && "Track Reports"}
               {activeTab === "profile" && "Profile"} {/* ✅ ADDED */}
               {activeTab === "billing" && "Billing & Invoices"}
               {activeTab === "feedback" && "Feedback"}
