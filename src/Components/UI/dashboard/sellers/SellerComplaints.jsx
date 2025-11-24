@@ -27,6 +27,9 @@ import {
   doc,
 } from "firebase/firestore";
 import { db } from "../../../../firebase"; // Adjust path as needed
+import ExportButton from "../../../ExportButton";
+import { reportsExportConfig } from "../../../../utils/exportUtils";
+
 
 const SellerComplaints = () => {
   const [complaints, setComplaints] = useState([]);
@@ -119,6 +122,23 @@ const SellerComplaints = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+ // Export handler with callbacks
+  const handleExportStart = () => {
+    console.log("Export started...");
+  };
+
+  const handleExportComplete = (success) => {
+    if (success) {
+      console.log("Export completed successfully");
+    } else {
+      console.log("Export failed");
+    }
+  };
+
+  const handleExportError = (error) => {
+    console.error("Export error:", error);
+  };  
 
   // Statistics
   const stats = {
@@ -351,9 +371,7 @@ const SellerComplaints = () => {
             <button className="filter-button" onClick={resetFilters}>
               <FiRefreshCw /> Reset
             </button>
-            <button className="filter-button primary">
-              <FiDownload /> Export
-            </button>
+            
           </div>
         </div>
       </div>
@@ -364,9 +382,15 @@ const SellerComplaints = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Contributor Support Requests
           </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" /> Export List
-          </button>
+         <ExportButton
+            data={filteredComplaints.length > 0 ? filteredComplaints : stats}
+            filename="seller-complains-reports"
+            exportConfig={reportsExportConfig}
+            variant="secondary"
+            onExportStart={handleExportStart}
+            onExportComplete={handleExportComplete}
+            onExportError={handleExportError}
+          />
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
