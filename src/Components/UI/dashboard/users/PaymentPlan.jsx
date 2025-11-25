@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { 
-  FiDollarSign, 
-  FiCreditCard, 
-  FiCalendar, 
-  FiCheckCircle, 
-  FiXCircle, 
-  FiClock, 
-  FiUser, 
+import {
+  FiDollarSign,
+  FiCreditCard,
+  FiCalendar,
+  FiCheckCircle,
+  FiXCircle,
+  FiClock,
+  FiUser,
   FiPackage,
-  FiSearch, 
+  FiSearch,
   FiRefreshCw,
   FiUsers,
   FiTrendingUp,
@@ -24,11 +24,10 @@ import {
   FiList,
   FiFileText,
   FiAlertCircle,
-  FiPieChart
+  FiPieChart,
 } from "react-icons/fi";
 import ExportButton from "../../../ExportButton";
 import { reportsExportConfig } from "../../../../utils/exportUtils";
-
 
 const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const [subscriptionData, setSubscriptionData] = useState([]);
@@ -40,23 +39,22 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const [expandedSubscription, setExpandedSubscription] = useState(null);
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
-  
 
   // Default format functions agar props mein nahi aaye
   const defaultFormatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount || 0);
   };
 
   const defaultFormatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -83,7 +81,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       lastLogin: "2024-01-10",
       downloads: 45,
       totalSpent: 179.94,
-      location: "New York, USA"
+      location: "New York, USA",
     },
     {
       id: "sub_002",
@@ -102,7 +100,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       lastLogin: "2024-01-12",
       downloads: 128,
       totalSpent: 299.99,
-      location: "London, UK"
+      location: "London, UK",
     },
     {
       id: "sub_003",
@@ -111,7 +109,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       userEmail: "mike@example.com",
       plan: "Starter",
       status: "expired",
-      billingCycle: "Monthly", 
+      billingCycle: "Monthly",
       price: 9.99,
       nextBillingDate: "2023-11-15",
       startDate: "2023-05-15",
@@ -121,14 +119,14 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       lastLogin: "2023-11-10",
       downloads: 8,
       totalSpent: 59.94,
-      location: "Toronto, Canada"
+      location: "Toronto, Canada",
     },
     {
       id: "sub_004",
       userId: "user4",
       userName: "Sarah Wilson",
       userEmail: "sarah@example.com",
-      plan: "Professional", 
+      plan: "Professional",
       status: "pending",
       billingCycle: "Monthly",
       price: 29.99,
@@ -140,8 +138,8 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       lastLogin: "2024-01-15",
       downloads: 12,
       totalSpent: 29.99,
-      location: "Sydney, Australia"
-    }
+      location: "Sydney, Australia",
+    },
   ];
 
   // Initialize data
@@ -153,34 +151,39 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   // Filter subscriptions
   useEffect(() => {
     let filtered = mockSubscriptions;
-    
+
     if (statusFilter !== "all") {
-      filtered = filtered.filter(sub => sub.status === statusFilter);
+      filtered = filtered.filter((sub) => sub.status === statusFilter);
     }
-    
+
     if (planFilter !== "all") {
-      filtered = filtered.filter(sub => sub.plan === planFilter);
+      filtered = filtered.filter((sub) => sub.plan === planFilter);
     }
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(sub => 
-        sub.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sub.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sub.plan.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (sub) =>
+          sub.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          sub.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          sub.plan.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     setSubscriptionData(filtered);
   }, [searchTerm, statusFilter, planFilter]);
 
   // Stats calculation
   const stats = {
     totalSubscriptions: subscriptionData.length,
-    activeSubscriptions: subscriptionData.filter(sub => sub.status === 'active').length,
+    activeSubscriptions: subscriptionData.filter(
+      (sub) => sub.status === "active"
+    ).length,
     totalRevenue: subscriptionData
-      .filter(sub => sub.status === 'active')
+      .filter((sub) => sub.status === "active")
       .reduce((sum, sub) => sum + sub.price, 0),
-    pendingSubscriptions: subscriptionData.filter(sub => sub.status === 'pending').length
+    pendingSubscriptions: subscriptionData.filter(
+      (sub) => sub.status === "pending"
+    ).length,
   };
 
   // Get status icon
@@ -218,11 +221,16 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   // Get status text
   const getStatusText = (status) => {
     switch (status) {
-      case "active": return "Active";
-      case "expired": return "Expired";
-      case "pending": return "Pending";
-      case "canceled": return "Canceled";
-      default: return "Unknown";
+      case "active":
+        return "Active";
+      case "expired":
+        return "Expired";
+      case "pending":
+        return "Pending";
+      case "canceled":
+        return "Canceled";
+      default:
+        return "Unknown";
     }
   };
 
@@ -249,7 +257,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
     setShowSubscriptionModal(false);
     setSelectedSubscription(null);
   };
- // Export handler with callbacks
+  // Export handler with callbacks
   const handleExportStart = () => {
     console.log("Export started...");
   };
@@ -266,8 +274,6 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
     console.error("Export error:", error);
   };
 
-
-
   return (
     <div className="user-reports-dashboard">
       {/* Header */}
@@ -282,7 +288,9 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
           </p>
         </div>
         <div className="header-actions">
-          <span className="user-badge-count">{stats.totalSubscriptions} total subscriptions</span>
+          <span className="user-badge-count">
+            {stats.totalSubscriptions} total subscriptions
+          </span>
         </div>
       </div>
 
@@ -296,7 +304,9 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             </div>
             <div>
               <h3 className="report-stat-title">Total Subscriptions</h3>
-              <div className="report-stat-value">{stats.totalSubscriptions}</div>
+              <div className="report-stat-value">
+                {stats.totalSubscriptions}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
@@ -304,7 +314,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               All active and inactive plans
             </div>
             <div className="report-stat-trend positive">
-              +12%  
+              +12%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -318,15 +328,15 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             </div>
             <div>
               <h3 className="report-stat-title">Active Subscriptions</h3>
-              <div className="report-stat-value">{stats.activeSubscriptions}</div>
+              <div className="report-stat-value">
+                {stats.activeSubscriptions}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Currently active plans
-            </div>
+            <div className="report-stat-subtext">Currently active plans</div>
             <div className="report-stat-trend positive">
-              +8%  
+              +8%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -340,15 +350,15 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             </div>
             <div>
               <h3 className="report-stat-title">Monthly Revenue</h3>
-              <div className="report-stat-value">{currencyFormatter(stats.totalRevenue)}</div>
+              <div className="report-stat-value">
+                {currencyFormatter(stats.totalRevenue)}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Recurring monthly income
-            </div>
+            <div className="report-stat-subtext">Recurring monthly income</div>
             <div className="report-stat-trend positive">
-              +15%  
+              +15%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -362,15 +372,15 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             </div>
             <div>
               <h3 className="report-stat-title">Pending Subscriptions</h3>
-              <div className="report-stat-value">{stats.pendingSubscriptions}</div>
+              <div className="report-stat-value">
+                {stats.pendingSubscriptions}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Awaiting activation
-            </div>
+            <div className="report-stat-subtext">Awaiting activation</div>
             <div className="report-stat-trend negative">
-              +5%  
+              +5%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -385,10 +395,13 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             Filter Subscriptions
           </h3>
           <div className="filter-results">
-            <span className="filter-text">Showing {subscriptionData.length} of {mockSubscriptions.length} subscriptions</span>
+            <span className="filter-text">
+              Showing {subscriptionData.length} of {mockSubscriptions.length}{" "}
+              subscriptions
+            </span>
           </div>
         </div>
-        
+
         <div className="filter-controls-grid">
           {/* Search by Name/Email */}
           <div className="filter-search-wrapper">
@@ -401,9 +414,9 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           {/* Status Filter */}
-          <select 
+          <select
             className="filter-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -414,9 +427,9 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             <option value="expired">Expired</option>
             <option value="canceled">Canceled</option>
           </select>
-          
+
           {/* Plan Filter */}
-          <select 
+          <select
             className="filter-select"
             value={planFilter}
             onChange={(e) => setPlanFilter(e.target.value)}
@@ -426,21 +439,21 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             <option value="Professional">Professional</option>
             <option value="Enterprise">Enterprise</option>
           </select>
-          
+
           {/* Billing Cycle Filter */}
           <select className="filter-select">
             <option value="all">All Cycles</option>
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
           </select>
-          
+
           {/* Action Buttons */}
           <div className="filter-actions">
             <button className="filter-button primary">
               <FiFilter />
               Apply
             </button>
-            <button 
+            <button
               className="filter-button"
               onClick={() => {
                 setSearchTerm("");
@@ -462,15 +475,17 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             <FiList className="panel-icon" />
             Subscription Management
           </h3>
-        <ExportButton 
-    data={subscriptionData.length > 0 ? subscriptionData : mockSubscriptions}
-    filename="subscription-reports"
-    exportConfig={reportsExportConfig}
-    variant="secondary"
-    onExportStart={handleExportStart}
-    onExportComplete={handleExportComplete}
-    onExportError={handleExportError}
-/>
+          <ExportButton
+            data={
+              subscriptionData.length > 0 ? subscriptionData : mockSubscriptions
+            }
+            filename="subscription-reports"
+            exportConfig={reportsExportConfig}
+            variant="secondary"
+            onExportStart={handleExportStart}
+            onExportComplete={handleExportComplete}
+            onExportError={handleExportError}
+          />
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
@@ -491,60 +506,84 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                   <td>
                     <div className="report-user">
                       <div className="report-user-avatar">
-                        {subscription.userName.split(' ').map(n => n[0]).join('')}
+                        {subscription.userName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </div>
                       <div className="report-user-info">
-                        <div className="report-user-name">{subscription.userName}</div>
-                        <div className="report-user-email">{subscription.userEmail}</div>
+                        <div className="report-user-name">
+                          {subscription.userName}
+                        </div>
+                        <div className="report-user-email">
+                          {subscription.userEmail}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <span className={`report-category-badge ${
-                      subscription.plan === 'Enterprise' ? 'fraud' : 
-                      subscription.plan === 'Professional' ? 'content' : 'spam'
-                    }`}>
+                    <span
+                      className={`report-category-badge ${
+                        subscription.plan === "Enterprise"
+                          ? "fraud"
+                          : subscription.plan === "Professional"
+                          ? "content"
+                          : "spam"
+                      }`}
+                    >
                       {subscription.plan}
                     </span>
                   </td>
                   <td>
                     <div className="comp-dis">
-                      {currencyFormatter(subscription.price)}/{subscription.billingCycle}
+                      {currencyFormatter(subscription.price)}/
+                      {subscription.billingCycle}
                     </div>
                   </td>
                   <td>
-                    <span className={`report-status-badge ${
-                      subscription.status === 'active' ? 'resolved' :
-                      subscription.status === 'pending' ? 'pending' : 'in-progress'
-                    }`}>
+                    <span
+                      className={`report-status-badge ${
+                        subscription.status === "active"
+                          ? "resolved"
+                          : subscription.status === "pending"
+                          ? "pending"
+                          : "in-progress"
+                      }`}
+                    >
                       {getStatusText(subscription.status)}
                     </span>
                   </td>
                   <td>{dateFormatter(subscription.nextBillingDate)}</td>
                   <td>
-                    <div className="comp-dis">{currencyFormatter(subscription.totalSpent)}</div>
+                    <div className="comp-dis">
+                      {currencyFormatter(subscription.totalSpent)}
+                    </div>
                   </td>
                   <td>
                     <div className="report-actions">
-                      <button 
-                        className="action-button secondary small" 
+                      <button
+                        className="action-button secondary small"
                         title="View Details"
                         onClick={() => handleViewSubscription(subscription)}
                       >
                         <FiEye />
                       </button>
-                      <button 
-                        className="action-button small" 
+                      <button
+                        className="action-button small"
                         title="Manage Subscription"
-                        onClick={() => handleSubscriptionAction('manage', subscription.id)}
+                        onClick={() =>
+                          handleSubscriptionAction("manage", subscription.id)
+                        }
                       >
                         <FiRefreshCw />
                       </button>
-                      {subscription.status === 'active' && (
-                        <button 
-                          className="action-button danger small" 
+                      {subscription.status === "active" && (
+                        <button
+                          className="action-button danger small"
                           title="Cancel Subscription"
-                          onClick={() => handleSubscriptionAction('cancel', subscription.id)}
+                          onClick={() =>
+                            handleSubscriptionAction("cancel", subscription.id)
+                          }
                         >
                           <FiXCircle />
                         </button>
@@ -561,8 +600,8 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               <FiUsers className="empty-icon" />
               <h3 className="empty-title">No subscriptions found</h3>
               <p className="empty-text">
-                {searchTerm || statusFilter !== 'all' || planFilter !== 'all' 
-                  ? "Try adjusting your search filters" 
+                {searchTerm || statusFilter !== "all" || planFilter !== "all"
+                  ? "Try adjusting your search filters"
                   : "No subscriptions available"}
               </p>
             </div>
@@ -583,20 +622,31 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                 <FiXCircle />
               </button>
             </div>
-            
+
             <div className="modal-body">
               {/* User Profile Header */}
               <div className="user-profile-header">
                 <div className="profile-avatar">
                   <div className="avatar-initials large">
-                    {selectedSubscription.userName.split(' ').map(n => n[0]).join('')}
+                    {selectedSubscription.userName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
                   </div>
                 </div>
                 <div className="profile-info">
-                  <h2 className="profile-name">{selectedSubscription.userName}</h2>
-                  <p className="profile-email">{selectedSubscription.userEmail}</p>
+                  <h2 className="profile-name">
+                    {selectedSubscription.userName}
+                  </h2>
+                  <p className="profile-email">
+                    {selectedSubscription.userEmail}
+                  </p>
                   <div className="user-badges">
-                    <span className={`status-badge ${getStatusColor(selectedSubscription.status)}`}>
+                    <span
+                      className={`status-badge ${getStatusColor(
+                        selectedSubscription.status
+                      )}`}
+                    >
                       {getStatusIcon(selectedSubscription.status)}
                       {getStatusText(selectedSubscription.status)}
                     </span>
@@ -611,14 +661,18 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               {/* Stats Grid */}
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-value currency">{currencyFormatter(selectedSubscription.totalSpent)}</div>
+                  <div className="stat-value currency">
+                    {currencyFormatter(selectedSubscription.totalSpent)}
+                  </div>
                   <div className="stat-label">
                     <FiDollarSign className="stat-icon" />
                     Total Spent
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value downloads">{selectedSubscription.downloads}</div>
+                  <div className="stat-value downloads">
+                    {selectedSubscription.downloads}
+                  </div>
                   <div className="stat-label">
                     <FiDownload className="stat-icon" />
                     Downloads
@@ -633,7 +687,8 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                     <span className="detail-label">Subscription Plan</span>
                     <span className="detail-value">
                       <FiPackage className="detail-icon" />
-                      {selectedSubscription.plan} • {selectedSubscription.billingCycle}
+                      {selectedSubscription.plan} •{" "}
+                      {selectedSubscription.billingCycle}
                     </span>
                   </div>
                   <div className="detail-item">
@@ -689,24 +744,32 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="modal-footer">
               <div className="modal-actions">
-                <button className="action-button secondary" onClick={handleCloseModal}>
+                <button
+                  className="action-button secondary"
+                  onClick={handleCloseModal}
+                >
                   Close
                 </button>
-                <button 
-                  className="action-button" 
-                  onClick={() => handleSubscriptionAction('manage', selectedSubscription.id)}
+                <button
+                  className="action-button"
+                  onClick={() =>
+                    handleSubscriptionAction("manage", selectedSubscription.id)
+                  }
                 >
                   <FiRefreshCw className="button-icon" />
                   Manage Subscription
                 </button>
-                {selectedSubscription.status === 'active' && (
-                  <button 
+                {selectedSubscription.status === "active" && (
+                  <button
                     className="action-button danger"
                     onClick={() => {
-                      handleSubscriptionAction('cancel', selectedSubscription.id);
+                      handleSubscriptionAction(
+                        "cancel",
+                        selectedSubscription.id
+                      );
                       handleCloseModal();
                     }}
                   >
@@ -719,7 +782,6 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
