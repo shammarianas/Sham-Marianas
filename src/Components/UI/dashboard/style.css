@@ -4006,6 +4006,7 @@ ul {
 .pie-chart-value {
   font-size: 18px;
   font-weight: 700;
+  text-align: center;
   color: var(--text-primary);
 }
 
@@ -4394,7 +4395,6 @@ ul {
 
 .comp-dis {
   display: -webkit-box;
-  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;
