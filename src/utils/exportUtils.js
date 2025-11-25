@@ -5,7 +5,6 @@ const generateHeaderName = (key) => {
   const headerMap = {
     // Common field mappings
     id: 'ID',
-    userId: 'User ID',
     userName: 'User Name',
     userEmail: 'User Email',
     email: 'Email',
@@ -30,6 +29,7 @@ const generateHeaderName = (key) => {
     subject: 'Subject',
     issueType: 'Issue Type',
     category: 'Category',
+    type: 'Type',
     location: 'Location',
     downloads: 'Downloads',
     joinDate: 'Join Date',

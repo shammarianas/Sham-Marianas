@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiUpload,
   FiClock,
@@ -22,6 +23,7 @@ import {
 } from "react-icons/fi";
 import Upload from "../../../../Pages/Upload";
 
+
 const DashboardOverview = ({
   userData,
   assets,
@@ -29,11 +31,23 @@ const DashboardOverview = ({
   refreshData,
   formatCurrency,
   formatDate,
+  setActiveTab,
 }) => {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadKey, setUploadKey] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const navigate = useNavigate();
+
+  const handleViewAllFiles = () => {
+    // Ya toh tab change karein
+    setActiveTab("upload");
+  };
+
+  const handleStats = () => {
+    // Ya toh tab change karein
+    setActiveTab("stats");
+  };
 
   // Calculate additional stats
   const approvalRate =
@@ -301,8 +315,10 @@ const DashboardOverview = ({
                   <span className="metric-name">Approval Rate</span>
                   <span className="metric-status excellent">Excellent</span>
                 </div>
-                <div className="metric-value">{approvalRate}%</div>
+                <div className="d-flex justify-content-between ">
                 <div className="metric-target">Target: 80%</div>
+                  <div className="metric-target">{approvalRate}%</div>
+                </div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill excellent"
@@ -318,13 +334,15 @@ const DashboardOverview = ({
                   <span className="metric-name">Rejection Rate</span>
                   <span className="metric-status poor">Poor</span>
                 </div>
-                <div className="metric-value">
+                <div className="d-flex justify-content-between ">
+                    <div className="metric-target">Target: Below 10%</div>
+                  <div className="metric-target">
                   {stats.totalUploads > 0
                     ? ((stats.rejections / stats.totalUploads) * 100).toFixed(1)
                     : 0}
                   %
                 </div>
-                <div className="metric-target">Target: Below 10%</div>
+                </div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill poor"
@@ -344,7 +362,9 @@ const DashboardOverview = ({
                   <span className="metric-name">Under Review</span>
                   <span className="metric-status average">Average</span>
                 </div>
-                <div className="metric-value">
+                <div className="d-flex justify-content-between">
+                    <div className="metric-target">Target: Below 15%</div>
+                  <div className="metric-target">
                   {stats.totalUploads > 0
                     ? (
                         (stats.underRevision / stats.totalUploads) *
@@ -353,7 +373,7 @@ const DashboardOverview = ({
                     : 0}
                   %
                 </div>
-                <div className="metric-target">Target: Below 15%</div>
+                </div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill average"
@@ -386,16 +406,13 @@ const DashboardOverview = ({
 
               <button
                 className="action-button secondary"
-                onClick={() => console.log("View All Files")}
+                onClick={handleViewAllFiles}
               >
                 <FiEye className="button-icon" />
                 View All Files
               </button>
 
-              <button
-                className="action-button secondary"
-                onClick={() => console.log("View Analytics")}
-              >
+              <button className="action-button secondary" onClick={handleStats}>
                 <FiTrendingUp className="button-icon" />
                 View Analytics
               </button>
@@ -571,7 +588,7 @@ const DashboardOverview = ({
       </div>
 
       {/* Top Performers Section */}
-      <div className="reports-filter-bar">
+      {/* <div className="reports-filter-bar">
         <div className="filter-bar-header">
           <h3 className="filter-bar-title">
             <FiUsers className="panel-icon" /> Top Performing Assets
@@ -634,7 +651,7 @@ const DashboardOverview = ({
             </div>
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* Footer */}
       <div className="dashboard-footer">
