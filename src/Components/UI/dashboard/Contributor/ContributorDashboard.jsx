@@ -47,7 +47,7 @@ import Rejections from "../Contributor-tabs/Rejections";
 import PublishedFiles from "../Contributor-tabs/PublishedFiles";
 import Statistics from "../Contributor-tabs/Statistics";
 import SearchTrends from "../Contributor-tabs/SearchTrends";
-import Support from "../../../../Pages/Support"
+import Support from "../../../../Pages/Support";
 import ReportTrack from "../Contributor-tabs/ReportTrack";
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
 // ✅ ADDED: Import Profile component
@@ -65,20 +65,21 @@ const UnauthorizedAccess = ({ error }) => {
 };
 const ProfileWrapper = ({ userId }) => {
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (userId) {
       // Direct profile page par navigate karo
       navigate(`/profile/${userId}`);
     }
   }, [userId, navigate]);
-}
+};
 
 const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [unresolvedReportsCount, setUnresolvedReportsCount] = useState(0);
   const [userData, setUserData] = useState(null);
   const [assets, setAssets] = useState([]);
-   const [reports, setReports] = useState([]);
+  const [reports, setReports] = useState([]);
   const [stats, setStats] = useState({
     totalUploads: 0,
     underRevision: 0,
@@ -96,12 +97,12 @@ const SellerDashboard = () => {
   const handleProfileTab = () => {
     setActiveTab("profile");
   };
-// ✅ ADDED: Report track handler
+  // ✅ ADDED: Report track handler
   const handleReportTrack = () => {
     setActiveTab("report-track");
   };
   // Check seller status and fetch data
- useEffect(() => {
+  useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
         setError("Please log in to access the seller dashboard");
@@ -137,7 +138,7 @@ const SellerDashboard = () => {
           setUserData(sellerData);
           await Promise.all([
             fetchSellerData(uid),
-            fetchUserReports(uid) // ✅ ADDED: Fetch reports
+            fetchUserReports(uid), // ✅ ADDED: Fetch reports
           ]);
         } else {
           setError("You are not registered as a contributor");
@@ -151,14 +152,13 @@ const SellerDashboard = () => {
     return () => unsubscribe();
   }, [navigate]);
 
-// ✅ ADDED: Fetch user reports function
   const fetchUserReports = async (uid) => {
     try {
       const supportQuery = query(
-        collection(db, `Profiles/${uid}/Support`),
+        collection(db, `Contributors/${uid}/Support`), // ✅ YAHI CHANGE KARNA HAI
         orderBy("createdAt", "desc")
       );
-      
+
       const supportSnapshot = await getDocs(supportQuery);
       const userReports = [];
 
@@ -166,11 +166,18 @@ const SellerDashboard = () => {
         const reportData = doc.data();
         userReports.push({
           id: doc.id,
-          ...reportData
+          ...reportData,
         });
       });
 
       setReports(userReports);
+
+      // ✅ ADDED: Count unresolved reports
+      const unresolved = userReports.filter(
+        (report) =>
+          report.status === "pending" || report.status === "in_progress"
+      ).length;
+      setUnresolvedReportsCount(unresolved);
     } catch (error) {
       console.error("Error fetching user reports:", error);
     }
@@ -226,7 +233,7 @@ const SellerDashboard = () => {
         totalUploads++;
 
         const status = asset.status?.toLowerCase() || "pending";
-        
+
         switch (status) {
           case "pending":
             underRevision++;
@@ -240,7 +247,11 @@ const SellerDashboard = () => {
           default:
             if (status.includes("reject") || status.includes("decline")) {
               rejections++;
-            } else if (status.includes("approve") || status.includes("publish") || status.includes("active")) {
+            } else if (
+              status.includes("approve") ||
+              status.includes("publish") ||
+              status.includes("active")
+            ) {
               published++;
             } else {
               underRevision++;
@@ -279,7 +290,6 @@ const SellerDashboard = () => {
         totalEarnings,
         pendingEarnings,
       });
-
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
@@ -295,19 +305,23 @@ const SellerDashboard = () => {
       orderBy("createdAt", "desc")
     );
 
-    const unsubscribe = onSnapshot(assetsQuery, (snapshot) => {
-      const assetsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setAssets(assetsData);
-      
-      if (userData?.uid) {
-        fetchStats(userData.uid);
+    const unsubscribe = onSnapshot(
+      assetsQuery,
+      (snapshot) => {
+        const assetsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setAssets(assetsData);
+
+        if (userData?.uid) {
+          fetchStats(userData.uid);
+        }
+      },
+      (error) => {
+        console.error("Error in real-time assets listener:", error);
       }
-    }, (error) => {
-      console.error("Error in real-time assets listener:", error);
-    });
+    );
 
     return () => unsubscribe();
   }, [userData?.uid]);
@@ -351,9 +365,9 @@ const SellerDashboard = () => {
 
   // Get assets by status for different tabs
   const getAssetsByStatus = (statusType) => {
-    return assets.filter(asset => {
+    return assets.filter((asset) => {
       const status = asset.status?.toLowerCase() || "pending";
-      
+
       switch (statusType) {
         case "pending":
           return status === "pending";
@@ -371,18 +385,18 @@ const SellerDashboard = () => {
     return <UnauthorizedAccess error={error} />;
   }
 
-  
   // ✅ UPDATED: Render active tab component with Profile
   const renderActiveTab = () => {
     const commonProps = {
-     userData,
+      userData,
       assets,
       stats,
       refreshData,
       formatCurrency,
       formatDate,
       getAssetsByStatus,
-       currentUser: userData,
+      currentUser: userData,
+      setActiveTab,
     };
 
     switch (activeTab) {
@@ -578,14 +592,12 @@ const SellerDashboard = () => {
               >
                 <FiFileText className="nav-c-icon" />
                 <span className="nav-c-label">Track Reports</span>
-                {reports.length > 0 && (
-                  <span className="nav-c-badge">{reports.length}</span>
+                {unresolvedReportsCount > 0 && (
+                  <span className="nav-c-badge">{unresolvedReportsCount}</span>
                 )}
               </li>
             </ul>
           </div>
-
-
 
           {/* Account */}
           <div className="nav-c-section">
