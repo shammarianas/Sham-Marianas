@@ -57,7 +57,10 @@ const UserReport = () => {
         const reports = [];
 
         for (const profileDoc of profilesSnapshot.docs) {
-          const supportRef = collection(db, `Profiles/${profileDoc.id}/Support`);
+          const supportRef = collection(
+            db,
+            `Profiles/${profileDoc.id}/Support`
+          );
           const supportSnapshot = await getDocs(supportRef);
 
           supportSnapshot.forEach((doc) => {
@@ -91,98 +94,125 @@ const UserReport = () => {
     fetchAllReports();
   }, []);
 
-
-  
   // Calculate trends compared to previous period (last 30 days vs previous 30 days)
   const trends = useMemo(() => {
-    if (loading) return {
-      total: { value: 0, isPositive: true },
-      unresolved: { value: 0, isPositive: true },
-      resolved: { value: 0, isPositive: true },
-      resolutionTime: { value: 0, isPositive: true }
-    };
+    if (loading)
+      return {
+        total: { value: 0, isPositive: true },
+        unresolved: { value: 0, isPositive: true },
+        resolved: { value: 0, isPositive: true },
+        resolutionTime: { value: 0, isPositive: true },
+      };
 
     const now = new Date();
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const previous30Days = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-    
-    const currentPeriodReports = allReports.filter(report => {
+
+    const currentPeriodReports = allReports.filter((report) => {
       const reportDate = report.createdAt?.toDate();
       return reportDate && reportDate >= last30Days;
     });
-    
-    const previousPeriodReports = allReports.filter(report => {
+
+    const previousPeriodReports = allReports.filter((report) => {
       const reportDate = report.createdAt?.toDate();
-      return reportDate && reportDate >= previous30Days && reportDate < last30Days;
+      return (
+        reportDate && reportDate >= previous30Days && reportDate < last30Days
+      );
     });
 
     const currentTotal = currentPeriodReports.length;
     const previousTotal = previousPeriodReports.length;
-    const totalTrend = previousTotal > 0 ? ((currentTotal - previousTotal) / previousTotal) * 100 : 0;
+    const totalTrend =
+      previousTotal > 0
+        ? ((currentTotal - previousTotal) / previousTotal) * 100
+        : 0;
 
-    const currentUnresolved = currentPeriodReports.filter(r => r.status !== "resolved").length;
-    const previousUnresolved = previousPeriodReports.filter(r => r.status !== "resolved").length;
-    const unresolvedTrend = previousUnresolved > 0 ? ((currentUnresolved - previousUnresolved) / previousUnresolved) * 100 : 0;
+    const currentUnresolved = currentPeriodReports.filter(
+      (r) => r.status !== "resolved"
+    ).length;
+    const previousUnresolved = previousPeriodReports.filter(
+      (r) => r.status !== "resolved"
+    ).length;
+    const unresolvedTrend =
+      previousUnresolved > 0
+        ? ((currentUnresolved - previousUnresolved) / previousUnresolved) * 100
+        : 0;
 
-    const currentResolved = currentPeriodReports.filter(r => r.status === "resolved").length;
-    const previousResolved = previousPeriodReports.filter(r => r.status === "resolved").length;
-    const resolvedTrend = previousResolved > 0 ? ((currentResolved - previousResolved) / previousResolved) * 100 : 0;
+    const currentResolved = currentPeriodReports.filter(
+      (r) => r.status === "resolved"
+    ).length;
+    const previousResolved = previousPeriodReports.filter(
+      (r) => r.status === "resolved"
+    ).length;
+    const resolvedTrend =
+      previousResolved > 0
+        ? ((currentResolved - previousResolved) / previousResolved) * 100
+        : 0;
 
     // Calculate resolution time trend
     const currentResolvedWithTime = currentPeriodReports
-      .filter(r => r.status === "resolved" && r.resolvedAt && r.createdAt)
-      .map(r => {
+      .filter((r) => r.status === "resolved" && r.resolvedAt && r.createdAt)
+      .map((r) => {
         const created = r.createdAt.toDate();
         const resolved = r.resolvedAt.toDate?.() || new Date();
         return (resolved - created) / (1000 * 60 * 60 * 24);
       });
 
     const previousResolvedWithTime = previousPeriodReports
-      .filter(r => r.status === "resolved" && r.resolvedAt && r.createdAt)
-      .map(r => {
+      .filter((r) => r.status === "resolved" && r.resolvedAt && r.createdAt)
+      .map((r) => {
         const created = r.createdAt.toDate();
         const resolved = r.resolvedAt.toDate?.() || new Date();
         return (resolved - created) / (1000 * 60 * 60 * 24);
       });
 
-    const currentAvgTime = currentResolvedWithTime.length > 0 
-      ? currentResolvedWithTime.reduce((a, b) => a + b, 0) / currentResolvedWithTime.length 
-      : 0;
-    
-    const previousAvgTime = previousResolvedWithTime.length > 0 
-      ? previousResolvedWithTime.reduce((a, b) => a + b, 0) / previousResolvedWithTime.length 
-      : 0;
+    const currentAvgTime =
+      currentResolvedWithTime.length > 0
+        ? currentResolvedWithTime.reduce((a, b) => a + b, 0) /
+          currentResolvedWithTime.length
+        : 0;
 
-    const resolutionTimeTrend = previousAvgTime > 0 ? ((previousAvgTime - currentAvgTime) / previousAvgTime) * 100 : 0;
+    const previousAvgTime =
+      previousResolvedWithTime.length > 0
+        ? previousResolvedWithTime.reduce((a, b) => a + b, 0) /
+          previousResolvedWithTime.length
+        : 0;
+
+    const resolutionTimeTrend =
+      previousAvgTime > 0
+        ? ((previousAvgTime - currentAvgTime) / previousAvgTime) * 100
+        : 0;
 
     return {
       total: {
         value: totalTrend,
-        isPositive: totalTrend <= 0 // Lower growth or negative is better for total reports
+        isPositive: totalTrend <= 0, // Lower growth or negative is better for total reports
       },
       unresolved: {
         value: unresolvedTrend,
-        isPositive: unresolvedTrend <= 0 // Lower unresolved is better
+        isPositive: unresolvedTrend <= 0, // Lower unresolved is better
       },
       resolved: {
         value: resolvedTrend,
-        isPositive: resolvedTrend >= 0 // Higher resolved is better
+        isPositive: resolvedTrend >= 0, // Higher resolved is better
       },
       resolutionTime: {
         value: resolutionTimeTrend,
-        isPositive: resolutionTimeTrend >= 0 // Lower resolution time is better
-      }
+        isPositive: resolutionTimeTrend >= 0, // Lower resolution time is better
+      },
     };
   }, [allReports, loading]);
 
   // Client-side filtering with useMemo
-   const reports = useMemo(() => {
+  const reports = useMemo(() => {
     if (loading) return [];
-    
+
     return allReports.filter((report) => {
       if (
         filters.search &&
-        !`${report.subject || ""} ${report.description || ""} ${report.email || ""}`
+        !`${report.subject || ""} ${report.description || ""} ${
+          report.email || ""
+        }`
           .toLowerCase()
           .includes(filters.search.toLowerCase())
       ) {
@@ -214,7 +244,9 @@ const UserReport = () => {
             if (reportDate < monthAgo) return false;
             break;
           case "older":
-            const olderThanMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const olderThanMonth = new Date(
+              now.getTime() - 30 * 24 * 60 * 60 * 1000
+            );
             if (reportDate >= olderThanMonth) return false;
             break;
           default:
@@ -226,7 +258,7 @@ const UserReport = () => {
     });
   }, [allReports, filters, loading]);
 
-  // Export handler with callbacks
+  // Export handler with callbacks-------------
   const handleExportStart = () => {
     console.log("Export started...");
   };
@@ -243,7 +275,6 @@ const UserReport = () => {
     console.error("Export error:", error);
   };
 
-
   // Calculate user satisfaction from resolution time and response quality
   const userSatisfactionData = useMemo(() => {
     if (loading) {
@@ -253,13 +284,13 @@ const UserReport = () => {
           excellent: 0,
           good: 0,
           average: 0,
-          poor: 0
-        }
+          poor: 0,
+        },
       };
     }
 
-    const resolvedReports = allReports.filter(r => r.status === "resolved");
-    
+    const resolvedReports = allReports.filter((r) => r.status === "resolved");
+
     if (resolvedReports.length === 0) {
       return {
         overall: 0,
@@ -267,23 +298,24 @@ const UserReport = () => {
           excellent: 0,
           good: 0,
           average: 0,
-          poor: 0
-        }
+          poor: 0,
+        },
       };
     }
 
     // Calculate satisfaction based on resolution time
     const resolutionTimes = resolvedReports
-      .filter(r => r.resolvedAt && r.createdAt)
-      .map(r => {
+      .filter((r) => r.resolvedAt && r.createdAt)
+      .map((r) => {
         const created = r.createdAt.toDate();
         const resolved = r.resolvedAt.toDate?.() || new Date();
         return (resolved - created) / (1000 * 60 * 60 * 24); // Convert to days
       });
 
-    const avgResolutionTime = resolutionTimes.length > 0 
-      ? resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length 
-      : 0;
+    const avgResolutionTime =
+      resolutionTimes.length > 0
+        ? resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length
+        : 0;
 
     // Calculate satisfaction score based on resolution time (shorter time = higher satisfaction)
     let overall;
@@ -311,9 +343,9 @@ const UserReport = () => {
     // Calculate distribution based on resolution time and other factors
     const distribution = {
       excellent: Math.round(resolvedReports.length * 0.35), // 35% excellent
-      good: Math.round(resolvedReports.length * 0.40), // 40% good
-      average: Math.round(resolvedReports.length * 0.20), // 20% average
-      poor: Math.round(resolvedReports.length * 0.05) // 5% poor
+      good: Math.round(resolvedReports.length * 0.4), // 40% good
+      average: Math.round(resolvedReports.length * 0.2), // 20% average
+      poor: Math.round(resolvedReports.length * 0.05), // 5% poor
     };
 
     // Adjust distribution based on actual resolution performance
@@ -327,7 +359,7 @@ const UserReport = () => {
 
     return {
       overall: parseFloat(overall.toFixed(1)),
-      distribution
+      distribution,
     };
   }, [allReports, loading]);
 
@@ -346,7 +378,9 @@ const UserReport = () => {
     const totalReports = allReports.length;
     const filteredTotal = reports.length;
 
-    const resolvedReports = reports.filter((r) => r.status === "resolved").length;
+    const resolvedReports = reports.filter(
+      (r) => r.status === "resolved"
+    ).length;
     const unresolvedReports = filteredTotal - resolvedReports;
 
     const resolvedWithTime = reports
@@ -359,7 +393,10 @@ const UserReport = () => {
 
     const averageResolutionTime =
       resolvedWithTime.length > 0
-        ? (resolvedWithTime.reduce((a, b) => a + b, 0) / resolvedWithTime.length).toFixed(1)
+        ? (
+            resolvedWithTime.reduce((a, b) => a + b, 0) /
+            resolvedWithTime.length
+          ).toFixed(1)
         : "N/A";
 
     return {
@@ -436,7 +473,7 @@ const UserReport = () => {
 
   const getUserInitials = (email) =>
     email ? email.substring(0, 2).toUpperCase() : "UU";
-  
+
   const getUserName = (email) => (email ? email.split("@")[0] : "Unknown User");
 
   const openReportDetails = (report) => {
@@ -450,14 +487,29 @@ const UserReport = () => {
   };
 
   const categoryStats = getCategoryStats();
-  const totalRatedReports = Object.values(userSatisfactionData.distribution).reduce((a, b) => a + b, 0);
+  const totalRatedReports = Object.values(
+    userSatisfactionData.distribution
+  ).reduce((a, b) => a + b, 0);
 
   // Calculate percentages for satisfaction distribution
   const satisfactionPercentages = {
-    excellent: totalRatedReports > 0 ? (userSatisfactionData.distribution.excellent / totalRatedReports) * 100 : 0,
-    good: totalRatedReports > 0 ? (userSatisfactionData.distribution.good / totalRatedReports) * 100 : 0,
-    average: totalRatedReports > 0 ? (userSatisfactionData.distribution.average / totalRatedReports) * 100 : 0,
-    poor: totalRatedReports > 0 ? (userSatisfactionData.distribution.poor / totalRatedReports) * 100 : 0,
+    excellent:
+      totalRatedReports > 0
+        ? (userSatisfactionData.distribution.excellent / totalRatedReports) *
+          100
+        : 0,
+    good:
+      totalRatedReports > 0
+        ? (userSatisfactionData.distribution.good / totalRatedReports) * 100
+        : 0,
+    average:
+      totalRatedReports > 0
+        ? (userSatisfactionData.distribution.average / totalRatedReports) * 100
+        : 0,
+    poor:
+      totalRatedReports > 0
+        ? (userSatisfactionData.distribution.poor / totalRatedReports) * 100
+        : 0,
   };
 
   return (
@@ -492,7 +544,9 @@ const UserReport = () => {
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">User ID:</span>
-                    <span className="detail-value">{selectedReport.userId}</span>
+                    <span className="detail-value">
+                      {selectedReport.userId}
+                    </span>
                   </div>
                 </div>
 
@@ -500,21 +554,35 @@ const UserReport = () => {
                   <h4>Report Information</h4>
                   <div className="detail-item">
                     <span className="detail-label">Subject:</span>
-                    <span className="detail-value">{selectedReport.subject || "No Subject"}</span>
+                    <span className="detail-value">
+                      {selectedReport.subject || "No Subject"}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Category:</span>
-                    <span className={`detail-value report-category-badge ${selectedReport.issueType}`}>
-                      {selectedReport.issueType === "technical" && "Technical Issue"}
-                      {selectedReport.issueType === "billing" && "Billing Issue"}
-                      {selectedReport.issueType === "general" && "General Inquiry"}
+                    <span
+                      className={`detail-value report-category-badge ${selectedReport.issueType}`}
+                    >
+                      {selectedReport.issueType === "technical" &&
+                        "Technical Issue"}
+                      {selectedReport.issueType === "billing" &&
+                        "Billing Issue"}
+                      {selectedReport.issueType === "general" &&
+                        "General Inquiry"}
                     </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Status:</span>
-                    <span className={`detail-value report-status-badge ${selectedReport.status || "pending"}`}>
-                      {selectedReport.status === "resolved" ? "Resolved" : 
-                       selectedReport.status === "in-progress" ? "In Progress" : "Pending"}
+                    <span
+                      className={`detail-value report-status-badge ${
+                        selectedReport.status || "pending"
+                      }`}
+                    >
+                      {selectedReport.status === "resolved"
+                        ? "Resolved"
+                        : selectedReport.status === "in-progress"
+                        ? "In Progress"
+                        : "Pending"}
                     </span>
                   </div>
                 </div>
@@ -530,18 +598,24 @@ const UserReport = () => {
                   <h4>Timeline</h4>
                   <div className="detail-item">
                     <span className="detail-label">Created:</span>
-                    <span className="detail-value">{formatDate(selectedReport.createdAt)}</span>
+                    <span className="detail-value">
+                      {formatDate(selectedReport.createdAt)}
+                    </span>
                   </div>
                   {selectedReport.updatedAt && (
                     <div className="detail-item">
                       <span className="detail-label">Last Updated:</span>
-                      <span className="detail-value">{formatDate(selectedReport.updatedAt)}</span>
+                      <span className="detail-value">
+                        {formatDate(selectedReport.updatedAt)}
+                      </span>
                     </div>
                   )}
                   {selectedReport.resolvedAt && (
                     <div className="detail-item">
                       <span className="detail-label">Resolved:</span>
-                      <span className="detail-value">{formatDate(selectedReport.resolvedAt)}</span>
+                      <span className="detail-value">
+                        {formatDate(selectedReport.resolvedAt)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -555,7 +629,11 @@ const UserReport = () => {
                 <button
                   className="action-button"
                   onClick={() => {
-                    updateReportStatus(selectedReport.id, selectedReport.userId, "resolved");
+                    updateReportStatus(
+                      selectedReport.id,
+                      selectedReport.userId,
+                      "resolved"
+                    );
                     closeModal();
                   }}
                 >
@@ -565,7 +643,11 @@ const UserReport = () => {
                 <button
                   className="action-button"
                   onClick={() => {
-                    updateReportStatus(selectedReport.id, selectedReport.userId, "pending");
+                    updateReportStatus(
+                      selectedReport.id,
+                      selectedReport.userId,
+                      "pending"
+                    );
                     closeModal();
                   }}
                 >
@@ -611,8 +693,13 @@ const UserReport = () => {
             <div className="report-stat-subtext">
               All complaints, feedback, violations
             </div>
-            <div className={`report-stat-trend ${trends.total.isPositive ? 'positive' : 'negative'}`}>
-              {trends.total.value > 0 ? '+' : ''}{trends.total.value.toFixed(1)}% 
+            <div
+              className={`report-stat-trend ${
+                trends.total.isPositive ? "positive" : "negative"
+              }`}
+            >
+              {trends.total.value > 0 ? "+" : ""}
+              {trends.total.value.toFixed(1)}%
               {trends.total.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
             </div>
           </div>
@@ -631,12 +718,23 @@ const UserReport = () => {
           <div className="report-stat-content">
             <div className="report-stat-subtext">
               {stats.totalReports > 0
-                ? `${((stats.unresolvedReports / reports.length) * 100).toFixed(1)}% of filtered`
+                ? `${((stats.unresolvedReports / reports.length) * 100).toFixed(
+                    1
+                  )}% of filtered`
                 : "0% of total reports"}
             </div>
-            <div className={`report-stat-trend ${trends.unresolved.isPositive ? 'positive' : 'negative'}`}>
-              {trends.unresolved.value > 0 ? '+' : ''}{trends.unresolved.value.toFixed(1)}% 
-              {trends.unresolved.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
+            <div
+              className={`report-stat-trend ${
+                trends.unresolved.isPositive ? "positive" : "negative"
+              }`}
+            >
+              {trends.unresolved.value > 0 ? "+" : ""}
+              {trends.unresolved.value.toFixed(1)}%
+              {trends.unresolved.isPositive ? (
+                <FiTrendingDown />
+              ) : (
+                <FiTrendingUp />
+              )}
             </div>
           </div>
         </div>
@@ -654,12 +752,23 @@ const UserReport = () => {
           <div className="report-stat-content">
             <div className="report-stat-subtext">
               {reports.length > 0
-                ? `${((stats.resolvedReports / reports.length) * 100).toFixed(1)}% resolution rate`
+                ? `${((stats.resolvedReports / reports.length) * 100).toFixed(
+                    1
+                  )}% resolution rate`
                 : "0% resolution rate"}
             </div>
-            <div className={`report-stat-trend ${trends.resolved.isPositive ? 'positive' : 'negative'}`}>
-              {trends.resolved.value > 0 ? '+' : ''}{trends.resolved.value.toFixed(1)}% 
-              {trends.resolved.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
+            <div
+              className={`report-stat-trend ${
+                trends.resolved.isPositive ? "positive" : "negative"
+              }`}
+            >
+              {trends.resolved.value > 0 ? "+" : ""}
+              {trends.resolved.value.toFixed(1)}%
+              {trends.resolved.isPositive ? (
+                <FiTrendingUp />
+              ) : (
+                <FiTrendingDown />
+              )}
             </div>
           </div>
         </div>
@@ -680,9 +789,18 @@ const UserReport = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">days average resolution</div>
-            <div className={`report-stat-trend ${trends.resolutionTime.isPositive ? 'positive' : 'negative'}`}>
-              {trends.resolutionTime.value > 0 ? '+' : ''}{trends.resolutionTime.value.toFixed(1)}% 
-              {trends.resolutionTime.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
+            <div
+              className={`report-stat-trend ${
+                trends.resolutionTime.isPositive ? "positive" : "negative"
+              }`}
+            >
+              {trends.resolutionTime.value > 0 ? "+" : ""}
+              {trends.resolutionTime.value.toFixed(1)}%
+              {trends.resolutionTime.isPositive ? (
+                <FiTrendingDown />
+              ) : (
+                <FiTrendingUp />
+              )}
             </div>
           </div>
         </div>
@@ -703,15 +821,29 @@ const UserReport = () => {
           <div className="reports-chart-body">
             <div className="pie-chart-container">
               <div className="pie-chart-wrapper">
-                <div 
+                <div
                   className="pie-chart"
                   style={{
                     background: `conic-gradient(
                       #10b981 0% ${satisfactionPercentages.excellent}%,
-                      #3b82f6 ${satisfactionPercentages.excellent}% ${satisfactionPercentages.excellent + satisfactionPercentages.good}%,
-                      #f59e0b ${satisfactionPercentages.excellent + satisfactionPercentages.good}% ${satisfactionPercentages.excellent + satisfactionPercentages.good + satisfactionPercentages.average}%,
-                      #ef4444 ${satisfactionPercentages.excellent + satisfactionPercentages.good + satisfactionPercentages.average}% 100%
-                    )`
+                      #3b82f6 ${satisfactionPercentages.excellent}% ${
+                      satisfactionPercentages.excellent +
+                      satisfactionPercentages.good
+                    }%,
+                      #f59e0b ${
+                        satisfactionPercentages.excellent +
+                        satisfactionPercentages.good
+                      }% ${
+                      satisfactionPercentages.excellent +
+                      satisfactionPercentages.good +
+                      satisfactionPercentages.average
+                    }%,
+                      #ef4444 ${
+                        satisfactionPercentages.excellent +
+                        satisfactionPercentages.good +
+                        satisfactionPercentages.average
+                      }% 100%
+                    )`,
                   }}
                 >
                   <div className="pie-chart-center">
@@ -771,7 +903,10 @@ const UserReport = () => {
           </div>
           <div className="reports-categories-body">
             {categoryStats.map((cat, i) => {
-              const percentage = stats.totalReports > 0 ? (cat.count / stats.totalReports) * 100 : 0;
+              const percentage =
+                stats.totalReports > 0
+                  ? (cat.count / stats.totalReports) * 100
+                  : 0;
               return (
                 <div key={i} className="category-progress">
                   <div className="category-header">
@@ -868,7 +1003,7 @@ const UserReport = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Recent Reports
           </h3>
-          <ExportButton 
+          <ExportButton
             data={reports.length > 0 ? reports : allReports}
             filename="user-reports"
             exportConfig={reportsExportConfig}
@@ -907,7 +1042,9 @@ const UserReport = () => {
                     </div>
                   </td>
                   <td>
-                    <span className={`report-category-badge ${report.issueType}`}>
+                    <span
+                      className={`report-category-badge ${report.issueType}`}
+                    >
                       {report.issueType === "technical" && "Technical Issue"}
                       {report.issueType === "billing" && "Billing Issue"}
                       {report.issueType === "general" && "General Inquiry"}
@@ -919,9 +1056,16 @@ const UserReport = () => {
                     </div>
                   </td>
                   <td>
-                    <span className={`report-status-badge ${report.status || "pending"}`}>
-                      {report.status === "resolved" ? "Resolved" : 
-                       report.status === "in-progress" ? "In Progress" : "Pending"}
+                    <span
+                      className={`report-status-badge ${
+                        report.status || "pending"
+                      }`}
+                    >
+                      {report.status === "resolved"
+                        ? "Resolved"
+                        : report.status === "in-progress"
+                        ? "In Progress"
+                        : "Pending"}
                     </span>
                   </td>
                   <td>{formatDate(report.createdAt)}</td>
@@ -939,7 +1083,11 @@ const UserReport = () => {
                           className="action-button small"
                           title="Mark Resolved"
                           onClick={() =>
-                            updateReportStatus(report.id, report.userId, "resolved")
+                            updateReportStatus(
+                              report.id,
+                              report.userId,
+                              "resolved"
+                            )
                           }
                         >
                           <FiCheckCircle />
@@ -949,7 +1097,11 @@ const UserReport = () => {
                           className="action-button small"
                           title="Reopen"
                           onClick={() =>
-                            updateReportStatus(report.id, report.userId, "pending")
+                            updateReportStatus(
+                              report.id,
+                              report.userId,
+                              "pending"
+                            )
                           }
                         >
                           <FiCornerUpLeft />
