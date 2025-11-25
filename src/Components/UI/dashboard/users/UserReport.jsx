@@ -847,9 +847,9 @@ const UserReport = () => {
                   }}
                 >
                   <div className="pie-chart-center">
-                    <div className="pie-chart-value">
+                    {/* <div className="pie-chart-value">
                       {stats.userSatisfaction}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

@@ -296,7 +296,6 @@ const Analytics = () => {
                 <div className="pie-chart-wrapper">
                   <div className="pie-chart">
                     <div className="pie-chart-center">
-                      <div className="pie-chart-value">67%</div>
                       <div className="pie-chart-label">Active Rate</div>
                     </div>
                   </div>
