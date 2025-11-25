@@ -411,16 +411,7 @@ const Downloads = () => {
               <div className="pie-chart-wrapper">
                 <div className="pie-chart">
                   <div className="pie-chart-center">
-                    <div className="pie-chart-value">
-                      {stats.totalDownloads > 0
-                        ? Math.round(
-                            (Math.max(...Object.values(categoryDistribution)) /
-                              stats.totalDownloads) *
-                              100
-                          )
-                        : 0}
-                      %
-                    </div>
+                    
                     <div className="pie-chart-label">Top Category</div>
                   </div>
                 </div>
@@ -608,7 +599,7 @@ const Downloads = () => {
             <thead>
               <tr>
                 <th>Asset</th>
-                <th>Publisher</th>
+                {/* <th>Publisher</th> */}
                 <th>Downloads</th>
                 <th>Success Rate</th>
                 <th>Category</th>
@@ -640,9 +631,9 @@ const Downloads = () => {
                       </div>
                     </div>
                   </td>
-                  <td>
+                  {/* <td>
                     <div className="comp-dis">{download.publisher}</div>
-                  </td>
+                  </td> */}
                   <td>
                     <div className="download-count">
                       <strong>

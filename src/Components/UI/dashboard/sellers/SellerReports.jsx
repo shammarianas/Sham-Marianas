@@ -411,9 +411,6 @@ const SellerReports = () => {
                 <tr key={report.id}>
                   <td>
                     <div className="report-user">
-                      <div className="report-user-avatar">
-                        {report.sellerName.charAt(0)}
-                      </div>
                       <div className="report-user-info">
                         <div className="report-user-name">{report.sellerName}</div>
                         <div className="report-user-email">{report.sellerEmail}</div>
@@ -425,19 +422,16 @@ const SellerReports = () => {
                   </td>
                   <td>
                     <div className="comp-dis">
-                      <FiCalendar style={{ marginRight: '4px' }} />
                       {report.period}
                     </div>
                   </td>
                   <td>
                     <div className="comp-dis">
-                      <FiClock style={{ marginRight: '4px' }} />
                       {report.generatedDate}
                     </div>
                   </td>
                   <td>
                     <div className="comp-dis">
-                      <FiDollarSign style={{ marginRight: '4px' }} />
                       {report.revenue.toLocaleString()}
                       <div style={{ fontSize: '0.75rem', color: report.growth >= 0 ? '#10b981' : '#ef4444' }}>
                         {getGrowthBadge(report.growth)}
@@ -446,7 +440,6 @@ const SellerReports = () => {
                   </td>
                   <td>
                     <div className="comp-dis">
-                      <FiDownload style={{ marginRight: '4px' }} />
                       {report.downloads}
                       <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                         {report.size}
@@ -505,70 +498,7 @@ const SellerReports = () => {
         </div>
       </div>
 
-      {/* Report Types Section */}
-      <div className="recent-reports-card">
-        <div className="recent-reports-header">
-          <h3 className="panel-title">
-            <FiFileText className="panel-icon" /> Available Report Types
-          </h3>
-        </div>
-        <div className="recent-reports-body">
-          <div className="report-types-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', padding: '1rem' }}>
-            <div className="report-type-card" style={{ background: 'var(--darker)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center' }}>
-              <div className="type-icon" style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                <FiTrendingUp />
-              </div>
-              <h4 className="type-title" style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>Sales Performance</h4>
-              <p className="type-description" style={{ color: 'var(--text-secondary)', margin: '0 0 1rem 0', fontSize: '0.9rem' }}>
-                Detailed analysis of sales trends, revenue, and product performance
-              </p>
-              <button className="action-button secondary small">
-                Generate
-              </button>
-            </div>
-
-            <div className="report-type-card" style={{ background: 'var(--darker)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center' }}>
-              <div className="type-icon" style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                <FiDownload />
-              </div>
-              <h4 className="type-title" style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>Download Analytics</h4>
-              <p className="type-description" style={{ color: 'var(--text-secondary)', margin: '0 0 1rem 0', fontSize: '0.9rem' }}>
-                Insights into download patterns and customer behavior
-              </p>
-              <button className="action-button secondary small">
-                Generate
-              </button>
-            </div>
-
-            <div className="report-type-card" style={{ background: 'var(--darker)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center' }}>
-              <div className="type-icon" style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                <FiFileText />
-              </div>
-              <h4 className="type-title" style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>Earnings Summary</h4>
-              <p className="type-description" style={{ color: 'var(--text-secondary)', margin: '0 0 1rem 0', fontSize: '0.9rem' }}>
-                Comprehensive earnings breakdown and payout history
-              </p>
-              <button className="action-button secondary small">
-                Generate
-              </button>
-            </div>
-
-            <div className="report-type-card" style={{ background: 'var(--darker)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center' }}>
-              <div className="type-icon" style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                <FiUsers />
-              </div>
-              <h4 className="type-title" style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>Customer Insights</h4>
-              <p className="type-description" style={{ color: 'var(--text-secondary)', margin: '0 0 1rem 0', fontSize: '0.9rem' }}>
-                Customer demographics and purchasing behavior analysis
-              </p>
-              <button className="action-button secondary small">
-                Generate
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+     
       {/* Report Details Modal */}
       {showDetailsModal && selectedReport && (
         <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>

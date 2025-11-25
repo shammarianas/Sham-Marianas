@@ -332,7 +332,6 @@ const Earnings = () => {
                 <div className="pie-chart-wrapper">
                   <div className="pie-chart">
                     <div className="pie-chart-center">
-                      <div className="pie-chart-value">80%</div>
                       <div className="pie-chart-label">Seller Share</div>
                     </div>
                   </div>

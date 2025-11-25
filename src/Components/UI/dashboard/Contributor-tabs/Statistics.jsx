@@ -825,9 +825,9 @@ const Statistics = ({ setActiveTab }) => {
                   }}
                 >
                   <div className="pie-chart-center">
-                    <div className="pie-chart-value">
+                    {/* <div className="pie-chart-value">
                       {Statistics.totalAssets}
-                    </div>
+                    </div> */}
                     <div className="pie-chart-label">Your Assets</div>
                   </div>
                 </div>
