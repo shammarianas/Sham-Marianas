@@ -27,7 +27,7 @@ import {
   FiPieChart,
 } from "react-icons/fi";
 import ExportButton from "../../../ExportButton";
-import { reportsExportConfig } from "../../../../utils/exportUtils";
+// import { reportsExportConfig } from "../../../../utils/exportUtils";
 
 const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const [subscriptionData, setSubscriptionData] = useState([]);
@@ -480,7 +480,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               subscriptionData.length > 0 ? subscriptionData : mockSubscriptions
             }
             filename="subscription-reports"
-            exportConfig={reportsExportConfig}
+            // exportConfig={reportsExportConfig}
             variant="secondary"
             onExportStart={handleExportStart}
             onExportComplete={handleExportComplete}
