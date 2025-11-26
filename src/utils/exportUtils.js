@@ -14,7 +14,6 @@ export const exportToCSV = (data, filename = "export.csv") => {
     alert("No data to export");
     return;
   }
-  
 
   const headers = Object.keys(data[0]);
   const csvContent = [
@@ -82,7 +81,9 @@ export const exportToJSON = (data, filename = "export.json") => {
   }
 
   const jsonString = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonString], { type: "application/json;charset=utf-8;" });
+  const blob = new Blob([jsonString], {
+    type: "application/json;charset=utf-8;",
+  });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = filename;
@@ -106,7 +107,9 @@ export const exportUsersData = (users, format = "csv") => {
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `users_report_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
+  const filename = `users_report_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
@@ -126,7 +129,9 @@ export const exportUserReportsData = (reports, format = "csv") => {
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `user_reports_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
+  const filename = `user_reports_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
@@ -147,7 +152,9 @@ export const exportSellersData = (sellers, format = "csv") => {
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `sellers_report_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
+  const filename = `sellers_report_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
@@ -167,7 +174,9 @@ export const exportSellerReportsData = (reports, format = "csv") => {
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `seller_reports_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
+  const filename = `seller_reports_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
@@ -186,7 +195,9 @@ export const exportDownloadsData = (downloads, format = "csv") => {
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `downloads_report_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
+  const filename = `downloads_report_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
@@ -207,7 +218,9 @@ export const exportAssetsData = (assets, format = "csv") => {
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `assets_report_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
+  const filename = `assets_report_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
@@ -226,7 +239,9 @@ export const exportAssetRequestsData = (requests, format = "csv") => {
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `asset_requests_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
+  const filename = `asset_requests_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
@@ -245,21 +260,22 @@ export const exportPaymentsData = (payments, format = "csv") => {
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `payments_report_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
+  const filename = `payments_report_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
   else exportToCSV(formattedData, filename);
 };
 
-// Seller Verification Export - matches SellerAccountVerify table
 export const exportSellersVerifyData = (sellers, format = "csv") => {
   const formattedData = sellers.map((seller) => ({
-    "Seller Name": seller.name || seller.fullName || seller.username || "N/A",
+    "Seller Name": seller.name || "N/A",
     Email: seller.email || "N/A",
-    "Business Name": seller.businessName || seller.specialization || "Unknown",
-    Category: seller.category || seller.specialization || "General",
-    Location: seller.location || seller.countryCode || "N/A",
+    "Business Name": seller.businessName || "Unknown",
+    Category: seller.category || "General",
+    Location: seller.location || "N/A",
     "Join Date": seller.joinDate || "N/A",
     Status: seller.status || "Pending",
   }));

@@ -1,78 +1,63 @@
-import React, { useState } from 'react';
-import { FiDownload, FiRefreshCw } from 'react-icons/fi';
-import { exportToCSV } from '../utils/exportUtils';
+import React, { useState } from "react";
+import { FiDownload, FiRefreshCw } from "react-icons/fi";
+import { exportToCSV } from "../utils/exportUtils";
 
-const ExportButton = ({ 
-  data, 
-  filename = 'export',
-  exportConfig,
-  configType, // 'reports', 'subscriptions', 'users', 'payments'
-  customColumns, // For dynamic column creation
-  variant = 'secondary',
-  className = '',
+const ExportButton = ({
+  data,
+  filename = "export",
+  columns, // <-- new prop for column config
+  variant = "secondary",
+  className = "",
   disabled = false,
   onExportStart,
   onExportComplete,
   onExportError,
-  buttonText = 'Export Data',
-  loadingText = 'Exporting...',
-  options = {}
+  buttonText = "Export Data",
+  loadingText = "Exporting...",
+  options = {},
 }) => {
   const [exportLoading, setExportLoading] = useState(false);
 
-  const handleExport = async () => {
+  const handleExport = async (format = "csv") => {
     if (!data || data.length === 0) {
       alert(options.emptyMessage || "No data available to export");
       return;
     }
 
+    if (!columns || columns.length === 0) {
+      alert("No column configuration provided for export");
+      return;
+    }
+
     try {
       setExportLoading(true);
-      
-      // Callback before export starts
       if (onExportStart) onExportStart();
-      
-      // Determine which config to use
-      let finalConfig;
-      
-      if (exportConfig) {
-        // Use provided config
-        finalConfig = exportConfig;
-      } else if (configType && exportConfigs[configType]) {
-        // Use pre-defined config type
-        finalConfig = exportConfigs[configType];
-      } else if (customColumns) {
-        // Create config from custom columns
-        finalConfig = createExportConfig(customColumns);
+
+      // Format data according to columns config
+      const formattedData = data.map((item) =>
+        columns.reduce((acc, col) => {
+          acc[col.header] = col.accessor(item);
+          return acc;
+        }, {})
+      );
+
+      const timestamp = new Date().toISOString().split("T")[0];
+      const exportFilename = `${filename}_${timestamp}.${
+        format === "excel" ? "xlsx" : format === "json" ? "json" : "csv"
+      }`;
+
+      // Export
+      if (format === "json") {
+        exportToJSON(formattedData, exportFilename);
+      } else if (format === "excel") {
+        exportToExcel(formattedData, exportFilename);
       } else {
-        // Default fallback - export all object properties
-        if (data.length > 0) {
-          const sampleItem = data[0];
-          finalConfig = {
-            columns: Object.keys(sampleItem).map(key => ({
-              header: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
-              accessor: (item) => {
-                const value = item[key];
-                if (value === null || value === undefined) return 'N/A';
-                if (typeof value === 'object') return JSON.stringify(value);
-                return String(value);
-              }
-            }))
-          };
-        } else {
-          alert("No data available to export");
-          return;
-        }
+        exportToCSV(formattedData, exportFilename);
       }
-      
-      // Perform export
-      const success = exportToCSV(data, filename, finalConfig.columns, options);
-      
-      // Callback after export completes
-      if (onExportComplete) onExportComplete(success);
-      
+
+      if (onExportComplete) onExportComplete(true);
     } catch (error) {
-      console.error('Export failed:', error);
+      console.error("Export failed:", error);
       if (onExportError) onExportError(error);
     } finally {
       setExportLoading(false);
@@ -80,20 +65,24 @@ const ExportButton = ({
   };
 
   return (
-    <button 
-      className={`action-button ${variant} ${className} ${exportLoading ? 'loading' : ''}`}
-      onClick={handleExport}
+    <button
+      className={`action-button ${variant} ${className} ${
+        exportLoading ? "loading" : ""
+      }`}
+      onClick={() => handleExport()}
       disabled={disabled || exportLoading || !data || data.length === 0}
-      title={disabled ? 'No data to export' : `Export ${data?.length || 0} records`}
+      title={
+        disabled ? "No data to export" : `Export ${data?.length || 0} records`
+      }
     >
       {exportLoading ? (
         <>
-          <FiRefreshCw className="button-icon spinning" /> 
+          <FiRefreshCw className="button-icon spinning" />
           {loadingText}
         </>
       ) : (
         <>
-          <FiDownload className="button-icon" /> 
+          <FiDownload className="button-icon" />
           {buttonText}
         </>
       )}

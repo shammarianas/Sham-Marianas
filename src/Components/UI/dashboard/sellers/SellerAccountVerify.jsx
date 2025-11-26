@@ -27,6 +27,27 @@ const SellerAccountVerify = () => {
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const sellerColumns = [
+    { header: "Seller Name", accessor: (item) => item.name || "N/A" },
+    { header: "Email", accessor: (item) => item.email || "N/A" },
+    {
+      header: "Business Name",
+      accessor: (item) => item.businessName || "Unknown",
+    },
+    { header: "Category", accessor: (item) => item.category || "General" },
+    { header: "Location", accessor: (item) => item.location || "N/A" },
+    {
+      header: "Join Date",
+      accessor: (item) => {
+        if (!item.joinDate) return "N/A";
+        const dateObj = new Date(item.joinDate);
+        if (isNaN(dateObj.getTime())) return item.joinDate; // fallback if not a valid date
+        return dateObj.toISOString().split("T")[0]; // format: YYYY-MM-DD
+      },
+    },
+    { header: "Status", accessor: (item) => item.status || "Pending" },
+  ];
+
   useEffect(() => {
     const fetchSellers = async () => {
       try {
@@ -297,10 +318,9 @@ const SellerAccountVerify = () => {
           </h3>
           <ExportButton
             data={filteredSellers}
+            columns={sellerColumns}
             filename="seller-verification-report"
-            onExport={(format) =>
-              exportSellersVerifyData(filteredSellers, format)
-            }
+            buttonText="Export Sellers"
           />
         </div>
         <div className="recent-reports-body">
