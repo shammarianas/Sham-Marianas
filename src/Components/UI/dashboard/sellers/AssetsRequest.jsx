@@ -19,7 +19,7 @@ import {
 import { collection, getDocs, query, where, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
-// import { reportsExportConfig } from "../../../../utils/exportUtils";
+import { exportAssetRequestsData } from "../../../../utils/exportUtils";
 
 
 const AssetRequestsDashboard = () => {
@@ -161,6 +161,19 @@ const AssetRequestsDashboard = () => {
       console.error("Error moving asset to pending:", error);
       alert("Failed to move asset to pending");
     }
+  };
+
+  // ✅ Prepare data for export - WITHOUT ANY CHANGES to the export function
+  const prepareExportData = (assets) => {
+    // Convert asset data to request data format that exportAssetRequestsData expects
+    return assets.map(asset => ({
+      sellerName: asset.author,
+      sellerEmail: asset.authorEmail,
+      assetName: asset.title,
+      category: asset.category,
+      status: asset.status,
+      requestDate: asset.submitDate
+    }));
   };
 
    // Export handler with callbacks
@@ -426,9 +439,29 @@ const AssetRequestsDashboard = () => {
             <FiList className="panel-icon" /> Contributor Asset Requests
           </h3>
          <ExportButton
-            data={filteredAssets.length > 0 ? filteredAssets : stats}
+            data={prepareExportData(filteredAssets.length > 0 ? filteredAssets : assetRequests)}
+            columns={[
+              { header: "Seller Name", accessor: (r) => r.sellerName || r.author || "N/A" },
+              // { header: "Seller Email", accessor: (r) => r.sellerEmail || r.authorEmail || "N/A" },
+              { header: "Asset Name", accessor: (r) => r.assetName || r.title || "N/A" },
+              { header: "Category", accessor: (r) => r.category || "N/A" },
+              { header: "Status", accessor: (r) => r.status || "Pending" },
+              { header: "Request Date", accessor: (r) => {
+                  if (!r.requestDate) return "N/A";
+                  try {
+                    const d = r.requestDate.toDate ? r.requestDate.toDate() : new Date(r.requestDate);
+                    return d.toISOString().split("T")[0];
+                  } catch { return String(r.requestDate); }
+                }
+              }
+            ]}
             filename="assets-request-reports"
-            // exportConfig={reportsExportConfig}
+            onExport={(format) =>
+              exportAssetRequestsData(
+                prepareExportData(filteredAssets.length > 0 ? filteredAssets : assetRequests),
+                format
+              )
+            }
             variant="secondary"
             onExportStart={handleExportStart}
             onExportComplete={handleExportComplete}
