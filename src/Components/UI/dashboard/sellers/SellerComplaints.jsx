@@ -28,7 +28,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../../../firebase"; // Adjust path as needed
 import ExportButton from "../../../ExportButton";
-import { reportsExportConfig } from "../../../../utils/exportUtils";
+// import { reportsExportConfig } from "../../../../utils/exportUtils";
 
 
 const SellerComplaints = () => {
@@ -385,7 +385,7 @@ const SellerComplaints = () => {
          <ExportButton
             data={filteredComplaints.length > 0 ? filteredComplaints : stats}
             filename="seller-complains-reports"
-            exportConfig={reportsExportConfig}
+            // exportConfig={reportsExportConfig}
             variant="secondary"
             onExportStart={handleExportStart}
             onExportComplete={handleExportComplete}
