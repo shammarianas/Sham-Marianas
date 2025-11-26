@@ -21,7 +21,7 @@ import {
   FiFileText
 } from "react-icons/fi";
 import ExportButton from "../../../ExportButton";
-import { reportsExportConfig } from "../../../../utils/exportUtils";
+// import { reportsExportConfig } from "../../../../utils/exportUtils";
 
 
 const SellerEarning = () => {
@@ -333,7 +333,7 @@ const SellerEarning = () => {
           <ExportButton
             data={filteredSellers.length > 0 ? filteredSellers : stats}
             filename="seller-earning-reports"
-            exportConfig={reportsExportConfig}
+            // exportConfig={reportsExportConfig}
             variant="secondary"
             onExportStart={handleExportStart}
             onExportComplete={handleExportComplete}
