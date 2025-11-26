@@ -27,7 +27,7 @@ import {
   FiPieChart,
 } from "react-icons/fi";
 import ExportButton from "../../../ExportButton";
-// import { reportsExportConfig } from "../../../../utils/exportUtils";
+import { exportPaymentsData } from "../../../../utils/exportUtils"; // Import the function
 
 const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const [subscriptionData, setSubscriptionData] = useState([]);
@@ -257,6 +257,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
     setShowSubscriptionModal(false);
     setSelectedSubscription(null);
   };
+
   // Export handler with callbacks
   const handleExportStart = () => {
     console.log("Export started...");
@@ -272,6 +273,19 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
 
   const handleExportError = (error) => {
     console.error("Export error:", error);
+  };
+
+  // Prepare data for export - WITHOUT ANY CHANGES to the export function
+  const prepareExportData = (subscriptions) => {
+    // Convert subscription data to payment data format that exportPaymentsData expects
+    return subscriptions.map(sub => ({
+      userName: sub.userName,
+      userEmail: sub.userEmail,
+      amount: sub.price,
+      plan: sub.plan,
+      status: sub.status,
+      paymentDate: sub.startDate
+    }));
   };
 
   return (
@@ -476,11 +490,12 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             Subscription Management
           </h3>
           <ExportButton
-            data={
-              subscriptionData.length > 0 ? subscriptionData : mockSubscriptions
-            }
+            data={prepareExportData(subscriptionData.length > 0 ? subscriptionData : mockSubscriptions)}
             filename="subscription-reports"
-            // exportConfig={reportsExportConfig}
+            onExport={(format) => exportPaymentsData(
+              prepareExportData(subscriptionData.length > 0 ? subscriptionData : mockSubscriptions), 
+              format
+            )}
             variant="secondary"
             onExportStart={handleExportStart}
             onExportComplete={handleExportComplete}
@@ -609,6 +624,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
         </div>
       </div>
 
+      {/* Rest of your component remains exactly the same */}
       {/* Subscription Details Modal */}
       {showSubscriptionModal && selectedSubscription && (
         <div className="modal-overlay">

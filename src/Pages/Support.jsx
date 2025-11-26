@@ -61,7 +61,7 @@ const Support = () => {
           issueType,
           file: file ? file.name : "",
           createdAt: serverTimestamp(),
-          userType: isContributor ? "contributor" : "regular",
+          userType: isContributor ? "regular" : "regular",  //"contributor" : 
           status: "pending",
         }
       );
