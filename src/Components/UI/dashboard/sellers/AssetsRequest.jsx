@@ -19,7 +19,7 @@ import {
 import { collection, getDocs, query, where, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
-import { reportsExportConfig } from "../../../../utils/exportUtils";
+// import { reportsExportConfig } from "../../../../utils/exportUtils";
 
 
 const AssetRequestsDashboard = () => {
@@ -428,7 +428,7 @@ const AssetRequestsDashboard = () => {
          <ExportButton
             data={filteredAssets.length > 0 ? filteredAssets : stats}
             filename="assets-request-reports"
-            exportConfig={reportsExportConfig}
+            // exportConfig={reportsExportConfig}
             variant="secondary"
             onExportStart={handleExportStart}
             onExportComplete={handleExportComplete}
