@@ -21,7 +21,7 @@ import {
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
-import { reportsExportConfig } from "../../../../utils/exportUtils";
+import {  exportUsersData } from "../../../../utils/exportUtils";
 
 const UserReport = () => {
   const [allReports, setAllReports] = useState([]);
@@ -260,6 +260,7 @@ const UserReport = () => {
 
   // Export handler with callbacks-------------
   const handleExportStart = () => {
+    exportUsersData(users, format);
     console.log("Export started...");
   };
 

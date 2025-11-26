@@ -20,6 +20,7 @@ import {
   FiDollarSign,
   FiDownload,
   FiCalendar,
+  FiChevronDown,
 } from "react-icons/fi";
 
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
@@ -38,6 +39,7 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
     admins: 0,
     countries: {},
   });
+  const [visibleUsersCount, setVisibleUsersCount] = useState(10); // Initial limit
 
   /* ──────────────────────  Firestore Functions (INSIDE COMPONENT)  ────────────────────── */
   const changeUserRole = async (userId, newRole, email) => {
@@ -107,6 +109,9 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
 
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  // Get limited users for display
+  const displayedUsers = filteredUsers.slice(0, visibleUsersCount);
 
   /* ──────────────────────  Handlers with UI Refresh  ────────────────────── */
   const handleUserStatusToggle = async (userId) => {
@@ -186,6 +191,16 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
       alert(`Delete failed: ${res.error?.message || "Try again"}`);
     }
   };
+
+  // Load more users function
+  const handleLoadMore = () => {
+    setVisibleUsersCount(prevCount => prevCount + 10);
+  };
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleUsersCount(4);
+  }, [userSearchTerm, selectedUserRole, selectedUserStatus]);
 
   /* ──────────────────────  Top countries  ────────────────────── */
   const topCountries = Object.entries(userStats.countries)
@@ -430,34 +445,121 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
           )}
 
           {/* Users grid */}
-          {filteredUsers.length > 0 ? (
-            <div className="users-grid">
-              {filteredUsers.map((user) => (
-                <UserCard
-                  key={user.id}
-                  user={user}
-                  onSelect={() => {
-                    const newSel = selectedUsers.includes(user.id)
-                      ? selectedUsers.filter((id) => id !== user.id)
-                      : [...selectedUsers, user.id];
-                    setSelectedUsers(newSel);
-                  }}
-                  isSelected={selectedUsers.includes(user.id)}
-                  onViewDetails={() => {
-                    setSelectedUser(user);
-                    setShowUserDialog(true);
-                  }}
-                  onStatusToggle={handleUserStatusToggle}
-                  onRoleChange={handleUserRoleChange}
-                  onDelete={handleDelete} // YE LINE ADD KARO
-                  formatCurrency={formatCurrency}
-                  formatDate={formatDate}
-                />
-              ))}
-            </div>
+          {displayedUsers.length > 0 ? (
+            <>
+              <div className="recent-reports-card">
+                <div className="recent-reports-body">
+                  <table className="report-table">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Downloads</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displayedUsers.map((user) => {
+                        const name =
+                          user.name ||
+                          user.displayName ||
+                          user.email?.split("@")[0] ||
+                          "Unknown";
+                        const status = (user.status || "active").toLowerCase();
+                        const isActive = status === "active";
+                        return (
+                          <tr key={user.id}>
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={selectedUsers.includes(user.id)}
+                                onChange={() => {
+                                  const newSel = selectedUsers.includes(user.id)
+                                    ? selectedUsers.filter((id) => id !== user.id)
+                                    : [...selectedUsers, user.id];
+                                  setSelectedUsers(newSel);
+                                }}
+                              />
+                            </td>
+                            <td className="user-cell">
+                              <div className="user-cell-info">
+                                
+                                <div className="user-name-wrap">
+                                  <div className="user-name">{name}</div>
+                                  <div className="user-username">
+                                    @{user.username || ""}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            
+                            <td>{user.role || "User"}</td>
+                            
+                            
+                            <td>{user.totalDownloads || 0}</td>
+                            <td>{formatDate(user.createdAt || user.joinDate)}</td>
+                            <td >
+                              <div className="table-actions">
+                                <button
+                                className="action-button secondary small"
+                                title="View Details"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setShowUserDialog(true);
+                                }}
+                              >
+                                <FiEye />
+                              </button>
+                              <button
+                                className="action-button small"
+                                title={isActive ? "Deactivate" : "Activate"}
+                                onClick={() => handleUserStatusToggle(user.id)}
+                              >
+                                {isActive ? <FiX /> : <FiUserCheck />}
+                              </button>
+                              <button
+                                className="action-button danger small"
+                                title="Delete"
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `Delete ${name}'s account? This action cannot be undone.`
+                                    )
+                                  ) {
+                                    handleDelete(user.id);
+                                  }
+                                }}
+                              >
+                                <FiTrash2 />
+                              </button>
+                                </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* See More Button */}
+              {filteredUsers.length > visibleUsersCount && (
+                <div className="load-more-container">
+                  <button 
+                    className="see-more-button" 
+                    onClick={handleLoadMore}
+                  >
+                    <FiChevronDown className="button-icon" />
+                    See More ({filteredUsers.length - visibleUsersCount} more users)
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="content-card">
-              <div className="card-body empty-state">
+            <div className="recent-reports-card">
+              <div className="recent-reports-body empty-state">
                 <FiUsers className="empty-icon" />
                 <h3 className="empty-title">No users found</h3>
                 <p className="empty-text">
@@ -486,6 +588,8 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
     </div>
   );
 };
+
+// ... (UserCard and UserDetailsModal components remain exactly the same)
 
 /* ────────────────────────────────────────────────────────────────────────
    UserCard – UI unchanged
