@@ -29,6 +29,37 @@ const UserReport = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
+const reportColumns = [
+  { header: "User", accessor: (r) => r.email || r.userId || "N/A" },
+  {
+    header: "Category",
+    accessor: (r) =>
+      r.issueType === "technical"
+        ? "Technical Issue"
+        : r.issueType === "billing"
+        ? "Billing Issue"
+        : "General Inquiry",
+  },
+  {
+    header: "Description",
+    accessor: (r) => (r.subject ? `${r.subject}` : r.description || "No description"),
+  },
+  { header: "Status", accessor: (r) => r.status || "pending" },
+  {
+    header: "Date",
+    accessor: (r) => {
+      if (!r.createdAt) return "N/A";
+      try {
+        const d = r.createdAt.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
+        return d.toISOString().split("T")[0];
+      } catch {
+        return String(r.createdAt);
+      }
+    },
+  },
+];
+ 
+
   const [filters, setFilters] = useState({
     search: "",
     category: "",
@@ -57,6 +88,17 @@ const UserReport = () => {
         const reports = [];
 
         for (const profileDoc of profilesSnapshot.docs) {
+          const profileData = profileDoc.data() || {};
+
+          // Skip contributor accounts — only include regular users' reports
+          const isContributor =
+            profileData.role === "contributor" ||
+            profileData.isContributor === true ||
+            profileData.accountType === "contributor" ||
+            profileData.type === "contributor";
+
+          if (isContributor) continue;
+
           const supportRef = collection(
             db,
             `Profiles/${profileDoc.id}/Support`
@@ -258,23 +300,7 @@ const UserReport = () => {
     });
   }, [allReports, filters, loading]);
 
-  // Export handler with callbacks-------------
-  const handleExportStart = () => {
-    exportUsersData(users, format);
-    console.log("Export started...");
-  };
-
-  const handleExportComplete = (success) => {
-    if (success) {
-      console.log("Export completed successfully");
-    } else {
-      console.log("Export failed");
-    }
-  };
-
-  const handleExportError = (error) => {
-    console.error("Export error:", error);
-  };
+  
 
   // Calculate user satisfaction from resolution time and response quality
   const userSatisfactionData = useMemo(() => {
@@ -1004,11 +1030,14 @@ const UserReport = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Recent Reports
           </h3>
-          <ExportButton
+           <ExportButton
             data={reports.length > 0 ? reports : allReports}
             filename="user-reports"
             variant="secondary"
-            onExport={(format) => exportUserReportsData(reports.length > 0 ? reports : allReports, format)}
+            columns={reportColumns}
+            onExport={(format) =>
+              exportUserReportsData(reports.length > 0 ? reports : allReports, format)
+            }
           />
         </div>
         <div className="recent-reports-body">

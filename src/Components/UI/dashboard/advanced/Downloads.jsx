@@ -25,6 +25,9 @@ import {
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { useUser } from "../../../../Context/UserProvider";
 import { db } from "../../../../firebase";
+import { exportDownloadsData } from "../../../../utils/exportUtils";
+import ExportButton from "../../../ExportButton";
+
 
 const Downloads = () => {
   const { currentUser } = useUser();
@@ -411,7 +414,6 @@ const Downloads = () => {
               <div className="pie-chart-wrapper">
                 <div className="pie-chart">
                   <div className="pie-chart-center">
-                    
                     <div className="pie-chart-label">Top Category</div>
                   </div>
                 </div>
@@ -589,10 +591,35 @@ const Downloads = () => {
             <FiList className="panel-icon" />
             Asset Download Statistics
           </h3>
-          <button className="action-button secondary">
-            <FiDownload className="button-icon" />
-            Export Report
-          </button>
+          <div className="recent-reports-header">
+          <h3 className="panel-title">
+            <FiList className="panel-icon" />
+            Asset Download Statistics
+          </h3>
+          <ExportButton
+            data={filteredDownloads.length > 0 ? filteredDownloads : downloads}
+            filename="downloads-analytics"
+            variant="secondary"
+            columns={[
+              { header: "Asset Name", accessor: (d) => d.assetName || "N/A" },
+              { header: "Asset Type", accessor: (d) => d.assetType || "N/A" },
+              // { header: "Publisher", accessor: (d) => d.publisher || "N/A" },
+              { header: "Total Downloads", accessor: (d) => d.totalDownloads || 0 },
+              { header: "Successful", accessor: (d) => d.successfulDownloads || 0 },
+              { header: "Failed", accessor: (d) => d.failedDownloads || 0 },
+              { header: "Success Rate", accessor: (d) => `${d.successRate || 0}%` },
+              { header: "Category", accessor: (d) => d.category || "N/A" },
+              { header: "Revenue", accessor: (d) => `$${(parseFloat(d.revenue) || 0).toFixed(2)}` },
+              { header: "Last Download", accessor: (d) => formatDate(d.lastDownload) },
+            ]}
+            onExport={(format) =>
+              exportDownloadsData(
+                filteredDownloads.length > 0 ? filteredDownloads : downloads,
+                format
+              )
+            }
+          />
+        </div>
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
