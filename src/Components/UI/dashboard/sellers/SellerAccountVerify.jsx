@@ -21,7 +21,7 @@ import {
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
-import { reportsExportConfig } from "../../../../utils/exportUtils";
+import { exportSellersVerifyData } from "../../../../utils/exportUtils";
 
 const SellerAccountVerify = () => {
   const [sellers, setSellers] = useState([]);
@@ -88,21 +88,11 @@ const SellerAccountVerify = () => {
   };
 
   // Export handler with callbacks
-  const handleExportStart = () => {
-    console.log("Export started...");
-  };
-
-  const handleExportComplete = (success) => {
-    if (success) {
-      console.log("Export completed successfully");
-    } else {
-      console.log("Export failed");
-    }
-  };
-
-  const handleExportError = (error) => {
-    console.error("Export error:", error);
-  };
+  const handleExport = (format) => {
+  console.log("Exporting data:", filteredSellers);
+  console.log("First seller:", filteredSellers[0]);
+  exportSellersVerifyData(filteredSellers, format);
+};
 
   const filteredSellers = sellers.filter((seller) => {
     const matchesSearch =
@@ -305,15 +295,11 @@ const SellerAccountVerify = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Seller Management
           </h3>
-          <ExportButton
-            data={filteredSellers.length > 0 ? filteredSellers : stats}
-            filename="seller-verify-reports"
-            exportConfig={reportsExportConfig}
-            variant="secondary"
-            onExportStart={handleExportStart}
-            onExportComplete={handleExportComplete}
-            onExportError={handleExportError}
-          />
+        <ExportButton
+  data={filteredSellers}
+  filename="seller-verification-report"
+  onExport={(format) => exportSellersVerifyData(filteredSellers, format)}
+/>
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
