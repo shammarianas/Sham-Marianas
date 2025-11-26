@@ -37,7 +37,7 @@ const SellerAccountVerify = () => {
           id: docSnap.id,
           ...docSnap.data(),
 
-          // Convert Firestore timestamp to readable date
+          // Convert Firestore timestamp to readable date--------
           joinDate: docSnap.data().joinDate?.toDate().toLocaleDateString(),
           location: docSnap.data().countryCode || "N/A",
           email: docSnap.data().email || "N/A",
