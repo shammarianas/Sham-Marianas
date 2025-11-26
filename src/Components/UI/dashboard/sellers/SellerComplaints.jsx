@@ -28,7 +28,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../../../firebase"; // Adjust path as needed
 import ExportButton from "../../../ExportButton";
-// import { reportsExportConfig } from "../../../../utils/exportUtils";
+import { exportSellerComplaintsData } from "../../../../utils/exportUtils";
 
 
 const SellerComplaints = () => {
@@ -382,14 +382,27 @@ const SellerComplaints = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Contributor Support Requests
           </h3>
-         <ExportButton
-            data={filteredComplaints.length > 0 ? filteredComplaints : stats}
-            filename="seller-complains-reports"
-            // exportConfig={reportsExportConfig}
+          <ExportButton
+            data={filteredComplaints.length > 0 ? filteredComplaints : complaints}
+            filename="seller-complaints-reports"
             variant="secondary"
-            onExportStart={handleExportStart}
-            onExportComplete={handleExportComplete}
-            onExportError={handleExportError}
+           columns={[
+            { header: "Contributor", accessor: (c) => c.sellerName || "N/A" },
+             { header: "Email", accessor: (c) => c.sellerEmail || "N/A" },
+             { header: "Contact Email", accessor: (c) => c.complainantEmail || "N/A" },
+             { header: "Type", accessor: (c) => c.type || "N/A" },
+             { header: "Subject", accessor: (c) => c.subject || "N/A" },
+             { header: "Description", accessor: (c) => c.description || "N/A" },
+             { header: "Status", accessor: (c) => c.status || "pending" },
+             { header: "Created Date", accessor: (c) => c.createdAt || "N/A" },
+             { header: "Updated Date", accessor: (c) => c.updatedAt || "N/A" },
+           ]}
+            onExport={(format) =>
+              exportSellerComplaintsData(
+                filteredComplaints.length > 0 ? filteredComplaints : complaints,
+                format
+              )
+            }
           />
         </div>
         <div className="recent-reports-body">

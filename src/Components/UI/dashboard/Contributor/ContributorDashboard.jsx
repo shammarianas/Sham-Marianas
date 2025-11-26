@@ -155,7 +155,7 @@ const SellerDashboard = () => {
   const fetchUserReports = async (uid) => {
     try {
       const supportQuery = query(
-        collection(db, `Contributors/${uid}/Support`), // ✅ YAHI CHANGE KARNA HAI
+        collection(db, `Contributors/${uid}/Support`), 
         orderBy("createdAt", "desc")
       );
 

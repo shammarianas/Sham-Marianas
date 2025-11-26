@@ -183,19 +183,51 @@ export const exportSellerReportsData = (reports, format = "csv") => {
   else exportToCSV(formattedData, filename);
 };
 
-// Downloads Export
-export const exportDownloadsData = (downloads, format = "csv") => {
-  const formattedData = downloads.map((download) => ({
-    "User Name": download.userName || "N/A",
-    Email: download.userEmail || "N/A",
-    "Asset Name": download.assetName || "N/A",
-    "Asset Type": download.assetType || "N/A",
-    "Download Date": download.downloadDate || "N/A",
-    "Seller Name": download.sellerName || "N/A",
+// Seller Complaints Export
+export const exportSellerComplaintsData = (complaints, format = "csv") => {
+  const formattedData = complaints.map((complaint) => ({
+    "Contributor Name": complaint.sellerName || "N/A",
+    "Contributor Email": complaint.sellerEmail || "N/A",
+    "Contact Email": complaint.complainantEmail || "N/A",
+    "Request Type": complaint.type || "N/A",
+    Subject: complaint.subject || "N/A",
+    Description: complaint.description || "N/A",
+    Status: complaint.status || "Pending",
+    "Created Date": complaint.createdAt || "N/A",
+    "Updated Date": complaint.updatedAt || "N/A",
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `downloads_report_${timestamp}.${
+  const filename = `seller_complaints_${timestamp}.${
+    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
+  }`;
+
+  if (format === "json") exportToJSON(formattedData, filename);
+  else if (format === "excel") exportToExcel(formattedData, filename);
+  else exportToCSV(formattedData, filename);
+};
+
+// Downloads Export function
+export const exportDownloadsData = (downloads, format = "csv") => {
+  const formattedData = downloads.map((download) => ({
+    "Asset Name": download.assetName || "N/A",
+    "Asset Type": download.assetType || "N/A",
+    // Publisher: download.publisher || "N/A",
+    "Total Downloads": download.totalDownloads || 0,
+    "Successful Downloads": download.successfulDownloads || 0,
+    "Failed Downloads": download.failedDownloads || 0,
+    "Success Rate %": download.successRate || 0,
+    Category: download.category || "N/A",
+    "File Size MB": download.fileSize || 0,
+    Price: download.price || 0,
+    Revenue: download.revenue || 0,
+    License: download.license || "N/A",
+    Rating: download.rating || 0,
+    "Last Download": download.lastDownload || "N/A",
+  }));
+
+  const timestamp = new Date().toISOString().split("T")[0];
+  const filename = `downloads_analytics_${timestamp}.${
     format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
   }`;
 
@@ -229,19 +261,19 @@ export const exportAssetsData = (assets, format = "csv") => {
 
 // Asset Requests Export
 export const exportAssetRequestsData = (requests, format = "csv") => {
-  const formattedData = requests.map((request) => ({
-    "Seller Name": request.sellerName || "N/A",
-    Email: request.sellerEmail || "N/A",
-    "Asset Name": request.assetName || "N/A",
-    Category: request.category || "N/A",
-    Status: request.status || "Pending",
-    "Request Date": request.requestDate || "N/A",
+  const formattedData = requests.map((r) => ({
+    "Seller Name": r.sellerName || r.seller || "N/A",
+    // Email: r.sellerEmail || r.email || "N/A",
+    "Asset Name": r.assetName || r.title || "N/A",
+    Category: r.category || "N/A",
+    Status: r.status || "Pending",
+    "Request Date": r.requestDate
+      ? (r.requestDate.toDate ? r.requestDate.toDate().toISOString().split("T")[0] : String(r.requestDate))
+      : "N/A",
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];
-  const filename = `asset_requests_${timestamp}.${
-    format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"
-  }`;
+  const filename = `asset_requests_${timestamp}.${format === "json" ? "json" : format === "excel" ? "xlsx" : "csv"}`;
 
   if (format === "json") exportToJSON(formattedData, filename);
   else if (format === "excel") exportToExcel(formattedData, filename);
@@ -269,6 +301,7 @@ export const exportPaymentsData = (payments, format = "csv") => {
   else exportToCSV(formattedData, filename);
 };
 
+// Seller verification
 export const exportSellersVerifyData = (sellers, format = "csv") => {
   const formattedData = sellers.map((seller) => ({
     "Seller Name": seller.name || "N/A",
