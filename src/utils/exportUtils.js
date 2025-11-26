@@ -14,6 +14,7 @@ export const exportToCSV = (data, filename = "export.csv") => {
     alert("No data to export");
     return;
   }
+  
 
   const headers = Object.keys(data[0]);
   const csvContent = [
@@ -251,9 +252,7 @@ export const exportPaymentsData = (payments, format = "csv") => {
   else exportToCSV(formattedData, filename);
 };
 
-// In your exportUtils.js file, update the sellers verification export function:
-
-// Seller Verification Export - UPDATED to match actual data structure
+// Seller Verification Export - matches SellerAccountVerify table
 export const exportSellersVerifyData = (sellers, format = "csv") => {
   const formattedData = sellers.map((seller) => ({
     "Seller Name": seller.name || seller.fullName || seller.username || "N/A",
@@ -263,8 +262,6 @@ export const exportSellersVerifyData = (sellers, format = "csv") => {
     Location: seller.location || seller.countryCode || "N/A",
     "Join Date": seller.joinDate || "N/A",
     Status: seller.status || "Pending",
-    "Specialization": seller.specialization || "N/A", // Added this field
-    "Country Code": seller.countryCode || "N/A", // Added this field
   }));
 
   const timestamp = new Date().toISOString().split("T")[0];

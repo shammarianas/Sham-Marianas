@@ -1007,11 +1007,8 @@ const UserReport = () => {
           <ExportButton
             data={reports.length > 0 ? reports : allReports}
             filename="user-reports"
-            exportConfig={reportsExportConfig}
             variant="secondary"
-            onExportStart={handleExportStart}
-            onExportComplete={handleExportComplete}
-            onExportError={handleExportError}
+            onExport={(format) => exportUserReportsData(reports.length > 0 ? reports : allReports, format)}
           />
         </div>
         <div className="recent-reports-body">

@@ -89,10 +89,10 @@ const SellerAccountVerify = () => {
 
   // Export handler with callbacks
   const handleExport = (format) => {
-  console.log("Exporting data:", filteredSellers);
-  console.log("First seller:", filteredSellers[0]);
-  exportSellersVerifyData(filteredSellers, format);
-};
+    console.log("Exporting data:", filteredSellers);
+    console.log("First seller:", filteredSellers[0]);
+    exportSellersVerifyData(filteredSellers, format);
+  };
 
   const filteredSellers = sellers.filter((seller) => {
     const matchesSearch =
@@ -295,11 +295,13 @@ const SellerAccountVerify = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Seller Management
           </h3>
-        <ExportButton
-  data={filteredSellers}
-  filename="seller-verification-report"
-  onExport={(format) => exportSellersVerifyData(filteredSellers, format)}
-/>
+          <ExportButton
+            data={filteredSellers}
+            filename="seller-verification-report"
+            onExport={(format) =>
+              exportSellersVerifyData(filteredSellers, format)
+            }
+          />
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
