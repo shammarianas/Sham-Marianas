@@ -1138,11 +1138,53 @@ const Upload = ({
       </div>
     );
   };
+  //notifications save
+  const saveContributorNotification = async (
+    assetId,
+    title,
+    ownerId,
+    ownerName, // contributor ka naam
+    status = "pending"
+  ) => {
+    console.log("🔔 Attempting to save contributor notification...", {
+      assetId,
+      title,
+      ownerId,
+    });
+
+    try {
+      const docRef = await addDoc(collection(db, "ContributorNotifications"), {
+        assetId,
+        title,
+        ownerId,
+        ownerName, // ✅ Add contributor name
+        status, // contributor who uploaded
+        message: `Your asset "${title}" uploaded by ${ownerName} is currently ${status}.`,
+        read: false,
+        createdAt: serverTimestamp(),
+      });
+      console.log("✅ Contributor notification saved with ID:", docRef.id);
+    } catch (error) {
+      console.error("❌ Error saving contributor notification:", error);
+    }
+  };
+
+  const isContributor = async (uid) => {
+    if (!uid) return false;
+    try {
+      const docSnap = await getDoc(doc(db, "Contributors", uid));
+      return docSnap.exists();
+    } catch (error) {
+      console.error("Error checking contributor:", error);
+      return false;
+    }
+  };
 
   // ✅ MAIN SUBMIT FUNCTION - UPDATED WITH getUserProfileData
   const handleSubmit = async (e) => {
     e.preventDefault();
     const currentUserRole = await fetchUserRole();
+    console.log("Current user role:", currentUserRole);
     let assetStatus = currentUserRole === "admin" ? "approved" : "pending";
     if (editMode) setIsUpdating(true);
     else setIsSubmitting(true);
@@ -1426,8 +1468,21 @@ const Upload = ({
         if (onUploadSuccess) onUploadSuccess();
       } else {
         // ✅ Create new asset
-        await addDoc(collection(db, "Assets"), docData);
+        const newAssetRef = await addDoc(collection(db, "Assets"), docData);
+        //notification
+        if (!editMode && (await isContributor(currentUser.uid))) {
+          await saveContributorNotification(
+            newAssetRef.id,
+            formData.title,
+            currentUser.uid,
+            assetStatus,
+            userName
+          );
+          console.log("✅ Contributor notification for new asset created");
+        }
+
         setLoadingState("success");
+
         if (onUploadSuccess) onUploadSuccess();
         // Reset form for new upload
         setFormData({
