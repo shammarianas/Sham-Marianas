@@ -99,6 +99,68 @@ const UnauthorizedAccess = ({ error }) => {
   );
 };
 
+// ✅ ADDED: Notification Dropdown Component
+const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
+  const unreadCount = notifications.filter(n => !n.read).length;
+  
+  return (
+    <div className="notification-dropdown">
+      <div className="notification-header">
+        <h3>Notifications {unreadCount > 0 && `(${unreadCount})`}</h3>
+        {unreadCount > 0 && (
+          <button className="mark-all-read" onClick={onMarkAllAsRead}>
+            Mark all as read
+          </button>
+        )}
+      </div>
+      <div className="notification-list">
+        {notifications.length === 0 ? (
+          <div className="notification-empty-state">
+            <div className="notification-empty-icon">🔔</div>
+            <div className="notification-empty-title">No notifications</div>
+            <div className="notification-empty-text">You're all caught up!</div>
+          </div>
+        ) : (
+          notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`notification-item ${notification.read ? 'read' : 'unread'} ${notification.type}`}
+              onClick={() => onMarkAsRead(notification.id)}
+            >
+              <div className="notification-icon">
+                {notification.type === 'approved' && <FiCheckCircle className="icon-approved" />}
+                {notification.type === 'rejected' && <FiX className="icon-rejected" />}
+                {notification.type === 'revision' && <FiClock className="icon-revision" />}
+              </div>
+              <div className="notification-content">
+                <p className="notification-message">{notification.message}</p>
+                <span className="notification-time">
+                  {formatNotificationTime(notification.timestamp)}
+                </span>
+              </div>
+              {!notification.read && <div className="unread-dot"></div>}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ✅ ADDED: Format notification time
+const formatNotificationTime = (timestamp) => {
+  if (!timestamp) return 'Just now';
+  
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  return `${Math.floor(diffInSeconds / 86400)}d ago`;
+};
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState(1);
   const [users, setUsers] = useState([]);
@@ -117,6 +179,135 @@ const AdminDashboard = () => {
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  // ✅ ADDED: Notification states
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notificationRef = useRef(null);
+
+  // ✅ ADDED: Close notifications when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // ✅ ADDED: Setup real-time notifications listener for admin
+  const setupAdminNotificationsListener = () => {
+    const notificationsQuery = query(
+      collection(db, "AdminNotifications"),
+      orderBy("timestamp", "desc")
+    );
+
+    return onSnapshot(notificationsQuery, (snapshot) => {
+      const notificationsData = [];
+      snapshot.forEach((doc) => {
+        notificationsData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      
+      setNotifications(notificationsData);
+      
+      // Calculate unread count
+      const unread = notificationsData.filter(notification => !notification.read).length;
+      setUnreadCount(unread);
+    });
+  };
+
+  // ✅ ADDED: Mark notification as read
+  const markNotificationAsRead = async (notificationId) => {
+    try {
+      const notificationRef = doc(db, "AdminNotifications", notificationId);
+      await updateDoc(notificationRef, {
+        read: true,
+        readAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  // ✅ ADDED: Mark all notifications as read
+  const markAllNotificationsAsRead = async () => {
+    try {
+      const unreadNotifications = notifications.filter(notification => !notification.read);
+      const batch = unreadNotifications.map(notification => 
+        updateDoc(doc(db, "AdminNotifications", notification.id), {
+          read: true,
+          readAt: serverTimestamp()
+        })
+      );
+
+      await Promise.all(batch);
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+    }
+  };
+
+  // ✅ ADDED: Toggle notifications dropdown
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+  };
+
+  // ✅ ADDED: Create notification for admin (when asset status changes)
+  const createAdminNotification = async (type, message, assetId = null, contributorId = null) => {
+    try {
+      const notificationData = {
+        type,
+        message,
+        assetId,
+        contributorId,
+        read: false,
+        timestamp: serverTimestamp(),
+        adminId: auth.currentUser?.uid,
+      };
+
+      await addDoc(collection(db, "AdminNotifications"), notificationData);
+    } catch (error) {
+      console.error("Error creating admin notification:", error);
+    }
+  };
+
+  // ✅ ADDED: Create notification for contributor
+  const createAssetNotification = async (contributorId, assetId, assetName, type) => {
+    const messages = {
+      approved: `Your asset "${assetName}" has been approved and published!`,
+      rejected: `Your asset "${assetName}" has been rejected. Please check the reasons.`,
+      revision: `Your asset "${assetName}" requires revisions. Please check the comments.`
+    };
+
+    const notificationData = {
+      type,
+      message: messages[type],
+      assetId,
+      read: false,
+      timestamp: serverTimestamp(),
+    };
+
+    try {
+      await addDoc(collection(db, `Contributors/${contributorId}/Notifications`), notificationData);
+      
+      // ✅ ALSO CREATE ADMIN NOTIFICATION
+      await createAdminNotification(
+        type, 
+        `Asset "${assetName}" ${type} by ${auth.currentUser?.email}`,
+        assetId,
+        contributorId
+      );
+    } catch (error) {
+      console.error("Error creating asset notification:", error);
+    }
+  };
 
   // Authorization and data fetching logic
   useEffect(() => {
@@ -161,7 +352,11 @@ const AdminDashboard = () => {
           }
 
           // Fetch necessary data for admin dashboard
-          await Promise.all([fetchUsers(), fetchSupportMessages(null)]);
+          await Promise.all([
+            fetchUsers(), 
+            fetchSupportMessages(null),
+            setupAdminNotificationsListener() // ✅ ADDED: Setup notifications
+          ]);
           setSelectedProfileId(uid);
         } else {
           setError("You do not have admin privileges");
@@ -212,8 +407,6 @@ const AdminDashboard = () => {
       return false;
     }
   };
-
-  // Paste yeh functions AdminDashboard ke andar (kisi bhi jagah, upar ya neeche)
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -825,6 +1018,33 @@ const AdminDashboard = () => {
               selectedDashboard === "company" &&
               "Portfolio Management"}
           </h1>
+          
+          {/* ✅ ADDED: Notification Button in Header */}
+          <div className="header-right">
+            <div className="notification-container" ref={notificationRef}>
+              <button 
+                className={`header-btn notification-btn ${unreadCount > 0 ? 'has-new' : ''}`} 
+                onClick={toggleNotifications}
+              >
+                <FiBell className="btn-icon" />
+                {unreadCount > 0 && (
+                  <span className="notification-badge">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              
+              {/* Notification Dropdown */}
+              {showNotifications && (
+                <NotificationDropdown
+                  notifications={notifications}
+                  onMarkAsRead={markNotificationAsRead}
+                  onMarkAllAsRead={markAllNotificationsAsRead}
+                  onClose={() => setShowNotifications(false)}
+                />
+              )}
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -842,7 +1062,7 @@ const AdminDashboard = () => {
             {activeTab === 1 && (
               <UserInformation
                 users={users}
-                setUsers={setUsers} // <-- YE ADD KARO
+                setUsers={setUsers}
                 onRoleChange={handleRoleChange}
                 onUpdateStatus={handleUpdateUserStatus}
                 onDelete={handleDeleteUser}
@@ -869,7 +1089,11 @@ const AdminDashboard = () => {
 
             {activeTab === 4 && <SellerAccountVerify />}
 
-            {activeTab === 5 && <AssetRequestsDashboard />}
+            {activeTab === 5 && (
+              <AssetRequestsDashboard 
+                createAssetNotification={createAssetNotification} // ✅ PASS FUNCTION
+              />
+            )}
 
             {activeTab === 6 && <SellerEarning />}
 
@@ -885,7 +1109,11 @@ const AdminDashboard = () => {
 
             {activeTab === 12 && <Analytics />}
 
-            {activeTab === 13 && <AssetManagement />}
+            {activeTab === 13 && (
+              <AssetManagement 
+                createAssetNotification={createAssetNotification} // ✅ PASS FUNCTION
+              />
+            )}
           </>
         )}
 
@@ -906,7 +1134,7 @@ const AdminDashboard = () => {
               <PortfolioList
                 portfolios={portfolios}
                 onDelete={handleDeletePortfolio}
-                onCreate={loadProjects} // Yeh refresh ka kaam karega
+                onCreate={loadProjects}
                 onToggleFeatured={handleTogglePortfolioFeatured}
                 onUpdateStatus={handleUpdatePortfolioStatus}
                 formatDate={formatDate}

@@ -63,6 +63,7 @@ const UnauthorizedAccess = ({ error }) => {
     </div>
   );
 };
+
 const ProfileWrapper = ({ userId }) => {
   const navigate = useNavigate();
 
@@ -72,6 +73,62 @@ const ProfileWrapper = ({ userId }) => {
       navigate(`/profile/${userId}`);
     }
   }, [userId, navigate]);
+};
+
+// ✅ ADDED: Notification Dropdown Component
+const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
+  return (
+    <div className="notification-dropdown">
+      <div className="notification-header">
+        <h3>Notifications</h3>
+        {notifications.length > 0 && (
+          <button className="mark-all-read" onClick={onMarkAllAsRead}>
+            Mark all as read
+          </button>
+        )}
+      </div>
+      <div className="notification-list">
+        {notifications.length === 0 ? (
+          <div className="no-notifications">No new notifications</div>
+        ) : (
+          notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+              onClick={() => onMarkAsRead(notification.id)}
+            >
+              <div className="notification-icon">
+                {notification.type === 'approved' && <FiCheckCircle className="icon-approved" />}
+                {notification.type === 'rejected' && <FiXCircle className="icon-rejected" />}
+                {notification.type === 'revision' && <FiClock className="icon-revision" />}
+              </div>
+              <div className="notification-content">
+                <p className="notification-message">{notification.message}</p>
+                <span className="notification-time">
+                  {formatNotificationTime(notification.timestamp)}
+                </span>
+              </div>
+              {!notification.read && <div className="unread-dot"></div>}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ✅ ADDED: Format notification time
+const formatNotificationTime = (timestamp) => {
+  if (!timestamp) return 'Just now';
+  
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  return `${Math.floor(diffInSeconds / 86400)}d ago`;
 };
 
 const SellerDashboard = () => {
@@ -93,6 +150,12 @@ const SellerDashboard = () => {
   const [isSeller, setIsSeller] = useState(false);
   const navigate = useNavigate();
 
+  // ✅ ADDED: Notification states
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notificationRef = useRef(null);
+
   // ✅ ADDED: Profile tab handler
   const handleProfileTab = () => {
     setActiveTab("profile");
@@ -101,6 +164,21 @@ const SellerDashboard = () => {
   const handleReportTrack = () => {
     setActiveTab("report-track");
   };
+
+  // ✅ ADDED: Close notifications when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // Check seller status and fetch data
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -138,7 +216,8 @@ const SellerDashboard = () => {
           setUserData(sellerData);
           await Promise.all([
             fetchSellerData(uid),
-            fetchUserReports(uid), // ✅ ADDED: Fetch reports
+            fetchUserReports(uid),
+            setupNotificationsListener(uid), // ✅ ADDED: Setup notifications listener
           ]);
         } else {
           setError("You are not registered as a contributor");
@@ -151,6 +230,88 @@ const SellerDashboard = () => {
 
     return () => unsubscribe();
   }, [navigate]);
+
+  // ✅ ADDED: Setup real-time notifications listener
+  const setupNotificationsListener = (uid) => {
+    const notificationsQuery = query(
+      collection(db, `Contributors/${uid}/Notifications`),
+      orderBy("timestamp", "desc")
+    );
+
+    return onSnapshot(notificationsQuery, (snapshot) => {
+      const notificationsData = [];
+      snapshot.forEach((doc) => {
+        notificationsData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      
+      setNotifications(notificationsData);
+      
+      // Calculate unread count
+      const unread = notificationsData.filter(notification => !notification.read).length;
+      setUnreadCount(unread);
+    });
+  };
+
+  // ✅ ADDED: Mark notification as read
+  const markNotificationAsRead = async (notificationId) => {
+    if (!userData?.uid) return;
+
+    try {
+      const notificationRef = doc(db, `Contributors/${userData.uid}/Notifications`, notificationId);
+      await updateDoc(notificationRef, {
+        read: true,
+        readAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  // ✅ ADDED: Mark all notifications as read
+  const markAllNotificationsAsRead = async () => {
+    if (!userData?.uid) return;
+
+    try {
+      const unreadNotifications = notifications.filter(notification => !notification.read);
+      const batch = unreadNotifications.map(notification => 
+        updateDoc(doc(db, `Contributors/${userData.uid}/Notifications`, notification.id), {
+          read: true,
+          readAt: serverTimestamp()
+        })
+      );
+
+      await Promise.all(batch);
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+    }
+  };
+
+  // ✅ ADDED: Create notification function (for testing or manual triggers)
+  const createNotification = async (type, message, assetId = null) => {
+    if (!userData?.uid) return;
+
+    try {
+      const notificationData = {
+        type,
+        message,
+        assetId,
+        read: false,
+        timestamp: serverTimestamp(),
+      };
+
+      await setDoc(doc(collection(db, `Contributors/${userData.uid}/Notifications`)), notificationData);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+    }
+  };
+
+  // ✅ ADDED: Toggle notifications dropdown
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+  };
 
   const fetchUserReports = async (uid) => {
     try {
@@ -652,15 +813,32 @@ const SellerDashboard = () => {
               {activeTab === "guidelines" && "Guidelines"}
               {activeTab === "contact" && "Contact Support"}
               {activeTab === "report-track" && "Track Reports"}
-              {activeTab === "profile" && "Profile"} {/* ✅ ADDED */}
+              {activeTab === "profile" && "Profile"} 
               {activeTab === "billing" && "Billing & Invoices"}
               {activeTab === "feedback" && "Feedback"}
             </h1>
           </div>
           <div className="header-right">
-            <button className="header-btn">
-              <FiBell className="btn-icon" />
-            </button>
+            {/* ✅ UPDATED: Notification Button with Badge */}
+            <div className="notification-container" ref={notificationRef}>
+              <button className="header-btn notification-btn" onClick={toggleNotifications}>
+                <FiBell className="btn-icon" />
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount}</span>
+                )}
+              </button>
+              
+              {/* Notification Dropdown */}
+              {showNotifications && (
+                <NotificationDropdown
+                  notifications={notifications}
+                  onMarkAsRead={markNotificationAsRead}
+                  onMarkAllAsRead={markAllNotificationsAsRead}
+                  onClose={() => setShowNotifications(false)}
+                />
+              )}
+            </div>
+            
             <button className="header-btn">
               <FiSettings className="btn-icon" />
             </button>
