@@ -1186,6 +1186,8 @@ const Upload = ({
     const currentUserRole = await fetchUserRole();
     console.log("Current user role:", currentUserRole);
     let assetStatus = currentUserRole === "admin" ? "approved" : "pending";
+    const notificationStatus = "pending";
+
     if (editMode) setIsUpdating(true);
     else setIsSubmitting(true);
 
@@ -1475,8 +1477,8 @@ const Upload = ({
             newAssetRef.id,
             formData.title,
             currentUser.uid,
-            assetStatus,
-            userName
+            userName,
+            notificationStatus
           );
           console.log("✅ Contributor notification for new asset created");
         }
