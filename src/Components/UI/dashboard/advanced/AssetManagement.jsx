@@ -68,6 +68,30 @@ const AssetManagement = () => {
 
   const { currentUser } = useUser();
 
+// When approving an asset
+const handleApproveAsset = async (assetId, assetName, contributorId) => {
+  try {
+    // Your existing approval logic...
+    
+    // Create notification
+    await createAssetNotification(contributorId, assetId, assetName, 'approved');
+  } catch (error) {
+    console.error("Error approving asset:", error);
+  }
+};
+
+// When rejecting an asset  
+const handleRejectAsset = async (assetId, assetName, contributorId) => {
+  try {
+    // Your existing rejection logic...
+    
+    // Create notification
+    await createAssetNotification(contributorId, assetId, assetName, 'rejected');
+  } catch (error) {
+    console.error("Error rejecting asset:", error);
+  }
+};
+
   // Helper functions
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
