@@ -1185,7 +1185,7 @@ padding: 1rem;
 .form-group select {
   width: 100%;
   padding: 15px 20px;
-  background: rgba(255, 255, 255, 0.05);
+  /* background: rgba(255, 255, 255, 0.05);updaate */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   color: #fff;
