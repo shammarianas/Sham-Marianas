@@ -1,19 +1,19 @@
-import React from 'react';
+import React from "react";
 
 function Marq() {
   const marquee = [
-    'Branding Desgin',
-    'AI-Automation',
-    'Web Development',
-    'Content Writing',
-    'Social Media & Digital Marketing',
-    'UI-UX Design',
-    'Exhibition Booth Design',
-    'VFX & CGI ADs',
-     'Product Design',
-     'Print Media',
-     'Photography',
-     'E-commerce Solutions',
+    "Branding Design",
+    "AI-Automation",
+    "Web Development",
+    "Content Writing",
+    "Social Media & Digital Marketing",
+    "UI-UX Design",
+    "Exhibition Booth Design",
+    "VFX & CGI ADs",
+    "Product Design",
+    "Print Media",
+    "Photography",
+    "E-commerce Solutions",
   ];
   return (
     <section className="opacity-7">

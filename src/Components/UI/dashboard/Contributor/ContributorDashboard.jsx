@@ -818,7 +818,7 @@ const SellerDashboard = () => {
               {activeTab === "feedback" && "Feedback"}
             </h1>
           </div>
-          <div className="header-right">
+          <div className="header-right m-0">
             {/* ✅ UPDATED: Notification Button with Badge */}
             <div className="notification-container" ref={notificationRef}>
               <button className="header-btn notification-btn" onClick={toggleNotifications}>

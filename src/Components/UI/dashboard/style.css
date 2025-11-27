@@ -224,7 +224,7 @@ ul {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; */
 }
 
 .page-title {
@@ -5317,13 +5317,15 @@ ul {
   color: #dc2626;
 }
 
-
-
 /* ==========================================
    NOTIFICATION SYSTEM STYLES
    ========================================== */
 
 /* Notification Container */
+.header-right{
+margin: 1rem;
+
+}
 .notification-container {
   position: relative;
   display: inline-block;

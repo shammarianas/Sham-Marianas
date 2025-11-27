@@ -42,48 +42,14 @@ import ProjectModal from "../../../Pages/PortfolioUpload";
 // Import icons
 import {
   FiUsers,
-  FiMail,
-  FiUpload,
   FiFileText,
-  FiSearch,
   FiChevronDown,
-  FiChevronUp,
-  FiCheck,
   FiX,
-  FiTrash2,
-  FiBox,
-  FiHome,
   FiBell,
   FiSettings,
   FiUser,
-  FiShield,
-  FiUserCheck,
-  FiChevronLeft,
-  FiMenu,
   FiLogOut,
-  FiActivity,
-  FiFilter,
-  FiEye,
-  FiMapPin,
-  FiCalendar,
-  FiShoppingCart,
-  FiDollarSign,
-  FiDownload,
   FiCheckCircle,
-  FiMoreHorizontal,
-  FiStar,
-  FiTrendingUp,
-  FiTag,
-  FiImage,
-  FiBriefcase,
-  FiPlus,
-  FiCornerUpLeft,
-  FiMessageSquare,
-  FiAlertCircle,
-  FiPieChart,
-  FiList,
-  FiAlertTriangle,
-  FiTrendingDown,
   FiClock,
   FiRefreshCw,
 } from "react-icons/fi";
@@ -116,7 +82,6 @@ const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, on
       <div className="notification-list">
         {notifications.length === 0 ? (
           <div className="notification-empty-state">
-            <div className="notification-empty-icon">🔔</div>
             <div className="notification-empty-title">No notifications</div>
             <div className="notification-empty-text">You're all caught up!</div>
           </div>
