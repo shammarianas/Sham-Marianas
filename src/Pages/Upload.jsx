@@ -1183,9 +1183,7 @@ const Upload = ({
   // ✅ MAIN SUBMIT FUNCTION - UPDATED WITH getUserProfileData
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const currentUserRole = await fetchUserRole();
-    console.log("Current user role:", currentUserRole);
-    let assetStatus = currentUserRole === "admin" ? "approved" : "pending";
+
     const notificationStatus = "pending";
 
     if (editMode) setIsUpdating(true);
@@ -1194,6 +1192,8 @@ const Upload = ({
     setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
 
     try {
+      const currentUserRole = await fetchUserRole();
+      console.log("Current user role:", currentUserRole);
       // ✅ Get user profile data
       const userProfile = await getUserProfileData();
       const userName =
@@ -1201,7 +1201,14 @@ const Upload = ({
         userProfile?.name ||
         currentUser?.displayName ||
         "Unknown Author";
-
+      let assetStatus = "approved"; // default
+      if (await isContributor(currentUser.uid)) {
+        assetStatus = "pending";
+      } else if (currentUserRole === "admin") {
+        assetStatus = "approved";
+      } else {
+        assetStatus = "pending";
+      }
       let docData = {
         title: formData.title,
         slug: formData.slug || generateSlug(formData.title), // Ensure slug is included
