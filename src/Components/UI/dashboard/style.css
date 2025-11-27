@@ -5322,7 +5322,10 @@ ul {
    ========================================== */
 
 /* Notification Container */
+.header-right{
+margin: 1rem;
 
+}
 .notification-container {
   position: relative;
   display: inline-block;
