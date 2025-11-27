@@ -16,7 +16,7 @@ import {
   FiDollarSign,
   FiFileText
 } from "react-icons/fi";
-import { collection, getDocs, query, where, updateDoc, doc } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
 import { exportAssetRequestsData } from "../../../../utils/exportUtils";
@@ -98,21 +98,60 @@ const AssetRequestsDashboard = () => {
     fetchAssetRequests();
   }, []);
 
+  // Create notifications
+  const createAssetNotification = async (contributorId, assetId, assetName, type) => {
+    const messages = {
+      approved: `Your asset "${assetName}" has been approved and published!`,
+      rejected: `Your asset "${assetName}" has been rejected.`,
+    };
+
+    try {
+      // Notification for contributor
+      await addDoc(collection(db, `Contributors/${contributorId}/Notifications`), {
+        type,
+        message: messages[type],
+        assetId,
+        assetName,
+        read: false,
+        timestamp: serverTimestamp(),
+      });
+
+      // Notification for admin
+      await addDoc(collection(db, "AdminNotifications"), {
+        type: `asset_${type}`,
+        message: `Asset "${assetName}" has been ${type} by admin`,
+        assetId,
+        contributorId,
+        read: false,
+        timestamp: serverTimestamp(),
+      });
+
+      console.log("✅ Notifications created for both contributor and admin");
+    } catch (error) {
+      console.error("Error creating notifications:", error);
+    }
+  };
+
   // ✅ Handle approve asset - Update Firestore
   const handleApprove = async (assetId) => {
     try {
+      const asset = assetRequests.find(a => a.id === assetId);
+      
       const assetRef = doc(db, "Assets", assetId);
       await updateDoc(assetRef, {
         status: "approved",
         updatedAt: new Date()
       });
 
+      // ✅ Create notifications
+      await createAssetNotification(asset.ownerId, assetId, asset.title, "approved");
+
       // Update local state
-      setAssetRequests(assetRequests.map(asset => 
-        asset.id === assetId ? { ...asset, status: "approved" } : asset
+      setAssetRequests(assetRequests.map(a => 
+        a.id === assetId ? { ...a, status: "approved" } : a
       ));
       
-      console.log("✅ Asset approved:", assetId);
+      console.log("✅ Asset approved and notifications sent");
     } catch (error) {
       console.error("Error approving asset:", error);
       alert("Failed to approve asset");
@@ -122,6 +161,8 @@ const AssetRequestsDashboard = () => {
   // ✅ Handle reject asset - Update Firestore
   const handleReject = async (assetId, reason = "") => {
     try {
+      const asset = assetRequests.find(a => a.id === assetId);
+      
       const assetRef = doc(db, "Assets", assetId);
       await updateDoc(assetRef, {
         status: "rejected",
@@ -129,12 +170,15 @@ const AssetRequestsDashboard = () => {
         updatedAt: new Date()
       });
 
+      // ✅ Create notifications
+      await createAssetNotification(asset.ownerId, assetId, asset.title, "rejected");
+
       // Update local state
-      setAssetRequests(assetRequests.map(asset => 
-        asset.id === assetId ? { ...asset, status: "rejected", rejectionReason: reason } : asset
+      setAssetRequests(assetRequests.map(a => 
+        a.id === assetId ? { ...a, status: "rejected", rejectionReason: reason } : a
       ));
       
-      console.log("✅ Asset rejected:", assetId);
+      console.log("✅ Asset rejected and notifications sent");
     } catch (error) {
       console.error("Error rejecting asset:", error);
       alert("Failed to reject asset");
