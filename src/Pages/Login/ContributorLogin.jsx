@@ -72,7 +72,7 @@ const ContributorLogin = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
-  
+
   // ✅ CONTRIBUTOR SPECIFIC FIELDS
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -103,14 +103,15 @@ const ContributorLogin = () => {
 
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handleUsernameChange = (e) => setUsername(e.target.value);
-  
+
   // ✅ CONTRIBUTOR HANDLERS
   const handleFullNameChange = (e) => setFullName(e.target.value);
   const handlePhoneChange = (e) => setPhone(e.target.value);
   const handleBirthdayChange = (e) => setBirthday(e.target.value);
   const handleCountryCodeChange = (e) => setCountryCode(e.target.value);
   const handlePortfolioChange = (e) => setPortfolio(e.target.value);
-  const handleSkillsChange = (e) => setSkills(e.target.value.split(',').map(skill => skill.trim()));
+  const handleSkillsChange = (e) =>
+    setSkills(e.target.value.split(",").map((skill) => skill.trim()));
   const handleSpecializationChange = (e) => setSpecialization(e.target.value);
   const handleExperienceChange = (e) => setExperience(e.target.value);
   const handleBioChange = (e) => setBio(e.target.value);
@@ -133,7 +134,15 @@ const ContributorLogin = () => {
 
   // ✅ STEP VALIDATION
   const validateStep1 = () => {
-    if (!fullName || !username || !email || !phone || !birthday || !password || !confirmPassword) {
+    if (
+      !fullName ||
+      !username ||
+      !email ||
+      !phone ||
+      !birthday ||
+      !password ||
+      !confirmPassword
+    ) {
       setError("Please fill all required fields");
       return false;
     }
@@ -173,60 +182,106 @@ const ContributorLogin = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setSuccess("Login successful!");
-      setTimeout(() => navigate("/contributor/dashboard", { replace: true }), 3000);
+      setTimeout(
+        () => navigate("/contributor/dashboard", { replace: true }),
+        3000
+      );
     } catch (err) {
       setError("Login failed: " + err.message);
     }
   };
 
   // ✅ CONTRIBUTOR SIGNUP FUNCTION
-  const signUpwithEmailPassword = async (e) => {
-    e.preventDefault();
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+  // ✅ CONTRIBUTOR SIGNUP FUNCTION (Updated)
+  // 🔵 Creates/updates contributor profile
+  const handleContributorProfile = async (user) => {
+    await updateProfile(user, { displayName: username });
 
-      await updateProfile(user, { 
-        displayName: username 
-      });
+    const contributorRef = doc(db, "Contributors", user.uid);
 
-      const contributorProfileRef = doc(db, "Contributors", user.uid);
-      await setDoc(contributorProfileRef, {
-        username: username,
-        fullName: fullName,
+    await setDoc(
+      contributorRef,
+      {
+        username,
+        fullName,
         email: user.email,
         profilePic: user.photoURL,
         uid: user.uid,
         role: "contributor",
         status: "pending",
-        // ✅ CONTRIBUTOR SPECIFIC FIELDS
+
+        // 👉 Contributor specific details
         phone: `${countryCode} ${phone}`,
-        birthday: birthday,
-        countryCode: countryCode,
-        portfolio: portfolio,
-        skills: skills,
-        specialization: specialization,
-        experience: experience,
-        bio: bio,
-        // ✅ CONTRIBUTOR STATS
+        birthday,
+        countryCode,
+        portfolio,
+        skills,
+        specialization,
+        experience,
+        bio,
+
+        // 👉 Stats
         totalUploads: 0,
         approvedUploads: 0,
         totalEarnings: 0,
         pendingEarnings: 0,
         rating: 0,
         reviews: 0,
-        // ✅ TIMESTAMPS
+
+        // 👉 Timestamps
         createdAt: serverTimestamp(),
         joinDate: serverTimestamp(),
         lastLogin: serverTimestamp(),
         lastUpdated: serverTimestamp(),
-      }, { merge: true });
+      },
+      { merge: true }
+    );
 
-      setCurrentStep(4); // Success step
-      setSuccess("Contributor account created successfully! Under review.");
-      setTimeout(() => navigate("/contributor/dashboard", { replace: true }), 3000);
+    setCurrentStep(4);
+    setSuccess(
+      "Contributor account created/updated successfully! Under review."
+    );
+
+    setTimeout(
+      () => navigate("/contributor/dashboard", { replace: true }),
+      2000
+    );
+  };
+
+  const signUpwithEmailPassword = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      // Try creating NEW user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      await handleContributorProfile(user);
     } catch (err) {
-      setError("Sign-up failed: " + err.message);
+      // 👉 User already exists → login instead
+      if (err.code === "auth/email-already-in-use") {
+        try {
+          const userCredential = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          const user = userCredential.user;
+
+          await handleContributorProfile(user);
+        } catch (loginErr) {
+          setError(
+            "Account already exists. Please login with correct password."
+          );
+        }
+      } else {
+        setError("Sign-up failed: " + err.message);
+      }
     }
   };
 
@@ -242,43 +297,56 @@ const ContributorLogin = () => {
 
   // ✅ STEP PROGRESS INDICATOR
   const renderProgressSteps = () => (
-    <div className="progress-steps" style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      marginBottom: '2rem',
-      padding: '0 1rem'
-    }}>
+    <div
+      className="progress-steps"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        marginBottom: "2rem",
+        padding: "0 1rem",
+      }}
+    >
       {[1, 2, 3, 4].map((step) => (
-        <div key={step} style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          flex: 1
-        }}>
-          <div style={{
-            width: '30px',
-            height: '30px',
-            borderRadius: '50%',
-            backgroundColor: currentStep >= step ? '#52b0b4' : '#181818',
-            color: currentStep >= step ? '#0f0f0f' : '#f5f5f5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold',
-            border: currentStep === step ? '2px solid #52b0b4' : '2px solid #181818'
-          }}>
+        <div
+          key={step}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            flex: 1,
+          }}
+        >
+          <div
+            style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              backgroundColor: currentStep >= step ? "#52b0b4" : "#181818",
+              color: currentStep >= step ? "#0f0f0f" : "#f5f5f5",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: "bold",
+              border:
+                currentStep === step
+                  ? "2px solid #52b0b4"
+                  : "2px solid #181818",
+            }}
+          >
             {step}
           </div>
-          <span style={{
-            fontSize: '0.8rem',
-            marginTop: '0.5rem',
-            color: currentStep >= step ? '#f5f5f5' : '#666',
-            textAlign: 'center'
-          }}>
-            {step === 1 && 'Personal'}
-            {step === 2 && 'Portfolio'}
-            {step === 3 && 'Agreement'}
-            {step === 4 && 'Success'}
+          <span
+            style={{
+              fontSize: "0.8rem",
+              marginTop: "0.5rem",
+              color: currentStep >= step ? "#f5f5f5" : "#666",
+              textAlign: "center",
+            }}
+          >
+            {step === 1 && "Personal"}
+            {step === 2 && "Portfolio"}
+            {step === 3 && "Agreement"}
+            {step === 4 && "Success"}
           </span>
         </div>
       ))}
@@ -289,25 +357,40 @@ const ContributorLogin = () => {
     <>
       <Helmet>
         <title>Contributor Login | Your Platform Name</title>
-        <meta name="description" content="Login as contributor to upload and manage your content" />
+        <meta
+          name="description"
+          content="Login as contributor to upload and manage your content"
+        />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Contributor Login | Your Platform Name" />
-        <meta property="og:description" content="Login as contributor to upload and manage your content" />
+        <meta
+          property="og:title"
+          content="Contributor Login | Your Platform Name"
+        />
+        <meta
+          property="og:description"
+          content="Login as contributor to upload and manage your content"
+        />
         <meta property="og:url" content={window.location.href} />
       </Helmet>
 
       <div className="login">
-
         {/* =================== LOGIN PAGE =================== */}
         {page === "login" && (
           <div className="login_tab">
             <div className="title">
               <span>Contributor Login</span>
-              <span className="link" onClick={() => { setPage("signup"); setError(""); setCurrentStep(1); }}>
+              <span
+                className="link"
+                onClick={() => {
+                  setPage("signup");
+                  setError("");
+                  setCurrentStep(1);
+                }}
+              >
                 Become Contributor <i className="icon fas fa-arrow-right"></i>
               </span>
             </div>
-            
+
             <form onSubmit={loginWithEmailPassword}>
               <label htmlFor="email">Email</label>
               <div className="input">
@@ -333,27 +416,47 @@ const ContributorLogin = () => {
                   onChange={handlePasswordChange}
                 />
                 {password && (
-                  <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="view_btn">
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                    className="view_btn"
+                  >
                     <img src={eye_icon} alt="view" />
                   </button>
                 )}
               </div>
 
-              <span className="forgot_password" onClick={() => { setPage("forgot"); setError(""); }}>
+              <span
+                className="forgot_password"
+                onClick={() => {
+                  setPage("forgot");
+                  setError("");
+                }}
+              >
                 <span role="button">Forgot password?</span>
               </span>
 
               {error && <span className="error">{error}</span>}
               {success && <span className="success">{success}</span>}
 
-              <button className="login_btn" type="submit">Login as Contributor</button>
+              <button className="login_btn" type="submit">
+                Login as Contributor
+              </button>
               <div className="separator"></div>
 
               <div className="buttons">
-                <button className="google" type="button" onClick={loginWithGoogle}>
+                <button
+                  className="google"
+                  type="button"
+                  onClick={loginWithGoogle}
+                >
                   <i className="fab fa-google"></i>
                 </button>
-                <button className="apple" type="button" onClick={loginWithApple}>
+                <button
+                  className="apple"
+                  type="button"
+                  onClick={loginWithApple}
+                >
                   <i className="fab fa-apple"></i>
                 </button>
               </div>
@@ -365,7 +468,7 @@ const ContributorLogin = () => {
         {page === "signup" && (
           <div className="login_tab">
             {renderProgressSteps()}
-            
+
             <div className="title">
               <span>
                 {currentStep === 1 && "Personal Information"}
@@ -373,19 +476,33 @@ const ContributorLogin = () => {
                 {currentStep === 3 && "Contributor Agreement"}
                 {currentStep === 4 && "Registration Complete"}
               </span>
-              <span className="link" onClick={() => { setPage("login"); setError(""); setCurrentStep(1); }}>
+              <span
+                className="link"
+                onClick={() => {
+                  setPage("login");
+                  setError("");
+                  setCurrentStep(1);
+                }}
+              >
                 Back to Login <i className="icon fas fa-arrow-right"></i>
               </span>
             </div>
 
-            <form onSubmit={currentStep === 3 ? signUpwithEmailPassword : (e) => e.preventDefault()}>
-
+            <form
+              onSubmit={
+                currentStep === 3
+                  ? signUpwithEmailPassword
+                  : (e) => e.preventDefault()
+              }
+            >
               {/* ========== STEP 1: PERSONAL INFORMATION ========== */}
               {currentStep === 1 && (
                 <>
                   <div className="form-row-1 mb-0">
                     <div className="width-50">
-                      <label htmlFor="fullName" className="mb-2">Full Name *</label>
+                      <label htmlFor="fullName" className="mb-2">
+                        Full Name *
+                      </label>
                       <div className="input">
                         <input
                           type="text"
@@ -398,7 +515,9 @@ const ContributorLogin = () => {
                       </div>
                     </div>
                     <div className="width-50">
-                      <label htmlFor="username" className="mb-2">Username *</label>
+                      <label htmlFor="username" className="mb-2">
+                        Username *
+                      </label>
                       <div className="input">
                         <input
                           type="text"
@@ -426,9 +545,11 @@ const ContributorLogin = () => {
 
                   <div className="form-row-1 mb-0">
                     <div className="width-50">
-                      <label htmlFor="phone" className="mb-2">Phone Number *</label>
+                      <label htmlFor="phone" className="mb-2">
+                        Phone Number *
+                      </label>
                       <div className="input phone-input-container">
-                        <select 
+                        <select
                           className="country-code-select"
                           value={countryCode}
                           onChange={handleCountryCodeChange}
@@ -439,7 +560,7 @@ const ContributorLogin = () => {
                             backgroundColor: "#181818",
                             color: "#f5f5f5",
                             fontSize: "14px",
-                            padding: "0 8px"
+                            padding: "0 8px",
                           }}
                         >
                           {countryCodes.map((country) => (
@@ -455,12 +576,14 @@ const ContributorLogin = () => {
                           value={phone}
                           onChange={handlePhoneChange}
                           required
-                          style={{flex: 1}}
+                          style={{ flex: 1 }}
                         />
                       </div>
                     </div>
                     <div className="width-50">
-                      <label htmlFor="birthday" className="mb-2">Birthday *</label>
+                      <label htmlFor="birthday" className="mb-2">
+                        Birthday *
+                      </label>
                       <div className="input">
                         <input
                           type="date"
@@ -483,7 +606,11 @@ const ContributorLogin = () => {
                       onChange={handlePasswordChange}
                     />
                     {password && (
-                      <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="view_btn">
+                      <button
+                        type="button"
+                        onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                        className="view_btn"
+                      >
                         <img src={eye_icon} alt="view" />
                       </button>
                     )}
@@ -499,7 +626,11 @@ const ContributorLogin = () => {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                     {password && (
-                      <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="view_btn">
+                      <button
+                        type="button"
+                        onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                        className="view_btn"
+                      >
                         <img src={eye_icon} alt="view" />
                       </button>
                     )}
@@ -523,9 +654,11 @@ const ContributorLogin = () => {
 
                   <div className="form-row-1 mb-0">
                     <div className="width-50">
-                      <label htmlFor="specialization" className="mb-2">Specialization *</label>
+                      <label htmlFor="specialization" className="mb-2">
+                        Specialization *
+                      </label>
                       <div className="input">
-                        <select 
+                        <select
                           id="specialization"
                           value={specialization}
                           onChange={handleSpecializationChange}
@@ -537,7 +670,7 @@ const ContributorLogin = () => {
                             borderRadius: "4px",
                             backgroundColor: "#181818",
                             color: "#f5f5f5",
-                            fontSize: "14px"
+                            fontSize: "14px",
                           }}
                         >
                           <option value="">Select your field</option>
@@ -552,9 +685,11 @@ const ContributorLogin = () => {
                       </div>
                     </div>
                     <div className="width-50">
-                      <label htmlFor="experience" className="mb-2">Experience Level *</label>
+                      <label htmlFor="experience" className="mb-2">
+                        Experience Level *
+                      </label>
                       <div className="input">
-                        <select 
+                        <select
                           id="experience"
                           value={experience}
                           onChange={handleExperienceChange}
@@ -566,13 +701,17 @@ const ContributorLogin = () => {
                             borderRadius: "4px",
                             backgroundColor: "#181818",
                             color: "#f5f5f5",
-                            fontSize: "14px"
+                            fontSize: "14px",
                           }}
                         >
                           <option value="">Select experience</option>
                           <option value="beginner">Beginner (0-1 years)</option>
-                          <option value="intermediate">Intermediate (1-3 years)</option>
-                          <option value="professional">Professional (3-5 years)</option>
+                          <option value="intermediate">
+                            Intermediate (1-3 years)
+                          </option>
+                          <option value="professional">
+                            Professional (3-5 years)
+                          </option>
                           <option value="expert">Expert (5+ years)</option>
                         </select>
                       </div>
@@ -585,7 +724,7 @@ const ContributorLogin = () => {
                       type="text"
                       id="skills"
                       placeholder="Photoshop, Illustrator, Photography, UI Design"
-                      value={skills.join(', ')}
+                      value={skills.join(", ")}
                       onChange={handleSkillsChange}
                     />
                   </div>
@@ -608,7 +747,7 @@ const ContributorLogin = () => {
                         outline: "none",
                         borderRadius: "0.5rem",
                         color: "#f5f5f5",
-                        padding: "1rem"
+                        padding: "1rem",
                       }}
                     />
                   </div>
@@ -617,38 +756,78 @@ const ContributorLogin = () => {
 
               {/* ========== STEP 3: AGREEMENT ========== */}
               {currentStep === 3 && (
-                <div className="agreement-section" style={{
-                  backgroundColor: '#181818',
-                  padding: '1.5rem',
-                  borderRadius: '0.5rem',
-                  maxHeight: '300px',
-                  overflowY: 'auto',
-                  marginBottom: '1rem'
-                }}>
-                  <h3 style={{color: '#f5f5f5', marginBottom: '1rem'}}>Contributor Agreement</h3>
-                  
-                  <div style={{color: '#f5f5f5', opacity: 0.8, lineHeight: '1.6'}}>
-                    <p><strong>1. Content Ownership</strong></p>
-                    <p>You retain ownership of all content you submit but grant us a worldwide, non-exclusive license to use, distribute, and display your content.</p>
-                    
-                    <p><strong>2. Content Guidelines</strong></p>
-                    <p>All submitted content must be original and not infringe on any third-party rights. Content must meet our quality standards.</p>
-                    
-                    <p><strong>3. Payment Terms</strong></p>
-                    <p>You will receive 60% of the revenue from sales of your content. Payments are processed monthly with a minimum threshold of $50.</p>
-                    
-                    <p><strong>4. Content Moderation</strong></p>
-                    <p>We reserve the right to review, modify, or remove any content that doesn't meet our guidelines.</p>
-                    
-                    <p><strong>5. Account Termination</strong></p>
-                    <p>Either party may terminate this agreement with 30 days written notice.</p>
-                    
-                    <p style={{marginTop: '1rem', fontStyle: 'italic'}}>
-                      By proceeding, you agree to all terms and conditions outlined in this agreement.
+                <div
+                  className="agreement-section"
+                  style={{
+                    backgroundColor: "#181818",
+                    padding: "1.5rem",
+                    borderRadius: "0.5rem",
+                    maxHeight: "300px",
+                    overflowY: "auto",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
+                    Contributor Agreement
+                  </h3>
+
+                  <div
+                    style={{
+                      color: "#f5f5f5",
+                      opacity: 0.8,
+                      lineHeight: "1.6",
+                    }}
+                  >
+                    <p>
+                      <strong>1. Content Ownership</strong>
+                    </p>
+                    <p>
+                      You retain ownership of all content you submit but grant
+                      us a worldwide, non-exclusive license to use, distribute,
+                      and display your content.
+                    </p>
+
+                    <p>
+                      <strong>2. Content Guidelines</strong>
+                    </p>
+                    <p>
+                      All submitted content must be original and not infringe on
+                      any third-party rights. Content must meet our quality
+                      standards.
+                    </p>
+
+                    <p>
+                      <strong>3. Payment Terms</strong>
+                    </p>
+                    <p>
+                      You will receive 60% of the revenue from sales of your
+                      content. Payments are processed monthly with a minimum
+                      threshold of $50.
+                    </p>
+
+                    <p>
+                      <strong>4. Content Moderation</strong>
+                    </p>
+                    <p>
+                      We reserve the right to review, modify, or remove any
+                      content that doesn't meet our guidelines.
+                    </p>
+
+                    <p>
+                      <strong>5. Account Termination</strong>
+                    </p>
+                    <p>
+                      Either party may terminate this agreement with 30 days
+                      written notice.
+                    </p>
+
+                    <p style={{ marginTop: "1rem", fontStyle: "italic" }}>
+                      By proceeding, you agree to all terms and conditions
+                      outlined in this agreement.
                     </p>
                   </div>
 
-                  <div className="accept_terms" style={{marginTop: '1.5rem'}}>
+                  <div className="accept_terms" style={{ marginTop: "1.5rem" }}>
                     <input
                       type="checkbox"
                       id="accept"
@@ -656,8 +835,14 @@ const ContributorLogin = () => {
                       onChange={(e) => setTermsAccepted(e.target.checked)}
                     />
                     <label htmlFor="accept">
-                      I accept the <Link to="/contributor/terms" target="_blank">Contributor Agreement</Link> and{" "}
-                      <Link to="/privacy" target="_blank">Privacy Policy</Link>
+                      I accept the{" "}
+                      <Link to="/contributor/terms" target="_blank">
+                        Contributor Agreement
+                      </Link>{" "}
+                      and{" "}
+                      <Link to="/privacy" target="_blank">
+                        Privacy Policy
+                      </Link>
                     </label>
                   </div>
                 </div>
@@ -665,29 +850,40 @@ const ContributorLogin = () => {
 
               {/* ========== STEP 4: SUCCESS ========== */}
               {currentStep === 4 && (
-                <div className="success-section" style={{
-                  textAlign: 'center',
-                  padding: '2rem'
-                }}>
-                  <div style={{
-                    fontSize: '4rem',
-                    color: '#4caf50',
-                    marginBottom: '1rem'
-                  }}>
+                <div
+                  className="success-section"
+                  style={{
+                    textAlign: "center",
+                    padding: "2rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "4rem",
+                      color: "#4caf50",
+                      marginBottom: "1rem",
+                    }}
+                  >
                     ✓
                   </div>
-                  <h3 style={{color: '#f5f5f5', marginBottom: '1rem'}}>
+                  <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
                     Registration Successful!
                   </h3>
-                  <p style={{color: '#f5f5f5', opacity: 0.8, marginBottom: '2rem'}}>
-                    Your contributor account has been created and is under review. 
-                    You will be redirected to your dashboard shortly.
+                  <p
+                    style={{
+                      color: "#f5f5f5",
+                      opacity: 0.8,
+                      marginBottom: "2rem",
+                    }}
+                  >
+                    Your contributor account has been created and is under
+                    review. You will be redirected to your dashboard shortly.
                   </p>
-                  <button 
-                    className="login_btn" 
+                  <button
+                    className="login_btn"
                     type="button"
                     onClick={() => navigate("/ContributorDashboard")}
-                    style={{backgroundColor: '#4caf50'}}
+                    style={{ backgroundColor: "#4caf50" }}
                   >
                     Go to Dashboard
                   </button>
@@ -699,41 +895,45 @@ const ContributorLogin = () => {
 
               {/* ========== BUTTONS ========== */}
               {currentStep < 4 && (
-                <div style={{
-                  display: 'flex',
-                  gap: '1rem',
-                  marginTop: '1.5rem'
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "1rem",
+                    marginTop: "1.5rem",
+                  }}
+                >
                   {currentStep > 1 && (
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="login_btn"
                       onClick={prevStep}
                       style={{
-                        backgroundColor: 'transparent',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        flex: 1
+                        backgroundColor: "transparent",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        flex: 1,
                       }}
                     >
                       Previous
                     </button>
                   )}
-                  
+
                   {currentStep < 3 ? (
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="login_btn"
                       onClick={nextStep}
-                      style={{flex: 1}}
+                      style={{ flex: 1 }}
                     >
                       Next
                     </button>
                   ) : (
-                    <button 
+                    <button
                       type="submit"
-                      className={`login_btn ${!termsAccepted ? "disabled" : ""}`}
+                      className={`login_btn ${
+                        !termsAccepted ? "disabled" : ""
+                      }`}
                       disabled={!termsAccepted}
-                      style={{flex: 1}}
+                      style={{ flex: 1 }}
                     >
                       Complete Registration
                     </button>
@@ -771,12 +971,15 @@ const ContributorLogin = () => {
                 {error && <span className="error">{error}</span>}
                 {success && <span className="success">{success}</span>}
 
-                <button className="login_btn" type="submit">Send Reset Link</button>
+                <button className="login_btn" type="submit">
+                  Send Reset Link
+                </button>
               </form>
 
               <div className="info_text">
                 <p>
-                  Enter your registered contributor email address, and we'll send you a link to reset your password.
+                  Enter your registered contributor email address, and we'll
+                  send you a link to reset your password.
                 </p>
               </div>
             </div>
