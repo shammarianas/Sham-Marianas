@@ -194,7 +194,7 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
 
   // Load more users function
   const handleLoadMore = () => {
-    setVisibleUsersCount(prevCount => prevCount + 10);
+    setVisibleUsersCount((prevCount) => prevCount + 10);
   };
 
   // Reset visible count when filters change
@@ -227,76 +227,70 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
 
       {/* ── Stats Cards ── */}
       <div className="reports-stats-grid">
-  <div className="report-stat-card primary">
-    <div className="report-stat-header">
-      <div className="report-stat-icon">
-        <FiUsers />
-      </div>
-      <div>
-        <h3 className="report-stat-title">Total Users</h3>
-        <div className="report-stat-value">{userStats.total}</div>
-      </div>
-    </div>
-    <div className="report-stat-content">
-      <div className="report-stat-subtext">
-        All registered users
-      </div>
-    </div>
-  </div>
+        <div className="report-stat-card primary">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiUsers />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Total Users</h3>
+              <div className="report-stat-value">{userStats.total}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">All registered users</div>
+          </div>
+        </div>
 
-  <div className="report-stat-card success">
-    <div className="report-stat-header">
-      <div className="report-stat-icon">
-        <FiUserCheck />
-      </div>
-      <div>
-        <h3 className="report-stat-title">Active Users</h3>
-        <div className="report-stat-value">{userStats.active}</div>
-      </div>
-    </div>
-    <div className="report-stat-content">
-      <div className="report-stat-subtext">
-        Currently active users
-      </div>
-    </div>
-  </div>
+        <div className="report-stat-card success">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiUserCheck />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Active Users</h3>
+              <div className="report-stat-value">{userStats.active}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">Currently active users</div>
+          </div>
+        </div>
 
-  <div className="report-stat-card warning">
-    <div className="report-stat-header">
-      <div className="report-stat-icon">
-        <FiShield />
-      </div>
-      <div>
-        <h3 className="report-stat-title">Administrators</h3>
-        <div className="report-stat-value">{userStats.admins}</div>
-      </div>
-    </div>
-    <div className="report-stat-content">
-      <div className="report-stat-subtext">
-        System administrators
-      </div>
-    </div>
-  </div>
+        <div className="report-stat-card warning">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiShield />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Administrators</h3>
+              <div className="report-stat-value">{userStats.admins}</div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">System administrators</div>
+          </div>
+        </div>
 
-  <div className="report-stat-card info">
-    <div className="report-stat-header">
-      <div className="report-stat-icon">
-        <FiMapPin />
-      </div>
-      <div>
-        <h3 className="report-stat-title">Countries</h3>
-        <div className="report-stat-value">
-          {Object.keys(userStats.countries).length}
+        <div className="report-stat-card info">
+          <div className="report-stat-header">
+            <div className="report-stat-icon">
+              <FiMapPin />
+            </div>
+            <div>
+              <h3 className="report-stat-title">Countries</h3>
+              <div className="report-stat-value">
+                {Object.keys(userStats.countries).length}
+              </div>
+            </div>
+          </div>
+          <div className="report-stat-content">
+            <div className="report-stat-subtext">
+              Total countries represented
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div className="report-stat-content">
-      <div className="report-stat-subtext">
-        Total countries represented
-      </div>
-    </div>
-  </div>
-</div>
 
       <div className="dashboard-content">
         {/* ── LEFT – Analytics ── */}
@@ -365,9 +359,20 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
         {/* ── RIGHT – User List ── */}
         <div className="users-column">
           {/* Filters */}
-          <div className="content-card filters-card">
+          <div className="reports-filter-bar">
+            <div className="filter-bar-header">
+              <h3 className="filter-bar-title">
+                <FiFilter className="panel-icon" /> Filter Reports
+              </h3>
+              <div className="filter-results">
+                <span className="filter-text">
+                  Showing {filteredUsers.length} of {filteredUsers.length}{" "}
+                  reports
+                </span>
+              </div>
+            </div>
             <div className="card-body">
-              <div className="filters-grid">
+              <div className="filter-controls-grid">
                 <div className="search-input-wrapper">
                   <FiSearch className="search-icon" />
                   <input
@@ -375,7 +380,7 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
                     placeholder="Search users by name, email, or country..."
                     value={userSearchTerm}
                     onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="search-input"
+                    className="filter-search-input"
                   />
                 </div>
 
@@ -477,7 +482,9 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
                                 checked={selectedUsers.includes(user.id)}
                                 onChange={() => {
                                   const newSel = selectedUsers.includes(user.id)
-                                    ? selectedUsers.filter((id) => id !== user.id)
+                                    ? selectedUsers.filter(
+                                        (id) => id !== user.id
+                                      )
                                     : [...selectedUsers, user.id];
                                   setSelectedUsers(newSel);
                                 }}
@@ -485,7 +492,6 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
                             </td>
                             <td className="user-cell">
                               <div className="user-cell-info">
-                                
                                 <div className="user-name-wrap">
                                   <div className="user-name">{name}</div>
                                   <div className="user-username">
@@ -494,47 +500,50 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
                                 </div>
                               </div>
                             </td>
-                            
+
                             <td>{user.role || "User"}</td>
-                            
-                            
+
                             <td>{user.totalDownloads || 0}</td>
-                            <td>{formatDate(user.createdAt || user.joinDate)}</td>
-                            <td >
+                            <td>
+                              {formatDate(user.createdAt || user.joinDate)}
+                            </td>
+                            <td>
                               <div className="table-actions">
                                 <button
-                                className="action-button secondary small"
-                                title="View Details"
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setShowUserDialog(true);
-                                }}
-                              >
-                                <FiEye />
-                              </button>
-                              <button
-                                className="action-button small"
-                                title={isActive ? "Deactivate" : "Activate"}
-                                onClick={() => handleUserStatusToggle(user.id)}
-                              >
-                                {isActive ? <FiX /> : <FiUserCheck />}
-                              </button>
-                              <button
-                                className="action-button danger small"
-                                title="Delete"
-                                onClick={() => {
-                                  if (
-                                    window.confirm(
-                                      `Delete ${name}'s account? This action cannot be undone.`
-                                    )
-                                  ) {
-                                    handleDelete(user.id);
+                                  className="action-button secondary small"
+                                  title="View Details"
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setShowUserDialog(true);
+                                  }}
+                                >
+                                  <FiEye />
+                                </button>
+                                <button
+                                  className="action-button small"
+                                  title={isActive ? "Deactivate" : "Activate"}
+                                  onClick={() =>
+                                    handleUserStatusToggle(user.id)
                                   }
-                                }}
-                              >
-                                <FiTrash2 />
-                              </button>
-                                </div>
+                                >
+                                  {isActive ? <FiX /> : <FiUserCheck />}
+                                </button>
+                                <button
+                                  className="action-button danger small"
+                                  title="Delete"
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        `Delete ${name}'s account? This action cannot be undone.`
+                                      )
+                                    ) {
+                                      handleDelete(user.id);
+                                    }
+                                  }}
+                                >
+                                  <FiTrash2 />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -547,12 +556,10 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
               {/* See More Button */}
               {filteredUsers.length > visibleUsersCount && (
                 <div className="load-more-container">
-                  <button 
-                    className="see-more-button" 
-                    onClick={handleLoadMore}
-                  >
+                  <button className="see-more-button" onClick={handleLoadMore}>
                     <FiChevronDown className="button-icon" />
-                    See More ({filteredUsers.length - visibleUsersCount} more users)
+                    See More ({filteredUsers.length - visibleUsersCount} more
+                    users)
                   </button>
                 </div>
               )}

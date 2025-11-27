@@ -1157,7 +1157,7 @@ const Upload = ({
         assetId,
         title,
         ownerId,
-        ownerName, // ✅ Add contributor name
+        ownerName, 
         status, // contributor who uploaded
         message: `Your asset "${title}" uploaded by ${ownerName} is currently ${status}.`,
         read: false,
