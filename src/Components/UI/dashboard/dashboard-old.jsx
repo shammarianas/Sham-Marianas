@@ -71,7 +71,7 @@ const UnauthorizedAccess = ({ error }) => {
 // ✅ UPDATED: Notification Dropdown Component
 const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
-  
+
   return (
     <div className="notification-dropdown">
       <div className="notification-header">
@@ -121,12 +121,12 @@ const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, on
 // ✅ Format notification time
 const formatNotificationTime = (timestamp) => {
   if (!timestamp) return 'Just now';
-  
+
   try {
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
+
     if (diffInSeconds < 60) return 'Just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
@@ -184,16 +184,16 @@ const AdminDashboard = () => {
   // ✅ IMPROVED: Setup real-time notifications listener
   const setupAdminNotificationsListener = useCallback(() => {
     console.log("🔔 Setting up admin notifications listener...");
-    
+
     const notificationsQuery = query(
       collection(db, "AdminNotifications"),
       orderBy("timestamp", "desc")
     );
 
-    return onSnapshot(notificationsQuery, 
+    return onSnapshot(notificationsQuery,
       (snapshot) => {
         console.log("📢 Notifications snapshot received:", snapshot.size, "notifications");
-        
+
         const notificationsData = [];
         snapshot.forEach((doc) => {
           const data = doc.data();
@@ -203,14 +203,14 @@ const AdminDashboard = () => {
           });
           console.log("📄 Notification:", { id: doc.id, type: data.type, read: data.read });
         });
-        
+
         setNotifications(notificationsData);
-        
+
         // Calculate unread count
         const unread = notificationsData.filter(notification => !notification.read).length;
         setUnreadCount(unread);
         console.log("🔢 Unread count:", unread);
-      }, 
+      },
       (error) => {
         console.error("❌ Error in notifications listener:", error);
         setError("Failed to load notifications");
@@ -221,10 +221,10 @@ const AdminDashboard = () => {
   // ✅ IMPROVED: Mark notification as read
   const markNotificationAsRead = async (notificationId) => {
     console.log("📝 Marking notification as read:", notificationId);
-    
+
     try {
       // Immediate UI update
-      const updatedNotifications = notifications.map(notif => 
+      const updatedNotifications = notifications.map(notif =>
         notif.id === notificationId ? { ...notif, read: true } : notif
       );
       setNotifications(updatedNotifications);
@@ -235,14 +235,14 @@ const AdminDashboard = () => {
         read: true,
         readAt: serverTimestamp()
       });
-      
+
       console.log("✅ Notification marked as read successfully");
     } catch (error) {
       console.error("❌ Error marking notification as read:", error);
       setError("Failed to mark notification as read");
-      
+
       // Revert UI on error
-      const revertedNotifications = notifications.map(notif => 
+      const revertedNotifications = notifications.map(notif =>
         notif.id === notificationId ? { ...notif, read: false } : notif
       );
       setNotifications(revertedNotifications);
@@ -252,19 +252,19 @@ const AdminDashboard = () => {
   // ✅ IMPROVED: Mark all notifications as read
   const markAllNotificationsAsRead = async () => {
     console.log("📝 Marking all notifications as read");
-    
+
     const unreadNotifications = notifications.filter(notification => !notification.read);
     if (unreadNotifications.length === 0) return;
 
     try {
       // Immediate UI update
-      const updatedNotifications = notifications.map(notif => 
+      const updatedNotifications = notifications.map(notif =>
         !notif.read ? { ...notif, read: true } : notif
       );
       setNotifications(updatedNotifications);
 
       // Update all in Firestore
-      const updatePromises = unreadNotifications.map(notification => 
+      const updatePromises = unreadNotifications.map(notification =>
         updateDoc(doc(db, "AdminNotifications", notification.id), {
           read: true,
           readAt: serverTimestamp()
@@ -288,11 +288,11 @@ const AdminDashboard = () => {
   const createAdminNotification = async (type, message, relatedId = null, userId = null) => {
     try {
       const currentNotifications = notificationsRef.current;
-      
+
       // Enhanced duplicate check
-      const isDuplicate = currentNotifications.some(notif => 
-        notif.type === type && 
-        notif.relatedId === relatedId && 
+      const isDuplicate = currentNotifications.some(notif =>
+        notif.type === type &&
+        notif.relatedId === relatedId &&
         notif.message === message &&
         !notif.read
       );
@@ -314,12 +314,12 @@ const AdminDashboard = () => {
       };
 
       const docRef = await addDoc(collection(db, "AdminNotifications"), notificationData);
-      console.log("✅ New admin notification created:", { 
-        id: docRef.id, 
-        type, 
-        message 
+      console.log("✅ New admin notification created:", {
+        id: docRef.id,
+        type,
+        message
       });
-      
+
       return docRef.id;
     } catch (error) {
       console.error("❌ Error creating admin notification:", error);
@@ -330,7 +330,7 @@ const AdminDashboard = () => {
   // Authorization and data fetching logic
   useEffect(() => {
     console.log("🚀 AdminDashboard mounted - Setting up auth listener");
-    
+
     const unsubscribeAuth = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
         setError("Please log in to access the admin dashboard");
@@ -359,10 +359,10 @@ const AdminDashboard = () => {
 
           // Fetch initial data
           await Promise.all([
-            fetchUsers(), 
+            fetchUsers(),
             fetchSupportMessages(null)
           ]);
-          
+
           setSelectedProfileId(uid);
 
           // Cleanup function
@@ -400,7 +400,7 @@ const AdminDashboard = () => {
           { createdAt: serverTimestamp(), promotedBy: "system" },
           { merge: true }
         );
-      } catch {}
+      } catch { }
       return true;
     }
 
@@ -482,7 +482,7 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
-  
+
   const loadBlogs = () => {
     setLoading(true);
     try {
@@ -711,8 +711,7 @@ const AdminDashboard = () => {
       });
       loadBlogs();
       alert(
-        `Blog ${
-          newStatus === "PUBLISHED" ? "published" : "drafted"
+        `Blog ${newStatus === "PUBLISHED" ? "published" : "drafted"
         } successfully!`
       );
     } catch (error) {
@@ -834,25 +833,22 @@ const AdminDashboard = () => {
                   </div>
                   <ul className="submenu">
                     <li
-                      className={`submenu-item ${
-                        activeTab === 1 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 1 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(1)}
                     >
                       User Information
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 2 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 2 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(2)}
                     >
                       User Report
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 3 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 3 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(3)}
                     >
                       Payment & Plan
@@ -868,49 +864,43 @@ const AdminDashboard = () => {
                   </div>
                   <ul className="submenu">
                     <li
-                      className={`submenu-item ${
-                        activeTab === 4 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 4 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(4)}
                     >
                       Seller Account Verify
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 5 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 5 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(5)}
                     >
                       Asset Request
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 6 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 6 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(6)}
                     >
                       Seller Earning
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 7 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 7 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(7)}
                     >
                       Seller Report
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 8 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 8 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(8)}
                     >
                       Seller Analytic
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 9 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 9 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(9)}
                     >
                       Seller Complains
@@ -926,33 +916,29 @@ const AdminDashboard = () => {
                   </div>
                   <ul className="submenu">
                     <li
-                      className={`submenu-item ${
-                        activeTab === 10 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 10 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(10)}
                     >
                       Download
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 11 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 11 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(11)}
                     >
                       Earning
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 12 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 12 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(12)}
                     >
                       Analytic
                     </li>
                     <li
-                      className={`submenu-item ${
-                        activeTab === 13 ? "active" : ""
-                      }`}
+                      className={`submenu-item ${activeTab === 13 ? "active" : ""
+                        }`}
                       onClick={() => setActiveTab(13)}
                     >
                       Asset
@@ -963,18 +949,16 @@ const AdminDashboard = () => {
             ) : (
               <ul className="sidebar-menu">
                 <li
-                  className={`menu-item dropdown-header comp-menu ${
-                    activeTab === 1 ? "active" : ""
-                  }`}
+                  className={`menu-item dropdown-header comp-menu ${activeTab === 1 ? "active" : ""
+                    }`}
                   onClick={() => setActiveTab(1)}
                 >
                   <FiFileText className="menu-icon" />
                   <span className="nav-label">Blogs</span>
                 </li>
                 <li
-                  className={`menu-item dropdown-header comp-menu ${
-                    activeTab === 2 ? "active" : ""
-                  }`}
+                  className={`menu-item dropdown-header comp-menu ${activeTab === 2 ? "active" : ""
+                    }`}
                   onClick={() => setActiveTab(2)}
                 >
                   <FiBriefcase className="menu-icon" />
@@ -997,7 +981,7 @@ const AdminDashboard = () => {
                   try {
                     await signOut(auth);
                     navigate("/");
-                  } catch {}
+                  } catch { }
                 }}
               >
                 <FiLogOut className="menu-icon" />
@@ -1035,12 +1019,12 @@ const AdminDashboard = () => {
               selectedDashboard === "company" &&
               "Portfolio Management"}
           </h1>
-          
+
           {/* ✅ ADDED: Notification Button in Header */}
-           <div className="header-right">
+          <div className="header-right">
             <div className="notification-container" ref={notificationRef}>
-              <button 
-                className={`header-btn notification-btn ${unreadCount > 0 ? 'has-new' : ''}`} 
+              <button
+                className={`header-btn notification-btn ${unreadCount > 0 ? 'has-new' : ''}`}
                 onClick={toggleNotifications}
               >
                 <FiBell className="btn-icon" />
@@ -1050,7 +1034,7 @@ const AdminDashboard = () => {
                   </span>
                 )}
               </button>
-              
+
               {/* Notification Dropdown */}
               {showNotifications && (
                 <NotificationDropdown
@@ -1107,11 +1091,10 @@ const AdminDashboard = () => {
             {activeTab === 4 && <SellerAccountVerify />}
 
             {activeTab === 5 && (
-              <AssetRequestsDashboard 
-                createAssetNotification={createAssetNotification}
+              <AssetRequestsDashboard
+                createAssetNotification={createAdminNotification}
               />
             )}
-
             {activeTab === 6 && <SellerEarning />}
 
             {activeTab === 7 && <SellerReports />}
@@ -1127,8 +1110,8 @@ const AdminDashboard = () => {
             {activeTab === 12 && <Analytics />}
 
             {activeTab === 13 && (
-              <AssetManagement 
-                createAssetNotification={createAssetNotification}
+              <AssetManagement
+                createAssetNotification={createAdminNotification}
               />
             )}
           </>

@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet-async";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { downloadLicense, downloadSimpleLicense } from "../utils/generateLicense";
 
 // Simple 3D Model Viewer Component
 const SimpleModelViewer = ({ modelUrl }) => {
@@ -20,7 +21,7 @@ const SimpleModelViewer = ({ modelUrl }) => {
     const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
     camera.position.set(5, 5, 5);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(300, 300);
+    renderer.setSize(100, 100);
     mountRef.current.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0x404040, 1);
@@ -74,6 +75,7 @@ const MyDownloads = () => {
   const { currentUser } = useUser();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingLicense, setDownloadingLicense] = useState(null); // ✅ MISSING STATE ADDED
 
   useEffect(() => {
     const fetchDownloads = async () => {
@@ -142,6 +144,57 @@ const MyDownloads = () => {
     return null;
   };
 
+  // Format date function
+  const formatDate = (dateString) => {
+    if (!dateString) return "Unknown date";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  // Handle license download
+  const handleDownloadLicense = async (asset) => {
+    setDownloadingLicense(asset.id);
+    try {
+      // Try PDF generation first
+      const success = await downloadLicense(asset, currentUser);
+      if (success) {
+        alert('License downloaded successfully!');
+      } else {
+        // Fallback to simple text license
+        downloadSimpleLicense(asset, currentUser);
+        alert('Simple license downloaded successfully!');
+      }
+    } catch (error) {
+      console.error('License download error:', error);
+      // Fallback to simple text license
+      downloadSimpleLicense(asset, currentUser);
+      alert('Simple license downloaded successfully!');
+    }
+    setDownloadingLicense(null);
+  };
+
+  // Check if asset is free
+  const isAssetFree = (asset) => {
+    const price = Number(asset.price) || 0;
+    const discount = Number(asset.discount ?? 0) || 0;
+    const finalPrice = Math.max(0, price - (price * discount) / 100);
+    return finalPrice === 0;
+  };
+
+  // Get license type text
+  const getLicenseType = (asset) => {
+    return isAssetFree(asset) ? "Free License" : "Commercial License";
+  };
+
+  // Get license badge color
+  const getLicenseBadgeColor = (asset) => {
+    return isAssetFree(asset) ? "#00b894" : "#0984e3";
+  };
+
   return (
     <>
       <Helmet>
@@ -150,113 +203,111 @@ const MyDownloads = () => {
         </title>
       </Helmet>
       <div className="page_content">
-        <PageTitle title="My Download" />
-        <div className="item_listing">
+        <PageTitle title="My Downloads" />
+
+        <div className="downloads-container">
           {loading === true ? (
             <div className="loading">Loading...</div>
           ) : loading === "no_items" ? (
             <div className="no_items">
-              <span>No Download Found.</span>
+              <span>No Downloads Found.</span>
             </div>
           ) : (
-            assets.map((asset, index) => {
-              const is3D = is3DModel(asset);
-              const modelUrl = get3DModelUrl(asset);
+            <div className="downloads-list">
+              {assets.map((asset, index) => {
+                const is3D = is3DModel(asset);
+                const modelUrl = get3DModelUrl(asset);
+                const isFree = isAssetFree(asset);
+                const licenseType = getLicenseType(asset);
+                const licenseColor = getLicenseBadgeColor(asset);
 
-              return (
-                <div className="" key={index}>
-                  <div className="item_card">
-                    <div
-                      className="card_image"
-                      style={{
-                        aspectRatio:
-                          asset.type === "textures" ? "1 / 1" : undefined,
-                      }}
-                    >
-                      {asset.discount > 0 ? (
-                        <div className="discount_card">
-                          <span>
-                            <strong>-{asset.discount}%</strong>
-                          </span>
-                        </div>
-                      ) : null}
-                      <Link className="card_image" to={`/View/${asset.id}`}>
+                return (
+                  <div className="download-item" key={index}>
+                    <div className="download-item-content">
+                      <div className="asset-preview">
                         {is3D ? (
-                          <SimpleModelViewer modelUrl={modelUrl} />
+                          <div className="model-preview">
+                            <Link to={`/View/${asset.id}`}>
+                              <SimpleModelViewer modelUrl={modelUrl} />
+                            </Link>
+                          </div>
                         ) : (
-                          (() => {
-                            const src = asset.thumbnail;
-                            const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(
-                              src
-                            );
+                          <div className="image-preview">
+                            <Link to={`/View/${asset.id}`}>
+                              {(() => {
+                                const src = asset.thumbnail;
+                                const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
 
-                            if (isVideo) {
-                              return (
-                                <div
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    position: "relative",
-                                    overflow: "hidden",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    const video =
-                                      e.currentTarget.querySelector("video");
-                                    if (video) video.play();
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    const video =
-                                      e.currentTarget.querySelector("video");
-                                    if (video) {
-                                      video.pause();
-                                      video.currentTime = 0;
-                                    }
-                                  }}
-                                >
-                                  <video
-                                    src={src}
-                                    muted
-                                    loop
-                                    playsInline
-                                    style={{
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
-                                    }}
-                                  />
-                                </div>
-                              );
-                            }
-                            return <img src={src} alt="placeholder" />;
-                          })()
+                                if (isVideo) {
+                                  return (
+                                    <div
+                                      className="video-container"
+                                      onMouseEnter={(e) => {
+                                        const video = e.currentTarget.querySelector("video");
+                                        if (video) video.play();
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        const video = e.currentTarget.querySelector("video");
+                                        if (video) {
+                                          video.pause();
+                                          video.currentTime = 0;
+                                        }
+                                      }}
+                                    >
+                                      <video
+                                        src={src}
+                                        muted
+                                        loop
+                                        playsInline
+                                        className="preview-media"
+                                      />
+                                    </div>
+                                  );
+                                }
+                                return <img src={src} alt={asset.title} className="preview-media" />;
+                              })()}
+                            </Link>
+
+                            {asset.discount > 0 && (
+                              <div className="discount-badge">
+                                -{asset.discount}%
+                              </div>
+                            )}
+                          </div>
                         )}
-                      </Link>
-                    </div>
-
-                    <div className="card_content">
-                      <div className="title">
-                        {asset.title} <br />
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <span className="publisher">
-                            by{" "}
-                            {asset.publisher ||
-                              asset.userDisplayName ||
-                              asset.authorName ||
-                              currentUser?.displayName ||
-                              "User"}
-                          </span>
-                        </div>
                       </div>
 
-                      <div className="details">
-                        <span className="price">
-                          <strong>
+                      <div className="asset-details">
+                        <div className="creator-info">
+                          <div>
+                            <div className="asset-info">
+                              <Link to={`/View/${asset.id}`} className="asset-title-link">
+                                <h3 className="asset-title">{asset.title}</h3>
+                              </Link>
+                              <div className="asset-meta">
+                                <span className="asset-type">
+                                  {asset.type || "Asset"}
+                                </span>
+                                <span className="license-type-badge" style={{backgroundColor: licenseColor}}>
+                                  {licenseType}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="creator-by">by: </span>
+                            <span className="creator-name"> 
+                              {asset.publisher ||
+                                asset.userDisplayName ||
+                                asset.authorName ||
+                                currentUser?.displayName ||
+                                "User"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="price-section">
+                          <span className="price">
                             {(() => {
                               const price = Number(asset.price) || 0;
                               const discount = Number(asset.discount ?? 0) || 0;
@@ -268,17 +319,257 @@ const MyDownloads = () => {
                                 ? "Free"
                                 : `$${finalPrice.toFixed(2)}`;
                             })()}
-                          </strong>
-                        </span>
+                          </span>
+                          <span className="download-date">
+                            Downloaded on {formatDate(asset.downloadDate || asset.createdAt)}
+                          </span>
+                        </div>
+
+                        <div className="download-actions">
+                          <button 
+                            className="download-license license-badge"
+                            onClick={() => handleDownloadLicense(asset)}
+                            disabled={downloadingLicense === asset.id}
+                            style={{backgroundColor: licenseColor}}
+                          >
+                            {downloadingLicense === asset.id ? 'Generating...' : 'Download License'}
+                          </button>
+                          <button className="download-btn primary">
+                            Download
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
         </div>
       </div>
+
+      <style jsx>{`
+        .downloads-container {
+          max-width: 1200px;
+          width: 100%;
+          margin: 0 auto;
+          padding: 20px;
+        }
+
+        .downloads-list {
+          display: flex;
+          flex-direction: column;
+          border-radius: 8px;
+          border: 1px solid #2c2d2c;
+        }
+
+        .download-item {
+          overflow: hidden;
+          border-bottom: 1px solid #2c2d2c;
+        }
+
+        .download-item:last-child {
+          border-bottom: none;
+        }
+
+        .download-item-content {
+          display: flex;
+          padding: 20px;
+          gap: 20px;
+          align-items: center;
+        }
+
+        .asset-preview {
+          flex: 0 0 80px;
+        }
+
+        .model-preview,
+        .image-preview {
+          width: 80px;
+          height: 80px;
+          border-radius: 6px;
+          overflow: hidden;
+          position: relative;
+          background: #f8f9fa;
+          border: 1px solid #e1e5e9;
+        }
+
+        .preview-media {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .video-container {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .discount-badge {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          background: #e17055;
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 10px;
+          font-weight: 600;
+        }
+
+        .asset-details {
+          flex: 1;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .creator-info {
+          display: flex;
+          align-items: flex-start;
+          gap: 4px;
+          font-size: 13px;
+          flex-direction: column;
+        }
+
+        .asset-title-link {
+          text-decoration: none;
+          color: inherit;
+        }
+
+        .asset-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin: 0 0 6px 0;
+          line-height: 1.3;
+          cursor: pointer;
+        }
+
+        .asset-title:hover {
+          color: #0984e3;
+        }
+
+        .asset-meta {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .asset-type {
+          font-weight: 500;
+          color: #0984e3;
+        }
+
+        .license-type-badge {
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 10px;
+          font-weight: 600;
+        }
+
+        .creator-by {
+          color: #636e72;
+        }
+
+        .creator-name {
+          font-weight: 600;
+        }
+
+        .price-section {
+          display: flex;
+          margin: 0 20px;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .price {
+          font-size: 16px;
+          font-weight: 700;
+        }
+
+        .download-date {
+          font-size: 12px;
+          color: #636e72;
+        }
+
+        .download-actions {
+          display: flex;
+          gap: 10px;
+        }
+
+        .download-license {
+          padding: 8px 12px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          border: none;
+          color: white;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .download-license:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .download-btn {
+          padding: 8px 16px;
+          border-radius: 4px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: none;
+        }
+
+        .download-btn.primary {
+          background: #0984e3;
+          color: white;
+        }
+
+        .download-btn.primary:hover {
+          background: #0770c4;
+        }
+
+        .loading,
+        .no_items {
+          text-align: center;
+          padding: 60px 20px;
+          font-size: 18px;
+          color: #636e72;
+        }
+
+        @media (max-width: 768px) {
+          .download-item-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+          }
+
+          .asset-details {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            width: 100%;
+          }
+
+          .price-section {
+            margin: 0;
+            align-items: flex-start;
+          }
+
+          .download-actions {
+            width: 100%;
+            justify-content: flex-start;
+          }
+        }
+      `}</style>
     </>
   );
 };
