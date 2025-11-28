@@ -1138,6 +1138,9 @@ const Upload = ({
       </div>
     );
   };
+
+
+  
   //notifications save
   const saveContributorNotification = async (
     assetId,
@@ -1169,6 +1172,38 @@ const Upload = ({
     }
   };
 
+  // ✅ ADDED: Function to create admin notification for asset approval request
+  const createAdminAssetNotification = async (assetId, assetTitle, contributorName, contributorId) => {
+    console.log("🔔 Creating admin notification for asset approval request...", {
+      assetId,
+      assetTitle,
+      contributorName,
+      contributorId
+    });
+
+    try {
+      const notificationData = {
+        type: "asset_approval_request",
+        message: `New asset "${assetTitle}" uploaded by ${contributorName} requires approval`,
+        assetId: assetId,
+        contributorId: contributorId,
+        contributorName: contributorName,
+        assetTitle: assetTitle,
+        read: false,
+        timestamp: serverTimestamp(),
+        status: "pending"
+      };
+
+      const docRef = await addDoc(collection(db, "AdminNotifications"), notificationData);
+      console.log("✅ Admin notification created for asset approval:", docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error("❌ Error creating admin notification for asset:", error);
+      return null;
+    }
+  };
+
+  // ✅ ADDED: Function to check if user is contributor
   const isContributor = async (uid) => {
     if (!uid) return false;
     try {
@@ -1194,6 +1229,7 @@ const Upload = ({
     try {
       const currentUserRole = await fetchUserRole();
       console.log("Current user role:", currentUserRole);
+      
       // ✅ Get user profile data
       const userProfile = await getUserProfileData();
       const userName =
@@ -1201,6 +1237,7 @@ const Upload = ({
         userProfile?.name ||
         currentUser?.displayName ||
         "Unknown Author";
+      
       let assetStatus = "approved"; // default
       if (await isContributor(currentUser.uid)) {
         assetStatus = "pending";
@@ -1478,6 +1515,18 @@ const Upload = ({
       } else {
         // ✅ Create new asset
         const newAssetRef = await addDoc(collection(db, "Assets"), docData);
+        
+        // ✅ ADDED: Create admin notification for asset approval if user is contributor
+        if (!editMode && (await isContributor(currentUser.uid))) {
+          await createAdminAssetNotification(
+            newAssetRef.id,
+            formData.title,
+            userName,
+            currentUser.uid
+          );
+          console.log("✅ Admin notification for new asset created");
+        }
+
         //notification
         if (!editMode && (await isContributor(currentUser.uid))) {
           await saveContributorNotification(

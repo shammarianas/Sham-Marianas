@@ -192,6 +192,29 @@ const AdminDashboard = () => {
     });
   };
 
+// ✅ ADDED: Setup real-time asset approval requests listener
+const setupAssetApprovalRequestsListener = () => {
+  const assetsQuery = query(
+    collection(db, "Assets"),
+    where("status", "==", "pending")
+  );
+
+  return onSnapshot(assetsQuery, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        // New asset approval request
+        const assetData = change.doc.data();
+        createAdminNotification(
+          'asset_approval_request',
+          `New asset "${assetData.title}" requires approval`,
+          change.doc.id,
+          assetData.ownerId
+        );
+      }
+    });
+  });
+};
+
   // ✅ ADDED: Setup real-time contributor requests listener
   const setupContributorRequestsListener = () => {
     const contributorsQuery = query(
@@ -357,8 +380,9 @@ const AdminDashboard = () => {
           await Promise.all([
             fetchUsers(), 
             fetchSupportMessages(null),
-            setupAdminNotificationsListener(), // ✅ ADDED: Setup notifications
-            setupContributorRequestsListener() // ✅ ADDED: Setup contributor requests listener
+           setupAdminNotificationsListener(), // ✅ ADDED: Setup notifications
+  setupContributorRequestsListener(), // ✅ ADDED: Setup contributor requests listener
+  setupAssetApprovalRequestsListener() // ✅ ADDED: Setup asset approval requests listener
           ]);
           setSelectedProfileId(uid);
         } else {
