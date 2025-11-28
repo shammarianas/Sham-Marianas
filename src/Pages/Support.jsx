@@ -8,6 +8,9 @@ import {
   serverTimestamp,
   getDoc,
   doc,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import PageTitle from "../Components/UI/PageTitle";
 import plus_icon from "../assets/Icons/upload.jpg";
@@ -22,23 +25,63 @@ const Support = () => {
   const [loading, setLoading] = useState(false);
   const [isContributor, setIsContributor] = useState(false);
 
-  // ✅ CHECK IF USER IS CONTRIBUTOR
+  // Check if user is contributor
   useEffect(() => {
     const checkContributorStatus = async () => {
       if (currentUser?.uid) {
         try {
-          const contributorDoc = await getDoc(
-            doc(db, "Contributors", currentUser.uid)
-          );
+          const contributorDoc = await getDoc(doc(db, "Contributors", currentUser.uid));
           setIsContributor(contributorDoc.exists());
         } catch (error) {
           console.error("Error checking contributor status:", error);
         }
       }
     };
-
     checkContributorStatus();
   }, [currentUser]);
+
+  // ✅ IMPROVED: Create admin notification for support complaint
+  const createAdminSupportNotification = async (supportId, subject, userEmail, issueType, userType) => {
+    console.log("🔔 Creating admin notification for support complaint...", {
+      supportId, subject, userEmail, issueType
+    });
+
+    try {
+      // ✅ STRONGER DUPLICATE PREVENTION - Check by supportId only
+      const existingNotificationsQuery = query(
+        collection(db, "AdminNotifications"),
+        where("supportId", "==", supportId)
+      );
+      
+      const existingSnapshot = await getDocs(existingNotificationsQuery);
+      if (!existingSnapshot.empty) {
+        console.log("📝 Support notification already exists with this supportId, skipping duplicate");
+        return null;
+      }
+
+      const notificationData = {
+        type: "support_complaint",
+        message: `New ${userType} support complaint: "${subject}" from ${userEmail}`,
+        supportId: supportId,
+        userEmail: userEmail,
+        subject: subject,
+        issueType: issueType,
+        userType: userType,
+        read: false,
+        timestamp: serverTimestamp(),
+        status: "pending",
+        createdAt: new Date().toISOString()
+      };
+
+      const docRef = await addDoc(collection(db, "AdminNotifications"), notificationData);
+      console.log("✅ Admin notification created for support complaint:", docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error("❌ Error creating admin notification for support:", error);
+      // Don't throw error here, just log it
+      return null;
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -50,6 +93,8 @@ const Support = () => {
 
     setLoading(true);
     try {
+      const userType = isContributor ? "contributor" : "regular";
+      
       // 1️⃣ Save complaint in user's Support subcollection
       const userSupportRef = await addDoc(
         collection(db, `Profiles/${currentUser.uid}/Support`),
@@ -61,10 +106,12 @@ const Support = () => {
           issueType,
           file: file ? file.name : "",
           createdAt: serverTimestamp(),
-          userType: isContributor ? "regular" : "regular",  //"contributor" : 
+          userType: userType,
           status: "pending",
         }
       );
+
+      console.log("✅ Support complaint saved with ID:", userSupportRef.id);
 
       // 2️⃣ ALSO save complaint in Contributors collection if user is a contributor
       if (isContributor) {
@@ -78,10 +125,20 @@ const Support = () => {
             issueType,
             file: file ? file.name : "",
             createdAt: serverTimestamp(),
+            userType: userType,
             status: "pending",
           }
         );
       }
+
+      // ✅ Create admin notification
+      await createAdminSupportNotification(
+        userSupportRef.id,
+        subject,
+        currentUser.email,
+        issueType,
+        userType
+      );
 
       alert("Your report has been submitted successfully!");
       setSubject("");
@@ -90,9 +147,7 @@ const Support = () => {
       setFile(null);
     } catch (error) {
       console.error("Error submitting report:", error);
-      alert(
-        "We encountered an issue while submitting your report. Please try again."
-      );
+      alert("We encountered an issue while submitting your report. Please try again.");
     }
     setLoading(false);
   };
@@ -108,10 +163,7 @@ const Support = () => {
     <>
       <Helmet>
         <title>Support | Shammarianas</title>
-        <meta
-          name="description"
-          content="Get support and report issues to Shammarianas"
-        />
+        <meta name="description" content="Get support and report issues to Shammarianas" />
       </Helmet>
 
       {currentUser ? (
@@ -123,9 +175,7 @@ const Support = () => {
               <div className="form_content">
                 <div className="form_left">
                   <div className="form_group">
-                    <label htmlFor="subject" className="form_label">
-                      Subject
-                    </label>
+                    <label htmlFor="subject" className="form_label">Subject</label>
                     <input
                       id="subject"
                       name="subject"
@@ -139,9 +189,7 @@ const Support = () => {
                   </div>
 
                   <div className="form_group">
-                    <label htmlFor="issueType" className="form_label">
-                      Issue Type
-                    </label>
+                    <label htmlFor="issueType" className="form_label">Issue Type</label>
                     <select
                       id="issueType"
                       name="issueType"
@@ -150,22 +198,15 @@ const Support = () => {
                       onChange={(e) => setIssueType(e.target.value)}
                       className="form_select"
                     >
-                      <option value="" disabled>
-                        Select the type of issue
-                      </option>
+                      <option value="" disabled>Select the type of issue</option>
                       <option value="technical">Technical Issue</option>
                       <option value="billing">Billing Issue</option>
                       <option value="general">General Inquiry</option>
-                      {/* ✅ ADDITIONAL OPTIONS FOR CONTRIBUTORS */}
                       {isContributor && (
                         <>
-                          <option value="content_approval">
-                            Content Approval
-                          </option>
+                          <option value="content_approval">Content Approval</option>
                           <option value="earnings">Earnings Issue</option>
-                          <option value="account_verification">
-                            Account Verification
-                          </option>
+                          <option value="account_verification">Account Verification</option>
                         </>
                       )}
                     </select>
@@ -182,11 +223,7 @@ const Support = () => {
                         className="file_input"
                       />
                       <label htmlFor="file" className="file_upload_label">
-                        <img
-                          className="upload_icon"
-                          src={plus_icon}
-                          alt="Upload"
-                        />
+                        <img className="upload_icon" src={plus_icon} alt="Upload" />
                         <span className="file_placeholder">
                           {file ? file.name : "Choose file to attach"}
                         </span>
@@ -197,9 +234,7 @@ const Support = () => {
 
                 <div className="form_right">
                   <div className="form_group">
-                    <label htmlFor="description" className="form_label">
-                      Description
-                    </label>
+                    <label htmlFor="description" className="form_label">Description</label>
                     <DescriptionBox
                       id="description"
                       name="description"
@@ -217,11 +252,7 @@ const Support = () => {
               </div>
 
               <div className="form_actions">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="submit_button"
-                >
+                <button type="submit" disabled={loading} className="submit_button">
                   {loading ? "Submitting..." : "Submit Report"}
                 </button>
               </div>
