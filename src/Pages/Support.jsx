@@ -8,6 +8,9 @@ import {
   serverTimestamp,
   getDoc,
   doc,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import PageTitle from "../Components/UI/PageTitle";
 import plus_icon from "../assets/Icons/upload.jpg";
@@ -40,6 +43,55 @@ const Support = () => {
     checkContributorStatus();
   }, [currentUser]);
 
+  // ✅ IMPROVED: Function to create admin notification for support complaint
+  const createAdminSupportNotification = async (supportId, subject, userEmail, issueType, userType) => {
+    console.log("🔔 Creating admin notification for support complaint...", {
+      supportId,
+      subject,
+      userEmail,
+      issueType
+    });
+
+    try {
+      // ✅ IMPROVED: Better duplicate prevention with timestamp check
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      
+      const existingNotificationsQuery = query(
+        collection(db, "AdminNotifications"),
+        where("supportId", "==", supportId),
+        where("userEmail", "==", userEmail),
+        where("subject", "==", subject),
+        where("timestamp", ">", fiveMinutesAgo)
+      );
+      
+      const existingSnapshot = await getDocs(existingNotificationsQuery);
+      if (!existingSnapshot.empty) {
+        console.log("📝 Support notification already exists (within 5 mins), skipping duplicate");
+        return null;
+      }
+
+      const notificationData = {
+        type: "support_complaint",
+        message: `New ${userType} support complaint: "${subject}" from ${userEmail}`,
+        supportId: supportId,
+        userEmail: userEmail,
+        subject: subject,
+        issueType: issueType,
+        userType: userType,
+        read: false,
+        timestamp: serverTimestamp(),
+        status: "pending"
+      };
+
+      const docRef = await addDoc(collection(db, "AdminNotifications"), notificationData);
+      console.log("✅ Admin notification created for support complaint:", docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error("❌ Error creating admin notification for support:", error);
+      return null;
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -50,6 +102,8 @@ const Support = () => {
 
     setLoading(true);
     try {
+      const userType = isContributor ? "contributor" : "regular";
+      
       // 1️⃣ Save complaint in user's Support subcollection
       const userSupportRef = await addDoc(
         collection(db, `Profiles/${currentUser.uid}/Support`),
@@ -61,10 +115,12 @@ const Support = () => {
           issueType,
           file: file ? file.name : "",
           createdAt: serverTimestamp(),
-          userType: isContributor ? "regular" : "regular",  //"contributor" : 
+          userType: userType,
           status: "pending",
         }
       );
+
+      console.log("✅ Support complaint saved with ID:", userSupportRef.id);
 
       // 2️⃣ ALSO save complaint in Contributors collection if user is a contributor
       if (isContributor) {
@@ -78,9 +134,26 @@ const Support = () => {
             issueType,
             file: file ? file.name : "",
             createdAt: serverTimestamp(),
+            userType: userType,
             status: "pending",
           }
         );
+        console.log("✅ Contributor support complaint also saved");
+      }
+
+      // ✅ IMPROVED: Create admin notification for support complaint
+      const notificationId = await createAdminSupportNotification(
+        userSupportRef.id,
+        subject,
+        currentUser.email,
+        issueType,
+        userType
+      );
+
+      if (notificationId) {
+        console.log("✅ Support complaint and notification created successfully");
+      } else {
+        console.log("ℹ️  Notification was not created (likely duplicate)");
       }
 
       alert("Your report has been submitted successfully!");
