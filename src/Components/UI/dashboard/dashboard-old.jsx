@@ -15,6 +15,7 @@ import {
   query,
   addDoc,
   serverTimestamp,
+  where,
 } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 
@@ -52,6 +53,7 @@ import {
   FiCheckCircle,
   FiClock,
   FiRefreshCw,
+  FiBriefcase,
 } from "react-icons/fi";
 
 import "./style.css";
@@ -96,6 +98,7 @@ const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, on
                 {notification.type === 'approved' && <FiCheckCircle className="icon-approved" />}
                 {notification.type === 'rejected' && <FiX className="icon-rejected" />}
                 {notification.type === 'revision' && <FiClock className="icon-revision" />}
+                {notification.type === 'contributor_request' && <FiUser className="icon-contributor-request" />}
               </div>
               <div className="notification-content">
                 <p className="notification-message">{notification.message}</p>
@@ -189,6 +192,29 @@ const AdminDashboard = () => {
     });
   };
 
+  // ✅ ADDED: Setup real-time contributor requests listener
+  const setupContributorRequestsListener = () => {
+    const contributorsQuery = query(
+      collection(db, "Contributors"),
+      where("status", "==", "pending")
+    );
+
+    return onSnapshot(contributorsQuery, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          // New contributor request
+          const contributorData = change.doc.data();
+          createAdminNotification(
+            'contributor_request',
+            `New contributor request from ${contributorData.fullName || contributorData.username}`,
+            change.doc.id,
+            contributorData.uid
+          );
+        }
+      });
+    });
+  };
+
   // ✅ ADDED: Mark notification as read
   const markNotificationAsRead = async (notificationId) => {
     try {
@@ -224,14 +250,25 @@ const AdminDashboard = () => {
     setShowNotifications(!showNotifications);
   };
 
-  // ✅ ADDED: Create notification for admin (when asset status changes)
-  const createAdminNotification = async (type, message, assetId = null, contributorId = null) => {
+  // ✅ ADDED: Create notification for admin
+  const createAdminNotification = async (type, message, relatedId = null, userId = null) => {
     try {
+      // Check if similar notification already exists
+      const existingNotification = notifications.find(notif => 
+        notif.type === type && 
+        notif.relatedId === relatedId && 
+        !notif.read
+      );
+
+      if (existingNotification) {
+        return; // Don't create duplicate notifications
+      }
+
       const notificationData = {
         type,
         message,
-        assetId,
-        contributorId,
+        relatedId,
+        userId,
         read: false,
         timestamp: serverTimestamp(),
         adminId: auth.currentUser?.uid,
@@ -320,7 +357,8 @@ const AdminDashboard = () => {
           await Promise.all([
             fetchUsers(), 
             fetchSupportMessages(null),
-            setupAdminNotificationsListener() // ✅ ADDED: Setup notifications
+            setupAdminNotificationsListener(), // ✅ ADDED: Setup notifications
+            setupContributorRequestsListener() // ✅ ADDED: Setup contributor requests listener
           ]);
           setSelectedProfileId(uid);
         } else {
@@ -1056,7 +1094,7 @@ const AdminDashboard = () => {
 
             {activeTab === 5 && (
               <AssetRequestsDashboard 
-                createAssetNotification={createAssetNotification} // ✅ PASS FUNCTION
+                createAssetNotification={createAssetNotification}
               />
             )}
 
@@ -1076,7 +1114,7 @@ const AdminDashboard = () => {
 
             {activeTab === 13 && (
               <AssetManagement 
-                createAssetNotification={createAssetNotification} // ✅ PASS FUNCTION
+                createAssetNotification={createAssetNotification}
               />
             )}
           </>
