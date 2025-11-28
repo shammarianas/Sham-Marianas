@@ -54,6 +54,7 @@ import {
   FiClock,
   FiRefreshCw,
   FiBriefcase,
+  FiMessageCircle, // ✅ ADDED: For support complaints
 } from "react-icons/fi";
 
 import "./style.css";
@@ -67,7 +68,7 @@ const UnauthorizedAccess = ({ error }) => {
   );
 };
 
-// ✅ ADDED: Notification Dropdown Component
+// ✅ UPDATED: Notification Dropdown Component with Support Icons
 const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
   
@@ -99,6 +100,8 @@ const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, on
                 {notification.type === 'rejected' && <FiX className="icon-rejected" />}
                 {notification.type === 'revision' && <FiClock className="icon-revision" />}
                 {notification.type === 'contributor_request' && <FiUser className="icon-contributor-request" />}
+                {notification.type === 'support_complaint' && <FiMessageCircle className="icon-support-complaint" />}
+                {notification.type === 'asset_approval_request' && <FiBriefcase className="icon-asset-request" />}
               </div>
               <div className="notification-content">
                 <p className="notification-message">{notification.message}</p>
@@ -154,6 +157,12 @@ const AdminDashboard = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
 
+  // ✅ ADDED: Use ref for notifications to avoid stale closures
+  const notificationsRef = useRef(notifications);
+  useEffect(() => {
+    notificationsRef.current = notifications;
+  }, [notifications]);
+
   // ✅ ADDED: Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -168,7 +177,7 @@ const AdminDashboard = () => {
     };
   }, []);
 
-  // ✅ ADDED: Setup real-time notifications listener for admin
+  // ✅ UPDATED: Setup real-time notifications listener for admin
   const setupAdminNotificationsListener = () => {
     const notificationsQuery = query(
       collection(db, "AdminNotifications"),
@@ -189,31 +198,33 @@ const AdminDashboard = () => {
       // Calculate unread count
       const unread = notificationsData.filter(notification => !notification.read).length;
       setUnreadCount(unread);
+    }, (error) => {
+      console.error("Error in notifications listener:", error);
     });
   };
 
-// ✅ ADDED: Setup real-time asset approval requests listener
-const setupAssetApprovalRequestsListener = () => {
-  const assetsQuery = query(
-    collection(db, "Assets"),
-    where("status", "==", "pending")
-  );
+  // ✅ ADDED: Setup real-time asset approval requests listener
+  const setupAssetApprovalRequestsListener = () => {
+    const assetsQuery = query(
+      collection(db, "Assets"),
+      where("status", "==", "pending")
+    );
 
-  return onSnapshot(assetsQuery, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      if (change.type === "added") {
-        // New asset approval request
-        const assetData = change.doc.data();
-        createAdminNotification(
-          'asset_approval_request',
-          `New asset "${assetData.title}" requires approval`,
-          change.doc.id,
-          assetData.ownerId
-        );
-      }
+    return onSnapshot(assetsQuery, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          // New asset approval request
+          const assetData = change.doc.data();
+          createAdminNotification(
+            'asset_approval_request',
+            `New asset "${assetData.title}" requires approval`,
+            change.doc.id,
+            assetData.ownerId
+          );
+        }
+      });
     });
-  });
-};
+  };
 
   // ✅ ADDED: Setup real-time contributor requests listener
   const setupContributorRequestsListener = () => {
@@ -238,23 +249,55 @@ const setupAssetApprovalRequestsListener = () => {
     });
   };
 
-  // ✅ ADDED: Mark notification as read
+  // ✅ IMPROVED: Mark notification as read function
   const markNotificationAsRead = async (notificationId) => {
     try {
+      // ✅ IMMEDIATE UI UPDATE FIRST
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === notificationId 
+            ? { ...notif, read: true } 
+            : notif
+        )
+      );
+
+      // ✅ THEN UPDATE FIRESTORE
       const notificationRef = doc(db, "AdminNotifications", notificationId);
       await updateDoc(notificationRef, {
         read: true,
         readAt: serverTimestamp()
       });
+      
     } catch (error) {
       console.error("Error marking notification as read:", error);
+      setError("Failed to mark notification as read");
+      
+      // ✅ REVERT UI UPDATE IF FAILED
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === notificationId 
+            ? { ...notif, read: false } 
+            : notif
+        )
+      );
     }
   };
 
-  // ✅ ADDED: Mark all notifications as read
+  // ✅ IMPROVED: Mark all notifications as read
   const markAllNotificationsAsRead = async () => {
     try {
       const unreadNotifications = notifications.filter(notification => !notification.read);
+      
+      if (unreadNotifications.length === 0) return;
+      
+      // ✅ IMMEDIATE UI UPDATE FIRST
+      setNotifications(prev => 
+        prev.map(notif => 
+          !notif.read ? { ...notif, read: true } : notif
+        )
+      );
+
+      // ✅ THEN UPDATE FIRESTORE IN BATCH
       const batch = unreadNotifications.map(notification => 
         updateDoc(doc(db, "AdminNotifications", notification.id), {
           read: true,
@@ -263,8 +306,19 @@ const setupAssetApprovalRequestsListener = () => {
       );
 
       await Promise.all(batch);
+      
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
+      setError("Failed to mark all notifications as read");
+      
+      // ✅ REVERT UI UPDATE IF FAILED
+      setNotifications(prev => 
+        prev.map(notif => 
+          unreadNotifications.some(unread => unread.id === notif.id) 
+            ? { ...notif, read: false } 
+            : notif
+        )
+      );
     }
   };
 
@@ -273,17 +327,22 @@ const setupAssetApprovalRequestsListener = () => {
     setShowNotifications(!showNotifications);
   };
 
-  // ✅ ADDED: Create notification for admin
+  // ✅ IMPROVED: Create notification for admin - BETTER DUPLICATE PREVENTION
   const createAdminNotification = async (type, message, relatedId = null, userId = null) => {
     try {
+      // ✅ USE REF INSTEAD OF STATE TO AVOID STALE CLOSURES
+      const currentNotifications = notificationsRef.current;
+      
       // Check if similar notification already exists
-      const existingNotification = notifications.find(notif => 
+      const existingNotification = currentNotifications.find(notif => 
         notif.type === type && 
         notif.relatedId === relatedId && 
-        !notif.read
+        !notif.read &&
+        notif.message === message
       );
 
       if (existingNotification) {
+        console.log("📝 Duplicate notification prevented:", { type, message, relatedId });
         return; // Don't create duplicate notifications
       }
 
@@ -298,6 +357,7 @@ const setupAssetApprovalRequestsListener = () => {
       };
 
       await addDoc(collection(db, "AdminNotifications"), notificationData);
+      console.log("✅ New admin notification created:", { type, message });
     } catch (error) {
       console.error("Error creating admin notification:", error);
     }
@@ -336,6 +396,8 @@ const setupAssetApprovalRequestsListener = () => {
 
   // Authorization and data fetching logic
   useEffect(() => {
+    let unsubscribeFunctions = [];
+
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
         setError("Please log in to access the admin dashboard");
@@ -376,13 +438,27 @@ const setupAssetApprovalRequestsListener = () => {
             }
           }
 
+          // ✅ CLEANUP PREVIOUS LISTENERS
+          unsubscribeFunctions.forEach(unsub => unsub());
+          unsubscribeFunctions = [];
+
+          // ✅ SETUP ALL LISTENERS AND STORE UNSUBSCRIBE FUNCTIONS
+          const listeners = [
+            setupAdminNotificationsListener,
+            setupContributorRequestsListener,
+            setupAssetApprovalRequestsListener
+          ];
+
+          const newUnsubscribes = await Promise.all(
+            listeners.map(listener => listener())
+          );
+          
+          unsubscribeFunctions = newUnsubscribes;
+
           // Fetch necessary data for admin dashboard
           await Promise.all([
             fetchUsers(), 
-            fetchSupportMessages(null),
-           setupAdminNotificationsListener(), // ✅ ADDED: Setup notifications
-  setupContributorRequestsListener(), // ✅ ADDED: Setup contributor requests listener
-  setupAssetApprovalRequestsListener() // ✅ ADDED: Setup asset approval requests listener
+            fetchSupportMessages(null)
           ]);
           setSelectedProfileId(uid);
         } else {
@@ -394,7 +470,11 @@ const setupAssetApprovalRequestsListener = () => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      // ✅ CLEANUP ALL LISTENERS
+      unsubscribeFunctions.forEach(unsub => unsub());
+    };
   }, []);
 
   // Check admin status
@@ -1047,7 +1127,7 @@ const setupAssetApprovalRequestsListener = () => {
           </h1>
           
           {/* ✅ ADDED: Notification Button in Header */}
-          <div className="header-right">
+           <div className="header-right">
             <div className="notification-container" ref={notificationRef}>
               <button 
                 className={`header-btn notification-btn ${unreadCount > 0 ? 'has-new' : ''}`} 
