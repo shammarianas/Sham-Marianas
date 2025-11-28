@@ -54,7 +54,7 @@ import {
   FiClock,
   FiRefreshCw,
   FiBriefcase,
-  FiMessageCircle, // ✅ ADDED: For support complaints
+  FiMessageCircle,
 } from "react-icons/fi";
 
 import "./style.css";
@@ -68,7 +68,7 @@ const UnauthorizedAccess = ({ error }) => {
   );
 };
 
-// ✅ UPDATED: Notification Dropdown Component with Support Icons
+// ✅ UPDATED: Notification Dropdown Component
 const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
   
@@ -118,18 +118,22 @@ const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, on
   );
 };
 
-// ✅ ADDED: Format notification time
+// ✅ Format notification time
 const formatNotificationTime = (timestamp) => {
   if (!timestamp) return 'Just now';
   
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now - date) / 1000);
-  
-  if (diffInSeconds < 60) return 'Just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  try {
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  } catch (error) {
+    return 'Just now';
+  }
 };
 
 const AdminDashboard = () => {
@@ -151,19 +155,19 @@ const AdminDashboard = () => {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // ✅ ADDED: Notification states
+  // ✅ Notification states
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
 
-  // ✅ ADDED: Use ref for notifications to avoid stale closures
-  const notificationsRef = useRef(notifications);
+  // ✅ Use ref for current notifications to avoid stale state
+  const notificationsRef = useRef([]);
   useEffect(() => {
     notificationsRef.current = notifications;
   }, [notifications]);
 
-  // ✅ ADDED: Close notifications when clicking outside
+  // ✅ Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
@@ -177,173 +181,125 @@ const AdminDashboard = () => {
     };
   }, []);
 
-  // ✅ UPDATED: Setup real-time notifications listener for admin
-  const setupAdminNotificationsListener = () => {
+  // ✅ IMPROVED: Setup real-time notifications listener
+  const setupAdminNotificationsListener = useCallback(() => {
+    console.log("🔔 Setting up admin notifications listener...");
+    
     const notificationsQuery = query(
       collection(db, "AdminNotifications"),
       orderBy("timestamp", "desc")
     );
 
-    return onSnapshot(notificationsQuery, (snapshot) => {
-      const notificationsData = [];
-      snapshot.forEach((doc) => {
-        notificationsData.push({
-          id: doc.id,
-          ...doc.data(),
+    return onSnapshot(notificationsQuery, 
+      (snapshot) => {
+        console.log("📢 Notifications snapshot received:", snapshot.size, "notifications");
+        
+        const notificationsData = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          notificationsData.push({
+            id: doc.id,
+            ...data,
+          });
+          console.log("📄 Notification:", { id: doc.id, type: data.type, read: data.read });
         });
-      });
-      
-      setNotifications(notificationsData);
-      
-      // Calculate unread count
-      const unread = notificationsData.filter(notification => !notification.read).length;
-      setUnreadCount(unread);
-    }, (error) => {
-      console.error("Error in notifications listener:", error);
-    });
-  };
-
-  // ✅ ADDED: Setup real-time asset approval requests listener
-  const setupAssetApprovalRequestsListener = () => {
-    const assetsQuery = query(
-      collection(db, "Assets"),
-      where("status", "==", "pending")
+        
+        setNotifications(notificationsData);
+        
+        // Calculate unread count
+        const unread = notificationsData.filter(notification => !notification.read).length;
+        setUnreadCount(unread);
+        console.log("🔢 Unread count:", unread);
+      }, 
+      (error) => {
+        console.error("❌ Error in notifications listener:", error);
+        setError("Failed to load notifications");
+      }
     );
+  }, []);
 
-    return onSnapshot(assetsQuery, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          // New asset approval request
-          const assetData = change.doc.data();
-          createAdminNotification(
-            'asset_approval_request',
-            `New asset "${assetData.title}" requires approval`,
-            change.doc.id,
-            assetData.ownerId
-          );
-        }
-      });
-    });
-  };
-
-  // ✅ ADDED: Setup real-time contributor requests listener
-  const setupContributorRequestsListener = () => {
-    const contributorsQuery = query(
-      collection(db, "Contributors"),
-      where("status", "==", "pending")
-    );
-
-    return onSnapshot(contributorsQuery, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          // New contributor request
-          const contributorData = change.doc.data();
-          createAdminNotification(
-            'contributor_request',
-            `New contributor request from ${contributorData.fullName || contributorData.username}`,
-            change.doc.id,
-            contributorData.uid
-          );
-        }
-      });
-    });
-  };
-
-  // ✅ IMPROVED: Mark notification as read function
+  // ✅ IMPROVED: Mark notification as read
   const markNotificationAsRead = async (notificationId) => {
+    console.log("📝 Marking notification as read:", notificationId);
+    
     try {
-      // ✅ IMMEDIATE UI UPDATE FIRST
-      setNotifications(prev => 
-        prev.map(notif => 
-          notif.id === notificationId 
-            ? { ...notif, read: true } 
-            : notif
-        )
+      // Immediate UI update
+      const updatedNotifications = notifications.map(notif => 
+        notif.id === notificationId ? { ...notif, read: true } : notif
       );
+      setNotifications(updatedNotifications);
 
-      // ✅ THEN UPDATE FIRESTORE
+      // Update in Firestore
       const notificationRef = doc(db, "AdminNotifications", notificationId);
       await updateDoc(notificationRef, {
         read: true,
         readAt: serverTimestamp()
       });
       
+      console.log("✅ Notification marked as read successfully");
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      console.error("❌ Error marking notification as read:", error);
       setError("Failed to mark notification as read");
       
-      // ✅ REVERT UI UPDATE IF FAILED
-      setNotifications(prev => 
-        prev.map(notif => 
-          notif.id === notificationId 
-            ? { ...notif, read: false } 
-            : notif
-        )
+      // Revert UI on error
+      const revertedNotifications = notifications.map(notif => 
+        notif.id === notificationId ? { ...notif, read: false } : notif
       );
+      setNotifications(revertedNotifications);
     }
   };
 
   // ✅ IMPROVED: Mark all notifications as read
   const markAllNotificationsAsRead = async () => {
-    try {
-      const unreadNotifications = notifications.filter(notification => !notification.read);
-      
-      if (unreadNotifications.length === 0) return;
-      
-      // ✅ IMMEDIATE UI UPDATE FIRST
-      setNotifications(prev => 
-        prev.map(notif => 
-          !notif.read ? { ...notif, read: true } : notif
-        )
-      );
+    console.log("📝 Marking all notifications as read");
+    
+    const unreadNotifications = notifications.filter(notification => !notification.read);
+    if (unreadNotifications.length === 0) return;
 
-      // ✅ THEN UPDATE FIRESTORE IN BATCH
-      const batch = unreadNotifications.map(notification => 
+    try {
+      // Immediate UI update
+      const updatedNotifications = notifications.map(notif => 
+        !notif.read ? { ...notif, read: true } : notif
+      );
+      setNotifications(updatedNotifications);
+
+      // Update all in Firestore
+      const updatePromises = unreadNotifications.map(notification => 
         updateDoc(doc(db, "AdminNotifications", notification.id), {
           read: true,
           readAt: serverTimestamp()
         })
       );
 
-      await Promise.all(batch);
-      
+      await Promise.all(updatePromises);
+      console.log("✅ All notifications marked as read successfully");
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+      console.error("❌ Error marking all notifications as read:", error);
       setError("Failed to mark all notifications as read");
-      
-      // ✅ REVERT UI UPDATE IF FAILED
-      setNotifications(prev => 
-        prev.map(notif => 
-          unreadNotifications.some(unread => unread.id === notif.id) 
-            ? { ...notif, read: false } 
-            : notif
-        )
-      );
     }
   };
 
-  // ✅ ADDED: Toggle notifications dropdown
+  // ✅ Toggle notifications dropdown
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
   };
 
-  // ✅ IMPROVED: Create notification for admin - BETTER DUPLICATE PREVENTION
+  // ✅ IMPROVED: Create notification for admin - FIXED DUPLICATE ISSUE
   const createAdminNotification = async (type, message, relatedId = null, userId = null) => {
     try {
-      // ✅ USE REF INSTEAD OF STATE TO AVOID STALE CLOSURES
       const currentNotifications = notificationsRef.current;
       
-      // Check if similar notification already exists
-      const existingNotification = currentNotifications.find(notif => 
+      // Enhanced duplicate check
+      const isDuplicate = currentNotifications.some(notif => 
         notif.type === type && 
         notif.relatedId === relatedId && 
-        !notif.read &&
-        notif.message === message
+        notif.message === message &&
+        !notif.read
       );
 
-      if (existingNotification) {
-        console.log("📝 Duplicate notification prevented:", { type, message, relatedId });
-        return; // Don't create duplicate notifications
+      if (isDuplicate) {
+        console.log("🚫 Duplicate notification prevented:", { type, message });
+        return;
       }
 
       const notificationData = {
@@ -354,51 +310,28 @@ const AdminDashboard = () => {
         read: false,
         timestamp: serverTimestamp(),
         adminId: auth.currentUser?.uid,
+        createdAt: new Date().toISOString() // Additional timestamp for better tracking
       };
 
-      await addDoc(collection(db, "AdminNotifications"), notificationData);
-      console.log("✅ New admin notification created:", { type, message });
-    } catch (error) {
-      console.error("Error creating admin notification:", error);
-    }
-  };
-
-  // ✅ ADDED: Create notification for contributor
-  const createAssetNotification = async (contributorId, assetId, assetName, type) => {
-    const messages = {
-      approved: `Your asset "${assetName}" has been approved and published!`,
-      rejected: `Your asset "${assetName}" has been rejected. Please check the reasons.`,
-      revision: `Your asset "${assetName}" requires revisions. Please check the comments.`
-    };
-
-    const notificationData = {
-      type,
-      message: messages[type],
-      assetId,
-      read: false,
-      timestamp: serverTimestamp(),
-    };
-
-    try {
-      await addDoc(collection(db, `Contributors/${contributorId}/Notifications`), notificationData);
-      
-      // ✅ ALSO CREATE ADMIN NOTIFICATION
-      await createAdminNotification(
+      const docRef = await addDoc(collection(db, "AdminNotifications"), notificationData);
+      console.log("✅ New admin notification created:", { 
+        id: docRef.id, 
         type, 
-        `Asset "${assetName}" ${type} by ${auth.currentUser?.email}`,
-        assetId,
-        contributorId
-      );
+        message 
+      });
+      
+      return docRef.id;
     } catch (error) {
-      console.error("Error creating asset notification:", error);
+      console.error("❌ Error creating admin notification:", error);
+      throw error;
     }
   };
 
   // Authorization and data fetching logic
   useEffect(() => {
-    let unsubscribeFunctions = [];
-
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+    console.log("🚀 AdminDashboard mounted - Setting up auth listener");
+    
+    const unsubscribeAuth = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
         setError("Please log in to access the admin dashboard");
         navigate("/Login");
@@ -414,76 +347,52 @@ const AdminDashboard = () => {
           return;
         }
 
+        console.log("🔐 Checking admin status for:", email);
         const isAdminUser = await checkAdminStatus(email, uid);
 
         if (isAdminUser) {
+          console.log("✅ User is admin, setting up dashboard");
           setIsAdmin(true);
 
-          // Seed additional authorized admins if primary admin
-          const PRIMARY_ADMIN = "admin@shammarianas.com";
-          if (email === PRIMARY_ADMIN) {
-            try {
-              await Promise.all(
-                AUTHORIZED_ADMINS.filter((e) => e && e !== PRIMARY_ADMIN).map(
-                  (e) =>
-                    setDoc(
-                      doc(db, "adminUsers", e),
-                      { createdAt: serverTimestamp(), promotedBy: email },
-                      { merge: true }
-                    )
-                )
-              );
-            } catch (err) {
-              console.warn("Failed to seed authorized admins:", err);
-            }
-          }
+          // Setup notifications listener
+          const unsubscribeNotifications = setupAdminNotificationsListener();
 
-          // ✅ CLEANUP PREVIOUS LISTENERS
-          unsubscribeFunctions.forEach(unsub => unsub());
-          unsubscribeFunctions = [];
-
-          // ✅ SETUP ALL LISTENERS AND STORE UNSUBSCRIBE FUNCTIONS
-          const listeners = [
-            setupAdminNotificationsListener,
-            setupContributorRequestsListener,
-            setupAssetApprovalRequestsListener
-          ];
-
-          const newUnsubscribes = await Promise.all(
-            listeners.map(listener => listener())
-          );
-          
-          unsubscribeFunctions = newUnsubscribes;
-
-          // Fetch necessary data for admin dashboard
+          // Fetch initial data
           await Promise.all([
             fetchUsers(), 
             fetchSupportMessages(null)
           ]);
+          
           setSelectedProfileId(uid);
+
+          // Cleanup function
+          return () => {
+            console.log("🧹 Cleaning up admin dashboard listeners");
+            unsubscribeNotifications();
+          };
         } else {
           setError("You do not have admin privileges");
           navigate("/");
         }
       } catch (error) {
+        console.error("❌ Auth state change error:", error);
         setError(`Failed to verify admin privileges: ${error.message}`);
       }
     });
 
     return () => {
-      unsubscribe();
-      // ✅ CLEANUP ALL LISTENERS
-      unsubscribeFunctions.forEach(unsub => unsub());
+      console.log("🧹 Cleaning up auth listener");
+      unsubscribeAuth();
     };
-  }, []);
+  }, [navigate, setupAdminNotificationsListener]);
 
-  // Check admin status
+  // Check admin status function
   const checkAdminStatus = async (email, uid) => {
     if (!email || !uid) return false;
 
     const PRIMARY_ADMIN = "admin@shammarianas.com";
 
-    // ✅ Primary admin always authorized
+    // Primary admin always authorized
     if (email === PRIMARY_ADMIN) {
       try {
         await setDoc(
@@ -496,16 +405,16 @@ const AdminDashboard = () => {
     }
 
     try {
-      // ✅ Step 1: Check adminUsers collection
+      // Check adminUsers collection
       const adminDoc = await getDoc(doc(db, "adminUsers", email));
       if (adminDoc.exists()) return true;
 
-      // ✅ Step 2: Check Profiles collection for role
+      // Check Profiles collection for role
       const profileDoc = await getDoc(doc(db, "Profiles", uid));
       if (profileDoc.exists()) {
         const role = profileDoc.data()?.role?.toLowerCase();
-        console.log("User Role:", role); // Debug line
-        if (role === "admin" || role === "Moderator") return true;
+        console.log("👤 User Role:", role);
+        if (role === "admin" || role === "moderator") return true;
       }
 
       return false;
@@ -515,6 +424,7 @@ const AdminDashboard = () => {
     }
   };
 
+  // Rest of your existing functions (fetchUsers, fetchSupportMessages, etc.)
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -572,7 +482,7 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
-
+  
   const loadBlogs = () => {
     setLoading(true);
     try {
