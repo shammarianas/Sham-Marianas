@@ -28,6 +28,7 @@
     "firebase": "^12.6.0",
     "gh-pages": "^6.1.1",
     "gsap": "^3.13.0",
+    "html2pdf.js": "^0.12.1",
     "lucide-react": "^0.483.0",
     "prop-types": "^15.8.1",
     "quill": "^2.0.3",
