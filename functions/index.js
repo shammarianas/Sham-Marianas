@@ -94,3 +94,50 @@ exports.stripeWebhook = functions.https.onRequest(
     res.json({ received: true });
   }
 );
+// =============================
+// SEND LOGIN EMAIL
+// =============================
+const nodemailer = require("nodemailer");
+
+// Gmail SMTP setup
+const mailTransport = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.LOGIN_EMAIL_USER, // your Gmail
+    pass: process.env.LOGIN_EMAIL_PASSWORD, // Gmail App Password
+  },
+});
+
+exports.sendLoginEmail = functions.https.onRequest(async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).send("Method Not Allowed");
+  }
+
+  const { email, name } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email missing in request" });
+  }
+
+  const mailOptions = {
+    from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
+    to: email,
+    subject: "Login Alert",
+    html: `
+      <h2>Hello ${name || "User"},</h2>
+      <p>You have successfully logged into your account.</p>
+      <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+      <p>If this wasn't you, please change your password immediately.</p>
+      <br/>
+      <strong>Sham Marianas Team</strong>
+    `,
+  };
+
+  try {
+    await mailTransport.sendMail(mailOptions);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Email send error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
