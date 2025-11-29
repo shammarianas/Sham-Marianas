@@ -9,10 +9,10 @@ function ProductList() {
         <div className="sec-head mb-80">
           <div className="d-flex align-items-center">
             <div>
-              <span className="sub-title main-color mb-5">Our Stocks</span>
+              <span className="sub-title main-color mb-5">Our Templates</span>
               <h3 className="fw-600 fz-50 text-u d-rotate wow">
                 <span className="rotate-text">
-                  Trending <span className="fw-200">Stock.</span>
+                  Trending <span className="fw-200">Templates.</span>
                 </span>
               </h3>
             </div>
