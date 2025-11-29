@@ -182,6 +182,17 @@ const ContributorLogin = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setSuccess("Login successful!");
+      await fetch(
+        "https://us-central1-sham-marianas.cloudfunctions.net/sendLoginEmail",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            name: username || "User", // agar username nahi hai to "User" use kare
+          }),
+        }
+      );
       setTimeout(
         () => navigate("/contributor/dashboard", { replace: true }),
         3000

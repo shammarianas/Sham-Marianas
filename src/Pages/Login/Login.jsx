@@ -122,7 +122,12 @@ const Login = () => {
   const loginWithEmailPassword = async (e) => {
     e.preventDefault();
     try {
+      // ✅ Step 1: Sign in the user
       await signInWithEmailAndPassword(auth, email, password);
+
+      setSuccess("Login successful!");
+
+      // ✅ Step 2: Call the cloud function to send login email
       await fetch(
         "https://us-central1-sham-marianas.cloudfunctions.net/sendLoginEmail",
         {
@@ -130,12 +135,12 @@ const Login = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: email,
-            name: userCredential.user.displayName || "User",
+            name: username || "User", // agar username nahi hai to "User" use kare
           }),
         }
       );
 
-      setSuccess("Login successful!");
+      // ✅ Step 3: Redirect after 3 seconds
       setTimeout(() => navigate("/stock", { replace: true }), 3000);
     } catch (err) {
       setError("Login failed: " + err.message);
