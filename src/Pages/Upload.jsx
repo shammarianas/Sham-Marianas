@@ -85,6 +85,15 @@ const filterData = {
       label: "Properties",
       options: ["Alpha Channel", "Looped"],
     },
+     licenseType: {
+      label: "License Type",
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
+        "Extended License",
+      ],
+    },
   },
   VideoTemplates: {
     categories: {
@@ -113,6 +122,15 @@ const filterData = {
     resolution: {
       label: "Resolution",
       options: ["720 (HD)", "1080 (Full HD)", "2K", "4K (UHD)"],
+    },
+     licenseType: {
+      label: "License Type",
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
+        "Extended License",
+      ],
     },
   },
   Pictures: {
@@ -184,6 +202,15 @@ const filterData = {
       label: "Properties",
       options: ["Vector", "Layered"],
     },
+     licenseType: {
+      label: "License Type",
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
+        "Extended License",
+      ],
+    },
   },
   Mockups: {
     categories: {
@@ -217,16 +244,13 @@ const filterData = {
       label: "Properties",
       options: ["Any Type"],
     },
-    licenseType: {
+     licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Paid / Premium License",
-        "Extended / Unlimited Use",
-        "Desktop License",
-        "Webfont License",
-        "App / eBook License",
+        "Editorial Use Only",
+        "Extended License",
       ],
     },
     categories: {
@@ -292,6 +316,15 @@ const filterData = {
         "Props / Miscellaneous",
       ],
     },
+     licenseType: {
+      label: "License Type",
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
+        "Extended License",
+      ],
+    },
   },
   Icons: {
     categories: {
@@ -301,6 +334,15 @@ const filterData = {
         "Interface Icons",
         "Animated Icons",
         "Stickers",
+      ],
+    },
+     licenseType: {
+      label: "License Type",
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
+        "Extended License",
       ],
     },
   },
@@ -356,6 +398,15 @@ const filterData = {
         "Sand / Soil",
         "Paper / Cardboard",
         "Asphalt / Road",
+      ],
+    },
+     licenseType: {
+      label: "License Type",
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
+        "Extended License",
       ],
     },
   },
@@ -417,6 +468,15 @@ const filterData = {
         "HDRI Domes / Sci-fi Rooms",
       ],
     },
+     licenseType: {
+      label: "License Type",
+      options: [
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
+        "Extended License",
+      ],
+    },
   },
   Scripts: {
     scriptType: {
@@ -468,13 +528,13 @@ const filterData = {
         "TensorFlow.js / ML5.js (AI)",
       ],
     },
-    licenseType: {
+     licenseType: {
       label: "License Type",
       options: [
-        "Free",
-        "Commercial Use",
+        "Free for Personal Use",
+        "Free for Commercial Use",
+        "Editorial Use Only",
         "Extended License",
-        "Open Source (MIT / GPL)",
       ],
     },
     integrationReady: {
