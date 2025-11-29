@@ -56,3 +56,6 @@ export const downloadLicense = async (asset, user) => {
         return false;
     }
 };
+
+// ✅ ADD THIS MISSING EXPORT
+export const downloadSimpleLicense = downloadLicense;

@@ -10,6 +10,36 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { downloadLicense, downloadSimpleLicense } from "../utils/generateLicense";
 
+// ✅ SIMPLE LICENSE DETECTION - Use whatever is stored in asset.licenseType
+const detectLicenseType = (asset) => {
+  // Use the licenseType that was set during upload
+  if (asset.licenseType) {
+    return asset.licenseType;
+  }
+  
+  // Fallback based on price
+  const price = Number(asset.price) || 0;
+  const discount = Number(asset.discount ?? 0) || 0;
+  const finalPrice = Math.max(0, price - (price * discount) / 100);
+  
+  return finalPrice === 0 ? "Free License" : "Commercial License";
+};
+
+// ✅ SIMPLE COLOR FUNCTION
+const getLicenseBadgeColor = (licenseType) => {
+  if (licenseType.includes("Free") || licenseType === "Free License") {
+    return "#00b894";
+  } else if (licenseType.includes("Commercial") || licenseType === "Commercial License") {
+    return "#0984e3";
+  } else if (licenseType.includes("Editorial")) {
+    return "#e17055";
+  } else if (licenseType.includes("Extended")) {
+    return "#6c5ce7";
+  } else {
+    return "#636e72";
+  }
+};
+
 // Simple 3D Model Viewer Component
 const SimpleModelViewer = ({ modelUrl }) => {
   const mountRef = useRef(null);
@@ -75,7 +105,7 @@ const MyDownloads = () => {
   const { currentUser } = useUser();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [downloadingLicense, setDownloadingLicense] = useState(null); // ✅ MISSING STATE ADDED
+  const [downloadingLicense, setDownloadingLicense] = useState(null);
 
   useEffect(() => {
     const fetchDownloads = async () => {
@@ -155,24 +185,19 @@ const MyDownloads = () => {
     });
   };
 
-  // Handle license download
+  // Handle license download - SIMPLIFIED
   const handleDownloadLicense = async (asset) => {
     setDownloadingLicense(asset.id);
     try {
-      // Try PDF generation first
       const success = await downloadLicense(asset, currentUser);
       if (success) {
         alert('License downloaded successfully!');
       } else {
-        // Fallback to simple text license
-        downloadSimpleLicense(asset, currentUser);
-        alert('Simple license downloaded successfully!');
+        alert('Failed to download license. Please try again.');
       }
     } catch (error) {
       console.error('License download error:', error);
-      // Fallback to simple text license
-      downloadSimpleLicense(asset, currentUser);
-      alert('Simple license downloaded successfully!');
+      alert('Error downloading license. Please try again.');
     }
     setDownloadingLicense(null);
   };
@@ -185,14 +210,15 @@ const MyDownloads = () => {
     return finalPrice === 0;
   };
 
-  // Get license type text
+  // Get license type text - UPDATED: using the local function
   const getLicenseType = (asset) => {
-    return isAssetFree(asset) ? "Free License" : "Commercial License";
+    return detectLicenseType(asset);
   };
 
-  // Get license badge color
-  const getLicenseBadgeColor = (asset) => {
-    return isAssetFree(asset) ? "#00b894" : "#0984e3";
+  // Get license badge color - UPDATED: using the local function
+  const getLicenseBadgeColorForAsset = (asset) => {
+    const licenseType = detectLicenseType(asset);
+    return getLicenseBadgeColor(licenseType);
   };
 
   return (
@@ -217,9 +243,8 @@ const MyDownloads = () => {
               {assets.map((asset, index) => {
                 const is3D = is3DModel(asset);
                 const modelUrl = get3DModelUrl(asset);
-                const isFree = isAssetFree(asset);
                 const licenseType = getLicenseType(asset);
-                const licenseColor = getLicenseBadgeColor(asset);
+                const licenseColor = getLicenseBadgeColorForAsset(asset);
 
                 return (
                   <div className="download-item" key={index}>
@@ -289,8 +314,8 @@ const MyDownloads = () => {
                                   {asset.type || "Asset"}
                                 </span>
                                 <span className="license-type-badge" style={{backgroundColor: licenseColor}}>
-                                  {licenseType}
-                                </span>
+  {asset.licenseType}
+</span>
                               </div>
                             </div>
                           </div>
