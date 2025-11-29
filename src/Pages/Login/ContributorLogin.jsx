@@ -263,20 +263,21 @@ const ContributorLogin = () => {
 
       await handleContributorProfile(user);
     } catch (err) {
-      // 👉 User already exists → login instead
       if (err.code === "auth/email-already-in-use") {
+        // ✅ Email exists → fetch the user from Firebase Auth
         try {
-          const userCredential = await signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-          );
-          const user = userCredential.user;
-
-          await handleContributorProfile(user);
-        } catch (loginErr) {
+          const user = auth.currentUser;
+          if (user) {
+            // User is already signed in, create contributor profile
+            await handleContributorProfile(user);
+          } else {
+            setError(
+              "Email already exists. Please login first and then create your contributor profile."
+            );
+          }
+        } catch (profileErr) {
           setError(
-            "Account already exists. Please login with correct password."
+            "Failed to create contributor profile: " + profileErr.message
           );
         }
       } else {

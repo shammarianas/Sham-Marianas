@@ -71,7 +71,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
-  
+
   // ✅ NEW FIELDS
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -123,6 +123,18 @@ const Login = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      await fetch(
+        "https://us-central1-sham-marianas.cloudfunctions.net/sendLoginEmail",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            name: userCredential.user.displayName || "User",
+          }),
+        }
+      );
+
       setSuccess("Login successful!");
       setTimeout(() => navigate("/stock", { replace: true }), 3000);
     } catch (err) {
@@ -138,30 +150,38 @@ const Login = () => {
       return;
     }
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
-      await updateProfile(user, { 
-        displayName: username 
+      await updateProfile(user, {
+        displayName: username,
       });
 
       const userProfileRef = doc(db, "Profiles", user.uid);
-      await setDoc(userProfileRef, {
-        username: user.displayName,
-        email: user.email,
-        profilePic: user.photoURL,
-        uid: user.uid,
-        role: "user",
-        // ✅ NEW FIELDS ADDED
-        name: name,
-        phone: `${countryCode} ${phone}`, // Save with country code
-        birthday: birthday,
-        countryCode: countryCode, // Save country code separately if needed
-        // ✅ JOIN DATE FIELDS
-        createdAt: serverTimestamp(),
-        joinDate: serverTimestamp(),
-        lastLogin: serverTimestamp(),
-      }, { merge: true });
+      await setDoc(
+        userProfileRef,
+        {
+          username: user.displayName,
+          email: user.email,
+          profilePic: user.photoURL,
+          uid: user.uid,
+          role: "user",
+          // ✅ NEW FIELDS ADDED
+          name: name,
+          phone: `${countryCode} ${phone}`, // Save with country code
+          birthday: birthday,
+          countryCode: countryCode, // Save country code separately if needed
+          // ✅ JOIN DATE FIELDS
+          createdAt: serverTimestamp(),
+          joinDate: serverTimestamp(),
+          lastLogin: serverTimestamp(),
+        },
+        { merge: true }
+      );
 
       setSuccess("Sign-up successful! Redirecting...");
       setTimeout(() => navigate("/stock", { replace: true }), 3000);
@@ -192,13 +212,18 @@ const Login = () => {
       </Helmet>
 
       <div className="login">
-
         {/* =================== LOGIN PAGE =================== */}
         {page === "login" && (
           <div className="login_tab">
             <div className="title">
               <span>Login</span>
-              <span className="link" onClick={() => { setPage("signup"); setError(""); }}>
+              <span
+                className="link"
+                onClick={() => {
+                  setPage("signup");
+                  setError("");
+                }}
+              >
                 Sign Up <i className="icon fas fa-arrow-right"></i>
               </span>
             </div>
@@ -227,27 +252,47 @@ const Login = () => {
                   onChange={handlePasswordChange}
                 />
                 {password && (
-                  <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="view_btn">
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                    className="view_btn"
+                  >
                     <img src={eye_icon} alt="view" />
                   </button>
                 )}
               </div>
 
-              <span className="forgot_password" onClick={() => { setPage("forgot"); setError(""); }}>
+              <span
+                className="forgot_password"
+                onClick={() => {
+                  setPage("forgot");
+                  setError("");
+                }}
+              >
                 <span role="button">Forgot password?</span>
               </span>
 
               {error && <span className="error">{error}</span>}
               {success && <span className="success">{success}</span>}
 
-              <button className="login_btn" type="submit">Login</button>
+              <button className="login_btn" type="submit">
+                Login
+              </button>
               <div className="separator"></div>
 
               <div className="buttons">
-                <button className="google" type="button" onClick={loginWithGoogle}>
+                <button
+                  className="google"
+                  type="button"
+                  onClick={loginWithGoogle}
+                >
                   <i className="fab fa-google"></i>
                 </button>
-                <button className="apple" type="button" onClick={loginWithApple}>
+                <button
+                  className="apple"
+                  type="button"
+                  onClick={loginWithApple}
+                >
                   <i className="fab fa-apple"></i>
                 </button>
               </div>
@@ -260,7 +305,13 @@ const Login = () => {
           <div className="login_tab">
             <div className="title">
               <span>Sign up</span>
-              <span className="link" onClick={() => { setPage("login"); setError(""); }}>
+              <span
+                className="link"
+                onClick={() => {
+                  setPage("login");
+                  setError("");
+                }}
+              >
                 Login <i className="icon fas fa-arrow-right"></i>
               </span>
             </div>
@@ -268,7 +319,9 @@ const Login = () => {
               {/* ✅ NAME & USERNAME IN ONE ROW */}
               <div className="form-row-1 mb-0">
                 <div className="width-50">
-                  <label htmlFor="name" className="mb-2">Full Name</label>
+                  <label htmlFor="name" className="mb-2">
+                    Full Name
+                  </label>
                   <div className="input">
                     <input
                       type="text"
@@ -281,7 +334,9 @@ const Login = () => {
                   </div>
                 </div>
                 <div className="width-50">
-                  <label htmlFor="username" className="mb-2">Username</label>
+                  <label htmlFor="username" className="mb-2">
+                    Username
+                  </label>
                   <div className="input">
                     <input
                       type="text"
@@ -310,9 +365,11 @@ const Login = () => {
               {/* ✅ PHONE & BIRTHDAY IN ONE ROW */}
               <div className="form-row-1 mb-0">
                 <div className="width-50">
-                  <label htmlFor="phone" className="mb-2">Phone Number</label>
+                  <label htmlFor="phone" className="mb-2">
+                    Phone Number
+                  </label>
                   <div className="input phone-input-container">
-                    <select 
+                    <select
                       className="country-code-select"
                       value={countryCode}
                       onChange={handleCountryCodeChange}
@@ -335,7 +392,9 @@ const Login = () => {
                   </div>
                 </div>
                 <div className="width-50">
-                  <label htmlFor="birthday" className="mb-2">Birthday</label>
+                  <label htmlFor="birthday" className="mb-2">
+                    Birthday
+                  </label>
                   <div className="input">
                     <input
                       type="date"
@@ -358,7 +417,11 @@ const Login = () => {
                   onChange={handlePasswordChange}
                 />
                 {password && (
-                  <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="view_btn">
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                    className="view_btn"
+                  >
                     <img src={eye_icon} alt="view" />
                   </button>
                 )}
@@ -374,7 +437,11 @@ const Login = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
                 {password && (
-                  <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="view_btn">
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                    className="view_btn"
+                  >
                     <img src={eye_icon} alt="view" />
                   </button>
                 )}
@@ -388,8 +455,14 @@ const Login = () => {
                   onChange={(e) => setTermsAccepted(e.target.checked)}
                 />
                 <label htmlFor="accept">
-                  I accept the <Link to="/Terms" target="_blank">Terms of Service</Link> and{" "}
-                  <Link to="/Privacy" target="_blank">Privacy Policy</Link>
+                  I accept the{" "}
+                  <Link to="/Terms" target="_blank">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link to="/Privacy" target="_blank">
+                    Privacy Policy
+                  </Link>
                 </label>
               </div>
 
@@ -397,7 +470,9 @@ const Login = () => {
               {success && <span className="success">{success}</span>}
 
               <button
-                className={`login_btn ${error || !termsAccepted ? "disabled" : ""}`}
+                className={`login_btn ${
+                  error || !termsAccepted ? "disabled" : ""
+                }`}
                 disabled={error || !termsAccepted}
                 type="submit"
               >
@@ -406,10 +481,18 @@ const Login = () => {
 
               <div className="separator"></div>
               <div className="buttons">
-                <button className="google" type="button" onClick={loginWithGoogle}>
+                <button
+                  className="google"
+                  type="button"
+                  onClick={loginWithGoogle}
+                >
                   <i className="fab fa-google"></i>
                 </button>
-                <button className="apple" type="button" onClick={loginWithApple}>
+                <button
+                  className="apple"
+                  type="button"
+                  onClick={loginWithApple}
+                >
                   <i className="fab fa-apple"></i>
                 </button>
               </div>
@@ -444,12 +527,15 @@ const Login = () => {
                 {error && <span className="error">{error}</span>}
                 {success && <span className="success">{success}</span>}
 
-                <button className="login_btn" type="submit">Send Reset Link</button>
+                <button className="login_btn" type="submit">
+                  Send Reset Link
+                </button>
               </form>
 
               <div className="info_text">
                 <p>
-                  Enter your registered email address, and we'll send you a link to reset your password.
+                  Enter your registered email address, and we'll send you a link
+                  to reset your password.
                 </p>
               </div>
             </div>
@@ -462,7 +548,7 @@ const Login = () => {
           display: flex;
           gap: 8px;
         }
-        
+
         .country-code-select {
           width: 50px;
           border: 1px solid #ddd;
@@ -470,16 +556,16 @@ const Login = () => {
           background-color: white;
           font-size: 14px;
         }
-        
+
         .phone-number-input {
           flex: 1;
         }
-        
+
         @media (max-width: 768px) {
           .phone-input-container {
             flex-direction: column;
           }
-          
+
           .country-code-select {
             width: 100%;
           }
