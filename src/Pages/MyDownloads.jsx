@@ -316,6 +316,7 @@ const MyDownloads = () => {
                                 <span className="license-type-badge" style={{backgroundColor: licenseColor}}>
   {asset.licenseType}
 </span>
+{/* hhhh */}
                               </div>
                             </div>
                           </div>
