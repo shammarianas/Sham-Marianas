@@ -280,7 +280,7 @@ const filterData = {
 const categoryMapping = {
   Videos: "Videos",
   "video-templates": "VideoTemplates",
-  images: "Pictures",
+  Pictures: "Pictures",
   graphics: "GraphicTemplates",
   Mockups: "Mockups",
   Fonts: "Fonts",
@@ -289,7 +289,6 @@ const categoryMapping = {
   Textures: "Textures",
   HDRIs: "HDRIs",
   Scripts: "Scripts",
-  hot: "Hot", // No filters for "Hot"
 };
 
 const ListingSidebar = () => {

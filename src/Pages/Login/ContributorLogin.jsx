@@ -254,7 +254,7 @@ const ContributorLogin = () => {
     );
 
     setTimeout(
-      () => navigate("/contributor/dashboard", { replace: true }),
+      () => navigate("/contributordashboard", { replace: true }),
       2000
     );
   };

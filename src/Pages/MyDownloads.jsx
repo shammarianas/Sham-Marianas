@@ -16,12 +16,12 @@ const detectLicenseType = (asset) => {
   if (asset.licenseType) {
     return asset.licenseType;
   }
-  
+
   // Fallback based on price
   const price = Number(asset.price) || 0;
   const discount = Number(asset.discount ?? 0) || 0;
   const finalPrice = Math.max(0, price - (price * discount) / 100);
-  
+
   return finalPrice === 0 ? "Free License" : "Commercial License";
 };
 
@@ -313,16 +313,16 @@ const MyDownloads = () => {
                                 <span className="asset-type">
                                   {asset.type || "Asset"}
                                 </span>
-                                <span className="license-type-badge" style={{backgroundColor: licenseColor}}>
-  {asset.licenseType}
-</span>
-{/* hhhh */}
+                                <span className="license-type-badge" style={{ backgroundColor: licenseColor }}>
+                                  {asset.licenseType}
+                                </span>
+                                {/* hhhh */}
                               </div>
                             </div>
                           </div>
                           <div>
                             <span className="creator-by">by: </span>
-                            <span className="creator-name"> 
+                            <span className="creator-name">
                               {asset.publisher ||
                                 asset.userDisplayName ||
                                 asset.authorName ||
@@ -352,11 +352,11 @@ const MyDownloads = () => {
                         </div>
 
                         <div className="download-actions">
-                          <button 
+                          <button
                             className="download-license license-badge"
                             onClick={() => handleDownloadLicense(asset)}
                             disabled={downloadingLicense === asset.id}
-                            style={{backgroundColor: licenseColor}}
+                            style={{ backgroundColor: licenseColor }}
                           >
                             {downloadingLicense === asset.id ? 'Generating...' : 'Download License'}
                           </button>
