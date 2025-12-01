@@ -59,6 +59,29 @@ const countryCodes = [
   { code: "+420", country: "Czech Republic" },
   { code: "+43", country: "Austria" },
 ];
+// Country code data (existing) ke neeche country list aur city list add karein
+const countries = [
+  { name: "United States", code: "US", cities: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"] },
+  { name: "United Kingdom", code: "GB", cities: ["London", "Manchester", "Birmingham", "Liverpool", "Glasgow"] },
+  { name: "India", code: "IN", cities: ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai"] },
+  { name: "Pakistan", code: "PK", cities: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad"] },
+  { name: "Canada", code: "CA", cities: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"] },
+  { name: "Australia", code: "AU", cities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"] },
+  { name: "Germany", code: "DE", cities: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"] },
+  { name: "France", code: "FR", cities: ["Paris", "Marseille", "Lyon", "Toulouse", "Nice"] },
+  { name: "Japan", code: "JP", cities: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Nagoya"] },
+  { name: "China", code: "CN", cities: ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu"] },
+  { name: "Brazil", code: "BR", cities: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza"] },
+  { name: "South Africa", code: "ZA", cities: ["Johannesburg", "Cape Town", "Durban", "Pretoria", "Port Elizabeth"] },
+  { name: "UAE", code: "AE", cities: ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman"] },
+  { name: "Saudi Arabia", code: "SA", cities: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"] },
+  { name: "Singapore", code: "SG", cities: ["Singapore"] },
+  { name: "Malaysia", code: "MY", cities: ["Kuala Lumpur", "Penang", "Johor Bahru", "Ipoh", "Malacca"] },
+  { name: "Turkey", code: "TR", cities: ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya"] },
+  { name: "Spain", code: "ES", cities: ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza"] },
+  { name: "Italy", code: "IT", cities: ["Rome", "Milan", "Naples", "Turin", "Palermo"] },
+  { name: "Russia", code: "RU", cities: ["Moscow", "Saint Petersburg", "Novosibirsk", "Yekaterinburg", "Kazan"] },
+];
 
 const ContributorLogin = () => {
   const [page, setPage] = useState("login");
@@ -202,8 +225,6 @@ const ContributorLogin = () => {
     }
   };
 
-  // ✅ CONTRIBUTOR SIGNUP FUNCTION
-  // ✅ CONTRIBUTOR SIGNUP FUNCTION (Updated)
   // 🔵 Creates/updates contributor profile
   const handleContributorProfile = async (user) => {
     await updateProfile(user, { displayName: username });
@@ -364,6 +385,33 @@ const ContributorLogin = () => {
       ))}
     </div>
   );
+
+
+  // ✅ CONTRIBUTOR SPECIFIC FIELDS (existing code) mein add karein:
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
+  const [availableCities, setAvailableCities] = useState([]);
+
+  // ✅ CONTRIBUTOR HANDLERS mein add karein:
+  const handleCountryChange = (e) => {
+    const selectedCountry = e.target.value;
+    setCountry(selectedCountry);
+
+    // Country change hone par cities update karein
+    const countryData = countries.find(c => c.name === selectedCountry);
+    if (countryData) {
+      setAvailableCities(countryData.cities);
+      setCity(countryData.cities[0] || ""); // Default pehli city select karein
+    } else {
+      setAvailableCities([]);
+      setCity("");
+    }
+  };
+
+  const handleCityChange = (e) => {
+    setCity(e.target.value);
+  };
+
 
   return (
     <>
@@ -607,6 +655,70 @@ const ContributorLogin = () => {
                       </div>
                     </div>
                   </div>
+
+                  <div className="form-row-1 mb-0">
+                    <div className="width-50">
+                      <label htmlFor="country" className="mb-2">
+                        Country *
+                      </label>
+                      <div className="input">
+                        <select
+                          id="country"
+                          value={country}
+                          onChange={handleCountryChange}
+                          required
+                          style={{
+                            width: "100%",
+                            padding: "12px",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            borderRadius: "4px",
+                            backgroundColor: "#181818",
+                            color: "#f5f5f5",
+                            fontSize: "14px",
+                          }}
+                        >
+                          <option value="">Select Country</option>
+                          {countries.map((country) => (
+                            <option key={country.code} value={country.name}>
+                              {country.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="width-50">
+                      <label htmlFor="city" className="mb-2">
+                        City *
+                      </label>
+                      <div className="input">
+                        <select
+                          id="city"
+                          value={city}
+                          onChange={handleCityChange}
+                          required
+                          disabled={!country}
+                          style={{
+                            width: "100%",
+                            padding: "12px",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            borderRadius: "4px",
+                            backgroundColor: "#181818",
+                            color: "#f5f5f5",
+                            fontSize: "14px",
+                            opacity: country ? 1 : 0.6,
+                          }}
+                        >
+                          <option value="">{country ? "Select City" : "Select country first"}</option>
+                          {availableCities.map((cityName) => (
+                            <option key={cityName} value={cityName}>
+                              {cityName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
 
                   <label htmlFor="password">Password *</label>
                   <div className="input">
@@ -941,9 +1053,8 @@ const ContributorLogin = () => {
                   ) : (
                     <button
                       type="submit"
-                      className={`login_btn ${
-                        !termsAccepted ? "disabled" : ""
-                      }`}
+                      className={`login_btn ${!termsAccepted ? "disabled" : ""
+                        }`}
                       disabled={!termsAccepted}
                       style={{ flex: 1 }}
                     >
