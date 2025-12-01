@@ -296,13 +296,12 @@ const Profile = () => {
                       {Array.from({ length: 5 }, (_, i) => (
                         <i
                           key={`filled_${i}`}
-                          className={`icon fas fa-star ${
-                            user &&
-                            typeof user.rating === "number" &&
-                            user.rating > i
+                          className={`icon fas fa-star ${user &&
+                              typeof user.rating === "number" &&
+                              user.rating > i
                               ? "filled"
                               : ""
-                          }`}
+                            }`}
                         ></i>
                       ))}
                     </div>
@@ -370,9 +369,13 @@ const Profile = () => {
                     placeholder="Last name"
                   />
                 </div>
-                <div className="form-field full">
+                <div className="form-field">
                   <label>Email</label>
                   <input value={currentUser?.email || ""} disabled />
+                </div>
+                <div className="form-field">
+                  <label>Phone No</label>
+                  <input value={currentUser?.phone || ""} disabled />
                 </div>
                 <div className="form-field full">
                   <label>Username</label>
@@ -386,6 +389,14 @@ const Profile = () => {
                     {Math.max(0, 3 - (user?.usernameChangeCount || 0))} changes
                     remaining.
                   </small>
+                </div>
+                <div className="form-field full">
+                  <label>Change Password</label>
+                  <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="password"
+                  />
                 </div>
               </div>
               <div className="form-actions">
