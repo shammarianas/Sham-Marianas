@@ -62,6 +62,7 @@ exports.stripeWebhook = functions.https.onRequest(
       const paymentIntent = event.data.object;
       const userId = paymentIntent.metadata?.userId;
       const planName = paymentIntent.metadata?.plan?.toLowerCase() || "basic";
+
       if (userId && userId !== "guest") {
         try {
           await admin
@@ -94,6 +95,7 @@ exports.stripeWebhook = functions.https.onRequest(
     res.json({ received: true });
   }
 );
+
 // =============================
 // SEND LOGIN EMAIL
 // =============================
@@ -110,7 +112,6 @@ const mailTransport = nodemailer.createTransport({
 
 exports.sendLoginEmail = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
-    // ✅ Wrap request inside CORS
     if (req.method !== "POST") {
       return res.status(405).send("Method Not Allowed");
     }
@@ -140,6 +141,54 @@ exports.sendLoginEmail = functions.https.onRequest((req, res) => {
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error("Email send error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+});
+
+// =============================
+// CONTRIBUTOR STATUS EMAIL (v1 Firestore trigger)
+// =============================
+exports.sendContributorStatusEmail = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    if (req.method !== "POST")
+      return res.status(405).send("Method Not Allowed");
+
+    const { email, username, status } = req.body;
+
+    if (!email) return res.status(400).send("Email is required");
+
+    let subject = "";
+    let message = "";
+
+    if (status === "verified") {
+      subject = "Your Contributor Account Has Been Approved 🎉";
+      message = `<h2>Hello ${username || "Contributor"},</h2>
+                 <p>Congratulations! Your contributor account has been <strong>approved</strong> by the Admin.</p>
+                 <p>You can now upload assets and manage your contributor profile.</p>
+                 <br/><strong>- Sham Marianas Team</strong>`;
+    } else if (status === "rejected") {
+      subject = "Your Contributor Request Was Rejected";
+      message = `<h2>Hello ${username || "Contributor"},</h2>
+                 <p>We're sorry to inform you that your contributor request has been <strong>rejected</strong>.</p>
+                 <p>You can contact support if you believe this was a mistake.</p>
+                 <br/><strong>- Sham Marianas Team</strong>`;
+    } else {
+      return res.status(400).send("Invalid status");
+    }
+
+    try {
+      await mailTransport.sendMail({
+        from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
+        to: email,
+        subject,
+        html: message,
+      });
+
+      console.log(`Contributor status email sent to ${email}`);
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      console.error("Error sending contributor status email:", error);
       return res.status(500).json({ error: error.message });
     }
   });
