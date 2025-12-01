@@ -37,6 +37,9 @@ const Profile = () => {
   // State for active tab
   const [activeTab, setActiveTab] = useState("profile");
 
+  // State for billing history modal
+  const [showBillingModal, setShowBillingModal] = useState(false);
+
   const isOwnProfile = currentUser?.uid === id;
 
   const getAuthorName = (assetData) => {
@@ -254,6 +257,16 @@ const Profile = () => {
     setConfirmPassword("");
   };
 
+  // Open billing history modal
+  const handleOpenBillingModal = () => {
+    setShowBillingModal(true);
+  };
+
+  // Close billing history modal
+  const handleCloseBillingModal = () => {
+    setShowBillingModal(false);
+  };
+
   const groupedItems = items.reduce((acc, item) => {
     if (!acc[item.type]) {
       acc[item.type] = [];
@@ -315,6 +328,42 @@ const Profile = () => {
           href={`https://shammarianas.me/#/profile/${id}`}
         />
       </Helmet>
+
+      {/* Billing History Modal */}
+      {showBillingModal && (
+        <div className="modal-overlay" onClick={handleCloseBillingModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Billing history</h2>
+              <button className="modal-close-btn" onClick={handleCloseBillingModal}>
+                <i className="icon fas fa-times"></i>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="empty-billing-state">
+                <div className="empty-icon">
+                  <i className="fas fa-file-invoice"></i>
+                </div>
+                <h3>No invoices yet</h3>
+                <p>
+                  You don't have any invoices available yet<br />
+                  Once your first invoice is generated, you'll be able to view it here.
+                </p>
+                <div className="empty-actions">
+                  <p className="support-note">
+                    If you think this is an error or need more information, please contact us.
+                  </p>
+                  <button className="butn butn-sm butn-bg main-colorbg radius-5">
+                    <i className="icon fas fa-headset"></i>
+                    <span>Contact Support</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="page_content">
         <div className="profile_background">
           <img
@@ -401,6 +450,13 @@ const Profile = () => {
               {activeTab === "profile" && (
                 <div className="tab-content">
                   <div className="account-details-card">
+                    <div className="info-banner">
+                      <span className="icon">i</span>
+                      <span>
+                        Some fields are not editable here. Please update them via your
+                        Google account.
+                      </span>
+                    </div>
                     <div className="form-grid">
                       <div className="form-field">
                         <label>First name</label>
@@ -562,7 +618,10 @@ const Profile = () => {
                             <p>{currentUser?.email || "Bahrishanfal@gmail.com"}</p>
                           </div>
                           <div className="billing-history">
-                            <button className="butn butn-sm butn-bord radius-5">
+                            <button
+                              className="butn butn-sm butn-bord radius-5"
+                              onClick={handleOpenBillingModal}
+                            >
                               <i className="icon fas fa-history"></i>
                               <span>Billing history</span>
                             </button>
