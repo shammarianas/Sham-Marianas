@@ -29,7 +29,17 @@ const Profile = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // State for active tab
+  const [activeTab, setActiveTab] = useState("profile");
+
+  // State for billing history modal
+  const [showBillingModal, setShowBillingModal] = useState(false);
+
   const isOwnProfile = currentUser?.uid === id;
 
   const getAuthorName = (assetData) => {
@@ -101,6 +111,7 @@ const Profile = () => {
             ""
           );
           setUsername(data.username || currentUser?.displayName || "");
+          setPhoneNumber(data.phoneNumber || currentUser?.phoneNumber || "");
         }
 
         if (currentUser && currentUser.uid) {
@@ -136,9 +147,21 @@ const Profile = () => {
 
     fetchItems();
   }, []);
+
   const handleSaveAccount = async () => {
     if (!isOwnProfile) return;
     const trimmedUsername = (username || "").trim();
+
+    // Password validation
+    if (newPassword && newPassword !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    if (newPassword && newPassword.length < 6) {
+      alert("Password must be at least 6 characters long!");
+      return;
+    }
 
     try {
       setSaving(true);
@@ -149,6 +172,7 @@ const Profile = () => {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         username: trimmedUsername,
+        phoneNumber: phoneNumber.trim(),
       };
 
       if (snap.exists()) {
@@ -176,21 +200,71 @@ const Profile = () => {
 
         // Update existing document
         await updateDoc(profileRef, updates);
+
+        // Update password if provided
+        if (newPassword) {
+          // Note: Firebase Authentication password update requires re-authentication
+          // You might need to implement separate password update flow
+          alert("Password change requires re-authentication. Please use the password reset feature.");
+        }
       } else {
         // Document doesn't exist, create new
-        updates.uid = currentUser.uid; // ✅ Add this
+        updates.uid = currentUser.uid;
         updates.createdAt = new Date();
         updates.usernameChangeCount = 0;
         updates.usernameChangeYear = new Date().getFullYear();
         await setDoc(profileRef, updates);
       }
 
-      alert("Changes saved");
+      // Clear password fields
+      setNewPassword("");
+      setConfirmPassword("");
+
+      alert("Changes saved successfully!");
     } catch (e) {
       alert(e.message || "Failed to save changes");
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDeleteAccount = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone!"
+    );
+    if (confirmed) {
+      // Implement account deletion logic here
+      alert("Account deletion feature will be implemented soon.");
+    }
+  };
+
+  const handleDeactivateAccount = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to deactivate your account? You can reactivate it later by logging in."
+    );
+    if (confirmed) {
+      // Implement account deactivation logic here
+      alert("Account deactivation feature will be implemented soon.");
+    }
+  };
+
+  const handleCancel = () => {
+    setFirstName(user?.firstName || "");
+    setLastName(user?.lastName || "");
+    setUsername(user?.username || "");
+    setPhoneNumber(user?.phoneNumber || "");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  // Open billing history modal
+  const handleOpenBillingModal = () => {
+    setShowBillingModal(true);
+  };
+
+  // Close billing history modal
+  const handleCloseBillingModal = () => {
+    setShowBillingModal(false);
   };
 
   const groupedItems = items.reduce((acc, item) => {
@@ -205,13 +279,11 @@ const Profile = () => {
     <>
       <Helmet>
         <title>{user ? user.username : "User"} | shammarianas</title>
-
         <meta
           name="description"
           content={`View ${user ? user.username : "User"
             }'s profile on shammarianas`}
         />
-
         <meta
           property="og:title"
           content={`${user ? user.username : "User"} | shammarianas`}
@@ -233,7 +305,6 @@ const Profile = () => {
           property="og:url"
           content={`https://shammarianas.vercel.app/#/profile/${id}`}
         />
-
         <meta
           name="twitter:title"
           content={`${user ? user.username : "User"} | shammarianas`}
@@ -252,12 +323,47 @@ const Profile = () => {
           }
         />
         <meta name="twitter:card" content="summary_large_image" />
-
         <link
           rel="canonical"
           href={`https://shammarianas.me/#/profile/${id}`}
         />
       </Helmet>
+
+      {/* Billing History Modal */}
+      {showBillingModal && (
+        <div className="modal-overlay" onClick={handleCloseBillingModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Billing history</h2>
+              <button className="modal-close-btn" onClick={handleCloseBillingModal}>
+                <i className="icon fas fa-times"></i>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="empty-billing-state">
+                <div className="empty-icon">
+                  <i className="fas fa-file-invoice"></i>
+                </div>
+                <h3>No invoices yet</h3>
+                <p>
+                  You don't have any invoices available yet<br />
+                  Once your first invoice is generated, you'll be able to view it here.
+                </p>
+                <div className="empty-actions">
+                  <p className="support-note">
+                    If you think this is an error or need more information, please contact us.
+                  </p>
+                  <button className="butn butn-sm butn-bg main-colorbg radius-5">
+                    <i className="icon fas fa-headset"></i>
+                    <span>Contact Support</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="page_content">
         <div className="profile_background">
           <img
@@ -271,7 +377,6 @@ const Profile = () => {
             <div className="top">
               <div className="left">
                 <div className="profile_image">
-                  { }
                   <img
                     src={
                       user && user.profilePic !== null
@@ -291,35 +396,12 @@ const Profile = () => {
                     <span className="email">{user ? user.email : "Email"}</span>
                     <span className="bio">{user ? user.bio : "Bio"}</span>
                   </div>
-                  {/* <div className="rating">
-                    <div className="stars">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <i
-                          key={`filled_${i}`}
-                          className={`icon fas fa-star ${
-                            user &&
-                            typeof user.rating === "number" &&
-                            user.rating > i
-                              ? "filled"
-                              : ""
-                          }`}
-                        ></i>
-                      ))}
-                    </div>
-
-                    <span className="rating_count">
-                      {user && typeof user.rating_count === "number"
-                        ? user.rating_count
-                        : 0}
-                    </span>
-                  </div> */}
                 </div>
               </div>
               <div className="right">
                 <span className="follower_count">
                   {user && user.followers ? user.followers.length : 0} Followers
                 </span>
-
                 <div className="actions">
                   <button
                     className={`follow_btn  ${currentUser && currentUser.uid == id ? "disabled" : ""
@@ -345,73 +427,215 @@ const Profile = () => {
           </div>
 
           {isOwnProfile && (
-            <div className="account-details-card">
-              <div className="info-banner">
-                <span className="icon">i</span>
-                <span>
-                  Some fields are not editable here. Please update them via your
-                  Google account.
-                </span>
-              </div>
-              <div className="form-grid">
-                <div className="form-field">
-                  <label>First name</label>
-                  <input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="First name"
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Last name</label>
-                  <input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Last name"
-                  />
-                </div>
-                <div className="form-field full">
-                  <label>Email</label>
-                  <input value={currentUser?.email || ""} disabled />
-                </div>
-                <div className="form-field full">
-                  <label>Username</label>
-                  <input
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="username"
-                  />
-                  <small>
-                    We allow 3 username changes per year. You have{" "}
-                    {Math.max(0, 3 - (user?.usernameChangeCount || 0))} changes
-                    remaining.
-                  </small>
-                </div>
-              </div>
-              <div className="form-actions">
+            <>
+              {/* Navigation Tabs */}
+              <div className="profile-nav-tabs">
                 <button
-                  className="butn butn-sm butn-bg main-colorbg radius-5"
-                  onClick={handleSaveAccount}
-                  disabled={saving}
+                  className={`profile-nav-tab ${activeTab === "profile" ? "active" : ""}`}
+                  onClick={() => setActiveTab("profile")}
                 >
-                  <span>{saving ? "Saving..." : "Save Changes"}</span>
+                  <i className="icon fas fa-user-cog"></i>
+                  <span>Profile Settings</span>
                 </button>
                 <button
-                  className="butn butn-sm butn-bord radius-5"
-                  onClick={() => {
-                    setFirstName(user?.firstName || "");
-                    setLastName(user?.lastName || "");
-                    setUsername(user?.username || "");
-                  }}
+                  className={`profile-nav-tab ${activeTab === "subscription" ? "active" : ""}`}
+                  onClick={() => setActiveTab("subscription")}
                 >
-                  <span>Cancel</span>
+                  <i className="icon fas fa-crown"></i>
+                  <span>Subscription</span>
                 </button>
               </div>
-            </div>
+
+              {/* Profile Settings Tab Content */}
+              {activeTab === "profile" && (
+                <div className="tab-content">
+                  <div className="account-details-card">
+                    <div className="info-banner">
+                      <span className="icon">i</span>
+                      <span>
+                        Some fields are not editable here. Please update them via your
+                        Google account.
+                      </span>
+                    </div>
+                    <div className="form-grid">
+                      <div className="form-field">
+                        <label>First name</label>
+                        <input
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="First name"
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label>Last name</label>
+                        <input
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="Last name"
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label>Email</label>
+                        <input value={currentUser?.email || ""} disabled />
+                      </div>
+                      <div className="form-field">
+                        <label>Phone Number</label>
+                        <input
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          placeholder="Enter phone number"
+                        />
+                      </div>
+                      <div className="form-field full">
+                        <label>Username</label>
+                        <input
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          placeholder="username"
+                        />
+                        <small>
+                          We allow 3 username changes per year. You have{" "}
+                          {Math.max(0, 3 - (user?.usernameChangeCount || 0))} changes
+                          remaining.
+                        </small>
+                      </div>
+                      <div className="form-field">
+                        <label>New Password</label>
+                        <input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter new password"
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label>Confirm Password</label>
+                        <input
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Confirm new password"
+                        />
+                      </div>
+                    </div>
+                    <div className="form-actions">
+                      <button
+                        className="butn butn-sm butn-bg main-colorbg radius-5"
+                        onClick={handleSaveAccount}
+                        disabled={saving}
+                      >
+                        <span>{saving ? "Saving..." : "Save Changes"}</span>
+                      </button>
+                      <button
+                        className="butn butn-sm butn-bord radius-5"
+                        onClick={handleCancel}
+                      >
+                        <span>Cancel</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Delete/Deactivate Account Section */}
+                  <div className="danger-zone-card">
+                    <div className="danger-zone-content">
+                      <div className="danger-actions">
+                        <button
+                          className="butn butn-sm butn-bord butn-danger radius-5"
+                          onClick={handleDeactivateAccount}
+                        >
+                          <i className="icon fas fa-pause"></i>
+                          <span>Deactivate Account</span>
+                        </button>
+                        <button
+                          className="butn butn-sm butn-bg butn-danger radius-5"
+                          onClick={handleDeleteAccount}
+                        >
+                          <i className="icon fas fa-trash"></i>
+                          <span>Delete Account</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Subscription Tab Content */}
+              {activeTab === "subscription" && (
+                <div className="tab-content">
+                  <div className="subscription-card">
+                    <div className="subscription-header">
+                      <h2>Subscription</h2>
+                      <div className="subscription-status">
+                        <span className="status-badge free">Free Plan</span>
+                      </div>
+                    </div>
+
+                    <div className="subscription-plans">
+                      <div className="plan-section">
+                        <h3>Plan</h3>
+                        <div className="plan-card current-plan">
+                          <div className="plan-header">
+                            <h4>Free</h4>
+                            <span className="plan-price">$0/month</span>
+                          </div>
+                          <ul className="plan-features">
+                            <li>Basic access to platform</li>
+                            <li>Limited daily uploads</li>
+                            <li>Standard resolution downloads</li>
+                          </ul>
+                          <button className="butn butn-sm butn-bg main-colorbg radius-5 upgrade-btn">
+                            <i className="icon fas fa-arrow-up"></i>
+                            <span>Upgrade plan</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="plan-section">
+                        <h3>Credits</h3>
+                        <div className="credits-info">
+                          <p><strong>Limited daily use of generative AI and editing tools</strong></p>
+                          <p className="credits-note">
+                            See limits on the Pricing page
+                          </p>
+                          <div className="credits-balance">
+                            <div className="balance-item">
+                              <span className="balance-label">Daily Credits:</span>
+                              <span className="balance-value">50/100</span>
+                            </div>
+                            <div className="balance-item">
+                              <span className="balance-label">Monthly Credits:</span>
+                              <span className="balance-value">350/500</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="plan-section">
+                        <h3>Billing information</h3>
+                        <div className="billing-info">
+                          <div className="billing-details">
+                            <p><strong>{currentUser?.displayName || "Sahrish Anfal"}</strong></p>
+                            <p>{currentUser?.email || "Bahrishanfal@gmail.com"}</p>
+                          </div>
+                          <div className="billing-history">
+                            <button
+                              className="butn butn-sm butn-bord radius-5"
+                              onClick={handleOpenBillingModal}
+                            >
+                              <i className="icon fas fa-history"></i>
+                              <span>Billing history</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="bottom">
-            {" "}
             {Object.keys(groupedItems).map((category) => (
               <div className="section" key={category}>
                 <div className="title">
