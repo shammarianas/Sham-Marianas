@@ -84,20 +84,64 @@ const SellerAccountVerify = () => {
   const [selectedSeller, setSelectedSeller] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  const handleVerify = async (sellerId) => {
-    await updateDoc(doc(db, "Contributors", sellerId), { status: "verified" });
+  const handleVerify = async (seller) => {
+    const { id, email, name } = seller;
 
+    // Update Firestore status
+    await updateDoc(doc(db, "Contributors", id), { status: "verified" });
+
+    // Update local state for UI
     setSellers((prev) =>
-      prev.map((s) => (s.id === sellerId ? { ...s, status: "verified" } : s))
+      prev.map((s) => (s.id === id ? { ...s, status: "verified" } : s))
     );
+
+    // Send email
+    try {
+      await fetch(
+        "https://us-central1-sham-marianas.cloudfunctions.net/sendContributorStatusEmail",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            name: name,
+            status: "verified",
+          }),
+        }
+      );
+    } catch (error) {
+      console.error("Error sending approval email:", error);
+    }
   };
 
-  const handleReject = async (sellerId) => {
-    await updateDoc(doc(db, "Contributors", sellerId), { status: "rejected" });
+  const handleReject = async (seller) => {
+    const { id, email, name } = seller;
 
+    // Update Firestore status
+    await updateDoc(doc(db, "Contributors", id), { status: "rejected" });
+
+    // Update local state for UI
     setSellers((prev) =>
-      prev.map((s) => (s.id === sellerId ? { ...s, status: "rejected" } : s))
+      prev.map((s) => (s.id === id ? { ...s, status: "rejected" } : s))
     );
+
+    // Send email
+    try {
+      await fetch(
+        "https://us-central1-sham-marianas.cloudfunctions.net/sendContributorStatusEmail",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            name: name,
+            status: "rejected",
+          }),
+        }
+      );
+    } catch (error) {
+      console.error("Error sending rejection email:", error);
+    }
   };
 
   const handleUnverify = async (sellerId) => {
@@ -399,7 +443,7 @@ const SellerAccountVerify = () => {
                         <button
                           className="action-button small"
                           title="Verify Seller"
-                          onClick={() => handleVerify(seller.id)}
+                          onClick={() => handleVerify(seller)}
                         >
                           <FiCheckCircle />
                         </button>
@@ -420,7 +464,7 @@ const SellerAccountVerify = () => {
                         <button
                           className="action-button danger small"
                           title="Reject Seller"
-                          onClick={() => handleReject(seller.id)}
+                          onClick={() => handleReject(seller)}
                         >
                           <FiXCircle />
                         </button>
@@ -555,7 +599,7 @@ const SellerAccountVerify = () => {
               <button
                 className="action-button"
                 onClick={() => {
-                  handleVerify(selectedSeller.id);
+                  handleVerify(selectedSeller);
                   setShowDetailsModal(false);
                 }}
               >
@@ -565,7 +609,7 @@ const SellerAccountVerify = () => {
               <button
                 className="action-button danger"
                 onClick={() => {
-                  handleReject(selectedSeller.id);
+                  handleReject(selectedSeller);
                   setShowDetailsModal(false);
                 }}
               >
@@ -575,7 +619,7 @@ const SellerAccountVerify = () => {
               <button
                 className="action-button warning"
                 onClick={() => {
-                  handleUnverify(selectedSeller.id);
+                  handleUnverify(selectedSeller);
                   setShowDetailsModal(false);
                 }}
               >
