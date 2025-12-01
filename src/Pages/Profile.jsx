@@ -92,13 +92,13 @@ const Profile = () => {
         if (currentUser && currentUser.uid === id) {
           setFirstName(
             data.firstName ||
-              (currentUser?.displayName || "").split(" ")[0] ||
-              ""
+            (currentUser?.displayName || "").split(" ")[0] ||
+            ""
           );
           setLastName(
             data.lastName ||
-              (currentUser?.displayName || "").split(" ")[1] ||
-              ""
+            (currentUser?.displayName || "").split(" ")[1] ||
+            ""
           );
           setUsername(data.username || currentUser?.displayName || "");
         }
@@ -106,7 +106,7 @@ const Profile = () => {
         if (currentUser && currentUser.uid) {
           setIsFollowing(
             docSnap.data().followers &&
-              docSnap.data().followers.includes(currentUser.uid)
+            docSnap.data().followers.includes(currentUser.uid)
           );
         }
       } else {
@@ -208,9 +208,8 @@ const Profile = () => {
 
         <meta
           name="description"
-          content={`View ${
-            user ? user.username : "User"
-          }'s profile on shammarianas`}
+          content={`View ${user ? user.username : "User"
+            }'s profile on shammarianas`}
         />
 
         <meta
@@ -219,9 +218,8 @@ const Profile = () => {
         />
         <meta
           property="og:description"
-          content={`View ${
-            user ? user.username : "User"
-          }'s profile on shammarianas`}
+          content={`View ${user ? user.username : "User"
+            }'s profile on shammarianas`}
         />
         <meta
           property="og:image"
@@ -242,9 +240,8 @@ const Profile = () => {
         />
         <meta
           name="twitter:description"
-          content={`View ${
-            user ? user.username : "User"
-          }'s profile on shammarianas`}
+          content={`View ${user ? user.username : "User"
+            }'s profile on shammarianas`}
         />
         <meta
           name="twitter:image"
@@ -274,14 +271,13 @@ const Profile = () => {
             <div className="top">
               <div className="left">
                 <div className="profile_image">
-                  {}
+                  { }
                   <img
                     src={
                       user && user.profilePic !== null
                         ? user.profilePic
-                        : `https://avatar.iran.liara.run/username?username=${
-                            user ? user.username : "User"
-                          }`
+                        : `https://avatar.iran.liara.run/username?username=${user ? user.username : "User"
+                        }`
                     }
                     alt={user ? user.username : "User"}
                   />
@@ -295,7 +291,7 @@ const Profile = () => {
                     <span className="email">{user ? user.email : "Email"}</span>
                     <span className="bio">{user ? user.bio : "Bio"}</span>
                   </div>
-                  <div className="rating">
+                  {/* <div className="rating">
                     <div className="stars">
                       {Array.from({ length: 5 }, (_, i) => (
                         <i
@@ -316,7 +312,7 @@ const Profile = () => {
                         ? user.rating_count
                         : 0}
                     </span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div className="right">
@@ -326,15 +322,14 @@ const Profile = () => {
 
                 <div className="actions">
                   <button
-                    className={`follow_btn  ${
-                      currentUser && currentUser.uid == id ? "disabled" : ""
-                    }`}
+                    className={`follow_btn  ${currentUser && currentUser.uid == id ? "disabled" : ""
+                      }`}
                     onClick={
                       currentUser && currentUser.uid == id
                         ? () => alert("You cannot follow yourself")
                         : currentUser
-                        ? followUser
-                        : () => alert("Please login to follow this user")
+                          ? followUser
+                          : () => alert("Please login to follow this user")
                     }
                   >
                     {isFollowing ? (
