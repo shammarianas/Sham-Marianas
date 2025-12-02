@@ -285,6 +285,7 @@ const Profile = () => {
       await deleteUser(user);
 
       alert("Your account has been permanently deleted.");
+      navigate("/stock", { replace: true });
     } catch (err) {
       alert("Failed to delete account: " + err.message);
     }
@@ -321,8 +322,10 @@ const Profile = () => {
       alert("Your account has been deactivated.");
 
       // Logout user
-      auth.signOut();
-      setTimeout(() => navigate("/login", { replace: true }), 3000);
+      await auth.signOut();
+
+      // Navigate to Stack page (replace '/stack' with your actual Stack page route)
+      navigate("/stock", { replace: true });
     } catch (err) {
       alert("Failed to deactivate: " + err.message);
     }
