@@ -450,13 +450,6 @@ const Profile = () => {
               {activeTab === "profile" && (
                 <div className="tab-content">
                   <div className="account-details-card">
-                    <div className="info-banner">
-                      <span className="icon">i</span>
-                      <span>
-                        Some fields are not editable here. Please update them via your
-                        Google account.
-                      </span>
-                    </div>
                     <div className="form-grid">
                       <div className="form-field">
                         <label>First name</label>
@@ -583,10 +576,10 @@ const Profile = () => {
                             <li>Limited daily uploads</li>
                             <li>Standard resolution downloads</li>
                           </ul>
-                          <button className="butn butn-sm butn-bg main-colorbg radius-5 upgrade-btn">
+                          <Link to="/subscription" className="butn butn-sm butn-bg main-colorbg radius-5 upgrade-btn">
                             <i className="icon fas fa-arrow-up"></i>
                             <span>Upgrade plan</span>
-                          </button>
+                          </Link>
                         </div>
                       </div>
 
