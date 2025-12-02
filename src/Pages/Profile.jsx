@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Breadcrumbs from "../Components/Breadcrumbs";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import ListedItemCard from "../Components/UI/ListedItemCard";
 import {
   doc,
@@ -11,8 +11,15 @@ import {
   query,
   collection,
   getDocs,
+  deleteDoc,
   where,
 } from "firebase/firestore";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  deleteUser,
+} from "firebase/auth";
+
 import { db } from "../../firebase";
 import { useUser } from "../Context/UserProvider";
 import ItemsListing from "../Components/ItemsListing";
@@ -25,6 +32,7 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -102,13 +110,13 @@ const Profile = () => {
         if (currentUser && currentUser.uid === id) {
           setFirstName(
             data.firstName ||
-            (currentUser?.displayName || "").split(" ")[0] ||
-            ""
+              (currentUser?.displayName || "").split(" ")[0] ||
+              ""
           );
           setLastName(
             data.lastName ||
-            (currentUser?.displayName || "").split(" ")[1] ||
-            ""
+              (currentUser?.displayName || "").split(" ")[1] ||
+              ""
           );
           setUsername(data.username || currentUser?.displayName || "");
           setPhoneNumber(data.phoneNumber || currentUser?.phoneNumber || "");
@@ -117,7 +125,7 @@ const Profile = () => {
         if (currentUser && currentUser.uid) {
           setIsFollowing(
             docSnap.data().followers &&
-            docSnap.data().followers.includes(currentUser.uid)
+              docSnap.data().followers.includes(currentUser.uid)
           );
         }
       } else {
@@ -205,7 +213,9 @@ const Profile = () => {
         if (newPassword) {
           // Note: Firebase Authentication password update requires re-authentication
           // You might need to implement separate password update flow
-          alert("Password change requires re-authentication. Please use the password reset feature.");
+          alert(
+            "Password change requires re-authentication. Please use the password reset feature."
+          );
         }
       } else {
         // Document doesn't exist, create new
@@ -228,23 +238,103 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteAccount = () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone!"
+  const handleDeleteAccount = async () => {
+    if (!isOwnProfile) return;
+
+    const password = prompt(
+      "To permanently delete your account, please enter your password:"
     );
-    if (confirmed) {
-      // Implement account deletion logic here
-      alert("Account deletion feature will be implemented soon.");
+    if (!password) {
+      alert("Password is required.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure? This action CANNOT be undone!"
+    );
+    if (!confirmed) return;
+
+    try {
+      const user = auth.currentUser;
+
+      // Step 1 — Reauthenticate user
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+
+      // Step 2 — Delete user's subcollections (favorites & downloads)
+      const subcollections = ["favorites", "downloads"];
+      for (const sub of subcollections) {
+        const snap = await getDocs(collection(db, "Profiles", id, sub));
+        for (const docSnap of snap.docs) {
+          await deleteDoc(doc(db, "Profiles", id, sub, docSnap.id));
+        }
+      }
+
+      // Step 3 — Delete Profile (Firestore)
+      await deleteDoc(doc(db, "Profiles", id));
+
+      // Step 4 — Remove from followers arrays of all users
+      const profileQuery = query(collection(db, "Profiles"));
+      const usersSnap = await getDocs(profileQuery);
+
+      usersSnap.forEach(async (u) => {
+        const data = u.data();
+        if (data.followers?.includes(id)) {
+          const newFollowers = data.followers.filter((f) => f !== id);
+          await updateDoc(doc(db, "Profiles", u.id), {
+            followers: newFollowers,
+          });
+        }
+      });
+
+      // Step 5 — Delete Firebase Auth Account
+      await deleteUser(user);
+
+      alert("Your account has been permanently deleted.");
+      navigate("/stock", { replace: true });
+    } catch (err) {
+      alert("Failed to delete account: " + err.message);
     }
   };
 
-  const handleDeactivateAccount = () => {
+  const handleActivateAccount = async () => {
+    if (!isOwnProfile) return;
+
+    try {
+      const profileRef = doc(db, "Profiles", id);
+
+      // Update status
+      await updateDoc(profileRef, { status: "active" });
+
+      alert("Your account has been activated.");
+    } catch (err) {
+      alert("Failed to activate: " + err.message);
+    }
+  };
+
+  const handleDeactivateAccount = async () => {
+    if (!isOwnProfile) return;
+
     const confirmed = window.confirm(
       "Are you sure you want to deactivate your account? You can reactivate it later by logging in."
     );
-    if (confirmed) {
-      // Implement account deactivation logic here
-      alert("Account deactivation feature will be implemented soon.");
+    if (!confirmed) return;
+
+    try {
+      const profileRef = doc(db, "Profiles", id);
+
+      // Update status
+      await updateDoc(profileRef, { status: "deactivated" });
+
+      alert("Your account has been deactivated.");
+
+      // Logout user
+      await auth.signOut();
+
+      // Navigate to Stack page (replace '/stack' with your actual Stack page route)
+      navigate("/stock", { replace: true });
+    } catch (err) {
+      alert("Failed to deactivate: " + err.message);
     }
   };
 
@@ -281,8 +371,9 @@ const Profile = () => {
         <title>{user ? user.username : "User"} | shammarianas</title>
         <meta
           name="description"
-          content={`View ${user ? user.username : "User"
-            }'s profile on shammarianas`}
+          content={`View ${
+            user ? user.username : "User"
+          }'s profile on shammarianas`}
         />
         <meta
           property="og:title"
@@ -290,8 +381,9 @@ const Profile = () => {
         />
         <meta
           property="og:description"
-          content={`View ${user ? user.username : "User"
-            }'s profile on shammarianas`}
+          content={`View ${
+            user ? user.username : "User"
+          }'s profile on shammarianas`}
         />
         <meta
           property="og:image"
@@ -311,8 +403,9 @@ const Profile = () => {
         />
         <meta
           name="twitter:description"
-          content={`View ${user ? user.username : "User"
-            }'s profile on shammarianas`}
+          content={`View ${
+            user ? user.username : "User"
+          }'s profile on shammarianas`}
         />
         <meta
           name="twitter:image"
@@ -335,7 +428,10 @@ const Profile = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Billing history</h2>
-              <button className="modal-close-btn" onClick={handleCloseBillingModal}>
+              <button
+                className="modal-close-btn"
+                onClick={handleCloseBillingModal}
+              >
                 <i className="icon fas fa-times"></i>
               </button>
             </div>
@@ -346,12 +442,15 @@ const Profile = () => {
                 </div>
                 <h3>No invoices yet</h3>
                 <p>
-                  You don't have any invoices available yet<br />
-                  Once your first invoice is generated, you'll be able to view it here.
+                  You don't have any invoices available yet
+                  <br />
+                  Once your first invoice is generated, you'll be able to view
+                  it here.
                 </p>
                 <div className="empty-actions">
                   <p className="support-note">
-                    If you think this is an error or need more information, please contact us.
+                    If you think this is an error or need more information,
+                    please contact us.
                   </p>
                   <button className="butn butn-sm butn-bg main-colorbg radius-5">
                     <i className="icon fas fa-headset"></i>
@@ -381,8 +480,9 @@ const Profile = () => {
                     src={
                       user && user.profilePic !== null
                         ? user.profilePic
-                        : `https://avatar.iran.liara.run/username?username=${user ? user.username : "User"
-                        }`
+                        : `https://avatar.iran.liara.run/username?username=${
+                            user ? user.username : "User"
+                          }`
                     }
                     alt={user ? user.username : "User"}
                   />
@@ -404,14 +504,15 @@ const Profile = () => {
                 </span>
                 <div className="actions">
                   <button
-                    className={`follow_btn  ${currentUser && currentUser.uid == id ? "disabled" : ""
-                      }`}
+                    className={`follow_btn  ${
+                      currentUser && currentUser.uid == id ? "disabled" : ""
+                    }`}
                     onClick={
                       currentUser && currentUser.uid == id
                         ? () => alert("You cannot follow yourself")
                         : currentUser
-                          ? followUser
-                          : () => alert("Please login to follow this user")
+                        ? followUser
+                        : () => alert("Please login to follow this user")
                     }
                   >
                     {isFollowing ? (
@@ -431,14 +532,18 @@ const Profile = () => {
               {/* Navigation Tabs */}
               <div className="profile-nav-tabs">
                 <button
-                  className={`profile-nav-tab ${activeTab === "profile" ? "active" : ""}`}
+                  className={`profile-nav-tab ${
+                    activeTab === "profile" ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab("profile")}
                 >
                   <i className="icon fas fa-user-cog"></i>
                   <span>Profile Settings</span>
                 </button>
                 <button
-                  className={`profile-nav-tab ${activeTab === "subscription" ? "active" : ""}`}
+                  className={`profile-nav-tab ${
+                    activeTab === "subscription" ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab("subscription")}
                 >
                   <i className="icon fas fa-crown"></i>
@@ -450,6 +555,13 @@ const Profile = () => {
               {activeTab === "profile" && (
                 <div className="tab-content">
                   <div className="account-details-card">
+                    <div className="info-banner">
+                      <span className="icon">i</span>
+                      <span>
+                        Some fields are not editable here. Please update them via your
+                        Google account.
+                      </span>
+                    </div>
                     <div className="form-grid">
                       <div className="form-field">
                         <label>First name</label>
@@ -488,8 +600,8 @@ const Profile = () => {
                         />
                         <small>
                           We allow 3 username changes per year. You have{" "}
-                          {Math.max(0, 3 - (user?.usernameChangeCount || 0))} changes
-                          remaining.
+                          {Math.max(0, 3 - (user?.usernameChangeCount || 0))}{" "}
+                          changes remaining.
                         </small>
                       </div>
                       <div className="form-field">
@@ -533,12 +645,31 @@ const Profile = () => {
                     <div className="danger-zone-content">
                       <div className="danger-actions">
                         <button
-                          className="butn butn-sm butn-bord butn-danger radius-5"
-                          onClick={handleDeactivateAccount}
+                          className={`butn butn-sm butn-bord ${
+                            user?.status === "deactivated"
+                              ? "butn-bg main-colorbg"
+                              : "butn-danger"
+                          } radius-5`}
+                          onClick={
+                            user?.status === "deactivated"
+                              ? handleActivateAccount
+                              : handleDeactivateAccount
+                          }
                         >
-                          <i className="icon fas fa-pause"></i>
-                          <span>Deactivate Account</span>
+                          <i
+                            className={`icon fas ${
+                              user?.status === "deactivated"
+                                ? "fa-play"
+                                : "fa-pause"
+                            }`}
+                          ></i>
+                          <span>
+                            {user?.status === "deactivated"
+                              ? "Activate Account"
+                              : "Deactivate Account"}
+                          </span>
                         </button>
+
                         <button
                           className="butn butn-sm butn-bg butn-danger radius-5"
                           onClick={handleDeleteAccount}
@@ -586,17 +717,26 @@ const Profile = () => {
                       <div className="plan-section">
                         <h3>Credits</h3>
                         <div className="credits-info">
-                          <p><strong>Limited daily use of generative AI and editing tools</strong></p>
+                          <p>
+                            <strong>
+                              Limited daily use of generative AI and editing
+                              tools
+                            </strong>
+                          </p>
                           <p className="credits-note">
                             See limits on the Pricing page
                           </p>
                           <div className="credits-balance">
                             <div className="balance-item">
-                              <span className="balance-label">Daily Credits:</span>
+                              <span className="balance-label">
+                                Daily Credits:
+                              </span>
                               <span className="balance-value">50/100</span>
                             </div>
                             <div className="balance-item">
-                              <span className="balance-label">Monthly Credits:</span>
+                              <span className="balance-label">
+                                Monthly Credits:
+                              </span>
                               <span className="balance-value">350/500</span>
                             </div>
                           </div>
@@ -607,8 +747,14 @@ const Profile = () => {
                         <h3>Billing information</h3>
                         <div className="billing-info">
                           <div className="billing-details">
-                            <p><strong>{currentUser?.displayName || "Sahrish Anfal"}</strong></p>
-                            <p>{currentUser?.email || "Bahrishanfal@gmail.com"}</p>
+                            <p>
+                              <strong>
+                                {currentUser?.displayName || "Sahrish Anfal"}
+                              </strong>
+                            </p>
+                            <p>
+                              {currentUser?.email || "Bahrishanfal@gmail.com"}
+                            </p>
                           </div>
                           <div className="billing-history">
                             <button
