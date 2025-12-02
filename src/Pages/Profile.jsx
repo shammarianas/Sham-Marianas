@@ -241,27 +241,38 @@ const Profile = () => {
   const handleDeleteAccount = async () => {
     if (!isOwnProfile) return;
 
-    const password = prompt(
-      "To permanently delete your account, please enter your password:"
-    );
-    if (!password) {
-      alert("Password is required.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      "Are you sure? This action CANNOT be undone!"
-    );
-    if (!confirmed) return;
-
     try {
       const user = auth.currentUser;
 
-      // Step 1 — Reauthenticate user
-      const credential = EmailAuthProvider.credential(user.email, password);
-      await reauthenticateWithCredential(user, credential);
+      // Check the provider
+      const providerId = user.providerData[0]?.providerId;
 
-      // Step 2 — Delete user's subcollections (favorites & downloads)
+      if (providerId === "password") {
+        // Prompt for password
+        const password = prompt(
+          "To permanently delete your account, please enter your password:"
+        );
+        if (!password) {
+          alert("Password is required.");
+          return;
+        }
+
+        const confirmed = window.confirm(
+          "Are you sure? This action CANNOT be undone!"
+        );
+        if (!confirmed) return;
+
+        // Reauthenticate
+        const credential = EmailAuthProvider.credential(user.email, password);
+        await reauthenticateWithCredential(user, credential);
+      } else {
+        alert(
+          `Account deletion for ${providerId} login is not supported. Please use your original provider to reauthenticate.`
+        );
+        return;
+      }
+
+      // Delete subcollections
       const subcollections = ["favorites", "downloads"];
       for (const sub of subcollections) {
         const snap = await getDocs(collection(db, "Profiles", id, sub));
@@ -270,30 +281,33 @@ const Profile = () => {
         }
       }
 
-      // Step 3 — Delete Profile (Firestore)
+      // Delete profile
       await deleteDoc(doc(db, "Profiles", id));
 
-      // Step 4 — Remove from followers arrays of all users
+      // Remove from followers arrays
       const profileQuery = query(collection(db, "Profiles"));
       const usersSnap = await getDocs(profileQuery);
 
-      usersSnap.forEach(async (u) => {
+      for (const u of usersSnap.docs) {
         const data = u.data();
         if (data.followers?.includes(id)) {
-          const newFollowers = data.followers.filter((f) => f !== id);
           await updateDoc(doc(db, "Profiles", u.id), {
-            followers: newFollowers,
+            followers: data.followers.filter((f) => f !== id),
           });
         }
-      });
+      }
 
-      // Step 5 — Delete Firebase Auth Account
+      // Delete Firebase Auth account
       await deleteUser(user);
 
       alert("Your account has been permanently deleted.");
       navigate("/stock", { replace: true });
     } catch (err) {
-      alert("Failed to delete account: " + err.message);
+      if (err.code === "auth/wrong-password") {
+        alert("The password you entered is incorrect.");
+      } else {
+        alert("Failed to delete account: " + err.message);
+      }
     }
   };
 
