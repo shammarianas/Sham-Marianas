@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Breadcrumbs from "../Components/Breadcrumbs";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import ListedItemCard from "../Components/UI/ListedItemCard";
 import {
   doc,
@@ -32,6 +32,7 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -258,16 +259,21 @@ const Profile = () => {
 
       // Step 1 — Reauthenticate user
       const credential = EmailAuthProvider.credential(user.email, password);
-
       await reauthenticateWithCredential(user, credential);
 
-      // Step 2 — Delete Profile (Firestore)
+      // Step 2 — Delete user's subcollections (favorites & downloads)
+      const subcollections = ["favorites", "downloads"];
+      for (const sub of subcollections) {
+        const snap = await getDocs(collection(db, "Profiles", id, sub));
+        for (const docSnap of snap.docs) {
+          await deleteDoc(doc(db, "Profiles", id, sub, docSnap.id));
+        }
+      }
+
+      // Step 3 — Delete Profile (Firestore)
       await deleteDoc(doc(db, "Profiles", id));
 
-      // ⛔ Step Removed — Delete user's assets
-      // (Assets will NOT be deleted now)
-
-      // Step 3 — Remove from followers arrays of all users
+      // Step 4 — Remove from followers arrays of all users
       const profileQuery = query(collection(db, "Profiles"));
       const usersSnap = await getDocs(profileQuery);
 
@@ -281,7 +287,7 @@ const Profile = () => {
         }
       });
 
-      // Step 4 — Delete Firebase Auth Account
+      // Step 5 — Delete Firebase Auth Account
       await deleteUser(user);
 
       alert("Your account has been permanently deleted.");
@@ -290,6 +296,7 @@ const Profile = () => {
       alert("Failed to delete account: " + err.message);
     }
   };
+
   const handleActivateAccount = async () => {
     if (!isOwnProfile) return;
 
