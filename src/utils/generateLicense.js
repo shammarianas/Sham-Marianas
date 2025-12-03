@@ -166,16 +166,33 @@ const getLicenseTermsContent = (licenseType, asset) => {
   }
 };
 
-// Make getDocDefinition async so it can await logo load
+// Make getDocDefinition async for auto snapshot
 const getDocDefinition = async (asset, licenseType, user) => {
-  // Generate license ID
   const licenseId = `LIC-${Date.now().toString(36).toUpperCase()}`;
 
-  // Try to load logo as data URL (optional)
-  const logoData = await getLogoImage();
+  // Auto snapshot logic – React jaisa hi (thumbnail or image[0] or icon[0])
+  const previewUrl = asset.thumbnail || asset.images?.[0] || asset.icons?.[0] || null;
 
-  // Build header columns (include logo only if data URL available)
+  let snapshotBase64 = null;
+  if (previewUrl) {
+    try {
+      const resp = await fetch(previewUrl);
+      if (resp.ok) {
+        const blob = await resp.blob();
+        snapshotBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch (e) {
+      console.warn('Snapshot generate failed:', e);
+    }
+  }
+
+  // Header columns (same as before)
   const headerColumns = [];
+  const logoData = await getLogoImage();
   if (logoData) {
     headerColumns.push({
       width: 160,
@@ -184,7 +201,6 @@ const getDocDefinition = async (asset, licenseType, user) => {
       margin: [40, 10, 0, 0]
     });
   }
-
   headerColumns.push({
     width: '*',
     text: 'RIMENOFRADEL AND FREE CO',
@@ -199,22 +215,17 @@ const getDocDefinition = async (asset, licenseType, user) => {
     pageSize: 'A4',
     pageMargins: [40, 100, 40, 100],
 
-    // HEADER (Top of every page)
     header: {
       margin: [0, 20, 0, 0],
       stack: [
-        // Maroon background
-        // { canvas: [{ type: 'rect', x: 0, y: 0, w: 595, h: 70, color: '#8B0000' }] },
         { columns: headerColumns }
       ]
     },
 
-    // FOOTER (Bottom of every page)
     footer: function (currentPage, pageCount) {
       return {
         margin: [40, 0, 40, 20],
         stack: [
-          // Black arrow shape
           {
             canvas: [
               {
@@ -233,8 +244,6 @@ const getDocDefinition = async (asset, licenseType, user) => {
               { type: 'rect', x: 40, y: 0, w: 435, h: 30, color: '#000000' }
             ]
           },
-
-          // Social icons + contact info
           {
             columns: [
               {
@@ -260,7 +269,22 @@ const getDocDefinition = async (asset, licenseType, user) => {
     },
 
     content: [
-      // Page 1: Asset Information
+      // Snapshot auto add karo (Asset Information ke upar)
+      snapshotBase64 ? {
+        image: snapshotBase64,
+        width: 480,
+        alignment: 'center',
+        margin: [0, 20, 0, 30]
+      } : {
+        text: '[No Snapshot Available]',
+        color: '#999',
+        fontSize: 12,
+        italics: true,
+        alignment: 'center',
+        margin: [0, 20, 0, 30]
+      },
+
+      // Baaki sab same
       { 
         text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' : 
               licenseType === 'Free for Commercial Use' ? 'FREE FOR COMMERCIAL USE LICENSE' :
