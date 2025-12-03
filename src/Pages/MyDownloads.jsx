@@ -63,8 +63,6 @@ const getLicenseBadgeColor = (licenseType) => {
   
   if (license.includes("free for personal")) return "#00b894"; // Green
   if (license.includes("free for commercial")) return "#0984e3"; // Blue
-  if (license.includes("editorial")) return "#e17055"; // Orange
-  if (license.includes("extended")) return "#6c5ce7"; // Purple
   if (license.includes("commercial")) return "#0984e3"; // Blue
   if (license.includes("personal")) return "#00b894"; // Green
   if (license.includes("free")) return "#00b894"; // Green
