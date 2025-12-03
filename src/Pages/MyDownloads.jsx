@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { db } from "../../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import PageTitle from "../Components/UI/PageTitle";
 import { useUser } from "../Context/UserProvider";
 import { Link } from "react-router-dom";
@@ -8,7 +8,37 @@ import { Helmet } from "react-helmet-async";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { downloadLicense, downloadSimpleLicense } from "../utils/generateLicense";
+
+// Naya (same hi rahega, bas ensure karo path sahi hai)
+import { downloadLicense } from "../utils/generateLicense";
+
+// ✅ Function to fetch complete asset data including licenseType
+const fetchCompleteAssetData = async (assetId, downloadData) => {
+  try {
+    // First try to get from Assets collection
+    const assetDoc = await getDoc(doc(db, "Assets", assetId));
+    if (assetDoc.exists()) {
+      const assetData = assetDoc.data();
+      return {
+        ...downloadData,
+        ...assetData, // This will include licenseType and other fields
+        id: assetId,
+      };
+    }
+    
+    // If not found in Assets, return the download data as is
+    return {
+      ...downloadData,
+      id: assetId,
+    };
+  } catch (error) {
+    console.error("Error fetching asset data:", error);
+    return {
+      ...downloadData,
+      id: assetId,
+    };
+  }
+};
 
 // ✅ SIMPLE LICENSE DETECTION - Use whatever is stored in asset.licenseType
 const detectLicenseType = (asset) => {
@@ -27,17 +57,17 @@ const detectLicenseType = (asset) => {
 
 // ✅ SIMPLE COLOR FUNCTION
 const getLicenseBadgeColor = (licenseType) => {
-  if (licenseType.includes("Free") || licenseType === "Free License") {
-    return "#00b894";
-  } else if (licenseType.includes("Commercial") || licenseType === "Commercial License") {
-    return "#0984e3";
-  } else if (licenseType.includes("Editorial")) {
-    return "#e17055";
-  } else if (licenseType.includes("Extended")) {
-    return "#6c5ce7";
-  } else {
-    return "#636e72";
-  }
+  if (!licenseType) return "#636e72";
+  
+  const license = licenseType.toLowerCase();
+  
+  if (license.includes("free for personal")) return "#00b894"; // Green
+  if (license.includes("free for commercial")) return "#0984e3"; // Blue
+  if (license.includes("commercial")) return "#0984e3"; // Blue
+  if (license.includes("personal")) return "#00b894"; // Green
+  if (license.includes("free")) return "#00b894"; // Green
+  
+  return "#636e72"; // Default gray
 };
 
 // Simple 3D Model Viewer Component
@@ -127,14 +157,15 @@ const MyDownloads = () => {
           return;
         }
 
+        // Fetch complete asset data for each download
         const downloadsData = [];
-        for (const doc of downloadsSnapshot.docs) {
-          const assetId = doc.id;
-          const assetData = doc.data();
-          downloadsData.push({
-            id: assetId,
-            ...assetData,
-          });
+        for (const docSnap of downloadsSnapshot.docs) {
+          const assetId = docSnap.id;
+          const downloadData = docSnap.data();
+          
+          // Fetch complete asset data including licenseType
+          const completeAssetData = await fetchCompleteAssetData(assetId, downloadData);
+          downloadsData.push(completeAssetData);
         }
 
         setAssets(downloadsData);
@@ -221,6 +252,28 @@ const MyDownloads = () => {
     return getLicenseBadgeColor(licenseType);
   };
 
+  // ✅ NEW: Get display text for asset type
+  const getAssetTypeDisplay = (type) => {
+    if (!type) return "Asset";
+    
+    const typeMap = {
+      "models": "3D Model",
+      "videos": "Video",
+      "images": "Image",
+      "scripts": "Script",
+      "graphics": "Graphics Template",
+      "mockups": "Mockup",
+      "fonts": "Font",
+      "video-templates": "Video Template",
+      "icons": "Icons",
+      "hdris": "HDRI",
+      "textures": "Texture",
+      "other": "Other"
+    };
+    
+    return typeMap[type] || type;
+  };
+
   return (
     <>
       <Helmet>
@@ -261,6 +314,8 @@ const MyDownloads = () => {
                             <Link to={`/View/${asset.id}`}>
                               {(() => {
                                 const src = asset.thumbnail;
+                                if (!src) return <div className="no-preview">No Preview</div>;
+                                
                                 const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
 
                                 if (isVideo) {
@@ -311,21 +366,22 @@ const MyDownloads = () => {
                               </Link>
                               <div className="asset-meta">
                                 <span className="asset-type">
-                                  {asset.type || "Asset"}
+                                  {getAssetTypeDisplay(asset.type)}
                                 </span>
                                 <span className="license-type-badge" style={{ backgroundColor: licenseColor }}>
-                                  {asset.licenseType}
+                                  {licenseType}
                                 </span>
-                                {/* hhhh */}
                               </div>
                             </div>
                           </div>
                           <div>
                             <span className="creator-by">by: </span>
                             <span className="creator-name">
-                              {asset.publisher ||
+                              {asset.authorName ||
+                                asset.author ||
+                                asset.createdBy ||
+                                asset.publisher ||
                                 asset.userDisplayName ||
-                                asset.authorName ||
                                 currentUser?.displayName ||
                                 "User"}
                             </span>
@@ -426,6 +482,17 @@ const MyDownloads = () => {
           object-fit: cover;
         }
 
+        .no-preview {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f1f3f5;
+          color: #868e96;
+          font-size: 12px;
+        }
+
         .video-container {
           width: 100%;
           height: 100%;
@@ -484,8 +551,12 @@ const MyDownloads = () => {
         }
 
         .asset-type {
+          font-size: 12px;
           font-weight: 500;
           color: #0984e3;
+          background: #e3f2fd;
+          padding: 2px 6px;
+          border-radius: 3px;
         }
 
         .license-type-badge {
