@@ -93,17 +93,17 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       .slice(0, 100);
   };
 
- const loadContent = useCallback(() => {
-  if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
-    try {
-      const cleanContent = extractPureContent(blogToEdit.content);
-      quill.clipboard.dangerouslyPasteHTML(cleanContent);
-      quill.setSelection(quill.getLength(), 0);
-    } catch (error) {
-      console.error("Error loading content:", error);
+  const loadContent = useCallback(() => {
+    if (quill && blogToEdit?.content && isOpen && isEditorLoaded) {
+      try {
+        const cleanContent = extractPureContent(blogToEdit.content);
+        quill.clipboard.dangerouslyPasteHTML(cleanContent);
+        quill.setSelection(quill.getLength(), 0);
+      } catch (error) {
+        console.error("Error loading content:", error);
+      }
     }
-  }
-}, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
+  }, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
 
   const initializeEditor = () => {
     if (quill && isOpen && !blogToEdit) {
@@ -384,51 +384,51 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   }, [quill]);
 
 
-useEffect(() => {
-  if (!quill) return;
+  useEffect(() => {
+    if (!quill) return;
 
-  const List = Quill.import('formats/list');
+    const List = Quill.import('formats/list');
 
-  class CustomList extends List {
-    static create(value) {
-      const node = super.create(value);
-      if (value === 'bullet') {
-        node.setAttribute('data-list', 'bullet');
-      } else if (value === 'ordered') {
-        node.setAttribute('data-list', 'ordered');
+    class CustomList extends List {
+      static create(value) {
+        const node = super.create(value);
+        if (value === 'bullet') {
+          node.setAttribute('data-list', 'bullet');
+        } else if (value === 'ordered') {
+          node.setAttribute('data-list', 'ordered');
+        }
+        return node;
       }
-      return node;
+
+      static formats(node) {
+        const list = node.getAttribute('data-list');
+        if (node.tagName === 'UL' && !list) return 'bullet'; // ← Force bullet for plain <ul>
+        return list || 'bullet';
+      }
     }
 
-    static formats(node) {
-      const list = node.getAttribute('data-list');
-      if (node.tagName === 'UL' && !list) return 'bullet'; // ← Force bullet for plain <ul>
-      return list || 'bullet';
-    }
-  }
+    Quill.register('formats/list', CustomList, true);
 
-  Quill.register('formats/list', CustomList, true);
+    // Force style on load
+    const applyStyles = () => {
+      quill.root.querySelectorAll('ul').forEach(ul => {
+        if (!ul.hasAttribute('data-list')) {
+          ul.setAttribute('data-list', 'bullet');
+        }
+        ul.style.listStyleType = 'disc';
+        ul.style.paddingLeft = '1.5em';
+      });
+      quill.root.querySelectorAll('ol').forEach(ol => {
+        ol.style.listStyleType = 'decimal';
+      });
+    };
 
-  // Force style on load
-  const applyStyles = () => {
-    quill.root.querySelectorAll('ul').forEach(ul => {
-      if (!ul.hasAttribute('data-list')) {
-        ul.setAttribute('data-list', 'bullet');
-      }
-      ul.style.listStyleType = 'disc';
-      ul.style.paddingLeft = '1.5em';
-    });
-    quill.root.querySelectorAll('ol').forEach(ol => {
-      ol.style.listStyleType = 'decimal';
-    });
-  };
+    setTimeout(applyStyles, 100);
+    const handler = () => setTimeout(applyStyles, 0);
+    quill.on('text-change', handler);
 
-  setTimeout(applyStyles, 100);
-  const handler = () => setTimeout(applyStyles, 0);
-  quill.on('text-change', handler);
-
-  return () => quill.off('text-change', handler);
-}, [quill]);
+    return () => quill.off('text-change', handler);
+  }, [quill]);
 
   // Handlers
   const handleTagAdd = (e) => {
@@ -447,16 +447,16 @@ useEffect(() => {
     setBlogData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
   };
 
- const handleInputChange = (e) => {
-  const { name, value } = e.target;
-  // If title changes, also update slug in state
-  if (name === "title") {
-    const newSlug = generateSlug(value);
-    setBlogData(prev => ({ ...prev, title: value, slug: newSlug }));
-  } else {
-    setBlogData(prev => ({ ...prev, [name]: value }));
-  }
-};
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    // If title changes, also update slug in state
+    if (name === "title") {
+      const newSlug = generateSlug(value);
+      setBlogData(prev => ({ ...prev, title: value, slug: newSlug }));
+    } else {
+      setBlogData(prev => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleFeaturedImageChange = (e) => {
     const file = e.target.files[0];
@@ -739,10 +739,10 @@ useEffect(() => {
             {/* SLUG DISPLAY */}
             <div className="blog-form-group">
               <div className="flex items-center gap-2">
-              <label className="blog-form-label">URL Slug</label>
+                <label className="blog-form-label">URL Slug</label>
                 <span className="text-sm text-gray-600">yoursite.com/blog/</span>
               </div>
-                <input type="text" value={blogData.slug} readOnly className="blog-form-input text-sm bg-gray-50" placeholder="auto-generated" />
+              <input type="text" value={blogData.slug} readOnly className="blog-form-input text-sm bg-gray-50" placeholder="auto-generated" />
               <p className="blog-form-hint">Auto-generated from title. Clean & SEO-friendly.</p>
             </div>
 

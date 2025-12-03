@@ -90,8 +90,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
   },
@@ -128,8 +126,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
   },
@@ -166,8 +162,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
   },
@@ -207,8 +201,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
   },
@@ -249,8 +241,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
     categories: {
@@ -321,8 +311,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
   },
@@ -341,8 +329,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
   },
@@ -405,8 +391,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
   },
@@ -473,8 +457,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
   },
@@ -533,8 +515,6 @@ const filterData = {
       options: [
         "Free for Personal Use",
         "Free for Commercial Use",
-        "Editorial Use Only",
-        "Extended License",
       ],
     },
     integrationReady: {

@@ -18,3 +18,6 @@ npm install three @react-three/fiber@8.15.10 @react-three/drei@9.85.0
 
 Check Firebase.js
 Use the right api configuration 
+
+
+npm install pdfmake
