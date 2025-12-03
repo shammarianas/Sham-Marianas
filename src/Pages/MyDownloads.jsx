@@ -8,7 +8,9 @@ import { Helmet } from "react-helmet-async";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { downloadLicense, downloadSimpleLicense } from "../utils/generateLicense";
+
+// Naya (same hi rahega, bas ensure karo path sahi hai)
+import { downloadLicense } from "../utils/generateLicense";
 
 // ✅ Function to fetch complete asset data including licenseType
 const fetchCompleteAssetData = async (assetId, downloadData) => {
