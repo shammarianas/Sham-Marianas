@@ -1,46 +1,12 @@
 import pdfMake from 'pdfmake/build/pdfmake';
-import 'pdfmake/build/vfs_fonts';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+
+pdfMake.vfs = pdfFonts.pdfMake?.vfs || pdfFonts.vfs;
 
 const logoUrl = '/assets/imgs/logo.png';
 // Fonts ko lazy load karenge taaki "Roboto-Regular.ttf not found" na aaye
 const loadFonts = async () => {
   if (window.pdfMakeFontsLoaded) return;
-  
-  // Try multiple import paths / shapes and be resilient
-  const tryImport = async (paths) => {
-    for (const p of paths) {
-      try {
-        return await import(p);
-      } catch (e) {
-        // ignore and try next
-      }
-    }
-    return null;
-  };
-
-  const mod = await tryImport([
-    'pdfmake/build/vfs_fonts.js',
-    'pdfmake/build/vfs_fonts',
-    'pdfmake/build/vfs_fonts.browser.js',
-    'pdfmake/build/vfs_fonts.browser',
-  ]);
-
-  // resolved VFS may be in different shapes depending on bundler / esm/cjs
-  const vfs =
-    mod?.pdfMake?.vfs ||
-    mod?.default?.pdfMake?.vfs ||
-    mod?.default?.vfs ||
-    mod?.vfs ||
-    null;
-
-  if (vfs) {
-    pdfMake.vfs = vfs;
-    window.pdfMakeFontsLoaded = true;
-    return;
-  }
-
-  // Last resort: warn and continue (pdfMake may already have vfs)
-  console.warn('pdfmake vfs not found - PDF generation may fail. module:', mod);
   window.pdfMakeFontsLoaded = true;
 };
 
@@ -49,7 +15,7 @@ let _cachedLogoDataUrl = null;
 const getLogoImage = async () => {
   if (_cachedLogoDataUrl) return _cachedLogoDataUrl;
   try {
-    const resp = await fetch('/assets/imgs/logo.png', { cache: 'no-cache' });
+    const resp = await fetch('/assets/imgs/logo2.png', { cache: 'no-cache' });
     if (!resp.ok) return null;
     const blob = await resp.blob();
     const dataUrl = await new Promise((resolve) => {
@@ -62,6 +28,28 @@ const getLogoImage = async () => {
     return dataUrl;
   } catch (e) {
     console.warn('getLogoImage failed:', e);
+    return null;
+  }
+};
+
+// Convert image to base64 for PDF (cached)
+let _cachedFooterDataUrl = null;
+const getFooterImage = async () => {
+  if (_cachedFooterDataUrl) return _cachedFooterDataUrl;
+  try {
+    const resp = await fetch('/assets/imgs/footer.png', { cache: 'no-cache' });
+    if (!resp.ok) return null;
+    const blob = await resp.blob();
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+    _cachedFooterDataUrl = dataUrl;
+    return dataUrl;
+  } catch (e) {
+    console.warn('getFooterImage failed:', e);
     return null;
   }
 };
@@ -170,27 +158,46 @@ const getLicenseTermsContent = (licenseType, asset) => {
 const getDocDefinition = async (asset, licenseType, user) => {
   const licenseId = `LIC-${Date.now().toString(36).toUpperCase()}`;
 
-  // Auto snapshot logic – React jaisa hi (thumbnail or image[0] or icon[0])
-  const previewUrl = asset.thumbnail || asset.images?.[0] || asset.icons?.[0] || null;
+  // Auto detect if it's a 3D model
+  const is3DModel = asset.type === '3d' || 
+                    asset.fileType?.includes('glb') || 
+                    asset.fileType?.includes('gltf') || 
+                    asset.fileType?.includes('obj') || 
+                    asset.fileType?.includes('fbx') ||
+                    asset.extension === '.glb' ||
+                    asset.extension === '.gltf' ||
+                    asset.extension === '.obj' ||
+                    asset.extension === '.fbx';
 
   let snapshotBase64 = null;
-  if (previewUrl) {
-    try {
-      const resp = await fetch(previewUrl);
-      if (resp.ok) {
-        const blob = await resp.blob();
-        snapshotBase64 = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
-        });
+
+  // Agar 3D model hai toh placeholder use karo
+  if (is3DModel) {
+    // Option 1: Ek clean placeholder text with 3D icon style
+    snapshotBase64 = null; // We'll use text + canvas instead of image
+  } else {
+    // Normal image/thumbnail logic (jo pehle tha)
+    const previewUrl = asset.thumbnail || asset.images?.[0] || asset.icons?.[0] || null;
+    if (previewUrl) {
+      try {
+        const resp = await fetch(previewUrl);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          if (blob.type.startsWith('image/')) {
+            snapshotBase64 = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Snapshot fetch failed:', e);
       }
-    } catch (e) {
-      console.warn('Snapshot generate failed:', e);
     }
   }
 
-  // Header columns (same as before)
+  // Header columns (same)
   const headerColumns = [];
   const logoData = await getLogoImage();
   if (logoData) {
@@ -201,16 +208,20 @@ const getDocDefinition = async (asset, licenseType, user) => {
       margin: [40, 10, 0, 0]
     });
   }
-  headerColumns.push({
-    width: '*',
-    text: 'RIMENOFRADEL AND FREE CO',
-    color: 'white',
-    fontSize: 20,
-    bold: true,
-    alignment: 'center',
-    margin: [0, 20, 40, 0]
-  });
 
+  // Footer columns (same)
+  const footerColumns = [];
+  const footerimg = await getFooterImage();
+  if (footerimg) {
+    footerColumns.push({
+      // width: 515,
+      image: footerimg,
+      // fit: [515, 50],
+      fit: [595, 50],          
+      margin: [0, 0, 0, 0]
+    });
+  }
+  
   return {
     pageSize: 'A4',
     pageMargins: [40, 100, 40, 100],
@@ -224,75 +235,112 @@ const getDocDefinition = async (asset, licenseType, user) => {
 
     footer: function (currentPage, pageCount) {
       return {
-        margin: [40, 0, 40, 20],
+        margin: [0, 0, 0, 0],
+        // stack: [
+        //   {
+        //     canvas: [
+        //       {
+        //         type: 'polyline',
+        //         lineWidth: 1,
+        //         closePath: true,
+        //         color: '#102935',
+        //         points: [
+        //           { x: 0, y: 30 },
+        //           { x: 515, y: 30 },
+        //           { x: 475, y: 0 },
+        //           { x: 40, y: 0 },
+        //           { x: 0, y: 30 }
+        //         ]
+        //       },
+        //       { type: 'rect', x: 40, y: 0, w: 435, h: 30, color: '#102935' }
+        //     ]
+        //   },
+        //   {
+        //     columns: [
+        //       {
+        //         width: '60%',
+        //         text: '  f   t   in   ig',
+        //         color: 'white',
+        //         fontSize: 14,
+        //         bold: true,
+        //         margin: [60, -22, 0, 0]
+        //       },
+        //       {
+        //         width: '40%',
+        //         text: 'www.shammarianas.com  |  contact@shammarianas.com',
+        //         color: 'white',
+        //         fontSize: 8,
+        //         alignment: 'right',
+        //         margin: [0, -20, 60, 0]
+        //       }
+        //     ]
+        //   }
+        // ]
+
         stack: [
-          {
-            canvas: [
-              {
-                type: 'polyline',
-                lineWidth: 1,
-                closePath: true,
-                color: '#000000',
-                points: [
-                  { x: 0, y: 30 },
-                  { x: 515, y: 30 },
-                  { x: 475, y: 0 },
-                  { x: 40, y: 0 },
-                  { x: 0, y: 30 }
-                ]
-              },
-              { type: 'rect', x: 40, y: 0, w: 435, h: 30, color: '#000000' }
-            ]
-          },
-          {
-            columns: [
-              {
-                width: '60%',
-                text: '  f   t   in   ig',
-                color: 'white',
-                fontSize: 14,
-                bold: true,
-                margin: [60, -22, 0, 0]
-              },
-              {
-                width: '40%',
-                text: 'www.shammarianas.com  |  contact@shammarianas.com',
-                color: 'white',
-                fontSize: 8,
-                alignment: 'right',
-                margin: [0, -20, 60, 0]
-              }
-            ]
-          }
-        ]
+        { columns: footerColumns }
+      ]
       };
     },
 
     content: [
-      // Snapshot auto add karo (Asset Information ke upar)
-      snapshotBase64 ? {
+      // SMART SNAPSHOT SECTION - Updated for 3D Models
+      is3DModel ? {
+        stack: [
+          {
+            canvas: [
+              { type: 'rect', x: 0, y: 0, w: 480, h: 270, color: '#f8f9fa', r: 12 },
+              { type: 'line', x1: 20, x2: 460, y1: 135, y2: 135, lineWidth: 2, dash: { length: 5 }, color: '#dee2e6' }
+            ],
+            width: 480,
+            alignment: 'center'
+          },
+          {
+            text: '3D Model Preview',
+            fontSize: 28,
+            bold: true,
+            color: '#2c3e50',
+            alignment: 'center',
+            margin: [0, 10, 0, 5]
+          },
+          {
+            text: 'This is a 3D model file (.glb/.gltf/.obj/.fbx)\nLive preview not available in PDF',
+            fontSize: 14,
+            color: '#7f8c8d',
+            alignment: 'center',
+            lineHeight: 1.4
+          },
+          {
+            text: asset.title || 'Untitled 3D Model',
+            fontSize: 16,
+            color: '#3498db',
+            bold: true,
+            alignment: 'center',
+            margin: [0, 10, 0, 0]
+          }
+        ],
+        margin: [0, 20, 0, 30]
+      } : snapshotBase64 ? {
         image: snapshotBase64,
-        width: 480,
+        width: 120,
         alignment: 'center',
         margin: [0, 20, 0, 30]
       } : {
-        text: '[No Snapshot Available]',
+        text: '[3D Model Preview Not Available]',
         color: '#999',
         fontSize: 12,
         italics: true,
         alignment: 'center',
         margin: [0, 20, 0, 30]
       },
-
-      // Baaki sab same
-      { 
-        text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' : 
-              licenseType === 'Free for Commercial Use' ? 'FREE FOR COMMERCIAL USE LICENSE' :
-              'DIGITAL ASSET LICENSE', 
-        style: 'header' 
-      },
-      { text: 'Digital Asset License Agreement', style: 'subheader' },
-      { canvas: [{ type: 'line', x1: 100, y1: 15, x2: 495, y2: 15, lineWidth: 4, lineColor: '#8B0000' }], margin: [0, 20, 0, 30] },
+      // { 
+      //   text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' : 
+      //         licenseType === 'Free for Commercial Use' ? 'FREE FOR COMMERCIAL USE LICENSE' :
+      //         'DIGITAL ASSET LICENSE', 
+      //   style: 'header' 
+      // },
+      // { text: 'Digital Asset License Agreement', style: 'subheader' },
+      // { canvas: [{ type: 'line', x1: 100, y1: 15, x2: 495, y2: 15, lineWidth: 4, lineColor: '#102935' }], margin: [0, 20, 0, 30] },
 
       { text: 'Asset Information', style: 'section', margin: [0, 0, 0, 15] },
       {
@@ -300,22 +348,32 @@ const getDocDefinition = async (asset, licenseType, user) => {
           widths: ['35%', '*'],
           body: [
             ['Asset Title:', { text: asset.title || 'Unknown Asset', bold: true }],
-            ['Asset ID:', asset.id || 'N/A'],
+            // ['Asset ID:', asset.id || 'N/A'],
             ['Author/Creator:', asset.authorName || asset.author || 'Unknown Author'],
             ['Download Date:', new Date(asset.downloadDate || asset.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })],
             ['License Type:', { 
               text: licenseType, 
               bold: true, 
-              color: licenseType.includes('Personal') ? '#27ae60' : 
-                     licenseType.includes('Commercial') ? '#2980b9' : '#2c3e50' 
+              color: licenseType.includes('Personal') ? '#52b0b4' : 
+                     licenseType.includes('Commercial') ? '#52b0b4' : '#52b0b4' 
             }],
-            ['Price:', { 
-              text: asset.finalPrice === 0 ? 'Free' : `$${asset.finalPrice.toFixed(2)}`, 
-              bold: true 
-            }],
+            // ['Price:', { 
+            //   text: asset.finalPrice === 0 ? 'Free' : `$${asset.finalPrice.toFixed(2)}`, 
+            //   bold: true 
+            // }],
             ['Asset Type:', asset.type || 'Digital Asset'],
             ['License ID:', { text: licenseId, bold: true }],
-            ['Licensee:', { text: user?.displayName || user?.email || 'User', bold: true }]
+           ['URL:', {
+  text: asset.url || asset.slug 
+    ? `https://shammarianas.com/${asset.slug || asset.url}` 
+    : `https://shammarianas.com/asset/${asset.id || asset._id}`,
+  bold: true,
+  color: '#52b0b4',
+  link: asset.url || asset.slug 
+    ? `https://shammarianas.com/${asset.slug || asset.url}` 
+    : `https://shammarianas.com/asset/${asset.id || asset._id}`,
+  decoration: 'underline'
+}]
           ]
         },
         layout: { 
@@ -355,7 +413,7 @@ const getDocDefinition = async (asset, licenseType, user) => {
         fontSize: 24, 
         bold: true, 
         alignment: 'center', 
-        color: '#8B0000', 
+        color: '#102935', 
         margin: [0, 0, 0, 5] 
       },
       subheader: { 
@@ -367,7 +425,7 @@ const getDocDefinition = async (asset, licenseType, user) => {
       section: { 
         fontSize: 16, 
         bold: true, 
-        color: '#8B0000' 
+        color: '#102935' 
       },
       subSection: { 
         fontSize: 12, 
