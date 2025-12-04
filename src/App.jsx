@@ -58,9 +58,8 @@ import TermsandCondition from "./Pages/Get Started/Terms&Condition";
 import CommingSoon from "./Pages/CommingSoon";
 import BlogCategory from "./Pages/Blog-Category";
 import Subscription from "./Pages/Subscription";
-import ContributorLogin from "./Pages/Login/ContributorLogin"
-import ContributorDashboard from "./Components/UI/dashboard/Contributor/ContributorDashboard"
-
+import ContributorLogin from "./Pages/Login/ContributorLogin";
+import ContributorDashboard from "./Components/UI/dashboard/Contributor/ContributorDashboard";
 
 // STRIPE IMPORTS - ADDED
 import { loadStripe } from "@stripe/stripe-js";
@@ -94,7 +93,7 @@ export const AppRoutes = () => (
     <Route path="/Profile/:id" element={<Profile />} />
     <Route path="/" element={<Home />} />
     <Route path="/Cart" element={<Cart />} />
-    <Route path="/View/:id" element={<View />} />
+    {/* <Route path="/View/:id" element={<View />} /> */}
     <Route path="/Groups" element={<Group />} />
     <Route path="/Upload" element={<Upload />} />
     <Route path="/Checkout" element={<Checkout />} />
@@ -139,7 +138,7 @@ export const AppRoutes = () => (
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/blog-category/:category" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
-    <Route path="/view/:slug" element={<View />} />
+    <Route path="/View/:slug" element={<View />} />
   </Routes>
 );
 
