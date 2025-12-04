@@ -60,11 +60,11 @@ const getLicenseTermsContent = (licenseType, asset) => {
   const header = {
     text: 'FREE LICENSE (WITH ATTRIBUTION)',
     style: 'header',
-    alignment: 'center',
+    alignment: 'left',
     bold: true,
-    fontSize: 16,
+    fontSize: 12,
     color: '#2c3e50',
-    margin: [0, 0, 0, 15]
+    margin: [0, 0, 0, 4]
   };
 
   // Subheading style
@@ -73,7 +73,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
     bold: true,
     fontSize: 12,
     margin: [0, 12, 0, 6],
-    color: '#050505ff'
+    color: '#2c3e50'
   };
 
   if (licenseType === 'Free for Personal Use') {
@@ -89,13 +89,13 @@ color: '#7f8c8d'
       },
 
       // How to give credit
-      { text: 'How to give credit:', ...subHeading, color: [0,0,0] },
+      { text: 'How to give credit:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
           'For websites or online use:'
         ],
         margin: [0, 0, 0, 0],
-        color: [0,0,0]
+        color: '#2c3e50'
       },
       {
         text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas</a>\'',
@@ -108,7 +108,7 @@ color: '#7f8c8d'
           'Uses different to web:'
         ],
         margin: [0, 0, 0, 0],
-        color: [0,0,0]
+        color: '#2c3e50'
       },
       {
         text: 'Just write “Designed by Sham Marianas” next to the design or put it in the description/credits section.',
@@ -118,7 +118,7 @@ color: '#7f8c8d'
       },
 
       // Where you can use
-      { text: 'Where you can use Sham Marianas content:', ...subHeading, color: [0,0,0] },
+      { text: 'Where you can use Sham Marianas content:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
           'Websites',
@@ -134,7 +134,7 @@ color: '#7f8c8d'
       },
 
       // What you CAN do
-      { text: 'What you CAN do:', ...subHeading, color: [0,0,0] },
+      { text: 'What you CAN do:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
           'Use in unlimited times, forever, anywhere in the world',
@@ -146,14 +146,14 @@ color: '#7f8c8d'
       },
 
       // What you CANNOT do
-      { text: 'What you CANNOT do:', ...subHeading, color: [0,0,0] },
+      { text: 'What you CANNOT do:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
           'Sell or rent the original source files',
           'Share or distribute the raw files for others to download',
           'Offer the designs (even modified ones) as downloadable resources'
         ],
-        margin: [0, 0, 0, 20],
+        margin: [0, 0, 0, 12],
         color: '#7f8c8d'
       },
 
@@ -294,7 +294,7 @@ const getDocDefinition = async (asset, licenseType, user) => {
 
   return {
     pageSize: 'A4',
-    pageMargins: [40, 100, 40, 100],
+    pageMargins: [40, 100, 20, 100],
 
     header: {
       margin: [0, 20, 0, 0],
@@ -464,8 +464,8 @@ const getDocDefinition = async (asset, licenseType, user) => {
           ]
         },
         layout: {
-          hLineColor: () => '#ffffffff',
-          vLineColor: () => '#ffffffff',
+          hLineColor: () => [255, 255, 255],
+          vLineColor: () => [255, 255, 255],
           paddingLeft: () => 10,
           paddingRight: () => 10,
           paddingTop: () => 8,
