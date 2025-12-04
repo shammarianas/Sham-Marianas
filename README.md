@@ -20,4 +20,4 @@ Check Firebase.js
 Use the right api configuration 
 
 
-npm install pdfmake
+npm install pdfmake, pdfmake@0.2.12
