@@ -33,7 +33,8 @@ import RelatedItems from "../Components/RelatedItems";
 
 const View = () => {
   const { currentUser, userProfile } = useUser();
-  const docId = useParams().id;
+  const { slug } = useParams();
+
   const [is3d, setIs3d] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastState, setToastState] = useState("");
@@ -89,29 +90,30 @@ const View = () => {
 
   useEffect(() => {
     const fetchItem = async () => {
-      const itemRef = doc(db, "Assets", docId);
-      const snap = await getDoc(itemRef);
+      const q = query(collection(db, "Assets"), where("slug", "==", slug));
+      const snap = await getDocs(q);
 
-      if (!snap.exists()) {
+      if (snap.empty) {
         setItem(null);
         return;
       }
 
-      const data = snap.data();
+      const docData = snap.docs[0].data();
+      const docId = snap.docs[0].id;
 
-      // Only show approved assets
-      if (data.status !== "approved") {
+      // Only approved assets
+      if (docData.status !== "approved") {
         setItem(null);
         return;
       }
 
-      setItem({ id: snap.id, ...data });
-      setMarkdown(data.description);
-      setIs3d(data.is3d);
+      setItem({ id: docId, ...docData });
+      setMarkdown(docData.description);
+      setIs3d(docData.is3d);
     };
 
     fetchItem();
-  }, [docId]);
+  }, [slug]);
 
   useEffect(() => {
     if (userProfile && userProfile.purchasedItems) {
@@ -174,7 +176,7 @@ const View = () => {
               links={[
                 { title: "Home", path: "/" },
                 { title: item.type, path: `/${item.type}` },
-                { title: item.title, path: `/View/${item.id}` },
+                { title: item.title, path: `/View/${item.slug}` },
               ]}
             />
             <div className="content">
