@@ -58,7 +58,11 @@ const getFooterImage = async () => {
 const getLicenseTermsContent = (licenseType, asset) => {
   // Main Heading
   const header = {
-    text: 'FREE LICENSE (WITH ATTRIBUTION)',
+   text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' : 
+              licenseType === 'Free for Commercial Use' ? 'FREE FOR COMMERCIAL USE LICENSE' :
+              licenseType === 'Paid for Personal Use' ? 'PAID FOR PERSONAL USE LICENSE' : 
+              licenseType === 'Paid for Commercial Use' ? 'PAID FOR COMMERCIAL USE LICENSE' :
+              'DIGITAL ASSET LICENSE', 
     style: 'header',
     alignment: 'left',
     bold: true,
@@ -83,7 +87,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
       // Intro Paragraph
       {
         text: 'This license lets you use any designs, templates, graphics, logos, photos, videos, or branding material created by Sham Marianas completely free in your personal or commercial projects; you just have to give simple credit in the final work: “Designed by Sham Marianas”.',
-        margin: [0, 0, 0, 12],
+        margin: [0, 0, 0, 10],
         lineHeight: 1.4,
 color: '#7f8c8d'
       },
@@ -112,7 +116,7 @@ color: '#7f8c8d'
       },
       {
         text: 'Just write “Designed by Sham Marianas” next to the design or put it in the description/credits section.',
-        margin: [0, 0, 0, 12],
+        margin: [0, 0, 0, 10],
         italics: true,
         color: '#7f8c8d'
       },
@@ -129,31 +133,31 @@ color: '#7f8c8d'
           'Videos, Reels, TikTok, presentations',
           'Shop signage, events, decorations, basically anywhere!'
         ],
-        margin: [0, 0, 0, 12],
+        margin: [0, 0, 0, 10],
         color: '#7f8c8d'
       },
 
-      // What you CAN do
-      { text: 'What you CAN do:', ...subHeading, color: '#2c3e50' },
+      // What you can do
+      { text: 'What you can do:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
           'Use in unlimited times, forever, anywhere in the world',
           'Edit, change colors, text, mix with your own stuff, make new designs from it',
           'Use it for personal projects or to make money (client work is 100% okay!)'
         ],
-        margin: [0, 0, 0, 12],
+        margin: [0, 0, 0, 10],
         color: '#7f8c8d'
       },
 
-      // What you CANNOT do
-      { text: 'What you CANNOT do:', ...subHeading, color: '#2c3e50' },
+      // What you canNOT do
+      { text: 'What you cannot do:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
           'Sell or rent the original source files',
           'Share or distribute the raw files for others to download',
           'Offer the designs (even modified ones) as downloadable resources'
         ],
-        margin: [0, 0, 0, 12],
+        margin: [0, 0, 0, 10],
         color: '#7f8c8d'
       },
 
@@ -169,41 +173,91 @@ color: '#7f8c8d'
   } else if (licenseType === 'Free for Commercial Use') {
     return [
       header,
-      { text: 'Permitted Commercial Uses:', style: 'subSection', color: '#2980b9', margin: [0, 0, 0, 5] },
+
+      // Intro Paragraph
       {
-        ul: [
-          'Commercial projects and client work',
-          'Products for sale (up to 10,000 units)',
-          'Advertising and marketing materials',
-          'Website and app development',
-          'Video production and films',
-          'Print materials and publications',
-          'Social media campaigns'
-        ],
-        margin: [0, 0, 0, 15]
+        text: 'This license confirms the rights and obligations for using the item "Certified Guarantee Warranty Verify Stamp Word Concept" on your website under the FREE commercial  LICENSE (WITH ATTRIBUTION) terms.',
+        margin: [0, 0, 0, 10],
+        lineHeight: 1.4,
+color: '#7f8c8d'
       },
-      { text: 'Restrictions:', style: 'subSection', color: '#e74c3c', margin: [0, 0, 0, 5] },
+
+      // How to give credit
+      { text: 'How to give credit:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
-          'Cannot resell or redistribute the asset files',
-          'Cannot use in templates/themes for sale',
-          'Cannot use in stock media platforms',
-          'Cannot claim authorship of the asset',
-          'Mass production limited to 10,000 units'
+          'For websites or online use:'
         ],
-        margin: [0, 0, 0, 15]
+        margin: [0, 0, 0, 0],
+        color: '#2c3e50'
       },
-      { text: 'Attribution:', style: 'subSection', color: '#27ae60', margin: [0, 0, 0, 5] },
-      { text: 'Not required but attribution to the creator is appreciated.', margin: [0, 0, 0, 20] },
-      { text: 'Commercial Rights:', style: 'subSection', color: '#2c3e50', margin: [0, 0, 0, 5] },
+      {
+        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas</a>\'',
+        margin: [0, 0, 0, 4],
+        italics: true,
+        color: '#7f8c8d'
+      },
       {
         ul: [
-          'Unlimited commercial projects',
-          'Multiple client projects allowed',
-          'No royalties or additional fees',
-          'Lifetime commercial rights',
-          'Worldwide distribution rights'
-        ]
+          'Uses different to web:'
+        ],
+        margin: [0, 0, 0, 0],
+        color: '#2c3e50'
+      },
+      {
+        text: 'Just write “Designed by Sham Marianas” next to the design or put it in the description/credits section.',
+        margin: [0, 0, 0, 10],
+        italics: true,
+        color: '#7f8c8d'
+      },
+
+      // Where you can use
+      { text: 'Where you can use Sham Marianas content:', ...subHeading, color: '#2c3e50' },
+      {
+        ul: [
+          'Websites',
+          'Apps and software',
+          'Social media posts, stories, and ads',
+          'Print stuff (flyers, posters, banners, business cards, brochures, magazines)',
+          'Merchandise (T-shirts, mugs, packaging)',
+          'Videos, Reels, TikTok, presentations',
+          'Shop signage, events, decorations, basically anywhere!'
+        ],
+        margin: [0, 0, 0, 10],
+        color: '#7f8c8d'
+      },
+
+      // What you can do
+      { text: 'What you can do:', ...subHeading, color: '#2c3e50' },
+      {
+        ul: [
+          'Use the licensed material an unlimited number of times in any and all media for the commercial or personal purposes listed above.',
+          'Alter and create derivative works from the content.',
+          'Use Shammarianas content worldwide during the rights period.'
+        ],
+        margin: [0, 0, 0, 10],
+        color: '#7f8c8d'
+      },
+
+      // What you canNOT do
+      { text: 'What you cannot do:', ...subHeading, color: '#2c3e50' },
+      {
+        ul: [
+          'Sublicense, sell, or rent any contents (or a modified version of them).',
+          'Distribute Shammarianas\' contents unless expressly authorized by Shammarianas.',
+          'Offering shammarianas Contents designs (or modified shammarianas Contents versions) for download'
+        ],
+        margin: [0, 0, 0, 10],
+        color: '#7f8c8d'
+      },
+
+      // Final Note
+      {
+        text: 'That’s it! Just add “Designed by Sham Marianas” and enjoy using the work freely.',
+        italics: true,
+        color: '#7f8c8d',
+        margin: [0, 0, 0, 0],
+        alignment: 'center'
       }
     ];
   } else {
@@ -446,20 +500,17 @@ const getDocDefinition = async (asset, licenseType, user) => {
               { text: 'License ID:', fillColor: '#4a4a4a', color: 'white' },
               { text: licenseId, bold: true, fillColor: '#e0e0e0' }
             ],
+            ['Licensee:', { text: user?.displayName || user?.email || 'User', bold: true }],
             [
               { text: 'URL:', fillColor: '#4a4a4a', color: 'white' },
               {
-                text: asset.url || asset.slug
-                  ? `https://shammarianas.com/${asset.slug || asset.url}`
-                  : `https://shammarianas.com/asset/${asset.id || asset._id}`,
-                bold: true,
-                color: '#52b0b4',
-                link: asset.url || asset.slug
-                  ? `https://shammarianas.com/${asset.slug || asset.url}`
-                  : `https://shammarianas.com/asset/${asset.id || asset._id}`,
-                decoration: 'underline',
-                fillColor: '#e0e0e0'
-              }
+  text: asset.viewUrl || `https://shammarianas.com/View/${asset.slug || asset.id || asset._id}`,
+  bold: true,
+  color: '#52b0b4',
+  link: asset.viewUrl || `https://shammarianas.com/View/${asset.slug || asset.id || asset._id}`,
+  decoration: 'underline',
+  fillColor: '#e0e0e0'
+}
             ]
           ]
         },
@@ -471,7 +522,7 @@ const getDocDefinition = async (asset, licenseType, user) => {
           paddingTop: () => 8,
           paddingBottom: () => 8
         },
-        margin: [0, 0, 0, 30]
+        margin: [0, 0, 0, 10]
       },
 
       // Footer note on first page
@@ -489,7 +540,7 @@ const getDocDefinition = async (asset, licenseType, user) => {
 
       // Final note on second page
       {
-        text: '\n\nFor any queries related to this license, please contact support@shammarianas.com',
+        text: '\n\nFor any queries related to this license, please contact info@shammarianas.com',
         style: 'contactNote',
         margin: [0, 20, 0, 0]
       }
