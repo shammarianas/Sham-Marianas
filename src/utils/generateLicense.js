@@ -56,51 +56,121 @@ const getFooterImage = async () => {
 
 // Get license terms content based on license type
 const getLicenseTermsContent = (licenseType, asset) => {
-  const commonHeader = { text: 'License Terms', style: 'section', margin: [0, 20, 0, 15] };
-  
+  // Main Heading
+  const header = {
+    text: 'FREE LICENSE (WITH ATTRIBUTION)',
+    style: 'header',
+    alignment: 'center',
+    bold: true,
+    fontSize: 16,
+    color: '#2c3e50',
+    margin: [0, 0, 0, 15]
+  };
+
+  // Subheading style
+  const subHeading = {
+    style: 'subSection',
+    bold: true,
+    fontSize: 12,
+    margin: [0, 12, 0, 6],
+    color: '#050505ff'
+  };
+
   if (licenseType === 'Free for Personal Use') {
     return [
-      commonHeader,
-      { text: 'Permitted Uses:', style: 'subSection', color: '#27ae60', margin: [0, 0, 0, 5] },
-      { 
-        ul: [
-          'Personal projects and non-commercial work',
-          'Educational purposes and learning materials',
-          'Personal websites and blogs (non-commercial)',
-          'Social media posts for personal use',
-          'Hobby projects and personal creative work'
-        ],
-        margin: [0, 0, 0, 15]
+      header,
+
+      // Intro Paragraph
+      {
+        text: 'This license lets you use any designs, templates, graphics, logos, photos, videos, or branding material created by Sham Marianas completely free in your personal or commercial projects; you just have to give simple credit in the final work: “Designed by Sham Marianas”.',
+        margin: [0, 0, 0, 12],
+        lineHeight: 1.4,
+color: '#7f8c8d'
       },
-      { text: 'Restrictions:', style: 'subSection', color: '#e74c3c', margin: [0, 0, 0, 5] },
-      { 
+
+      // How to give credit
+      { text: 'How to give credit:', ...subHeading, color: [0,0,0] },
+      {
         ul: [
-          'No commercial use or resale',
-          'Cannot be used in products for sale',
-          'Cannot be used in client work',
-          'No redistribution or sharing of the asset files',
-          'No use in templates or themes for sale'
+          'For websites or online use:'
         ],
-        margin: [0, 0, 0, 15]
+        margin: [0, 0, 0, 0],
+        color: [0,0,0]
       },
-      { text: 'Attribution (Optional but Appreciated):', style: 'subSection', color: '#3498db', margin: [0, 0, 0, 5] },
-      { text: 'While not required, attribution to the original creator is appreciated.', margin: [0, 0, 0, 20] },
-      { text: 'Important Notes:', style: 'subSection', color: '#2c3e50', margin: [0, 0, 0, 5] },
-      { 
+      {
+        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas</a>\'',
+        margin: [0, 0, 0, 4],
+        italics: true,
+        color: '#7f8c8d'
+      },
+      {
         ul: [
-          'This license is non-transferable',
-          'License is valid for lifetime use',
-          'Creator retains all copyrights',
-          'No warranty is provided with this asset',
-          'Creator is not liable for any damages'
-        ]
+          'Uses different to web:'
+        ],
+        margin: [0, 0, 0, 0],
+        color: [0,0,0]
+      },
+      {
+        text: 'Just write “Designed by Sham Marianas” next to the design or put it in the description/credits section.',
+        margin: [0, 0, 0, 12],
+        italics: true,
+        color: '#7f8c8d'
+      },
+
+      // Where you can use
+      { text: 'Where you can use Sham Marianas content:', ...subHeading, color: [0,0,0] },
+      {
+        ul: [
+          'Websites',
+          'Apps and software',
+          'Social media posts, stories, and ads',
+          'Print stuff (flyers, posters, banners, business cards, brochures, magazines)',
+          'Merchandise (T-shirts, mugs, packaging)',
+          'Videos, Reels, TikTok, presentations',
+          'Shop signage, events, decorations, basically anywhere!'
+        ],
+        margin: [0, 0, 0, 12],
+        color: '#7f8c8d'
+      },
+
+      // What you CAN do
+      { text: 'What you CAN do:', ...subHeading, color: [0,0,0] },
+      {
+        ul: [
+          'Use in unlimited times, forever, anywhere in the world',
+          'Edit, change colors, text, mix with your own stuff, make new designs from it',
+          'Use it for personal projects or to make money (client work is 100% okay!)'
+        ],
+        margin: [0, 0, 0, 12],
+        color: '#7f8c8d'
+      },
+
+      // What you CANNOT do
+      { text: 'What you CANNOT do:', ...subHeading, color: [0,0,0] },
+      {
+        ul: [
+          'Sell or rent the original source files',
+          'Share or distribute the raw files for others to download',
+          'Offer the designs (even modified ones) as downloadable resources'
+        ],
+        margin: [0, 0, 0, 20],
+        color: '#7f8c8d'
+      },
+
+      // Final Note
+      {
+        text: 'That’s it! Just add “Designed by Sham Marianas” and enjoy using the work freely.',
+        italics: true,
+        color: '#7f8c8d',
+        margin: [0, 0, 0, 0],
+        alignment: 'center'
       }
     ];
   } else if (licenseType === 'Free for Commercial Use') {
     return [
-      commonHeader,
+      header,
       { text: 'Permitted Commercial Uses:', style: 'subSection', color: '#2980b9', margin: [0, 0, 0, 5] },
-      { 
+      {
         ul: [
           'Commercial projects and client work',
           'Products for sale (up to 10,000 units)',
@@ -113,7 +183,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
         margin: [0, 0, 0, 15]
       },
       { text: 'Restrictions:', style: 'subSection', color: '#e74c3c', margin: [0, 0, 0, 5] },
-      { 
+      {
         ul: [
           'Cannot resell or redistribute the asset files',
           'Cannot use in templates/themes for sale',
@@ -126,7 +196,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
       { text: 'Attribution:', style: 'subSection', color: '#27ae60', margin: [0, 0, 0, 5] },
       { text: 'Not required but attribution to the creator is appreciated.', margin: [0, 0, 0, 20] },
       { text: 'Commercial Rights:', style: 'subSection', color: '#2c3e50', margin: [0, 0, 0, 5] },
-      { 
+      {
         ul: [
           'Unlimited commercial projects',
           'Multiple client projects allowed',
@@ -136,13 +206,13 @@ const getLicenseTermsContent = (licenseType, asset) => {
         ]
       }
     ];
-   } else {
+  } else {
     // Default license
     return [
       commonHeader,
       { text: 'This digital asset is licensed for use according to the terms specified by the creator. Please refer to the specific license type for detailed permissions and restrictions.', margin: [0, 0, 0, 20] },
       { text: 'General Terms:', style: 'subSection', color: '#2c3e50', margin: [0, 0, 0, 5] },
-      { 
+      {
         ul: [
           'License is non-transferable',
           'Creator retains copyright',
@@ -159,15 +229,15 @@ const getDocDefinition = async (asset, licenseType, user) => {
   const licenseId = `LIC-${Date.now().toString(36).toUpperCase()}`;
 
   // Auto detect if it's a 3D model
-  const is3DModel = asset.type === '3d' || 
-                    asset.fileType?.includes('glb') || 
-                    asset.fileType?.includes('gltf') || 
-                    asset.fileType?.includes('obj') || 
-                    asset.fileType?.includes('fbx') ||
-                    asset.extension === '.glb' ||
-                    asset.extension === '.gltf' ||
-                    asset.extension === '.obj' ||
-                    asset.extension === '.fbx';
+  const is3DModel = asset.type === '3d' ||
+    asset.fileType?.includes('glb') ||
+    asset.fileType?.includes('gltf') ||
+    asset.fileType?.includes('obj') ||
+    asset.fileType?.includes('fbx') ||
+    asset.extension === '.glb' ||
+    asset.extension === '.gltf' ||
+    asset.extension === '.obj' ||
+    asset.extension === '.fbx';
 
   let snapshotBase64 = null;
 
@@ -217,11 +287,11 @@ const getDocDefinition = async (asset, licenseType, user) => {
       // width: 515,
       image: footerimg,
       // fit: [515, 50],
-      fit: [595, 50],          
+      fit: [595, 50],
       margin: [0, 0, 0, 0]
     });
   }
-  
+
   return {
     pageSize: 'A4',
     pageMargins: [40, 100, 40, 100],
@@ -278,8 +348,8 @@ const getDocDefinition = async (asset, licenseType, user) => {
         // ]
 
         stack: [
-        { columns: footerColumns }
-      ]
+          { columns: footerColumns }
+        ]
       };
     },
 
@@ -345,40 +415,57 @@ const getDocDefinition = async (asset, licenseType, user) => {
       { text: 'Asset Information', style: 'section', margin: [0, 0, 0, 15] },
       {
         table: {
-          widths: ['35%', '*'],
+          widths: ['25%', '*'],
           body: [
-            ['Asset Title:', { text: asset.title || 'Unknown Asset', bold: true }],
-            // ['Asset ID:', asset.id || 'N/A'],
-            ['Author/Creator:', asset.authorName || asset.author || 'Unknown Author'],
-            ['Download Date:', new Date(asset.downloadDate || asset.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })],
-            ['License Type:', { 
-              text: licenseType, 
-              bold: true, 
-              color: licenseType.includes('Personal') ? '#52b0b4' : 
-                     licenseType.includes('Commercial') ? '#52b0b4' : '#52b0b4' 
-            }],
-            // ['Price:', { 
-            //   text: asset.finalPrice === 0 ? 'Free' : `$${asset.finalPrice.toFixed(2)}`, 
-            //   bold: true 
-            // }],
-            ['Asset Type:', asset.type || 'Digital Asset'],
-            ['License ID:', { text: licenseId, bold: true }],
-           ['URL:', {
-  text: asset.url || asset.slug 
-    ? `https://shammarianas.com/${asset.slug || asset.url}` 
-    : `https://shammarianas.com/asset/${asset.id || asset._id}`,
-  bold: true,
-  color: '#52b0b4',
-  link: asset.url || asset.slug 
-    ? `https://shammarianas.com/${asset.slug || asset.url}` 
-    : `https://shammarianas.com/asset/${asset.id || asset._id}`,
-  decoration: 'underline'
-}]
+            [
+              { text: 'Asset Title:', fillColor: '#4a4a4a', color: 'white' },
+              { text: asset.title || 'Unknown Asset', bold: true, fillColor: '#e0e0e0' }
+            ],
+            [
+              { text: 'Author/Creator:', fillColor: '#4a4a4a', color: 'white' },
+              { text: asset.authorName || asset.author || 'Unknown Author', fillColor: '#e0e0e0' }
+            ],
+            [
+              { text: 'Download Date:', fillColor: '#4a4a4a', color: 'white' },
+              { text: new Date(asset.downloadDate || asset.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), fillColor: '#e0e0e0' }
+            ],
+            [
+              { text: 'License Type:', fillColor: '#4a4a4a', color: 'white' },
+              {
+                text: licenseType,
+                bold: true,
+                color: '#52b0b4',
+                fillColor: '#e0e0e0'
+              }
+            ],
+            [
+              { text: 'Asset Type:', fillColor: '#4a4a4a', color: 'white' },
+              { text: asset.type || 'Digital Asset', fillColor: '#e0e0e0' }
+            ],
+            [
+              { text: 'License ID:', fillColor: '#4a4a4a', color: 'white' },
+              { text: licenseId, bold: true, fillColor: '#e0e0e0' }
+            ],
+            [
+              { text: 'URL:', fillColor: '#4a4a4a', color: 'white' },
+              {
+                text: asset.url || asset.slug
+                  ? `https://shammarianas.com/${asset.slug || asset.url}`
+                  : `https://shammarianas.com/asset/${asset.id || asset._id}`,
+                bold: true,
+                color: '#52b0b4',
+                link: asset.url || asset.slug
+                  ? `https://shammarianas.com/${asset.slug || asset.url}`
+                  : `https://shammarianas.com/asset/${asset.id || asset._id}`,
+                decoration: 'underline',
+                fillColor: '#e0e0e0'
+              }
+            ]
           ]
         },
-        layout: { 
-          hLineColor: () => '#dee2e6',
-          vLineColor: () => '#dee2e6',
+        layout: {
+          hLineColor: () => '#ffffffff',
+          vLineColor: () => '#ffffffff',
           paddingLeft: () => 10,
           paddingRight: () => 10,
           paddingTop: () => 8,
@@ -396,41 +483,41 @@ const getDocDefinition = async (asset, licenseType, user) => {
 
       // Page break
       { text: '', pageBreak: 'before' },
-      
+
       // Page 2: License Terms
       ...getLicenseTermsContent(licenseType, asset),
-      
+
       // Final note on second page
       {
         text: '\n\nFor any queries related to this license, please contact support@shammarianas.com',
         style: 'contactNote',
-        margin: [0, 30, 0, 0]
+        margin: [0, 20, 0, 0]
       }
     ],
-    
+
     styles: {
-      header: { 
-        fontSize: 24, 
-        bold: true, 
-        alignment: 'center', 
-        color: '#102935', 
-        margin: [0, 0, 0, 5] 
+      header: {
+        fontSize: 24,
+        bold: true,
+        alignment: 'center',
+        color: '#102935',
+        margin: [0, 0, 0, 5]
       },
-      subheader: { 
-        fontSize: 14, 
-        alignment: 'center', 
-        color: '#7f8c8d', 
-        margin: [0, 0, 0, 20] 
+      subheader: {
+        fontSize: 14,
+        alignment: 'center',
+        color: '#7f8c8d',
+        margin: [0, 0, 0, 20]
       },
-      section: { 
-        fontSize: 16, 
-        bold: true, 
-        color: '#102935' 
+      section: {
+        fontSize: 16,
+        bold: true,
+        color: '#102935'
       },
-      subSection: { 
-        fontSize: 12, 
-        bold: true, 
-        margin: [0, 5, 0, 5] 
+      subSection: {
+        fontSize: 12,
+        bold: true,
+        margin: [0, 5, 0, 5]
       },
       footerNote: {
         fontSize: 9,
@@ -444,7 +531,7 @@ const getDocDefinition = async (asset, licenseType, user) => {
         alignment: 'center'
       }
     },
-    
+
     defaultStyle: {
       font: 'Roboto',
       fontSize: 10,
@@ -467,8 +554,8 @@ export const downloadLicense = async (asset, user = null) => {
       licenseType = finalPrice === 0 ? 'Free for Personal Use' : 'Free for Commercial Use';
     }
 
-    const enrichedAsset = { 
-      ...asset, 
+    const enrichedAsset = {
+      ...asset,
       finalPrice,
       downloadDate: asset.downloadDate || asset.createdAt || new Date().toISOString(),
       authorName: asset.authorName || asset.author || asset.createdBy || 'Unknown Author'
