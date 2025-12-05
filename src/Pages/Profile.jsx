@@ -114,70 +114,103 @@ const Profile = () => {
   const authorName = getAuthorName(user);
 
   const followUser = async () => {
-    if (!user || !currentUser) {
-      alert("Please login to follow this user");
-      return;
-    }
+  if (!user || !currentUser) {
+    alert("Please login to follow this user");
+    return;
+  }
 
-    if (currentUser.uid === id) {
-      alert("You cannot follow yourself");
-      return;
-    }
+  if (currentUser.uid === id) {
+    alert("You cannot follow yourself");
+    return;
+  }
 
-    try {
-      const userRef = doc(db, "Profiles", id);
-      const followerRef = doc(db, "Profiles", currentUser.uid);
+  try {
+    const userRef = doc(db, "Profiles", id);
+    const followerRef = doc(db, "Profiles", currentUser.uid);
+    
+    console.log("User ID:", id);
+    console.log("Current User ID:", currentUser.uid);
+    console.log("User Ref:", userRef);
+    console.log("Follower Ref:", followerRef);
+    
+    const [userDoc, followerDoc] = await Promise.all([
+      getDoc(userRef),
+      getDoc(followerRef)
+    ]);
+
+    console.log("User Document exists:", userDoc.exists());
+    console.log("Follower Document exists:", followerDoc.exists());
+
+    if (userDoc.exists() && followerDoc.exists()) {
+      const userData = userDoc.data();
+      const followerData = followerDoc.data();
       
-      const [userDoc, followerDoc] = await Promise.all([
-        getDoc(userRef),
-        getDoc(followerRef)
+      console.log("User Data:", userData);
+      console.log("Follower Data:", followerData);
+      
+      let userFollowers = userData.followers || [];
+      let followerFollowing = followerData.following || [];
+      
+      console.log("Current User Followers:", userFollowers);
+      console.log("Current Follower Following:", followerFollowing);
+      
+      const isCurrentlyFollowing = userFollowers.includes(currentUser.uid);
+      console.log("Is Currently Following:", isCurrentlyFollowing);
+
+      if (isCurrentlyFollowing) {
+        // Unfollow
+        userFollowers = userFollowers.filter(uid => uid !== currentUser.uid);
+        followerFollowing = followerFollowing.filter(uid => uid !== id);
+        setIsFollowing(false);
+        console.log("Unfollowing...");
+      } else {
+        // Follow
+        if (!userFollowers.includes(currentUser.uid)) {
+          userFollowers.push(currentUser.uid);
+        }
+        if (!followerFollowing.includes(id)) {
+          followerFollowing.push(id);
+        }
+        setIsFollowing(true);
+        console.log("Following...");
+      }
+
+      console.log("Updated User Followers:", userFollowers);
+      console.log("Updated Follower Following:", followerFollowing);
+
+      // Update both documents
+      await Promise.all([
+        updateDoc(userRef, {
+          followers: userFollowers,
+          followersCount: userFollowers.length
+        }),
+        updateDoc(followerRef, {
+          following: followerFollowing,
+          followingCount: followerFollowing.length
+        })
       ]);
 
-      if (userDoc.exists() && followerDoc.exists()) {
-        const userData = userDoc.data();
-        const followerData = followerDoc.data();
-        
-        let userFollowers = userData.followers || [];
-        let followerFollowing = followerData.following || [];
-        
-        const isCurrentlyFollowing = userFollowers.includes(currentUser.uid);
-
-        if (isCurrentlyFollowing) {
-          // Unfollow
-          userFollowers = userFollowers.filter(uid => uid !== currentUser.uid);
-          followerFollowing = followerFollowing.filter(uid => uid !== id);
-          setIsFollowing(false);
-        } else {
-          // Follow
-          if (!userFollowers.includes(currentUser.uid)) {
-            userFollowers.push(currentUser.uid);
-          }
-          if (!followerFollowing.includes(id)) {
-            followerFollowing.push(id);
-          }
-          setIsFollowing(true);
-        }
-
-        // Update both documents
-        await Promise.all([
-          updateDoc(userRef, {
-            followers: userFollowers,
-            followersCount: userFollowers.length
-          }),
-          updateDoc(followerRef, {
-            following: followerFollowing,
-            followingCount: followerFollowing.length
-          })
-        ]);
-
-        // Show success message
-        alert(isCurrentlyFollowing ? "Unfollowed successfully!" : "Followed successfully!");
+      console.log("Database updated successfully");
+      
+      // Show success message
+      alert(isCurrentlyFollowing ? "Unfollowed successfully!" : "Followed successfully!");
+      
+      // Refresh user data
+      const updatedUserDoc = await getDoc(userRef);
+      if (updatedUserDoc.exists()) {
+        setUser(updatedUserDoc.data());
       }
-    } catch (error) {
-      console.error("Error following user:", error);
-      alert("Failed to follow/unfollow user. Please try again.");
+    } else {
+      console.error("One or both documents don't exist");
+      alert("User profile not found. Please try again.");
     }
-  };
+  } catch (error) {
+    console.error("Error following user:", error);
+    console.error("Error details:", error.message, error.code);
+    alert(`Failed to follow/unfollow user: ${error.message}`);
+  }
+};
+
   // Effect for updating URL when username changes
   useEffect(() => {
     if (user?.username && isOwnProfile) {
@@ -806,10 +839,19 @@ const Profile = () => {
               </div>
               <div className="right">
                 <div className="stats">
-                  <span className="following_count">
-                    {user?.followingCount || user?.following?.length || 0} Following
-                  </span>
-                </div>
+  <div className="stat-item">
+    <span className="stat-count">
+      {user?.followersCount || user?.followers?.length || 0}
+    </span>
+    <span className="stat-label">Followers</span>
+  </div>
+  <div className="stat-item">
+    <span className="stat-count">
+      {user?.followingCount || user?.following?.length || 0}
+    </span>
+    <span className="stat-label">Following</span>
+  </div>
+</div>
                 <div className="actions">
                   {currentUser ? (
                     <button
