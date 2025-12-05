@@ -15,6 +15,7 @@ import Login from "./Pages/Login/Login";
 import Checkout from "./Pages/Checkout";
 import { FilterProvider } from "./Context/FilterContext";
 import Profile from "./Pages/Profile";
+import ProfileByUsername from "./Context/ProfileByUsername";
 import Logout from "./Pages/Logout";
 import Library from "./Pages/Library";
 import TextureViewer from "./Components/TextureViewer";
@@ -90,6 +91,7 @@ export const AppRoutes = () => (
     <Route path="/Reset" element={<PasswordReset />} />
     <Route path="/reset" element={<PasswordReset />} />
     <Route path="/Logout" element={<Logout />} />
+    <Route path="/:username" element={<ProfileByUsername />} />
     <Route path="/Profile/:id" element={<Profile />} />
     <Route path="/" element={<Home />} />
     <Route path="/Cart" element={<Cart />} />
