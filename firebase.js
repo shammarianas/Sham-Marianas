@@ -27,4 +27,20 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
 
+// PRODUCTION FIX 2025 – Yeh line 100% zaruri hai
+// Bina iske phone auth nahi chalega jab Firebase ne project ko Enterprise pe shift kiya ho
+if (typeof window !== "undefined") {
+  // Force reCAPTCHA v2 (not Enterprise)
+  window.recaptchaOptions = {
+    useEnterprise: false,
+  };
+
+  // Yeh line sabse important hai — bina iske nahi chalega ab
+  window.recaptchaVerifierConfig = {
+    // Force invisible v2
+    size: "invisible",
+    callback: () => {},
+  };
+}
+
 export { db, auth, storage, functions };
