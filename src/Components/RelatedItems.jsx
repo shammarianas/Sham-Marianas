@@ -10,31 +10,30 @@ const RelatedItems = (props) => {
 
   useEffect(() => {
     const fetchRelatedItems = async () => {
-      if (!props.tags || props.tags.length === 0) {
+      if (!props.category) {
         setLoading(false);
         return;
       }
 
       try {
-        // Take first 3 tags for related items search
-        const searchTags = props.tags.slice(0, 3);
-        
-        // Create a query to find items with matching tags
         const itemsQuery = query(
           collection(db, "Assets"),
-          where("tags", "array-contains-any", searchTags),
+          where("category", "==", props.category), // ← Only category filter
           limit(props.limit || 8)
         );
 
         const snapshot = await getDocs(itemsQuery);
+
         let itemsData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
-        // Filter out the current item if provided
+        // remove currently opened item
         if (props.currentItemId) {
-          itemsData = itemsData.filter(item => item.id !== props.currentItemId);
+          itemsData = itemsData.filter(
+            (item) => item.id !== props.currentItemId
+          );
         }
 
         setRelatedItems(itemsData);
@@ -46,7 +45,7 @@ const RelatedItems = (props) => {
     };
 
     fetchRelatedItems();
-  }, [props.tags, props.currentItemId, props.assetType, props.limit]);
+  }, [props.category, props.currentItemId, props.limit]);
 
   if (loading) {
     return (
@@ -57,13 +56,12 @@ const RelatedItems = (props) => {
     );
   }
 
-  // Agar koi related items nahi hai
   if (relatedItems.length === 0) {
     return (
       <div className="page_content">
         <PageTitle title="Related Assets" />
         <div className="no_items">
-          <span>No related assets found based on tags</span>
+          <span>No related assets found</span>
         </div>
       </div>
     );
