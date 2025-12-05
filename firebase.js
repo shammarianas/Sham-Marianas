@@ -43,4 +43,9 @@ if (typeof window !== "undefined") {
   };
 }
 
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+  auth.settings.appVerificationDisabledForTesting = true;
+  console.log("Localhost 5173: Test mode ON — OTP = 123456");
+}
+
 export { db, auth, storage, functions };

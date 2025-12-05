@@ -319,7 +319,7 @@ const View = () => {
       </div>
 
       <RelatedItems
-        tags={item.tags}
+        category={item.category}
         currentItemId={item.id}
         assetType={item.type}
         limit={8}
