@@ -15,6 +15,7 @@ import Login from "./Pages/Login/Login";
 import Checkout from "./Pages/Checkout";
 import { FilterProvider } from "./Context/FilterContext";
 import Profile from "./Pages/Profile";
+import ProfileByUsername from "./Context/ProfileByUsername";
 import Logout from "./Pages/Logout";
 import Library from "./Pages/Library";
 import TextureViewer from "./Components/TextureViewer";
@@ -139,6 +140,8 @@ export const AppRoutes = () => (
     <Route path="/blog-category/:category" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
     <Route path="/View/:slug" element={<View />} />
+    
+    <Route path="/:username" element={<ProfileByUsername />} />
   </Routes>
 );
 
