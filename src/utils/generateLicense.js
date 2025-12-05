@@ -60,8 +60,6 @@ const getLicenseTermsContent = (licenseType, asset) => {
   const header = {
    text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' : 
               licenseType === 'Free for Commercial Use' ? 'FREE FOR COMMERCIAL USE LICENSE' :
-              licenseType === 'Paid for Personal Use' ? 'PAID FOR PERSONAL USE LICENSE' : 
-              licenseType === 'Paid for Commercial Use' ? 'PAID FOR COMMERCIAL USE LICENSE' :
               'DIGITAL ASSET LICENSE', 
     style: 'header',
     alignment: 'left',
