@@ -146,7 +146,7 @@ const HeroSection = () => {
         <div className="hero-content">
           <h1 className="hero-title">Smarter creativity, faster designs</h1>
           <p className="hero-subtitle">
-            Everything you need, from stock images and videos to AI-powered
+            Everything you need, from templates images and videos to AI-powered
             design tools.
           </p>
 
@@ -182,7 +182,7 @@ const HeroSection = () => {
             <div className="sec-head mb-80">
               <div className="d-flex align-items-center">
                 <div>
-                  <span className="sub-title main-color mb-5">Our Stocks</span>
+                  <span className="sub-title main-color mb-5">Our Templates</span>
                   <h3 className="fw-600 fz-50 text-u d-rotate wow">
                     <span className="rotate-text">
                       Search <span className="fw-200"> Results.</span>
@@ -239,10 +239,10 @@ const HeroSection = () => {
             <div className="sec-head mb-80">
               <div className="d-flex align-items-center">
                 <div>
-                  <span className="sub-title main-color mb-5">Our Stocks</span>
+                  <span className="sub-title main-color mb-5">Our Templates</span>
                   <h3 className="fw-600 fz-50 text-u d-rotate wow">
                     <span className="rotate-text">
-                      Trending <span className="fw-200">Stock.</span>
+                      Trending <span className="fw-200">Templates.</span>
                     </span>
                   </h3>
                 </div>
