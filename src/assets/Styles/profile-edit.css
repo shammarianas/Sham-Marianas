@@ -63,7 +63,14 @@
 .account-details-card input[disabled] {
     opacity: .6
 }
-
+.account-details-card textarea{
+     background: transparent;
+     background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 8px;
+    color: inherit;
+    padding: 10px 12px
+}
 .account-details-card small {
     display: block;
     margin-top: 6px;

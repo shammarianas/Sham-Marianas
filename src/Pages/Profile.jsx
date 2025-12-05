@@ -28,7 +28,7 @@ import ItemsListing from "../Components/ItemsListing";
 import { Helmet } from "react-helmet-async";
 
 const Profile = () => {
-  const { id } = useParams();
+   const { id } = useParams();
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -43,6 +43,7 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [bio, setBio] = useState(""); // Bio state added
   
   // Profile image upload states
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -133,42 +134,43 @@ const Profile = () => {
       ]);
 
       if (userDoc.exists() && followerDoc.exists()) {
-        const userData = userDoc.data();
-        const followerData = followerDoc.data();
-        
-        let userFollowers = userData.followers || [];
-        let followerFollowing = followerData.following || [];
-        
-        const isCurrentlyFollowing = userFollowers.includes(currentUser.uid);
+       const userData = userDoc.data();
+      const followerData = followerDoc.data();
+      
+      // normalize
+      let userFollowers = Array.isArray(userData.followers) ? userData.followers : (userData.followers && typeof userData.followers === 'object' ? Object.keys(userData.followers).filter(k=>!!userData.followers[k]) : []);
+      let followerFollowing = Array.isArray(followerData.following) ? followerData.following : (followerData.following && typeof followerData.following === 'object' ? Object.keys(followerData.following).filter(k=>!!followerData.following[k]) : []);
+      
+      const isCurrentlyFollowing = userFollowers.indexOf(currentUser.uid) !== -1;
 
-        if (isCurrentlyFollowing) {
-          // Unfollow
-          userFollowers = userFollowers.filter(uid => uid !== currentUser.uid);
-          followerFollowing = followerFollowing.filter(uid => uid !== id);
-          setIsFollowing(false);
-        } else {
-          // Follow
-          if (!userFollowers.includes(currentUser.uid)) {
-            userFollowers.push(currentUser.uid);
-          }
-          if (!followerFollowing.includes(id)) {
-            followerFollowing.push(id);
-          }
-          setIsFollowing(true);
+      if (isCurrentlyFollowing) {
+        // Unfollow
+        userFollowers = userFollowers.filter(uid => uid !== currentUser.uid);
+        followerFollowing = followerFollowing.filter(uid => uid !== id);
+        setIsFollowing(false);
+      } else {
+        // Follow
+        if (!userFollowers.includes(currentUser.uid)) {
+          userFollowers.push(currentUser.uid);
         }
+        if (!followerFollowing.includes(id)) {
+          followerFollowing.push(id);
+        }
+        setIsFollowing(true);
+      }
 
-        // Update both documents
-        await Promise.all([
-          updateDoc(userRef, {
-            followers: userFollowers,
-            followersCount: userFollowers.length
-          }),
-          updateDoc(followerRef, {
-            following: followerFollowing,
-            followingCount: followerFollowing.length
-          })
-        ]);
-
+      // Update both documents (store as arrays)
+      await Promise.all([
+        updateDoc(userRef, {
+          followers: userFollowers,
+          followersCount: userFollowers.length
+        }),
+        updateDoc(followerRef, {
+          following: followerFollowing,
+          followingCount: followerFollowing.length
+        })
+      ]);
+      
         // Show success message
         alert(isCurrentlyFollowing ? "Unfollowed successfully!" : "Followed successfully!");
       }
@@ -177,7 +179,18 @@ const Profile = () => {
       alert("Failed to follow/unfollow user. Please try again.");
     }
   };
+  // Effect for updating URL when username changes
+  useEffect(() => {
+    if (user?.username && isOwnProfile) {
+      // Create a better URL with username
+      const newUrl = `/${user.username}`;
+      
+      // Replace history without reloading
+      window.history.replaceState(null, "", newUrl);
+    }
+  }, [user?.username, isOwnProfile]);
 
+  // Fetch user profile data
   useEffect(() => {
     const userRef = doc(db, "Profiles", id);
 
@@ -198,11 +211,22 @@ const Profile = () => {
           );
           setUsername(data.username || currentUser?.displayName || "");
           setPhoneNumber(data.phoneNumber || currentUser?.phoneNumber || "");
+          setBio(data.bio || ""); // Set bio from Firestore
+        }
+
+        // NORMALIZE followers -> always an array
+        const rawFollowers = data.followers;
+        let followersArr = [];
+        if (Array.isArray(rawFollowers)) {
+          followersArr = rawFollowers;
+        } else if (rawFollowers && typeof rawFollowers === "object") {
+          // handle map/object shape { uid: true } or similar
+          followersArr = Object.keys(rawFollowers).filter((k) => !!rawFollowers[k]);
         }
 
         // Check if current user is following this user
-        if (currentUser && currentUser.uid && data.followers) {
-          setIsFollowing(data.followers.includes(currentUser.uid));
+        if (currentUser && currentUser.uid) {
+          setIsFollowing(followersArr.indexOf(currentUser.uid) !== -1);
         } else {
           setIsFollowing(false);
         }
@@ -375,6 +399,7 @@ const Profile = () => {
         lastName: lastName.trim(),
         username: trimmedUsername,
         phoneNumber: phoneNumber.trim(),
+        bio: bio.trim(), // Add bio to updates
         updatedAt: new Date()
       };
 
@@ -561,6 +586,7 @@ const Profile = () => {
     setLastName(user?.lastName || "");
     setUsername(user?.username || "");
     setPhoneNumber(user?.phoneNumber || "");
+    setBio(user?.bio || ""); // Reset bio
     setNewPassword("");
     setConfirmPassword("");
   };
@@ -785,7 +811,7 @@ const Profile = () => {
                       {getDisplayName()}
                     </h1>
                     <span className="email">{user ? user.email : "Email"}</span>
-                    <span className="bio">{user ? user.bio : "Bio"}</span>
+                    {/* <span className="bio">{user?.bio || "No bio yet"}</span>  */}
                   </div>
                 </div>
               </div>
@@ -894,6 +920,19 @@ const Profile = () => {
                           We allow 3 username changes per year. You have{" "}
                           {Math.max(0, 3 - (user?.usernameChangeCount || 0))}{" "}
                           changes remaining.
+                        </small>
+                      </div>
+                      <div className="form-field full">
+                        <label>Bio</label>
+                        <textarea
+                          value={currentUser?.bio}
+                          onChange={(e) => setBio(e.target.value)}
+                          placeholder="Tell others about yourself..."
+                          rows="3"
+                          maxLength="200"
+                        />
+                        <small>
+                          {bio.length}/200 characters
                         </small>
                       </div>
                       <div className="form-field">
@@ -1046,6 +1085,9 @@ const Profile = () => {
                             </p>
                             <p>
                               {user?.email || currentUser?.email || "Email not available"}
+                            </p>
+                            <p style={{ color: '#999', fontSize: '0.9rem' }}>
+                              {user?.bio || "No bio added yet"}
                             </p>
                           </div>
                           <div className="billing-history">
