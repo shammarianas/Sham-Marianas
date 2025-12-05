@@ -28,7 +28,7 @@ import ItemsListing from "../Components/ItemsListing";
 import { Helmet } from "react-helmet-async";
 
 const Profile = () => {
-   const { id } = useParams();
+  const { id } = useParams();
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -44,7 +44,7 @@ const Profile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [bio, setBio] = useState(""); // Bio state added
-  
+
   // Profile image upload states
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showImageUploadModal, setShowImageUploadModal] = useState(false);
@@ -65,8 +65,8 @@ const Profile = () => {
   // Get full name for display
   const getDisplayName = () => {
     if (!user) return "User";
-    
-    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+
+    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
     if (fullName) return fullName;
     return user.username || "User";
   };
@@ -74,11 +74,17 @@ const Profile = () => {
   // Get initials for avatar
   const getInitials = () => {
     if (!user) return "U";
-    
-    const firstNameInitial = user.firstName ? user.firstName.charAt(0).toUpperCase() : '';
-    const lastNameInitial = user.lastName ? user.lastName.charAt(0).toUpperCase() : '';
-    const usernameInitial = user.username ? user.username.charAt(0).toUpperCase() : '';
-    
+
+    const firstNameInitial = user.firstName
+      ? user.firstName.charAt(0).toUpperCase()
+      : "";
+    const lastNameInitial = user.lastName
+      ? user.lastName.charAt(0).toUpperCase()
+      : "";
+    const usernameInitial = user.username
+      ? user.username.charAt(0).toUpperCase()
+      : "";
+
     if (firstNameInitial && lastNameInitial) {
       return firstNameInitial + lastNameInitial;
     } else if (firstNameInitial) {
@@ -127,25 +133,27 @@ const Profile = () => {
     try {
       const userRef = doc(db, "Profiles", id);
       const followerRef = doc(db, "Profiles", currentUser.uid);
-      
+
       const [userDoc, followerDoc] = await Promise.all([
         getDoc(userRef),
-        getDoc(followerRef)
+        getDoc(followerRef),
       ]);
 
       if (userDoc.exists() && followerDoc.exists()) {
         const userData = userDoc.data();
         const followerData = followerDoc.data();
-        
+
         let userFollowers = userData.followers || [];
         let followerFollowing = followerData.following || [];
-        
+
         const isCurrentlyFollowing = userFollowers.includes(currentUser.uid);
 
         if (isCurrentlyFollowing) {
           // Unfollow
-          userFollowers = userFollowers.filter(uid => uid !== currentUser.uid);
-          followerFollowing = followerFollowing.filter(uid => uid !== id);
+          userFollowers = userFollowers.filter(
+            (uid) => uid !== currentUser.uid
+          );
+          followerFollowing = followerFollowing.filter((uid) => uid !== id);
           setIsFollowing(false);
         } else {
           // Follow
@@ -162,16 +170,20 @@ const Profile = () => {
         await Promise.all([
           updateDoc(userRef, {
             followers: userFollowers,
-            followersCount: userFollowers.length
+            followersCount: userFollowers.length,
           }),
           updateDoc(followerRef, {
             following: followerFollowing,
-            followingCount: followerFollowing.length
-          })
+            followingCount: followerFollowing.length,
+          }),
         ]);
 
         // Show success message
-        alert(isCurrentlyFollowing ? "Unfollowed successfully!" : "Followed successfully!");
+        alert(
+          isCurrentlyFollowing
+            ? "Unfollowed successfully!"
+            : "Followed successfully!"
+        );
       }
     } catch (error) {
       console.error("Error following user:", error);
@@ -183,7 +195,7 @@ const Profile = () => {
     if (user?.username && isOwnProfile) {
       // Create a better URL with username
       const newUrl = `/${user.username}`;
-      
+
       // Replace history without reloading
       window.history.replaceState(null, "", newUrl);
     }
@@ -232,21 +244,21 @@ const Profile = () => {
   useEffect(() => {
     const checkFollowersCount = async () => {
       if (!user) return;
-      
+
       try {
         const userRef = doc(db, "Profiles", id);
         const userDoc = await getDoc(userRef);
-        
+
         if (userDoc.exists()) {
           const data = userDoc.data();
           const followersCount = data.followers?.length || 0;
-          
+
           // Ensure followersCount is updated in state
           if (followersCount !== (user.followers?.length || 0)) {
-            setUser(prev => ({
+            setUser((prev) => ({
               ...prev,
               followers: data.followers || [],
-              followersCount: followersCount
+              followersCount: followersCount,
             }));
           }
         }
@@ -254,7 +266,7 @@ const Profile = () => {
         console.error("Error checking followers count:", error);
       }
     };
-    
+
     checkFollowersCount();
   }, [user, id]);
 
@@ -283,26 +295,26 @@ const Profile = () => {
     const file = e.target.files[0];
     if (file) {
       // Check file type
-      if (!file.type.match('image.*')) {
+      if (!file.type.match("image.*")) {
         alert("Please select an image file (jpg, png, gif, etc.)");
         return;
       }
-      
+
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert("Image size should be less than 5MB");
         return;
       }
-      
+
       setSelectedImage(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      
+
       setShowImageUploadModal(true);
     }
   };
@@ -310,29 +322,32 @@ const Profile = () => {
   // Upload profile image
   const uploadProfileImage = async () => {
     if (!selectedImage || !isOwnProfile || !currentUser) return;
-    
+
     try {
       setUploadingImage(true);
-      
+
       // Upload to Firebase Storage
-      const storageRef = ref(storage, `profile-images/${currentUser.uid}/${Date.now()}_${selectedImage.name}`);
+      const storageRef = ref(
+        storage,
+        `profile-images/${currentUser.uid}/${Date.now()}_${selectedImage.name}`
+      );
       await uploadBytes(storageRef, selectedImage);
-      
+
       // Get download URL
       const downloadURL = await getDownloadURL(storageRef);
-      
+
       // Update profile in Firestore
       const profileRef = doc(db, "Profiles", id);
       await updateDoc(profileRef, {
         profilePic: downloadURL,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
-      
+
       // Clear states
       setSelectedImage(null);
       setImagePreview(null);
       setShowImageUploadModal(false);
-      
+
       alert("Profile image updated successfully!");
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -345,17 +360,19 @@ const Profile = () => {
   // Remove profile image
   const removeProfileImage = async () => {
     if (!isOwnProfile) return;
-    
+
     try {
-      const confirmed = window.confirm("Are you sure you want to remove your profile image?");
+      const confirmed = window.confirm(
+        "Are you sure you want to remove your profile image?"
+      );
       if (!confirmed) return;
-      
+
       const profileRef = doc(db, "Profiles", id);
       await updateDoc(profileRef, {
         profilePic: null,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
-      
+
       alert("Profile image removed successfully!");
     } catch (error) {
       console.error("Error removing image:", error);
@@ -389,7 +406,7 @@ const Profile = () => {
         username: trimmedUsername,
         phoneNumber: phoneNumber.trim(),
         bio: bio.trim(), // Add bio to updates
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       if (snap.exists()) {
@@ -504,13 +521,13 @@ const Profile = () => {
         if (data.followers?.includes(id)) {
           await updateDoc(doc(db, "Profiles", u.id), {
             followers: data.followers.filter((f) => f !== id),
-            followersCount: data.followersCount ? data.followersCount - 1 : 0
+            followersCount: data.followersCount ? data.followersCount - 1 : 0,
           });
         }
         if (data.following?.includes(id)) {
           await updateDoc(doc(db, "Profiles", u.id), {
             following: data.following.filter((f) => f !== id),
-            followingCount: data.followingCount ? data.followingCount - 1 : 0
+            followingCount: data.followingCount ? data.followingCount - 1 : 0,
           });
         }
       }
@@ -608,9 +625,7 @@ const Profile = () => {
   return (
     <>
       <Helmet>
-        <title>
-          {getDisplayName()} | shammarianas
-        </title>
+        <title>{getDisplayName()} | shammarianas</title>
         <meta
           name="description"
           content={`View ${getDisplayName()}'s profile on shammarianas`}
@@ -724,7 +739,9 @@ const Profile = () => {
                     disabled={uploadingImage || !selectedImage}
                   >
                     <i className="icon fas fa-upload"></i>
-                    <span>{uploadingImage ? "Uploading..." : "Upload Image"}</span>
+                    <span>
+                      {uploadingImage ? "Uploading..." : "Upload Image"}
+                    </span>
                   </button>
                   <button
                     className="butn butn-sm butn-bord radius-5"
@@ -735,7 +752,8 @@ const Profile = () => {
                   </button>
                 </div>
                 <p className="upload-note">
-                  Maximum file size: 5MB<br />
+                  Maximum file size: 5MB
+                  <br />
                   Supported formats: JPG, PNG, GIF, WebP
                 </p>
               </div>
@@ -759,25 +777,23 @@ const Profile = () => {
                 <div className="profile_image_container">
                   <div className="profile_image">
                     {user?.profilePic ? (
-                      <img
-                        src={user.profilePic}
-                        alt={getDisplayName()}
-                      />
+                      <img src={user.profilePic} alt={getDisplayName()} />
                     ) : (
-                      <div className="profile-initials">
-                        {getInitials()}
-                      </div>
+                      <div className="profile-initials">{getInitials()}</div>
                     )}
                     {isOwnProfile && (
                       <div className="profile-image-actions">
-                        <label className="change-image-btn" htmlFor="profile-image-upload">
+                        <label
+                          className="change-image-btn"
+                          htmlFor="profile-image-upload"
+                        >
                           <i className="icon fas fa-camera"></i>
                           <input
                             type="file"
                             id="profile-image-upload"
                             accept="image/*"
                             onChange={handleImageSelect}
-                            style={{ display: 'none' }}
+                            style={{ display: "none" }}
                           />
                         </label>
                         {user?.profilePic && (
@@ -796,9 +812,7 @@ const Profile = () => {
 
                 <div className="profile_details">
                   <div className="details">
-                    <h1 className="username">
-                      {getDisplayName()}
-                    </h1>
+                    <h1 className="username">{getDisplayName()}</h1>
                     <span className="email">{user ? user.email : "Email"}</span>
                     {/* <span className="bio">{user?.bio || "No bio yet"}</span>  */}
                   </div>
@@ -807,17 +821,24 @@ const Profile = () => {
               <div className="right">
                 <div className="stats">
                   <span className="following_count">
-                    {user?.followingCount || user?.following?.length || 0} Following
+                    {user?.followingCount || user?.following?.length || 0}{" "}
+                    Following
                   </span>
                 </div>
                 <div className="actions">
                   {currentUser ? (
                     <button
-                      className={`follow_btn ${currentUser.uid === id ? "disabled" : ""}`}
+                      className={`follow_btn ${
+                        currentUser.uid === id ? "disabled" : ""
+                      }`}
                       onClick={currentUser.uid === id ? () => {} : followUser}
                       disabled={currentUser.uid === id}
                     >
-                      <i className={`icon fas ${isFollowing ? "fa-check" : "fa-plus"}`}></i>
+                      <i
+                        className={`icon fas ${
+                          isFollowing ? "fa-check" : "fa-plus"
+                        }`}
+                      ></i>
                       <span>{isFollowing ? "Following" : "Follow"}</span>
                     </button>
                   ) : (
@@ -865,8 +886,8 @@ const Profile = () => {
                     <div className="info-banner">
                       <span className="icon">i</span>
                       <span>
-                        Some fields are not editable here. Please update them via your
-                        Google account.
+                        Some fields are not editable here. Please update them
+                        via your Google account.
                       </span>
                     </div>
                     <div className="form-grid">
@@ -920,9 +941,7 @@ const Profile = () => {
                           rows="3"
                           maxLength="200"
                         />
-                        <small>
-                          {bio.length}/200 characters
-                        </small>
+                        <small>{bio.length}/200 characters</small>
                       </div>
                       <div className="form-field">
                         <label>New Password</label>
@@ -1027,7 +1046,10 @@ const Profile = () => {
                             <li>Limited daily uploads</li>
                             <li>Standard resolution downloads</li>
                           </ul>
-                          <Link to="/subscription" className="butn butn-sm butn-bg main-colorbg radius-5 upgrade-btn">
+                          <Link
+                            to="/subscription"
+                            className="butn butn-sm butn-bg main-colorbg radius-5 upgrade-btn"
+                          >
                             <i className="icon fas fa-arrow-up"></i>
                             <span>Upgrade plan</span>
                           </Link>
@@ -1068,14 +1090,14 @@ const Profile = () => {
                         <div className="billing-info">
                           <div className="billing-details">
                             <p>
-                              <strong>
-                                {getDisplayName()}
-                              </strong>
+                              <strong>{getDisplayName()}</strong>
                             </p>
                             <p>
-                              {user?.email || currentUser?.email || "Email not available"}
+                              {user?.email ||
+                                currentUser?.email ||
+                                "Email not available"}
                             </p>
-                            <p style={{ color: '#999', fontSize: '0.9rem' }}>
+                            <p style={{ color: "#999", fontSize: "0.9rem" }}>
                               {user?.bio || "No bio added yet"}
                             </p>
                           </div>
@@ -1115,7 +1137,6 @@ const Profile = () => {
           </div>
         </div>
       </div>
-
     </>
   );
 };

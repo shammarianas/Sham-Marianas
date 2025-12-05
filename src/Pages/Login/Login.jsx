@@ -8,7 +8,15 @@ import {
   signInWithPhoneNumber,
 } from "firebase/auth";
 import { auth } from "../../../firebase";
-import { doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
@@ -64,26 +72,120 @@ const countryCodes = [
 
 // Country list
 const countries = [
-  { name: "United States", code: "US", cities: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"] },
-  { name: "United Kingdom", code: "GB", cities: ["London", "Manchester", "Birmingham", "Liverpool", "Glasgow"] },
-  { name: "India", code: "IN", cities: ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai"] },
-  { name: "Pakistan", code: "PK", cities: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad"] },
-  { name: "Canada", code: "CA", cities: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"] },
-  { name: "Australia", code: "AU", cities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"] },
-  { name: "Germany", code: "DE", cities: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"] },
-  { name: "France", code: "FR", cities: ["Paris", "Marseille", "Lyon", "Toulouse", "Nice"] },
-  { name: "Japan", code: "JP", cities: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Nagoya"] },
-  { name: "China", code: "CN", cities: ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu"] },
-  { name: "Brazil", code: "BR", cities: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza"] },
-  { name: "South Africa", code: "ZA", cities: ["Johannesburg", "Cape Town", "Durban", "Pretoria", "Port Elizabeth"] },
-  { name: "UAE", code: "AE", cities: ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman"] },
-  { name: "Saudi Arabia", code: "SA", cities: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"] },
+  {
+    name: "United States",
+    code: "US",
+    cities: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"],
+  },
+  {
+    name: "United Kingdom",
+    code: "GB",
+    cities: ["London", "Manchester", "Birmingham", "Liverpool", "Glasgow"],
+  },
+  {
+    name: "India",
+    code: "IN",
+    cities: ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai"],
+  },
+  {
+    name: "Pakistan",
+    code: "PK",
+    cities: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad"],
+  },
+  {
+    name: "Canada",
+    code: "CA",
+    cities: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
+  },
+  {
+    name: "Australia",
+    code: "AU",
+    cities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
+  },
+  {
+    name: "Germany",
+    code: "DE",
+    cities: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"],
+  },
+  {
+    name: "France",
+    code: "FR",
+    cities: ["Paris", "Marseille", "Lyon", "Toulouse", "Nice"],
+  },
+  {
+    name: "Japan",
+    code: "JP",
+    cities: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Nagoya"],
+  },
+  {
+    name: "China",
+    code: "CN",
+    cities: ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu"],
+  },
+  {
+    name: "Brazil",
+    code: "BR",
+    cities: [
+      "São Paulo",
+      "Rio de Janeiro",
+      "Brasília",
+      "Salvador",
+      "Fortaleza",
+    ],
+  },
+  {
+    name: "South Africa",
+    code: "ZA",
+    cities: [
+      "Johannesburg",
+      "Cape Town",
+      "Durban",
+      "Pretoria",
+      "Port Elizabeth",
+    ],
+  },
+  {
+    name: "UAE",
+    code: "AE",
+    cities: ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman"],
+  },
+  {
+    name: "Saudi Arabia",
+    code: "SA",
+    cities: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"],
+  },
   { name: "Singapore", code: "SG", cities: ["Singapore"] },
-  { name: "Malaysia", code: "MY", cities: ["Kuala Lumpur", "Penang", "Johor Bahru", "Ipoh", "Malacca"] },
-  { name: "Turkey", code: "TR", cities: ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya"] },
-  { name: "Spain", code: "ES", cities: ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza"] },
-  { name: "Italy", code: "IT", cities: ["Rome", "Milan", "Naples", "Turin", "Palermo"] },
-  { name: "Russia", code: "RU", cities: ["Moscow", "Saint Petersburg", "Novosibirsk", "Yekaterinburg", "Kazan"] },
+  {
+    name: "Malaysia",
+    code: "MY",
+    cities: ["Kuala Lumpur", "Penang", "Johor Bahru", "Ipoh", "Malacca"],
+  },
+  {
+    name: "Turkey",
+    code: "TR",
+    cities: ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya"],
+  },
+  {
+    name: "Spain",
+    code: "ES",
+    cities: ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza"],
+  },
+  {
+    name: "Italy",
+    code: "IT",
+    cities: ["Rome", "Milan", "Naples", "Turin", "Palermo"],
+  },
+  {
+    name: "Russia",
+    code: "RU",
+    cities: [
+      "Moscow",
+      "Saint Petersburg",
+      "Novosibirsk",
+      "Yekaterinburg",
+      "Kazan",
+    ],
+  },
 ];
 
 const Login = () => {
@@ -98,7 +200,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
-  
+
   // Phone verification states
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [phoneResendTimer, setPhoneResendTimer] = useState(0);
@@ -128,6 +230,10 @@ const Login = () => {
       if (usernameTimeoutRef.current) {
         clearTimeout(usernameTimeoutRef.current);
       }
+      // Clean up reCAPTCHA on unmount
+      if (recaptchaVerifierRef.current) {
+        recaptchaVerifierRef.current.clear();
+      }
     };
   }, []);
 
@@ -145,22 +251,41 @@ const Login = () => {
     return () => clearTimeout(timer);
   }, [phoneResendTimer]);
 
-  // Initialize reCAPTCHA for phone verification
+  // ──────────────────────────────────────────────────────────────
+  // 1. Initialize reCAPTCHA ONLY ONCE when entering signup page
+  // ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (currentStep === 2 && phone && countryCode) {
-      setTimeout(() => {
-        if (!window.recaptchaVerifier) {
-          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible',
-            'callback': () => {
-              // reCAPTCHA solved, allow for phone verification
-            }
-          });
-        }
-        recaptchaVerifierRef.current = window.recaptchaVerifier;
-      }, 500);
+    if (page !== "signup") return;
+
+    const container = document.getElementById("recaptcha-container");
+    if (!container) return;
+
+    // Clean any previous instance
+    if (recaptchaVerifierRef.current) {
+      recaptchaVerifierRef.current.clear();
+      recaptchaVerifierRef.current = null;
     }
-  }, [currentStep, phone, countryCode]);
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = null;
+    }
+    container.innerHTML = ""; // important: empty the div
+
+    // Create ONE new invisible verifier
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      auth,
+      "recaptcha-container",
+      {
+        size: "invisible",
+        callback: () => console.log("reCAPTCHA solved"),
+        "expired-callback": () => console.log("reCAPTCHA expired"),
+      }
+    );
+
+    recaptchaVerifierRef.current = window.recaptchaVerifier;
+
+    // No .render() here → Firebase will auto-render when you call signInWithPhoneNumber
+  }, [page]); // ← runs once when user switches to signup tab
 
   // Username validation function
   const validateUsername = async (username) => {
@@ -168,28 +293,28 @@ const Login = () => {
     if (/\s/.test(username)) {
       return "Username cannot contain spaces";
     }
-    
+
     // Rule 2: Only underscores allowed, no other special characters
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       return "Username can only contain letters, numbers and underscores (_)";
     }
-    
+
     // Rule 3: Minimum length
     if (username.length < 3) {
       return "Username must be at least 3 characters";
     }
-    
+
     if (username.length > 20) {
       return "Username must be less than 20 characters";
     }
-    
+
     // Rule 4: Check if username already exists in Firestore
     try {
       // Query Firestore to check if username exists in Profiles collection
       const querySnapshot = await getDocs(
         query(collection(db, "Profiles"), where("username", "==", username))
       );
-      
+
       if (!querySnapshot.empty) {
         return "Username already taken. Please choose another one.";
       }
@@ -197,7 +322,7 @@ const Login = () => {
       console.error("Error checking username:", err);
       return "Error checking username availability";
     }
-    
+
     return null; // No error
   };
 
@@ -211,33 +336,35 @@ const Login = () => {
   };
 
   const handleEmailChange = (e) => setEmail(e.target.value);
-  
+
   // Updated username handler with validation
   const handleUsernameChange = async (e) => {
     const value = e.target.value;
     setUsername(value);
-    
+
     // Basic validation
     if (value.length < 3) {
       setError("Username must be at least 3 characters");
       return;
     }
-    
+
     // Check for spaces
     if (/\s/.test(value)) {
       setError("Username cannot contain spaces");
       return;
     }
-    
+
     // Check for special characters (only underscore allowed)
     if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      setError("Username can only contain letters, numbers and underscores (_)");
+      setError(
+        "Username can only contain letters, numbers and underscores (_)"
+      );
       return;
     }
-    
+
     // Clear error if basic validation passes
     setError("");
-    
+
     // Debounce for checking uniqueness (2 seconds ke baad check karein)
     if (value.length >= 3) {
       clearTimeout(usernameTimeoutRef.current);
@@ -255,9 +382,9 @@ const Login = () => {
 
   // ✅ NEW HANDLERS
   const handleNameChange = (e) => setName(e.target.value);
-  
+
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
     if (value.length <= 10) {
       setPhone(value);
       if (value.length !== 10) {
@@ -290,7 +417,7 @@ const Login = () => {
     setCountry(selectedCountry);
 
     // Country change hone par cities update karein
-    const countryData = countries.find(c => c.name === selectedCountry);
+    const countryData = countries.find((c) => c.name === selectedCountry);
     if (countryData) {
       setAvailableCities(countryData.cities);
       setCity(countryData.cities[0] || "");
@@ -320,48 +447,44 @@ const Login = () => {
     }
   }, [password, confirmPassword, page]);
 
-  // Send phone verification OTP
+  // ✅ IMPROVED: Send phone verification OTP with better verifier handling
   const sendPhoneVerification = async () => {
     try {
       setError("");
       setSuccess("");
 
       if (!phone || phone.length !== 10) {
-        setError("Please enter a valid 10-digit phone number");
+        setError("10 digit phone number required");
         return;
       }
 
       const phoneNumber = countryCode + phone;
-      
-      // Ensure recaptcha is initialized
-      if (!recaptchaVerifierRef.current) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          'size': 'invisible',
-          'callback': () => {
-            // reCAPTCHA solved
-          }
-        });
-        recaptchaVerifierRef.current = window.recaptchaVerifier;
-      }
+      auth.settings.forceRecaptchaV2Flow = true;
+      // No .render(), no extra config — Firebase khud handle karega
+      const confirmation = await signInWithPhoneNumber(
+        auth,
+        phoneNumber,
+        window.recaptchaVerifier
+      );
 
-      const confirmation = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifierRef.current);
       setConfirmationResult(confirmation);
-      setPhoneResendTimer(60);
       setIsVerificationSent(true);
-      setSuccess("Verification code sent to your phone!");
-
+      setPhoneResendTimer(60);
+      setSuccess("OTP sent successfully!");
     } catch (err) {
-      if (err.code === 'auth/too-many-requests') {
-        setError("Too many attempts. Please try again later.");
-      } else if (err.code === 'auth/invalid-phone-number') {
-        setError("Invalid phone number format");
-      } else {
-        setError("Failed to send verification code: " + err.message);
-      }
-      // Reset recaptcha on error
-      if (recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current.clear();
-        recaptchaVerifierRef.current = null;
+      console.error("Phone auth error:", err);
+      setError(
+        err.code === "auth/invalid-phone-number"
+          ? "Invalid number"
+          : err.code === "auth/too-many-requests"
+          ? "Too many attempts, try later"
+          : "Failed to send OTP. Try again."
+      );
+
+      // Reset verifier on error
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
       }
     }
   };
@@ -370,7 +493,7 @@ const Login = () => {
   const verifyPhoneOTP = async () => {
     try {
       setError("");
-      
+
       if (!otp || otp.length !== 6) {
         setError("Please enter a valid 6-digit OTP");
         return;
@@ -384,14 +507,13 @@ const Login = () => {
       const result = await confirmationResult.confirm(otp);
       setIsPhoneVerified(true);
       setSuccess("Phone number verified successfully!");
-      
+
       // After phone verification, proceed to signup
       await completeSignup();
-      
     } catch (err) {
-      if (err.code === 'auth/invalid-verification-code') {
+      if (err.code === "auth/invalid-verification-code") {
         setError("Invalid verification code");
-      } else if (err.code === 'auth/code-expired') {
+      } else if (err.code === "auth/code-expired") {
         setError("Verification code expired. Please resend.");
       } else {
         setError("Verification failed: " + err.message);
@@ -474,17 +596,19 @@ const Login = () => {
       setError("Username cannot contain spaces");
       return false;
     }
-    
+
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError("Username can only contain letters, numbers and underscores (_)");
+      setError(
+        "Username can only contain letters, numbers and underscores (_)"
+      );
       return false;
     }
-    
+
     if (username.length < 3) {
       setError("Username must be at least 3 characters");
       return false;
     }
-    
+
     // Check username uniqueness
     const usernameError = await validateUsername(username);
     if (usernameError) {
@@ -521,7 +645,7 @@ const Login = () => {
   // Handle signup form submission
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!termsAccepted) {
       setError("Please accept the terms and conditions");
       return;
@@ -583,8 +707,20 @@ const Login = () => {
     setError("");
     setSuccess("");
     setPhoneResendTimer(0);
+    // Reset reCAPTCHA
+    if (recaptchaVerifierRef.current) {
+      recaptchaVerifierRef.current.clear();
+      recaptchaVerifierRef.current = null;
+      delete window.recaptchaVerifier;
+    }
   };
-
+  useEffect(() => {
+    return () => {
+      recaptchaVerifierRef.current?.clear();
+      recaptchaVerifierRef.current = null;
+      window.recaptchaVerifier = null;
+    };
+  }, []);
   return (
     <>
       <Helmet>
@@ -595,6 +731,9 @@ const Login = () => {
         <meta property="og:description" content="Login with Google or Apple" />
         <meta property="og:url" content={window.location.href} />
       </Helmet>
+
+      {/* ✅ MOVED: Hidden reCAPTCHA container to top level (always present) */}
+      <div id="recaptcha-container" style={{ display: "none" }}></div>
 
       <div className="login">
         {/* =================== LOGIN PAGE =================== */}
@@ -727,10 +866,16 @@ const Login = () => {
                     <label htmlFor="username" className="mb-2">
                       Username *
                     </label>
-                    <div className="input" style={{ 
-                      border: error && error.includes("Username") ? "1px solid #ff6b6b" : "1px solid rgba(255,255,255,0.2)",
-                      position: "relative"
-                    }}>
+                    <div
+                      className="input"
+                      style={{
+                        border:
+                          error && error.includes("Username")
+                            ? "1px solid #ff6b6b"
+                            : "1px solid rgba(255,255,255,0.2)",
+                        position: "relative",
+                      }}
+                    >
                       <input
                         type="text"
                         id="username"
@@ -742,30 +887,42 @@ const Login = () => {
                         title="Only letters, numbers and underscores allowed"
                       />
                       {username && username.length >= 3 && !error && (
-                        <div style={{
-                          position: "absolute",
-                          right: "10px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          color: "#4caf50",
-                          fontSize: "0.8rem"
-                        }}>
+                        <div
+                          style={{
+                            position: "absolute",
+                            right: "10px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            color: "#4caf50",
+                            fontSize: "0.8rem",
+                          }}
+                        >
                           ✓
                         </div>
                       )}
                     </div>
                     {username && (
-                      <div style={{ 
-                        fontSize: "0.8rem", 
-                        marginTop: "0.25rem",
-                        color: username.length < 3 ? "#ff6b6b" : 
-                               /\s/.test(username) ? "#ff6b6b" : 
-                               !/^[a-zA-Z0-9_]+$/.test(username) ? "#ff6b6b" : "#4caf50"
-                      }}>
-                        {username.length < 3 ? "Minimum 3 characters" :
-                         /\s/.test(username) ? "Spaces not allowed" :
-                         !/^[a-zA-Z0-9_]+$/.test(username) ? "Only letters, numbers, and _" :
-                         "Valid format"}
+                      <div
+                        style={{
+                          fontSize: "0.8rem",
+                          marginTop: "0.25rem",
+                          color:
+                            username.length < 3
+                              ? "#ff6b6b"
+                              : /\s/.test(username)
+                              ? "#ff6b6b"
+                              : !/^[a-zA-Z0-9_]+$/.test(username)
+                              ? "#ff6b6b"
+                              : "#4caf50",
+                        }}
+                      >
+                        {username.length < 3
+                          ? "Minimum 3 characters"
+                          : /\s/.test(username)
+                          ? "Spaces not allowed"
+                          : !/^[a-zA-Z0-9_]+$/.test(username)
+                          ? "Only letters, numbers, and _"
+                          : "Valid format"}
                       </div>
                     )}
                   </div>
@@ -823,7 +980,13 @@ const Login = () => {
                       />
                     </div>
                     {phone && phone.length !== 10 && (
-                      <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginTop: "0.25rem" }}>
+                      <p
+                        style={{
+                          color: "#ff6b6b",
+                          fontSize: "0.8rem",
+                          marginTop: "0.25rem",
+                        }}
+                      >
                         Phone number must be 10 digits
                       </p>
                     )}
@@ -839,7 +1002,15 @@ const Login = () => {
                         value={birthday}
                         onChange={handleBirthdayChange}
                         required
-                        max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+                        max={
+                          new Date(
+                            new Date().setFullYear(
+                              new Date().getFullYear() - 13
+                            )
+                          )
+                            .toISOString()
+                            .split("T")[0]
+                        }
                       />
                     </div>
                   </div>
@@ -897,7 +1068,9 @@ const Login = () => {
                           opacity: country ? 1 : 0.6,
                         }}
                       >
-                        <option value="">{country ? "Select City" : "Select country first"}</option>
+                        <option value="">
+                          {country ? "Select City" : "Select country first"}
+                        </option>
                         {availableCities.map((cityName) => (
                           <option key={cityName} value={cityName}>
                             {cityName}
@@ -971,7 +1144,9 @@ const Login = () => {
                 {success && <span className="success">{success}</span>}
 
                 <button
-                  className={`login_btn ${error || !termsAccepted ? "disabled" : ""}`}
+                  className={`login_btn ${
+                    error || !termsAccepted ? "disabled" : ""
+                  }`}
                   disabled={error || !termsAccepted}
                   type="submit"
                 >
@@ -998,36 +1173,63 @@ const Login = () => {
               </form>
             ) : (
               // STEP 2: PHONE VERIFICATION
+              // Note: reCAPTCHA container is already at top level, so no need here
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
                 <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
                   Verify Your Phone Number
                 </h3>
-                <p style={{ color: "#f5f5f5", opacity: 0.8, marginBottom: "1.5rem" }}>
-                  We've sent a verification code to:<br />
-                  <strong>{countryCode} {phone}</strong>
+                <p
+                  style={{
+                    color: "#f5f5f5",
+                    opacity: 0.8,
+                    marginBottom: "1.5rem",
+                  }}
+                >
+                  We've sent a verification code to:
+                  <br />
+                  <strong>
+                    {countryCode} {phone}
+                  </strong>
                 </p>
 
                 {!isVerificationSent ? (
                   <div>
-                    <p style={{ color: "#f5f5f5", opacity: 0.6, fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+                    <p
+                      style={{
+                        color: "#f5f5f5",
+                        opacity: 0.6,
+                        fontSize: "0.9rem",
+                        marginBottom: "1.5rem",
+                      }}
+                    >
                       Sending verification code...
                     </p>
                   </div>
                 ) : (
                   <>
-                    <div style={{
-                      backgroundColor: "rgba(82, 176, 180, 0.1)",
-                      padding: "1rem",
-                      borderRadius: "0.5rem",
-                      marginBottom: "1.5rem"
-                    }}>
+                    <div
+                      style={{
+                        backgroundColor: "rgba(82, 176, 180, 0.1)",
+                        padding: "1rem",
+                        borderRadius: "0.5rem",
+                        marginBottom: "1.5rem",
+                      }}
+                    >
                       <p style={{ color: "#f5f5f5", margin: 0 }}>
-                        <strong>Important:</strong> Enter the 6-digit verification code sent to your phone.
+                        <strong>Important:</strong> Enter the 6-digit
+                        verification code sent to your phone.
                       </p>
                     </div>
 
                     <div style={{ marginBottom: "1.5rem" }}>
-                      <label htmlFor="otp" style={{ display: "block", textAlign: "left", marginBottom: "0.5rem" }}>
+                      <label
+                        htmlFor="otp"
+                        style={{
+                          display: "block",
+                          textAlign: "left",
+                          marginBottom: "0.5rem",
+                        }}
+                      >
                         Verification Code *
                       </label>
                       <div className="input">
@@ -1036,15 +1238,28 @@ const Login = () => {
                           id="otp"
                           placeholder="Enter 6-digit code"
                           value={otp}
-                          onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          onChange={(e) =>
+                            setOtp(
+                              e.target.value.replace(/\D/g, "").slice(0, 6)
+                            )
+                          }
                           maxLength="6"
                           pattern="[0-9]{6}"
-                          style={{ textAlign: "center", letterSpacing: "0.5em" }}
+                          style={{
+                            textAlign: "center",
+                            letterSpacing: "0.5em",
+                          }}
                         />
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "1rem",
+                        justifyContent: "center",
+                      }}
+                    >
                       <button
                         type="button"
                         className="login_btn"
@@ -1063,10 +1278,12 @@ const Login = () => {
                           backgroundColor: "transparent",
                           border: "1px solid rgba(255,255,255,0.2)",
                           flex: 1,
-                          opacity: phoneResendTimer > 0 ? 0.5 : 1
+                          opacity: phoneResendTimer > 0 ? 0.5 : 1,
                         }}
                       >
-                        {phoneResendTimer > 0 ? `Resend (${phoneResendTimer}s)` : "Resend Code"}
+                        {phoneResendTimer > 0
+                          ? `Resend (${phoneResendTimer}s)`
+                          : "Resend Code"}
                       </button>
                     </div>
 
@@ -1078,7 +1295,7 @@ const Login = () => {
                         backgroundColor: "transparent",
                         border: "1px solid rgba(255,255,255,0.2)",
                         marginTop: "1rem",
-                        width: "100%"
+                        width: "100%",
                       }}
                     >
                       Back to Edit Details
@@ -1086,23 +1303,30 @@ const Login = () => {
                   </>
                 )}
 
-                {/* Hidden container for reCAPTCHA */}
-                <div id="recaptcha-container"></div>
-
-                <div style={{
-                  marginTop: "1.5rem",
-                  padding: "1rem",
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.9rem"
-                }}>
+                <div
+                  style={{
+                    marginTop: "1.5rem",
+                    padding: "1rem",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    borderRadius: "0.5rem",
+                    fontSize: "0.9rem",
+                  }}
+                >
                   <p style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}>
                     <strong>Note:</strong> Standard SMS rates may apply.
                   </p>
                 </div>
 
-                {error && <span className="error" style={{ marginTop: "1rem" }}>{error}</span>}
-                {success && <span className="success" style={{ marginTop: "1rem" }}>{success}</span>}
+                {error && (
+                  <span className="error" style={{ marginTop: "1rem" }}>
+                    {error}
+                  </span>
+                )}
+                {success && (
+                  <span className="success" style={{ marginTop: "1rem" }}>
+                    {success}
+                  </span>
+                )}
               </div>
             )}
           </div>
