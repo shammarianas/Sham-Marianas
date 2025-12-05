@@ -14,6 +14,8 @@ import {
   deleteDoc,
   where,
 } from "firebase/firestore";
+// Firebase storage imports
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   EmailAuthProvider,
   reauthenticateWithCredential,
@@ -41,6 +43,15 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  
+  // Profile image upload states
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [showImageUploadModal, setShowImageUploadModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Initialize Firebase Storage
+  const storage = getStorage();
 
   // State for active tab
   const [activeTab, setActiveTab] = useState("profile");
@@ -49,6 +60,33 @@ const Profile = () => {
   const [showBillingModal, setShowBillingModal] = useState(false);
 
   const isOwnProfile = currentUser?.uid === id;
+
+  // Get full name for display
+  const getDisplayName = () => {
+    if (!user) return "User";
+    
+    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    if (fullName) return fullName;
+    return user.username || "User";
+  };
+
+  // Get initials for avatar
+  const getInitials = () => {
+    if (!user) return "U";
+    
+    const firstNameInitial = user.firstName ? user.firstName.charAt(0).toUpperCase() : '';
+    const lastNameInitial = user.lastName ? user.lastName.charAt(0).toUpperCase() : '';
+    const usernameInitial = user.username ? user.username.charAt(0).toUpperCase() : '';
+    
+    if (firstNameInitial && lastNameInitial) {
+      return firstNameInitial + lastNameInitial;
+    } else if (firstNameInitial) {
+      return firstNameInitial;
+    } else if (usernameInitial) {
+      return usernameInitial;
+    }
+    return "U";
+  };
 
   const getAuthorName = (assetData) => {
     if (!assetData) return "Unknown Author";
@@ -75,28 +113,68 @@ const Profile = () => {
   const authorName = getAuthorName(user);
 
   const followUser = async () => {
-    if (!user) {
+    if (!user || !currentUser) {
+      alert("Please login to follow this user");
       return;
     }
 
-    const userRef = doc(db, "Profiles", id);
-    const userDoc = await getDoc(userRef);
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      const followers = userData.followers || [];
+    if (currentUser.uid === id) {
+      alert("You cannot follow yourself");
+      return;
+    }
 
-      if (followers.includes(currentUser.uid)) {
-        const index = followers.indexOf(currentUser.uid);
-        followers.splice(index, 1);
-        setIsFollowing(false);
-      } else {
-        followers.push(currentUser.uid);
-        setIsFollowing(true);
+    try {
+      const userRef = doc(db, "Profiles", id);
+      const followerRef = doc(db, "Profiles", currentUser.uid);
+      
+      const [userDoc, followerDoc] = await Promise.all([
+        getDoc(userRef),
+        getDoc(followerRef)
+      ]);
+
+      if (userDoc.exists() && followerDoc.exists()) {
+        const userData = userDoc.data();
+        const followerData = followerDoc.data();
+        
+        let userFollowers = userData.followers || [];
+        let followerFollowing = followerData.following || [];
+        
+        const isCurrentlyFollowing = userFollowers.includes(currentUser.uid);
+
+        if (isCurrentlyFollowing) {
+          // Unfollow
+          userFollowers = userFollowers.filter(uid => uid !== currentUser.uid);
+          followerFollowing = followerFollowing.filter(uid => uid !== id);
+          setIsFollowing(false);
+        } else {
+          // Follow
+          if (!userFollowers.includes(currentUser.uid)) {
+            userFollowers.push(currentUser.uid);
+          }
+          if (!followerFollowing.includes(id)) {
+            followerFollowing.push(id);
+          }
+          setIsFollowing(true);
+        }
+
+        // Update both documents
+        await Promise.all([
+          updateDoc(userRef, {
+            followers: userFollowers,
+            followersCount: userFollowers.length
+          }),
+          updateDoc(followerRef, {
+            following: followerFollowing,
+            followingCount: followerFollowing.length
+          })
+        ]);
+
+        // Show success message
+        alert(isCurrentlyFollowing ? "Unfollowed successfully!" : "Followed successfully!");
       }
-
-      await updateDoc(userRef, {
-        followers,
-      });
+    } catch (error) {
+      console.error("Error following user:", error);
+      alert("Failed to follow/unfollow user. Please try again.");
     }
   };
 
@@ -122,19 +200,50 @@ const Profile = () => {
           setPhoneNumber(data.phoneNumber || currentUser?.phoneNumber || "");
         }
 
-        if (currentUser && currentUser.uid) {
-          setIsFollowing(
-            docSnap.data().followers &&
-              docSnap.data().followers.includes(currentUser.uid)
-          );
+        // Check if current user is following this user
+        if (currentUser && currentUser.uid && data.followers) {
+          setIsFollowing(data.followers.includes(currentUser.uid));
+        } else {
+          setIsFollowing(false);
         }
       } else {
         setUser(null);
+        setIsFollowing(false);
       }
     });
 
     return () => unsubscribe();
   }, [id, currentUser]);
+
+  // Check followers count
+  useEffect(() => {
+    const checkFollowersCount = async () => {
+      if (!user) return;
+      
+      try {
+        const userRef = doc(db, "Profiles", id);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          const followersCount = data.followers?.length || 0;
+          
+          // Ensure followersCount is updated in state
+          if (followersCount !== (user.followers?.length || 0)) {
+            setUser(prev => ({
+              ...prev,
+              followers: data.followers || [],
+              followersCount: followersCount
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error checking followers count:", error);
+      }
+    };
+    
+    checkFollowersCount();
+  }, [user, id]);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -154,7 +263,92 @@ const Profile = () => {
     };
 
     fetchItems();
-  }, []);
+  }, [id]);
+
+  // Handle image selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file type
+      if (!file.type.match('image.*')) {
+        alert("Please select an image file (jpg, png, gif, etc.)");
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size should be less than 5MB");
+        return;
+      }
+      
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      
+      setShowImageUploadModal(true);
+    }
+  };
+
+  // Upload profile image
+  const uploadProfileImage = async () => {
+    if (!selectedImage || !isOwnProfile || !currentUser) return;
+    
+    try {
+      setUploadingImage(true);
+      
+      // Upload to Firebase Storage
+      const storageRef = ref(storage, `profile-images/${currentUser.uid}/${Date.now()}_${selectedImage.name}`);
+      await uploadBytes(storageRef, selectedImage);
+      
+      // Get download URL
+      const downloadURL = await getDownloadURL(storageRef);
+      
+      // Update profile in Firestore
+      const profileRef = doc(db, "Profiles", id);
+      await updateDoc(profileRef, {
+        profilePic: downloadURL,
+        updatedAt: new Date()
+      });
+      
+      // Clear states
+      setSelectedImage(null);
+      setImagePreview(null);
+      setShowImageUploadModal(false);
+      
+      alert("Profile image updated successfully!");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Remove profile image
+  const removeProfileImage = async () => {
+    if (!isOwnProfile) return;
+    
+    try {
+      const confirmed = window.confirm("Are you sure you want to remove your profile image?");
+      if (!confirmed) return;
+      
+      const profileRef = doc(db, "Profiles", id);
+      await updateDoc(profileRef, {
+        profilePic: null,
+        updatedAt: new Date()
+      });
+      
+      alert("Profile image removed successfully!");
+    } catch (error) {
+      console.error("Error removing image:", error);
+      alert("Failed to remove image. Please try again.");
+    }
+  };
 
   const handleSaveAccount = async () => {
     if (!isOwnProfile) return;
@@ -181,6 +375,7 @@ const Profile = () => {
         lastName: lastName.trim(),
         username: trimmedUsername,
         phoneNumber: phoneNumber.trim(),
+        updatedAt: new Date()
       };
 
       if (snap.exists()) {
@@ -211,8 +406,6 @@ const Profile = () => {
 
         // Update password if provided
         if (newPassword) {
-          // Note: Firebase Authentication password update requires re-authentication
-          // You might need to implement separate password update flow
           alert(
             "Password change requires re-authentication. Please use the password reset feature."
           );
@@ -223,6 +416,10 @@ const Profile = () => {
         updates.createdAt = new Date();
         updates.usernameChangeCount = 0;
         updates.usernameChangeYear = new Date().getFullYear();
+        updates.followers = [];
+        updates.following = [];
+        updates.followersCount = 0;
+        updates.followingCount = 0;
         await setDoc(profileRef, updates);
       }
 
@@ -293,6 +490,13 @@ const Profile = () => {
         if (data.followers?.includes(id)) {
           await updateDoc(doc(db, "Profiles", u.id), {
             followers: data.followers.filter((f) => f !== id),
+            followersCount: data.followersCount ? data.followersCount - 1 : 0
+          });
+        }
+        if (data.following?.includes(id)) {
+          await updateDoc(doc(db, "Profiles", u.id), {
+            following: data.following.filter((f) => f !== id),
+            followingCount: data.followingCount ? data.followingCount - 1 : 0
           });
         }
       }
@@ -371,6 +575,13 @@ const Profile = () => {
     setShowBillingModal(false);
   };
 
+  // Close image upload modal
+  const handleCloseImageUploadModal = () => {
+    setShowImageUploadModal(false);
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
   const groupedItems = items.reduce((acc, item) => {
     if (!acc[item.type]) {
       acc[item.type] = [];
@@ -382,29 +593,26 @@ const Profile = () => {
   return (
     <>
       <Helmet>
-        <title>{user ? user.username : "User"} | shammarianas</title>
+        <title>
+          {getDisplayName()} | shammarianas
+        </title>
         <meta
           name="description"
-          content={`View ${
-            user ? user.username : "User"
-          }'s profile on shammarianas`}
+          content={`View ${getDisplayName()}'s profile on shammarianas`}
         />
         <meta
           property="og:title"
-          content={`${user ? user.username : "User"} | shammarianas`}
+          content={`${getDisplayName()} | shammarianas`}
         />
         <meta
           property="og:description"
-          content={`View ${
-            user ? user.username : "User"
-          }'s profile on shammarianas`}
+          content={`View ${getDisplayName()}'s profile on shammarianas`}
         />
         <meta
           property="og:image"
           content={
-            user
-              ? user.profilePic
-              : "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account"
+            user?.profilePic ||
+            `https://avatar.iran.liara.run/username?username=${getInitials()}`
           }
         />
         <meta
@@ -413,20 +621,17 @@ const Profile = () => {
         />
         <meta
           name="twitter:title"
-          content={`${user ? user.username : "User"} | shammarianas`}
+          content={`${getDisplayName()} | shammarianas`}
         />
         <meta
           name="twitter:description"
-          content={`View ${
-            user ? user.username : "User"
-          }'s profile on shammarianas`}
+          content={`View ${getDisplayName()}'s profile on shammarianas`}
         />
         <meta
           name="twitter:image"
           content={
-            user
-              ? user.profilePic
-              : "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account"
+            user?.profilePic ||
+            `https://avatar.iran.liara.run/username?username=${getInitials()}`
           }
         />
         <meta name="twitter:card" content="summary_large_image" />
@@ -477,6 +682,53 @@ const Profile = () => {
         </div>
       )}
 
+      {/* Image Upload Modal */}
+      {showImageUploadModal && (
+        <div className="modal-overlay" onClick={handleCloseImageUploadModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Update Profile Image</h2>
+              <button
+                className="modal-close-btn"
+                onClick={handleCloseImageUploadModal}
+              >
+                <i className="icon fas fa-times"></i>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="image-upload-preview">
+                {imagePreview && (
+                  <div className="preview-image">
+                    <img src={imagePreview} alt="Preview" />
+                  </div>
+                )}
+                <div className="upload-actions">
+                  <button
+                    className="butn butn-sm butn-bg main-colorbg radius-5"
+                    onClick={uploadProfileImage}
+                    disabled={uploadingImage || !selectedImage}
+                  >
+                    <i className="icon fas fa-upload"></i>
+                    <span>{uploadingImage ? "Uploading..." : "Upload Image"}</span>
+                  </button>
+                  <button
+                    className="butn butn-sm butn-bord radius-5"
+                    onClick={handleCloseImageUploadModal}
+                    disabled={uploadingImage}
+                  >
+                    <span>Cancel</span>
+                  </button>
+                </div>
+                <p className="upload-note">
+                  Maximum file size: 5MB<br />
+                  Supported formats: JPG, PNG, GIF, WebP
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="page_content">
         <div className="profile_background">
           <img
@@ -489,23 +741,48 @@ const Profile = () => {
           <div className="profile">
             <div className="top">
               <div className="left">
-                <div className="profile_image">
-                  <img
-                    src={
-                      user && user.profilePic !== null
-                        ? user.profilePic
-                        : `https://avatar.iran.liara.run/username?username=${
-                            user ? user.username : "User"
-                          }`
-                    }
-                    alt={user ? user.username : "User"}
-                  />
+                <div className="profile_image_container">
+                  <div className="profile_image">
+                    {user?.profilePic ? (
+                      <img
+                        src={user.profilePic}
+                        alt={getDisplayName()}
+                      />
+                    ) : (
+                      <div className="profile-initials">
+                        {getInitials()}
+                      </div>
+                    )}
+                    {isOwnProfile && (
+                      <div className="profile-image-actions">
+                        <label className="change-image-btn" htmlFor="profile-image-upload">
+                          <i className="icon fas fa-camera"></i>
+                          <input
+                            type="file"
+                            id="profile-image-upload"
+                            accept="image/*"
+                            onChange={handleImageSelect}
+                            style={{ display: 'none' }}
+                          />
+                        </label>
+                        {user?.profilePic && (
+                          <button
+                            className="remove-image-btn"
+                            onClick={removeProfileImage}
+                            title="Remove profile image"
+                          >
+                            <i className="icon fas fa-trash"></i>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="profile_details">
                   <div className="details">
                     <h1 className="username">
-                      {user ? user.username : "User"}
+                      {getDisplayName()}
                     </h1>
                     <span className="email">{user ? user.email : "Email"}</span>
                     <span className="bio">{user ? user.bio : "Bio"}</span>
@@ -513,29 +790,30 @@ const Profile = () => {
                 </div>
               </div>
               <div className="right">
-                <span className="follower_count">
-                  {user && user.followers ? user.followers.length : 0} Followers
-                </span>
+                <div className="stats">
+                  <span className="following_count">
+                    {user?.followingCount || user?.following?.length || 0} Following
+                  </span>
+                </div>
                 <div className="actions">
-                  <button
-                    className={`follow_btn  ${
-                      currentUser && currentUser.uid == id ? "disabled" : ""
-                    }`}
-                    onClick={
-                      currentUser && currentUser.uid == id
-                        ? () => alert("You cannot follow yourself")
-                        : currentUser
-                        ? followUser
-                        : () => alert("Please login to follow this user")
-                    }
-                  >
-                    {isFollowing ? (
-                      <i className="icon fas fa-minus"></i>
-                    ) : (
-                      <i className="icon fas fa-plus"></i>
-                    )}
-                    {isFollowing ? "Unfollow" : "Follow"}
-                  </button>
+                  {currentUser ? (
+                    <button
+                      className={`follow_btn ${currentUser.uid === id ? "disabled" : ""}`}
+                      onClick={currentUser.uid === id ? () => {} : followUser}
+                      disabled={currentUser.uid === id}
+                    >
+                      <i className={`icon fas ${isFollowing ? "fa-check" : "fa-plus"}`}></i>
+                      <span>{isFollowing ? "Following" : "Follow"}</span>
+                    </button>
+                  ) : (
+                    <button
+                      className="follow_btn"
+                      onClick={() => navigate("/login")}
+                    >
+                      <i className="icon fas fa-user-plus"></i>
+                      <span>Login to Follow</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -763,11 +1041,11 @@ const Profile = () => {
                           <div className="billing-details">
                             <p>
                               <strong>
-                                {currentUser?.displayName || "Sahrish Anfal"}
+                                {getDisplayName()}
                               </strong>
                             </p>
                             <p>
-                              {currentUser?.email || "Bahrishanfal@gmail.com"}
+                              {user?.email || currentUser?.email || "Email not available"}
                             </p>
                           </div>
                           <div className="billing-history">
@@ -806,6 +1084,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
     </>
   );
 };
