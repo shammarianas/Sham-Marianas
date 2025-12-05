@@ -134,43 +134,42 @@ const Profile = () => {
       ]);
 
       if (userDoc.exists() && followerDoc.exists()) {
-       const userData = userDoc.data();
-      const followerData = followerDoc.data();
-      
-      // normalize
-      let userFollowers = Array.isArray(userData.followers) ? userData.followers : (userData.followers && typeof userData.followers === 'object' ? Object.keys(userData.followers).filter(k=>!!userData.followers[k]) : []);
-      let followerFollowing = Array.isArray(followerData.following) ? followerData.following : (followerData.following && typeof followerData.following === 'object' ? Object.keys(followerData.following).filter(k=>!!followerData.following[k]) : []);
-      
-      const isCurrentlyFollowing = userFollowers.indexOf(currentUser.uid) !== -1;
+        const userData = userDoc.data();
+        const followerData = followerDoc.data();
+        
+        let userFollowers = userData.followers || [];
+        let followerFollowing = followerData.following || [];
+        
+        const isCurrentlyFollowing = userFollowers.includes(currentUser.uid);
 
-      if (isCurrentlyFollowing) {
-        // Unfollow
-        userFollowers = userFollowers.filter(uid => uid !== currentUser.uid);
-        followerFollowing = followerFollowing.filter(uid => uid !== id);
-        setIsFollowing(false);
-      } else {
-        // Follow
-        if (!userFollowers.includes(currentUser.uid)) {
-          userFollowers.push(currentUser.uid);
+        if (isCurrentlyFollowing) {
+          // Unfollow
+          userFollowers = userFollowers.filter(uid => uid !== currentUser.uid);
+          followerFollowing = followerFollowing.filter(uid => uid !== id);
+          setIsFollowing(false);
+        } else {
+          // Follow
+          if (!userFollowers.includes(currentUser.uid)) {
+            userFollowers.push(currentUser.uid);
+          }
+          if (!followerFollowing.includes(id)) {
+            followerFollowing.push(id);
+          }
+          setIsFollowing(true);
         }
-        if (!followerFollowing.includes(id)) {
-          followerFollowing.push(id);
-        }
-        setIsFollowing(true);
-      }
 
-      // Update both documents (store as arrays)
-      await Promise.all([
-        updateDoc(userRef, {
-          followers: userFollowers,
-          followersCount: userFollowers.length
-        }),
-        updateDoc(followerRef, {
-          following: followerFollowing,
-          followingCount: followerFollowing.length
-        })
-      ]);
-      
+        // Update both documents
+        await Promise.all([
+          updateDoc(userRef, {
+            followers: userFollowers,
+            followersCount: userFollowers.length
+          }),
+          updateDoc(followerRef, {
+            following: followerFollowing,
+            followingCount: followerFollowing.length
+          })
+        ]);
+
         // Show success message
         alert(isCurrentlyFollowing ? "Unfollowed successfully!" : "Followed successfully!");
       }
@@ -214,19 +213,9 @@ const Profile = () => {
           setBio(data.bio || ""); // Set bio from Firestore
         }
 
-        // NORMALIZE followers -> always an array
-        const rawFollowers = data.followers;
-        let followersArr = [];
-        if (Array.isArray(rawFollowers)) {
-          followersArr = rawFollowers;
-        } else if (rawFollowers && typeof rawFollowers === "object") {
-          // handle map/object shape { uid: true } or similar
-          followersArr = Object.keys(rawFollowers).filter((k) => !!rawFollowers[k]);
-        }
-
         // Check if current user is following this user
-        if (currentUser && currentUser.uid) {
-          setIsFollowing(followersArr.indexOf(currentUser.uid) !== -1);
+        if (currentUser && currentUser.uid && data.followers) {
+          setIsFollowing(data.followers.includes(currentUser.uid));
         } else {
           setIsFollowing(false);
         }

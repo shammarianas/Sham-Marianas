@@ -91,7 +91,6 @@ export const AppRoutes = () => (
     <Route path="/Reset" element={<PasswordReset />} />
     <Route path="/reset" element={<PasswordReset />} />
     <Route path="/Logout" element={<Logout />} />
-    <Route path="/:username" element={<ProfileByUsername />} />
     <Route path="/Profile/:id" element={<Profile />} />
     <Route path="/" element={<Home />} />
     <Route path="/Cart" element={<Cart />} />
@@ -141,6 +140,8 @@ export const AppRoutes = () => (
     <Route path="/blog-category/:category" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
     <Route path="/View/:slug" element={<View />} />
+    
+    <Route path="/:username" element={<ProfileByUsername />} />
   </Routes>
 );
 
