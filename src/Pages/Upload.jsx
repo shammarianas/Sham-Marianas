@@ -129,7 +129,7 @@ const filterData = {
       ],
     },
   },
-  Pictures: {
+  Images: {
     categories: {
       label: "Category / Subject",
       options: [
@@ -552,7 +552,7 @@ const filterData = {
 const assetTypeToFilterData = {
   videos: "Videos",
   "video-templates": "VideoTemplates",
-  images: "Pictures",
+  images: "Images",
   graphics: "GraphicTemplates",
   mockups: "Mockups",
   fonts: "Fonts",
