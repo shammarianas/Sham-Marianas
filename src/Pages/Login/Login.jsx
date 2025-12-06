@@ -4,8 +4,9 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   sendPasswordResetEmail,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
+  sendEmailVerification,
+  onAuthStateChanged,
+  signOut,
 } from "firebase/auth";
 import { auth } from "../../../firebase";
 import {
@@ -16,6 +17,7 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
 } from "firebase/firestore";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
@@ -190,7 +192,7 @@ const countries = [
 
 const Login = () => {
   const [page, setPage] = useState("login");
-  const [currentStep, setCurrentStep] = useState(1); // 1: Signup form, 2: Phone verification
+  const [currentStep, setCurrentStep] = useState(1); // 1: Signup form, 2: Email verification
   const passwordRef = useRef(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
@@ -201,12 +203,11 @@ const Login = () => {
   const [success, setSuccess] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  // Phone verification states
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
-  const [phoneResendTimer, setPhoneResendTimer] = useState(0);
-  const [confirmationResult, setConfirmationResult] = useState(null);
-  const [otp, setOtp] = useState("");
+  // Email verification states
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isVerificationSent, setIsVerificationSent] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [tempUser, setTempUser] = useState(null);
 
   // ✅ NEW FIELDS
   const [name, setName] = useState("");
@@ -221,71 +222,49 @@ const Login = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const recaptchaVerifierRef = useRef(null);
   const usernameTimeoutRef = useRef(null);
 
+  
   // Cleanup timeout on component unmount
   useEffect(() => {
     return () => {
       if (usernameTimeoutRef.current) {
         clearTimeout(usernameTimeoutRef.current);
       }
-      // Clean up reCAPTCHA on unmount
-      if (recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current.clear();
-      }
     };
   }, []);
+
+  // Auth state listener for email verification
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user && currentStep === 2) {
+        // Reload user to get updated email verification status
+        await user.reload();
+        if (user.emailVerified) {
+          setIsEmailVerified(true);
+          setSuccess("Email verified successfully!");
+          // Store the verified user
+          setTempUser(user);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [currentStep]);
+
+  // Resend timer effect
+  useEffect(() => {
+    let timer;
+    if (resendTimer > 0) {
+      timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [resendTimer]);
 
   useEffect(() => {
     setError("");
     setSuccess("");
   }, [location]);
-
-  // Phone resend timer effect
-  useEffect(() => {
-    let timer;
-    if (phoneResendTimer > 0) {
-      timer = setTimeout(() => setPhoneResendTimer(phoneResendTimer - 1), 1000);
-    }
-    return () => clearTimeout(timer);
-  }, [phoneResendTimer]);
-
-  // ──────────────────────────────────────────────────────────────
-  // 1. Initialize reCAPTCHA ONLY ONCE when entering signup page
-  // ──────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (page !== "signup") return;
-
-    const container = document.getElementById("recaptcha-container");
-    if (!container) return;
-
-    // Clean any previous instance
-    if (recaptchaVerifierRef.current) {
-      recaptchaVerifierRef.current.clear();
-      recaptchaVerifierRef.current = null;
-    }
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = null;
-    }
-    container.innerHTML = ""; // important: empty the div
-
-    // Create ONE new invisible verifier
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "recaptcha-container",
-      {
-        size: "invisible",
-        callback: () => console.log("reCAPTCHA solved"),
-        "expired-callback": () => console.log("reCAPTCHA expired"),
-      }
-    );
-
-    recaptchaVerifierRef.current = window.recaptchaVerifier;
-
-    // No .render() here → Firebase will auto-render when you call signInWithPhoneNumber
-  }, [page]); // ← runs once when user switches to signup tab
 
   // Username validation function
   const validateUsername = async (username) => {
@@ -335,7 +314,17 @@ const Login = () => {
     }
   };
 
-  const handleEmailChange = (e) => setEmail(e.target.value);
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (value && !emailRegex.test(value)) {
+      setError("Please enter a valid email address");
+    } else if (value && emailRegex.test(value)) {
+      setError("");
+    }
+  };
 
   // Updated username handler with validation
   const handleUsernameChange = async (e) => {
@@ -447,133 +436,95 @@ const Login = () => {
     }
   }, [password, confirmPassword, page]);
 
-  // ✅ IMPROVED: Send phone verification OTP with better verifier handling
-  const sendPhoneVerification = async () => {
+  // Send email verification (Firebase style - link bhejega)
+  const sendVerificationEmail = async () => {
     try {
       setError("");
       setSuccess("");
 
-      if (!phone || phone.length !== 10) {
-        setError("10 digit phone number required");
+      // Validate email first
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError("Please enter a valid email address");
         return;
       }
 
-      const phoneNumber = countryCode + phone;
-      auth.settings.forceRecaptchaV2Flow = true;
-      // No .render(), no extra config — Firebase khud handle karega
-      const confirmation = await signInWithPhoneNumber(
-        auth,
-        phoneNumber,
-        window.recaptchaVerifier
-      );
-
-      setConfirmationResult(confirmation);
-      setIsVerificationSent(true);
-      setPhoneResendTimer(60);
-      setSuccess("OTP sent successfully!");
-    } catch (err) {
-      console.error("Phone auth error:", err);
-      setError(
-        err.code === "auth/invalid-phone-number"
-          ? "Invalid number"
-          : err.code === "auth/too-many-requests"
-          ? "Too many attempts, try later"
-          : "Failed to send OTP. Try again."
-      );
-
-      // Reset verifier on error
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-    }
-  };
-
-  // Verify phone OTP
-  const verifyPhoneOTP = async () => {
-    try {
-      setError("");
-
-      if (!otp || otp.length !== 6) {
-        setError("Please enter a valid 6-digit OTP");
+      // Validate step 1
+      if (!validateStep1()) {
         return;
       }
 
-      if (!confirmationResult) {
-        setError("Verification session expired. Please resend OTP.");
-        return;
-      }
-
-      const result = await confirmationResult.confirm(otp);
-      setIsPhoneVerified(true);
-      setSuccess("Phone number verified successfully!");
-
-      // After phone verification, proceed to signup
-      await completeSignup();
-    } catch (err) {
-      if (err.code === "auth/invalid-verification-code") {
-        setError("Invalid verification code");
-      } else if (err.code === "auth/code-expired") {
-        setError("Verification code expired. Please resend.");
-      } else {
-        setError("Verification failed: " + err.message);
-      }
-    }
-  };
-
-  // Resend phone verification OTP
-  const resendPhoneVerification = async () => {
-    await sendPhoneVerification();
-  };
-
-  // Complete signup after phone verification
-  const completeSignup = async () => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      // Create temporary user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Update profile with name
       await updateProfile(user, {
-        displayName: username,
+        displayName: username
       });
 
-      const userProfileRef = doc(db, "Profiles", user.uid);
-      await setDoc(
-        userProfileRef,
-        {
-          username: user.displayName,
-          email: user.email,
-          profilePic: user.photoURL,
-          uid: user.uid,
-          role: "user",
-          // ✅ NEW FIELDS ADDED
-          name: name,
-          phone: `${countryCode} ${phone}`,
-          phoneVerified: true,
-          birthday: birthday,
-          countryCode: countryCode,
-          country: country,
-          city: city,
-          // ✅ JOIN DATE FIELDS
-          createdAt: serverTimestamp(),
-          joinDate: serverTimestamp(),
-          lastLogin: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      // Send verification email (Firebase will send a LINK, not code)
+      await sendEmailVerification(user, {
+        url: window.location.origin + '/email-verified', // Redirect URL after verification
+        handleCodeInApp: false
+      });
 
-      setSuccess("Sign-up successful! Redirecting...");
-      setTimeout(() => navigate("/stock", { replace: true }), 3000);
+      // Store temp user reference
+      setTempUser(user);
+
+      setIsVerificationSent(true);
+      setResendTimer(60); // 60 seconds timer
+      setSuccess("Verification email sent! Check your inbox and click the link to verify.");
+
     } catch (err) {
-      setError("Sign-up failed: " + err.message);
+      if (err.code === 'auth/email-already-in-use') {
+        setError("Email already registered. Please login or use a different email.");
+      } else if (err.code === 'auth/too-many-requests') {
+        setError("Too many attempts. Please try again later.");
+      } else {
+        setError("Failed to send verification: " + err.message);
+      }
+    }
+  };
+
+  // Resend verification email
+  const resendVerificationEmail = async () => {
+    try {
+      if (tempUser) {
+        await sendEmailVerification(tempUser, {
+          url: window.location.origin + '/email-verified',
+          handleCodeInApp: false
+        });
+        setResendTimer(60);
+        setSuccess("Verification email resent! Check your inbox.");
+      }
+    } catch (err) {
+      setError("Failed to resend email: " + err.message);
+    }
+  };
+
+  // Check email verification status
+  const checkEmailVerification = async () => {
+    try {
+      if (tempUser) {
+        // Reload user to get latest verification status
+        await tempUser.reload();
+        const updatedUser = auth.currentUser;
+
+        if (updatedUser && updatedUser.emailVerified) {
+          setIsEmailVerified(true);
+          setSuccess("Email verified successfully!");
+        } else {
+          setError("Email not verified yet. Please check your inbox and click the verification link.");
+        }
+      }
+    } catch (err) {
+      setError("Failed to check verification status: " + err.message);
     }
   };
 
   // Validation for step 1 (signup form)
-  const validateStep1 = async () => {
+  const validateStep1 = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (
@@ -606,13 +557,6 @@ const Login = () => {
 
     if (username.length < 3) {
       setError("Username must be at least 3 characters");
-      return false;
-    }
-
-    // Check username uniqueness
-    const usernameError = await validateUsername(username);
-    if (usernameError) {
-      setError(usernameError);
       return false;
     }
 
@@ -651,19 +595,101 @@ const Login = () => {
       return;
     }
 
-    const isValid = await validateStep1();
+    const isValid = validateStep1();
     if (!isValid) return;
 
-    // Move to phone verification step
+    // Move to email verification step
     setCurrentStep(2);
-    await sendPhoneVerification();
+    await sendVerificationEmail();
+  };
+
+  // Complete signup after email verification
+  const completeSignup = async () => {
+    try {
+      // Use the already verified temp user or create new
+      let user;
+      if (tempUser && tempUser.emailVerified) {
+        user = tempUser;
+      } else {
+        // Create final user account
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        user = userCredential.user;
+
+        // Update profile
+        await updateProfile(user, { displayName: username });
+
+        // Send verification email if not verified
+        if (!user.emailVerified) {
+          await sendEmailVerification(user, {
+            url: window.location.origin + '/email-verified'
+          });
+          setError("Please verify your email first. Check your inbox.");
+          return;
+        }
+      }
+
+      // Create user profile in Firestore
+      const userProfileRef = doc(db, "Profiles", user.uid);
+      await setDoc(
+        userProfileRef,
+        {
+          username: user.displayName,
+          email: user.email,
+          profilePic: user.photoURL,
+          uid: user.uid,
+          role: "user",
+          // ✅ NEW FIELDS ADDED
+          name: name,
+          phone: `${countryCode} ${phone}`,
+          emailVerified: true,
+          birthday: birthday,
+          countryCode: countryCode,
+          country: country,
+          city: city,
+          // ✅ JOIN DATE FIELDS
+          createdAt: serverTimestamp(),
+          joinDate: serverTimestamp(),
+          lastLogin: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      setSuccess("Sign-up successful! Redirecting...");
+      
+      // Send welcome email
+      await fetch(
+        "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            name: name || username,
+          }),
+        }
+      );
+
+     setTimeout(() => {
+  window.location.reload(); // Ya navigate("/", { replace: true })
+}, 3000);
+    } catch (err) {
+      setError("Sign-up failed: " + err.message);
+    }
   };
 
   const loginWithEmailPassword = async (e) => {
     e.preventDefault();
     try {
       // ✅ Step 1: Sign in the user
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Check if email is verified
+      if (!user.emailVerified) {
+        setError("Please verify your email first. Check your inbox for verification link.");
+        await signOut(auth);
+        return;
+      }
 
       setSuccess("Login successful!");
 
@@ -681,7 +707,9 @@ const Login = () => {
       );
 
       // ✅ Step 3: Redirect after 3 seconds
-      setTimeout(() => navigate("/stock", { replace: true }), 3000);
+     setTimeout(() => {
+  window.location.reload(); // Ya navigate("/", { replace: true })
+}, 3000);
     } catch (err) {
       setError("Login failed: " + err.message);
     }
@@ -700,27 +728,14 @@ const Login = () => {
   // Reset form when switching pages
   const resetForm = () => {
     setCurrentStep(1);
-    setIsPhoneVerified(false);
+    setIsEmailVerified(false);
     setIsVerificationSent(false);
-    setConfirmationResult(null);
-    setOtp("");
+    setTempUser(null);
     setError("");
     setSuccess("");
-    setPhoneResendTimer(0);
-    // Reset reCAPTCHA
-    if (recaptchaVerifierRef.current) {
-      recaptchaVerifierRef.current.clear();
-      recaptchaVerifierRef.current = null;
-      delete window.recaptchaVerifier;
-    }
+    setResendTimer(0);
   };
-  useEffect(() => {
-    return () => {
-      recaptchaVerifierRef.current?.clear();
-      recaptchaVerifierRef.current = null;
-      window.recaptchaVerifier = null;
-    };
-  }, []);
+
   return (
     <>
       <Helmet>
@@ -731,9 +746,6 @@ const Login = () => {
         <meta property="og:description" content="Login with Google or Apple" />
         <meta property="og:url" content={window.location.href} />
       </Helmet>
-
-      {/* ✅ MOVED: Hidden reCAPTCHA container to top level (always present) */}
-      <div id="recaptcha-container" style={{ display: "none" }}></div>
 
       <div className="login">
         {/* =================== LOGIN PAGE =================== */}
@@ -829,7 +841,7 @@ const Login = () => {
           <div className="login_tab">
             <div className="title">
               <span>
-                {currentStep === 1 ? "Sign up" : "Phone Verification"}
+                {currentStep === 1 ? "Sign up" : "Email Verification"}
               </span>
               <span
                 className="link"
@@ -1150,7 +1162,7 @@ const Login = () => {
                   disabled={error || !termsAccepted}
                   type="submit"
                 >
-                  Continue to Phone Verification
+                  Continue to Email Verification
                 </button>
 
                 <div className="separator"></div>
@@ -1172,162 +1184,91 @@ const Login = () => {
                 </div>
               </form>
             ) : (
-              // STEP 2: PHONE VERIFICATION
-              // Note: reCAPTCHA container is already at top level, so no need here
+              // STEP 2: EMAIL VERIFICATION
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
-                  Verify Your Phone Number
-                </h3>
-                <p
-                  style={{
-                    color: "#f5f5f5",
-                    opacity: 0.8,
-                    marginBottom: "1.5rem",
-                  }}
-                >
-                  We've sent a verification code to:
-                  <br />
-                  <strong>
-                    {countryCode} {phone}
-                  </strong>
-                </p>
-
-                {!isVerificationSent ? (
-                  <div>
-                    <p
-                      style={{
-                        color: "#f5f5f5",
-                        opacity: 0.6,
-                        fontSize: "0.9rem",
-                        marginBottom: "1.5rem",
-                      }}
-                    >
-                      Sending verification code...
-                    </p>
+                  <div style={{ fontSize: "3rem", color: "#52b0b4", marginBottom: "1rem" }}>
+                    ✉️
                   </div>
-                ) : (
-                  <>
-                    <div
-                      style={{
+                  <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
+                    Verify Your Email
+                  </h3>
+                  <p style={{ color: "#f5f5f5", opacity: 0.8, marginBottom: "1.5rem" }}>
+                    We've sent a verification link to:<br />
+                    <strong>{email}</strong>
+                  </p>
+
+                  {!isVerificationSent ? (
+                    <div>
+                      <p style={{ color: "#f5f5f5", opacity: 0.6, fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+                        Click "Next" to send verification email
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{
                         backgroundColor: "rgba(82, 176, 180, 0.1)",
                         padding: "1rem",
                         borderRadius: "0.5rem",
-                        marginBottom: "1.5rem",
-                      }}
-                    >
-                      <p style={{ color: "#f5f5f5", margin: 0 }}>
-                        <strong>Important:</strong> Enter the 6-digit
-                        verification code sent to your phone.
-                      </p>
-                    </div>
-
-                    <div style={{ marginBottom: "1.5rem" }}>
-                      <label
-                        htmlFor="otp"
-                        style={{
-                          display: "block",
-                          textAlign: "left",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        Verification Code *
-                      </label>
-                      <div className="input">
-                        <input
-                          type="text"
-                          id="otp"
-                          placeholder="Enter 6-digit code"
-                          value={otp}
-                          onChange={(e) =>
-                            setOtp(
-                              e.target.value.replace(/\D/g, "").slice(0, 6)
-                            )
-                          }
-                          maxLength="6"
-                          pattern="[0-9]{6}"
-                          style={{
-                            textAlign: "center",
-                            letterSpacing: "0.5em",
-                          }}
-                        />
+                        marginBottom: "1.5rem"
+                      }}>
+                        <p style={{ color: "#f5f5f5", margin: 0 }}>
+                          <strong>Important:</strong> Check your email inbox and click the verification link.
+                          After clicking the link, come back here and click "I've Verified".
+                        </p>
                       </div>
-                    </div>
 
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "1rem",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        className="login_btn"
-                        onClick={verifyPhoneOTP}
-                        disabled={!otp || otp.length !== 6}
-                        style={{ flex: 1 }}
-                      >
-                        {isPhoneVerified ? "✓ Verified" : "Verify Code"}
-                      </button>
-                      <button
-                        type="button"
-                        className="login_btn"
-                        onClick={resendPhoneVerification}
-                        disabled={phoneResendTimer > 0}
-                        style={{
-                          backgroundColor: "transparent",
-                          border: "1px solid rgba(255,255,255,0.2)",
-                          flex: 1,
-                          opacity: phoneResendTimer > 0 ? 0.5 : 1,
-                        }}
-                      >
-                        {phoneResendTimer > 0
-                          ? `Resend (${phoneResendTimer}s)`
-                          : "Resend Code"}
-                      </button>
-                    </div>
+                      <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                        <button
+                          type="button"
+                          className="login_btn"
+                          onClick={checkEmailVerification}
+                          style={{ flex: 1 }}
+                        >
+                          {isEmailVerified ? "✓ Verified" : "I've Verified"}
+                        </button>
+                        <button
+                          type="button"
+                          className="login_btn"
+                          onClick={resendVerificationEmail}
+                          disabled={resendTimer > 0}
+                          style={{
+                            backgroundColor: "transparent",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            flex: 1,
+                            opacity: resendTimer > 0 ? 0.5 : 1
+                          }}
+                        >
+                          {resendTimer > 0 ? `Resend (${resendTimer}s)` : "Resend Link"}
+                        </button>
+                      </div>
 
-                    <button
-                      type="button"
-                      className="login_btn"
-                      onClick={() => setCurrentStep(1)}
-                      style={{
-                        backgroundColor: "transparent",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        marginTop: "1rem",
-                        width: "100%",
-                      }}
-                    >
-                      Back to Edit Details
-                    </button>
-                  </>
-                )}
+                      {isEmailVerified && (
+                        <div style={{
+                          marginTop: "1.5rem",
+                          padding: "1rem",
+                          backgroundColor: "rgba(76, 175, 80, 0.1)",
+                          borderRadius: "0.5rem"
+                        }}>
+                          <p style={{ color: "#4caf50", margin: 0 }}>
+                            ✓ Email verified successfully! You can now proceed.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
 
-                <div
-                  style={{
+                  <div style={{
                     marginTop: "1.5rem",
                     padding: "1rem",
                     backgroundColor: "rgba(255,255,255,0.05)",
                     borderRadius: "0.5rem",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  <p style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}>
-                    <strong>Note:</strong> Standard SMS rates may apply.
-                  </p>
+                    fontSize: "0.9rem"
+                  }}>
+                    <p style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}>
+                      <strong>Note:</strong> If you don't see the email, check your spam folder.
+                    </p>
+                  </div>
                 </div>
-
-                {error && (
-                  <span className="error" style={{ marginTop: "1rem" }}>
-                    {error}
-                  </span>
-                )}
-                {success && (
-                  <span className="success" style={{ marginTop: "1rem" }}>
-                    {success}
-                  </span>
-                )}
-              </div>
             )}
           </div>
         )}
@@ -1374,35 +1315,6 @@ const Login = () => {
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .phone-input-container {
-          display: flex;
-          gap: 8px;
-        }
-
-        .country-code-select {
-          width: 50px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background-color: white;
-          font-size: 14px;
-        }
-
-        .phone-number-input {
-          flex: 1;
-        }
-
-        @media (max-width: 768px) {
-          .phone-input-container {
-            flex-direction: column;
-          }
-
-          .country-code-select {
-            width: 100%;
-          }
-        }
-      `}</style>
     </>
   );
 };
