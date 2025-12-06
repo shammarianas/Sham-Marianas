@@ -52,8 +52,10 @@ import ReportTrack from "../Contributor-tabs/ReportTrack";
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
 // ✅ ADDED: Import Profile component
 import Profile from "../../../../Pages/Profile"; // Adjust path as needed
+import Error from "../../../../Pages/Error";
 
 import "../../../../assets/Styles/contribute-style.css";
+
 
 const UnauthorizedAccess = ({ error }) => {
   return (
@@ -204,9 +206,9 @@ const SellerDashboard = () => {
             if (sellerData.status === "pending") {
               navigate("/contributor-pending");
             } else if (sellerData.status === "rejected") {
-              navigate("/contributor-rejected");
+              navigate("/Error");
             } else {
-              navigate("/become-contributor");
+              navigate("/Error");
             }
             return;
           }
@@ -221,7 +223,7 @@ const SellerDashboard = () => {
           ]);
         } else {
           setError("You are not registered as a contributor");
-          navigate("/become-contributor");
+          navigate("/Error");
         }
       } catch (error) {
         setError(`Failed to verify seller status: ${error.message}`);
