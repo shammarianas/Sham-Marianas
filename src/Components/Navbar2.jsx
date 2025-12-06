@@ -12,18 +12,18 @@ const Navbar = () => {
   const currentPage = useLocation().pathname;
 
   // ✅ NEW: Check if current page needs "Template" button
-const showTemplateButton = [
-  "/",
-  "/about",
-  "/services",
-  "/portfolio",
-  "/blog",
-  "/contact",
-  "/project-details",
-  "/Blog-details",
-].some(path => 
-  path === "/" ? currentPage === "/" : currentPage.startsWith(path)
-);
+  const showTemplateButton = [
+    "/",
+    "/about",
+    "/services",
+    "/portfolio",
+    "/blog",
+    "/contact",
+    "/project-details",
+    "/Blog-details",
+  ].some(path =>
+    path === "/" ? currentPage === "/" : currentPage.startsWith(path)
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -108,7 +108,7 @@ const showTemplateButton = [
               <ul className="navbar-nav">
                 <li className="nav-item d-lg-none">
                   <Link to="/stock" className="nav-link">
-                  {/* Sign In  after tempalte */}
+                    {/* Sign In  after tempalte */}
                     <span className="rolling-text">Template</span>
                   </Link>
                 </li>
@@ -211,7 +211,7 @@ const showTemplateButton = [
 
 
             {/* for coming soon */}
-             {/* <div className="contact-button">
+            {/* <div className="contact-button">
               
                 <Link
                   to="/comming-soon"
@@ -320,21 +320,21 @@ const showTemplateButton = [
         </Link>
 
         {/* SIRF EXPLORE + SEARCH admin mein hide */}
-        {!["/Login", "/Upload", "/reset", "/admin",  "/Contributor", "/contributor/dashboard", "/contributordashboard"].includes(
-        currentPage
-      ) && (
-          <>
-            <Link to="/stock">
-              <div className="d-none d-md-block  ml-auto vi-more">
-                <span className="butn butn-sm butn-bord radius-30">
-                  <span>Explore</span>
-                </span>
-                <span className="icon ti-arrow-top-right"></span>
-              </div>
-            </Link>
-            <Search />
-          </>
-        )}
+        {!["/Login", "/Upload", "/reset", "/admin", "/Contributor", "/contributor/dashboard", "/contributordashboard"].includes(
+          currentPage
+        ) && (
+            <>
+              <Link to="/stock">
+                <div className="d-none d-md-block  ml-auto vi-more">
+                  <span className="butn butn-sm butn-bord radius-30">
+                    <span>Explore</span>
+                  </span>
+                  <span className="icon ti-arrow-top-right"></span>
+                </div>
+              </Link>
+              <Search />
+            </>
+          )}
 
         <div className="right">
           <div className="nav_buttons">
@@ -344,7 +344,13 @@ const showTemplateButton = [
                   <button className="signed_in">
                     <i className="icon fa-solid fa-user"></i>
                     <span className="username">
-                      {currentUser?.displayName || "User"}
+                      {/* {currentUser?.displayName || "User"} */}
+                      {(() => {
+                        if (!currentUser) return "User";
+                        const fullName = `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+                        if (fullName) return fullName;
+                        return currentUser.displayName || "User";
+                      })()}
                     </span>
                   </button>
                 </Link>
@@ -384,86 +390,86 @@ const showTemplateButton = [
       {!["/", "/Login", "/Upload", "/reset", "/admin", "/Contributor", "/contributor/dashboard", "/contributordashboard"].includes(
         currentPage
       ) && (
-        <div className="bottom-bar">
-          <div className="links">
-            <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
-              {navItems.map(({ path, icon, label }) => {
-                if (label == "More") {
-                  return (
-                    <nav
-                      key={path}
-                      style={{ position: "relative" }}
-                      className="navbar navbar-expand-lg"
-                    >
-                      <div className="">
-                        <div
-                          className="collapse navbar-collapse justify-content-center"
-                          id="navbarSupportedContent"
-                        >
-                          <span className="navbar-nav">
-                            <li
-                              onMouseLeave={handleDropdownMouseLeave}
-                              onMouseMove={handleDropdownMouseMove}
-                              className="nav-item dropdown"
-                            >
-                              <p
-                                className="nav-link dropdown-toggle"
-                                data-toggle="dropdown"
-                                href="#"
-                                role="button"
-                                aria-haspopup="true"
-                                aria-expanded="false"
+          <div className="bottom-bar">
+            <div className="links">
+              <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
+                {navItems.map(({ path, icon, label }) => {
+                  if (label == "More") {
+                    return (
+                      <nav
+                        key={path}
+                        style={{ position: "relative" }}
+                        className="navbar navbar-expand-lg"
+                      >
+                        <div className="">
+                          <div
+                            className="collapse navbar-collapse justify-content-center"
+                            id="navbarSupportedContent"
+                          >
+                            <span className="navbar-nav">
+                              <li
+                                onMouseLeave={handleDropdownMouseLeave}
+                                onMouseMove={handleDropdownMouseMove}
+                                className="nav-item dropdown"
                               >
-                                <span
-                                  style={{ marginTop: "3px" }}
-                                  className="rolling-text"
+                                <p
+                                  className="nav-link dropdown-toggle"
+                                  data-toggle="dropdown"
+                                  href="#"
+                                  role="button"
+                                  aria-haspopup="true"
+                                  aria-expanded="false"
                                 >
-                                  More
-                                </span>
-                              </p>
-                              <ul
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                }}
-                                className="dropdown-menu"
-                              >
-                                {moreDropdownItems.map(({ path, label }) => (
-                                  <li key={path}>
-                                    <Link className="dropdown-item" to={path}>
-                                      {label}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            </li>
-                          </span>
+                                  <span
+                                    style={{ marginTop: "3px" }}
+                                    className="rolling-text"
+                                  >
+                                    More
+                                  </span>
+                                </p>
+                                <ul
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                  }}
+                                  className="dropdown-menu"
+                                >
+                                  {moreDropdownItems.map(({ path, label }) => (
+                                    <li key={path}>
+                                      <Link className="dropdown-item" to={path}>
+                                        {label}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </li>
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </nav>
+                      </nav>
+                    );
+                  }
+                  return (
+                    <li key={path}>
+                      <NavLink
+                        className={({ isActive }) =>
+                          isActive ? "active" : undefined
+                        }
+                        to={path}
+                      >
+                        <i className={`fa-solid ${icon}`}></i>
+                        {label}
+                      </NavLink>
+                    </li>
                   );
-                }
-                return (
-                  <li key={path}>
-                    <NavLink
-                      className={({ isActive }) =>
-                        isActive ? "active" : undefined
-                      }
-                      to={path}
-                    >
-                      <i className={`fa-solid ${icon}`}></i>
-                      {label}
-                    </NavLink>
-                  </li>
-                );
-              })}
-            </ul>
+                })}
+              </ul>
+            </div>
+            <div className="buttons"></div>
           </div>
-          <div className="buttons"></div>
-        </div>
-      )}
+        )}
     </>
   );
 };
-   
+
 export default Navbar;
