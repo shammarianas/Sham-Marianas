@@ -59,7 +59,7 @@ const showTemplateButton = [
     { path: "/Videos", label: "Videos" },
     { path: "/Models", label: "3D Models" },
     { path: "/video-templates", label: "Video Template" },
-    { path: "/images", label: "Pictures" },
+    { path: "/images", label: "Images" },
     { path: "/graphics", label: "Graphic Templates" },
     { path: "/Mockups", label: "Mockups" },
     { path: "/Fonts", label: "Fonts" },
@@ -107,7 +107,7 @@ const showTemplateButton = [
             >
               <ul className="navbar-nav">
                 <li className="nav-item d-lg-none">
-                  <Link to="/comming-soon" className="nav-link">
+                  <Link to="/stock" className="nav-link">
                   {/* Sign In  after tempalte */}
                     <span className="rolling-text">Template</span>
                   </Link>
@@ -190,7 +190,7 @@ const showTemplateButton = [
               </ul>
             </div>
             {/* ✅ FIXED: Template Button Logic /stock */}
-            {/* <div className="contact-button">
+            <div className="contact-button">
               {showTemplateButton ? (
                 <Link
                   to="/stock"
@@ -206,12 +206,12 @@ const showTemplateButton = [
                   <span className="text">Sign In</span>
                 </Link>
               )}
-            </div> */}
+            </div>
 
 
 
             {/* for coming soon */}
-             <div className="contact-button">
+             {/* <div className="contact-button">
               
                 <Link
                   to="/comming-soon"
@@ -220,7 +220,7 @@ const showTemplateButton = [
                   <span className="text">Template</span>
                 </Link>
            
-            </div>
+            </div> */}
           </div>
         </nav>
 
