@@ -659,18 +659,18 @@ const ContributorLogin = () => {
         "Contributor account created successfully! Under review. You'll receive an email when approved."
       );
 
-      // Send welcome email
-      await fetch(
-        "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email,
-            name: fullName || username,
-          }),
-        }
-      );
+      // // Send welcome email
+      // await fetch(
+      //   "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
+      //   {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({
+      //       email: email,
+      //       name: fullName || username,
+      //     }),
+      //   }
+      // );
     } catch (err) {
       setError("Failed to create contributor profile: " + err.message);
     }
