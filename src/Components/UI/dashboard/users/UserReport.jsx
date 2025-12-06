@@ -17,11 +17,12 @@ import {
   FiCheckCircle,
   FiCornerUpLeft,
   FiX,
+  FiHash,
 } from "react-icons/fi";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
-import {  exportUsersData } from "../../../../utils/exportUtils";
+import { exportUsersData } from "../../../../utils/exportUtils";
 
 const UserReport = () => {
   const [allReports, setAllReports] = useState([]);
@@ -29,36 +30,39 @@ const UserReport = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-const reportColumns = [
-  { header: "User", accessor: (r) => r.email || r.userId || "N/A" },
-  {
-    header: "Category",
-    accessor: (r) =>
-      r.issueType === "technical"
-        ? "Technical Issue"
-        : r.issueType === "billing"
-        ? "Billing Issue"
-        : "General Inquiry",
-  },
-  {
-    header: "Description",
-    accessor: (r) => (r.subject ? `${r.subject}` : r.description || "No description"),
-  },
-  { header: "Status", accessor: (r) => r.status || "pending" },
-  {
-    header: "Date",
-    accessor: (r) => {
-      if (!r.createdAt) return "N/A";
-      try {
-        const d = r.createdAt.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
-        return d.toISOString().split("T")[0];
-      } catch {
-        return String(r.createdAt);
-      }
+  const reportColumns = [
+    { header: "Complaint ID", accessor: (r) => r.complaintId || "N/A" },
+    { header: "User", accessor: (r) => r.email || r.userId || "N/A" },
+    {
+      header: "Category",
+      accessor: (r) =>
+        r.issueType === "technical"
+          ? "Technical Issue"
+          : r.issueType === "billing"
+          ? "Billing Issue"
+          : "General Inquiry",
     },
-  },
-];
- 
+    {
+      header: "Description",
+      accessor: (r) =>
+        r.subject ? `${r.subject}` : r.description || "No description",
+    },
+    { header: "Status", accessor: (r) => r.status || "pending" },
+    {
+      header: "Date",
+      accessor: (r) => {
+        if (!r.createdAt) return "N/A";
+        try {
+          const d = r.createdAt.toDate
+            ? r.createdAt.toDate()
+            : new Date(r.createdAt);
+          return d.toISOString().split("T")[0];
+        } catch {
+          return String(r.createdAt);
+        }
+      },
+    },
+  ];
 
   const [filters, setFilters] = useState({
     search: "",
@@ -112,6 +116,7 @@ const reportColumns = [
                 id: doc.id,
                 userId: profileDoc.id,
                 email: data.email || profileDoc.id,
+                complaintId: data.complaintId || `US-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Get complaint ID or generate fallback
                 ...data,
               });
             }
@@ -250,13 +255,16 @@ const reportColumns = [
     if (loading) return [];
 
     return allReports.filter((report) => {
+      const searchLower = filters.search.toLowerCase();
+      
+      // Search in multiple fields including complaint ID
       if (
         filters.search &&
-        !`${report.subject || ""} ${report.description || ""} ${
-          report.email || ""
-        }`
+        !`${report.complaintId || ""} ${report.subject || ""} ${
+          report.description || ""
+        } ${report.email || ""}`
           .toLowerCase()
-          .includes(filters.search.toLowerCase())
+          .includes(searchLower)
       ) {
         return false;
       }
@@ -299,8 +307,6 @@ const reportColumns = [
       return true;
     });
   }, [allReports, filters, loading]);
-
-  
 
   // Calculate user satisfaction from resolution time and response quality
   const userSatisfactionData = useMemo(() => {
@@ -498,9 +504,7 @@ const reportColumns = [
     return date.toLocaleDateString();
   };
 
-  const getUserInitials = (email) =>
-    email ? email.substring(0, 2).toUpperCase() : "UU";
-
+ 
   const getUserName = (email) => (email ? email.split("@")[0] : "Unknown User");
 
   const openReportDetails = (report) => {
@@ -539,6 +543,15 @@ const reportColumns = [
         : 0,
   };
 
+  // ✅ Function to copy complaint ID to clipboard
+  const copyComplaintId = (complaintId) => {
+    navigator.clipboard.writeText(complaintId).then(() => {
+      alert(`Complaint ID copied: ${complaintId}`);
+    }).catch(err => {
+      console.error('Failed to copy complaint ID:', err);
+    });
+  };
+
   return (
     <div className="user-reports-dashboard">
       {/* Loading Overlay */}
@@ -564,7 +577,26 @@ const reportColumns = [
             <div className="modal-body">
               <div className="report-detail-grid">
                 <div className="detail-section">
-                  <h4>User Information</h4>
+                  <h4>Complaint Information</h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Complaint ID:</span>
+                    <span className="detail-value" style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#3b82f6' }}>
+                      {selectedReport.complaintId}
+                      <button
+                        onClick={() => copyComplaintId(selectedReport.complaintId)}
+                        style={{ 
+                          marginLeft: '8px', 
+                          background: 'none', 
+                          border: 'none', 
+                          color: '#6b7280',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem'
+                        }}
+                        title="Copy Complaint ID"
+                      >
+                      </button>
+                    </span>
+                  </div>
                   <div className="detail-item">
                     <span className="detail-label">Email:</span>
                     <span className="detail-value">{selectedReport.email}</span>
@@ -976,7 +1008,7 @@ const reportColumns = [
             <input
               type="text"
               className="filter-search-input"
-              placeholder="Search by subject, description, or email..."
+              placeholder="Search by Complaint ID (US-...), email, or subject..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -1036,7 +1068,7 @@ const reportColumns = [
             variant="secondary"
             columns={reportColumns}
             onExport={(format) =>
-              exportUserReportsData(reports.length > 0 ? reports : allReports, format)
+              exportUsersData(reports.length > 0 ? reports : allReports, format)
             }
           />
         </div>
@@ -1044,9 +1076,9 @@ const reportColumns = [
           <table className="report-table">
             <thead>
               <tr>
+                <th>Complaint ID</th>
                 <th>User</th>
                 <th>Category</th>
-                <th>Description</th>
                 <th>Status</th>
                 <th>Date</th>
                 <th>Actions</th>
@@ -1056,15 +1088,30 @@ const reportColumns = [
               {reports.slice(0, 10).map((report) => (
                 <tr key={`${report.userId}-${report.id}`}>
                   <td>
-                    <div className="report-user">
-                      <div className="report-user-avatar">
-                        {getUserInitials(report.email)}
+                    <div 
+                      className="complaint-id-cell" 
+                      title="Click to copy Complaint ID"
+                      onClick={() => copyComplaintId(report.complaintId)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="complaint-id-display">
+                        <FiHash style={{ marginRight: '6px', fontSize: '0.9rem' }} />
+                        <span className="complaint-id-text" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                          {report.complaintId}
+                        </span>
                       </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="report-user">
+                      
                       <div className="report-user-info">
                         <div className="report-user-name">
                           {getUserName(report.email)}
                         </div>
-                        <div className="report-user-email">{report.email}</div>
+                        <div className="report-user-email" style={{ fontSize: '0.75rem' }}>
+                          {report.email}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -1077,11 +1124,7 @@ const reportColumns = [
                       {report.issueType === "general" && "General Inquiry"}
                     </span>
                   </td>
-                  <td>
-                    <div className="comp-dis" title={report.description}>
-                      {report.subject || "No subject"}
-                    </div>
-                  </td>
+                 
                   <td>
                     <span
                       className={`report-status-badge ${
