@@ -9,7 +9,7 @@ import {
   getDoc,
   doc,
   query,
-  setDoc, // ← Add this
+  setDoc,
   where,
   getDocs,
 } from "firebase/firestore";
@@ -43,6 +43,38 @@ const Support = () => {
     checkContributorStatus();
   }, [currentUser]);
 
+  // ✅ Function to generate unique complaint ID
+  const generateComplaintId = async () => {
+    const prefix = isContributor ? "CO" : "US";
+    
+    // Get current counter from Firestore or start from 1
+    const counterRef = doc(db, "Counters", "supportComplaints");
+    
+    try {
+      const counterDoc = await getDoc(counterRef);
+      let currentCount = 1;
+      
+      if (counterDoc.exists()) {
+        currentCount = counterDoc.data().count + 1;
+        await setDoc(counterRef, { count: currentCount });
+      } else {
+        await setDoc(counterRef, { count: currentCount });
+      }
+      
+      // Format: US/CO + timestamp + 4-digit sequential number
+      const timestamp = Date.now();
+      const sequentialNumber = currentCount.toString().padStart(4, '0');
+      return `${prefix}-${timestamp}-${sequentialNumber}`;
+      
+    } catch (error) {
+      console.error("Error generating complaint ID:", error);
+      // Fallback: timestamp + random number
+      const timestamp = Date.now();
+      const randomNum = Math.floor(Math.random() * 10000);
+      return `${prefix}-${timestamp}-${randomNum.toString().padStart(4, '0')}`;
+    }
+  };
+
   // 🔹 Saves a second readable copy for Admin Panel
   const saveAdminSupportCopy = async (data, notificationId) => {
     try {
@@ -61,10 +93,10 @@ const Support = () => {
     }
   };
 
-  // ✅ IMPROVED: Create admin notification for support complaint
-  // 🔵 Create admin notification for support complaint
+  // ✅ Create admin notification for support complaint
   const createAdminSupportNotification = async (
     supportId,
+    complaintId,
     subject,
     userEmail,
     issueType,
@@ -72,6 +104,7 @@ const Support = () => {
   ) => {
     console.log("🔔 Creating admin notification...", {
       supportId,
+      complaintId,
       subject,
       userEmail,
       issueType,
@@ -93,7 +126,8 @@ const Support = () => {
       const notificationData = {
         type: "support",
         supportId,
-        message: `New ${userType} complaint: "${subject}"`,
+        complaintId, // Include complaint ID in notification
+        message: `New ${userType} complaint (${complaintId}): "${subject}"`,
         subject,
         userEmail,
         issueType,
@@ -132,13 +166,19 @@ const Support = () => {
     setLoading(true);
     try {
       const userType = isContributor ? "contributor" : "regular";
+      
+      // ✅ Generate unique complaint ID
+      const complaintId = await generateComplaintId();
+      
+      console.log("📝 Generated Complaint ID:", complaintId);
 
-      // 1️⃣ Save complaint in user's Support subcollection
+      // 1️⃣ Save complaint in user's Support subcollection with complaintId
       const userSupportRef = await addDoc(
         collection(db, `Profiles/${currentUser.uid}/Support`),
         {
           userId: currentUser.uid,
           email: currentUser.email,
+          complaintId, // Include unique complaint ID
           subject,
           description,
           issueType,
@@ -149,7 +189,7 @@ const Support = () => {
         }
       );
 
-      console.log("✅ Support complaint saved with ID:", userSupportRef.id);
+      console.log("✅ Support complaint saved with ID:", userSupportRef.id, "Complaint ID:", complaintId);
 
       // 2️⃣ ALSO save complaint in Contributors collection if user is a contributor
       if (isContributor) {
@@ -158,6 +198,7 @@ const Support = () => {
           {
             userId: currentUser.uid,
             email: currentUser.email,
+            complaintId, // Include unique complaint ID
             subject,
             description,
             issueType,
@@ -169,16 +210,19 @@ const Support = () => {
         );
       }
 
-      // ✅ Create admin notification
+      // ✅ Create admin notification with complaintId
       await createAdminSupportNotification(
         userSupportRef.id,
+        complaintId,
         subject,
         currentUser.email,
         issueType,
         userType
       );
 
-      alert("Your report has been submitted successfully!");
+      // Show success message with complaint ID
+      alert(`Your report has been submitted successfully!\n\nComplaint ID: ${complaintId}\n\nPlease save this ID for future reference.`);
+      
       setSubject("");
       setDescription("");
       setIssueType("");
