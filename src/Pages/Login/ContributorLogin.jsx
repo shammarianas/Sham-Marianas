@@ -103,13 +103,6 @@ const ContributorLogin = () => {
   const [resendTimer, setResendTimer] = useState(0);
   const [tempUser, setTempUser] = useState(null);
 
-  // NEW: Phone Verification States
-  const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
-  const [phoneOtp, setPhoneOtp] = useState("");
-  const [phoneVerificationId, setPhoneVerificationId] = useState("");
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
-  const [phoneResendTimer, setPhoneResendTimer] = useState(0);
-
   // ✅ CONTRIBUTOR SPECIFIC FIELDS
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -129,7 +122,7 @@ const ContributorLogin = () => {
   const navigate = useNavigate();
 
 
-
+  
   // Auth state listener for email verification
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -158,13 +151,6 @@ const ContributorLogin = () => {
   }, [resendTimer]);
 
   useEffect(() => {
-    if (phoneResendTimer > 0) {
-      const t = setTimeout(() => setPhoneResendTimer(phoneResendTimer - 1), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [phoneResendTimer]);
-
-  useEffect(() => {
     setError("");
     setSuccess("");
   }, [location, currentStep]);
@@ -190,104 +176,7 @@ const ContributorLogin = () => {
     }
   };
 
-  // Username validation function
-  const validateUsername = async (username) => {
-    // Rule 1: No spaces allowed
-    if (/\s/.test(username)) {
-      return "Username cannot contain spaces";
-    }
-
-    // Rule 2: Only underscores allowed, no other special characters
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      return "Username can only contain letters, numbers and underscores (_)";
-    }
-
-    // Rule 3: Minimum length
-    if (username.length < 3) {
-      return "Username must be at least 3 characters";
-    }
-
-    if (username.length > 20) {
-      return "Username must be less than 20 characters";
-    }
-
-    // Rule 4: Check if username already exists in Firestore
-    try {
-      // Query Firestore to check if username exists
-      const querySnapshot = await getDocs(
-        query(collection(db, "Contributors"), where("username", "==", username))
-      );
-
-      if (!querySnapshot.empty) {
-        // Also check in Users collection if you have one
-        const userSnapshot = await getDocs(
-          query(collection(db, "Users"), where("username", "==", username))
-        );
-
-        if (!userSnapshot.empty) {
-          return "Username already taken. Please choose another one.";
-        }
-      }
-    } catch (err) {
-      console.error("Error checking username:", err);
-      return "Error checking username availability";
-    }
-
-    return null; // No error
-  };
-
-  // Username change handler mein validation add karein
-  const handleUsernameChange = async (e) => {
-    const value = e.target.value;
-    setUsername(value);
-
-    // Basic validation
-    if (value.length < 3) {
-      setError("Username must be at least 3 characters");
-      return;
-    }
-
-    // Check for spaces
-    if (/\s/.test(value)) {
-      setError("Username cannot contain spaces");
-      return;
-    }
-
-    // Check for special characters (only underscore allowed)
-    if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      setError("Username can only contain letters, numbers and underscores (_)");
-      return;
-    }
-
-    // Clear error if basic validation passes
-    setError("");
-
-    // Debounce for checking uniqueness (2 seconds ke baad check karein)
-    if (value.length >= 3) {
-      clearTimeout(usernameTimeoutRef.current);
-      usernameTimeoutRef.current = setTimeout(async () => {
-        const errorMsg = await validateUsername(value);
-        if (errorMsg) {
-          setError(errorMsg);
-        } else {
-          setSuccess("Username is available!");
-          setTimeout(() => setSuccess(""), 2000); // Success message hide after 2 seconds
-        }
-      }, 2000);
-    }
-  };
-
-  // Username timeout reference add karein component ke top par
-  const usernameTimeoutRef = useRef(null);
-
-  // Cleanup timeout on component unmount
-  useEffect(() => {
-    return () => {
-      if (usernameTimeoutRef.current) {
-        clearTimeout(usernameTimeoutRef.current);
-      }
-    };
-  }, []);
+  const handleUsernameChange = (e) => setUsername(e.target.value);
 
   // ✅ CONTRIBUTOR HANDLERS
   const handleFullNameChange = (e) => setFullName(e.target.value);
@@ -384,7 +273,7 @@ const ContributorLogin = () => {
   }, [password, confirmPassword, page, currentStep]);
 
   // ✅ STEP VALIDATION
-  const validateStep1 = async () => {
+  const validateStep1 = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (
@@ -397,29 +286,6 @@ const ContributorLogin = () => {
       !confirmPassword
     ) {
       setError("Please fill all required fields");
-      return false;
-    }
-
-    // Username validation
-    if (/\s/.test(username)) {
-      setError("Username cannot contain spaces");
-      return false;
-    }
-
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError("Username can only contain letters, numbers and underscores (_)");
-      return false;
-    }
-
-    if (username.length < 3) {
-      setError("Username must be at least 3 characters");
-      return false;
-    }
-
-    // Check username uniqueness before proceeding
-    const usernameError = await validateUsername(username);
-    if (usernameError) {
-      setError(usernameError);
       return false;
     }
 
@@ -456,15 +322,11 @@ const ContributorLogin = () => {
 
   const nextStep = () => {
     if (currentStep === 1 && !validateStep1()) return;
+    if (currentStep === 3 && !validateStep2()) return;
 
-    if (currentStep === 1) sendVerificationEmail();
-    if (currentStep === 2 && !isEmailVerified) {
-      setError("Verify email first");
-      return;
-    }
-    if (currentStep === 3 && !isPhoneVerified) {
-      setError("Verify phone number first");
-      return;
+    if (currentStep === 1) {
+      // Step 1 se Step 2 jaane par verification email bhejein
+      sendVerificationEmail();
     }
 
     setCurrentStep(currentStep + 1);
@@ -522,35 +384,6 @@ const ContributorLogin = () => {
     }
   };
 
-  // === PHONE VERIFICATION ===
-  const sendPhoneOtp = async () => {
-    try {
-      setError("");
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-          size: "invisible",
-        });
-      }
-      const phoneNumber = countryCode + phone;
-      const confirmation = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-      setPhoneVerificationId(confirmation.verificationId);
-      setPhoneVerificationSent(true);
-      setPhoneResendTimer(60);
-      setSuccess("OTP sent to your phone!");
-    } catch (err) {
-      setError("Failed to send OTP: " + err.message);
-    }
-  };
-
-  const verifyPhoneOtp = () => {
-    if (phoneOtp.length === 6) {
-      setIsPhoneVerified(true);
-      setSuccess("Phone number verified successfully!");
-    } else {
-      setError("Please enter valid 6-digit OTP");
-    }
-  };
-
   // Resend verification email
   const resendVerificationEmail = async () => {
     try {
@@ -586,8 +419,6 @@ const ContributorLogin = () => {
       setError("Failed to check verification status: " + err.message);
     }
   };
-
-
 
   const loginWithEmailPassword = async (e) => {
     e.preventDefault();
@@ -812,10 +643,9 @@ const ContributorLogin = () => {
           >
             {step === 1 && "Personal"}
             {step === 2 && "Verify Email"}
-            {step === 3 && "Verify Phone"}
-            {step === 4 && "Portfolio"}
-            {step === 5 && "Agreement"}
-            {step === 6 && "Status"}
+            {step === 3 && "Portfolio"}
+            {step === 4 && "Agreement"}
+            {step === 5 && "Status"}
           </span>
         </div>
       ))}
@@ -945,10 +775,9 @@ const ContributorLogin = () => {
               <span>
                 {currentStep === 1 && "Personal Information"}
                 {currentStep === 2 && "Email Verification"}
-                {currentStep === 3 && "Phone Verification"}
-                {currentStep === 4 && "Professional Portfolio"}
-                {currentStep === 5 && "Contributor Agreement"}
-                {currentStep === 6 && "Application Status"}
+                {currentStep === 3 && "Professional Portfolio"}
+                {currentStep === 4 && "Contributor Agreement"}
+                {currentStep === 5 && "Application Status"}
               </span>
               <span
                 className="link"
@@ -967,7 +796,7 @@ const ContributorLogin = () => {
 
             <form
               onSubmit={
-                currentStep === 5
+                currentStep === 4
                   ? signUpwithEmailPassword
                   : (e) => e.preventDefault()
               }
@@ -995,47 +824,16 @@ const ContributorLogin = () => {
                       <label htmlFor="username" className="mb-2">
                         Username *
                       </label>
-                      <div className="input" style={{
-                        border: error && error.includes("Username") ? "1px solid #ff6b6b" : "1px solid rgba(255,255,255,0.2)",
-                        position: "relative"
-                      }}>
+                      <div className="input">
                         <input
                           type="text"
                           id="username"
                           required
-                          placeholder="john_doe123"
+                          placeholder="johndoe"
                           value={username}
                           onChange={handleUsernameChange}
-                          pattern="[a-zA-Z0-9_]+"
-                          title="Only letters, numbers and underscores allowed"
                         />
-                        {username && username.length >= 3 && !error && (
-                          <div style={{
-                            position: "absolute",
-                            right: "10px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            color: "#4caf50",
-                            fontSize: "0.8rem"
-                          }}>
-                            ✓
-                          </div>
-                        )}
                       </div>
-                      {username && (
-                        <div style={{
-                          fontSize: "0.8rem",
-                          marginTop: "0.25rem",
-                          color: username.length < 3 ? "#ff6b6b" :
-                            /\s/.test(username) ? "#ff6b6b" :
-                              !/^[a-zA-Z0-9_]+$/.test(username) ? "#ff6b6b" : "#4caf50"
-                        }}>
-                          {username.length < 3 ? "Minimum 3 characters" :
-                            /\s/.test(username) ? "Spaces not allowed" :
-                              !/^[a-zA-Z0-9_]+$/.test(username) ? "Only letters, numbers, and _" :
-                                "Valid format"}
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -1304,58 +1102,9 @@ const ContributorLogin = () => {
                   </div>
                 </div>
               )}
-              {/* STEP 3: PHONE VERIFICATION (NEW - EXACT SAME STYLE) */}
+
+              {/* ========== STEP 3: PROFESSIONAL PORTFOLIO ========== */}
               {currentStep === 3 && (
-                <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                  <h3 style={{ color: "#f5f5f5" }}>Verify Your Phone Number</h3>
-                  <p style={{ color: "#f5f5f5", opacity: 0.8 }}>
-                    We will send a 6-digit code to:<br />
-                    <strong>{countryCode} {phone}</strong>
-                  </p>
-
-                  {!phoneVerificationSent ? (
-                    <button type="button" className="login_btn" onClick={sendPhoneOtp}>
-                      Send OTP
-                    </button>
-                  ) : (
-                    <>
-                      <div className="input" style={{ maxWidth: "220px", margin: "1rem auto" }}>
-                        <input
-                          type="text"
-                          placeholder="000000"
-                          value={phoneOtp}
-                          onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ""))}
-                          maxLength="6"
-                          style={{ textAlign: "center", letterSpacing: "0.5rem", fontSize: "1.2rem" }}
-                        />
-                      </div>
-
-                      <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-                        <button type="button" className="login_btn" onClick={verifyPhoneOtp}>
-                          {isPhoneVerified ? "Phone Verified" : "Verify OTP"}
-                        </button>
-                        <button
-                          type="button"
-                          className="login_btn"
-                          onClick={sendPhoneOtp}
-                          disabled={phoneResendTimer > 0}
-                          style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", opacity: phoneResendTimer > 0 ? 0.5 : 1 }}
-                        >
-                          {phoneResendTimer > 0 ? `Resend (${phoneResendTimer}s)` : "Resend OTP"}
-                        </button>
-                      </div>
-
-                      {isPhoneVerified && (
-                        <div style={{ marginTop: "1rem", padding: "1rem", background: "rgba(76,175,80,0.1)", borderRadius: "0.5rem" }}>
-                          <p style={{ color: "#4caf50" }}>Phone number verified successfully!</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-              {/* ========== STEP 4: PROFESSIONAL PORTFOLIO ========== */}
-              {currentStep === 4 && (
                 <>
                   <label htmlFor="portfolio">Portfolio URL</label>
                   <div className="input">
@@ -1543,8 +1292,8 @@ const ContributorLogin = () => {
                 </>
               )}
 
-              {/* ========== STEP 5: AGREEMENT ========== */}
-              {currentStep === 5 && (
+              {/* ========== STEP 4: AGREEMENT ========== */}
+              {currentStep === 4 && (
                 <div
                   className="agreement-section"
                   style={{
@@ -1630,8 +1379,8 @@ const ContributorLogin = () => {
                 </div>
               )}
 
-              {/* ========== STEP 6: SUCCESS ========== */}
-              {currentStep === 6 && (
+              {/* ========== STEP 5: SUCCESS ========== */}
+              {currentStep === 5 && (
                 <div
                   className="success-section"
                   style={{
@@ -1721,9 +1470,15 @@ const ContributorLogin = () => {
               {success && <span className="success">{success}</span>}
 
               {/* ========== BUTTONS ========== */}
-              {currentStep < 6 && (
-                <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
-                  {currentStep > 1 && (
+              {currentStep < 5 && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "1rem",
+                    marginTop: "1.5rem",
+                  }}
+                >
+                  {currentStep > 1 && currentStep !== 2 && (
                     <button
                       type="button"
                       className="login_btn"
@@ -1737,13 +1492,27 @@ const ContributorLogin = () => {
                       Previous
                     </button>
                   )}
-                  {currentStep < 5 ? (
-                    <button type="button" className="login_btn" onClick={nextStep} style={{ flex: 1 }}
-                      disabled={(currentStep === 2 && !isEmailVerified) || (currentStep === 3 && !isPhoneVerified)}>
-                      Next
+
+                  {currentStep < 4 ? (
+                    <button
+                      type="button"
+                      className="login_btn"
+                      onClick={nextStep}
+                      disabled={currentStep === 2 && !isEmailVerified}
+                      style={{
+                        flex: 1,
+                        opacity: (currentStep === 2 && !isEmailVerified) ? 0.5 : 1
+                      }}
+                    >
+                      {currentStep === 2 ? "Next" : "Next"}
                     </button>
                   ) : (
-                    <button type="submit" className="login_btn" disabled={!termsAccepted}>
+                    <button
+                      type="submit"
+                      className={`login_btn ${!termsAccepted ? "disabled" : ""}`}
+                      disabled={!termsAccepted}
+                      style={{ flex: 1 }}
+                    >
                       Complete Registration
                     </button>
                   )}
@@ -1799,4 +1568,4 @@ const ContributorLogin = () => {
   );
 };
 
-export default ContributorLogin;
+export default ContributorLogin; 
