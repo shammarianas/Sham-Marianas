@@ -564,6 +564,20 @@ const assetTypeToFilterData = {
   other: null,
 };
 
+const specializationToAssetTypes = {
+  "videos": ["videos"],
+  "3d-models": ["models"],
+  "video-templates": ["video-templates"],
+  "images": ["images"],
+  "mockups": ["mockups"],
+  "graphic-templates": ["graphics"],
+  "fonts": ["fonts"],
+  "icons": ["icons"],
+  "scripts": ["scripts"],
+  "hdris": ["hdris"],
+  "textures": ["textures"],
+};
+
 const Upload = ({
   onUploadSuccess,
   onUploadClose,
@@ -576,6 +590,9 @@ const Upload = ({
   const { currentUser } = useUser();
   const { converting, generateAllSizes, uploadAllSizes } =
     useImageSizeConverter();
+  
+  // State definitions
+  const [userRole, setUserRole] = useState("contributor");
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -654,6 +671,7 @@ const Upload = ({
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [thumbnailType, setThumbnailType] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [specialization, setSpecialization] = useState(null);
 
   // File preview states
   const [filePreviews, setFilePreviews] = useState({
@@ -707,19 +725,26 @@ const Upload = ({
 
     return null;
   };
+
+  // ✅ Function to fetch user role
   const fetchUserRole = async () => {
-    if (!currentUser) return "contributor"; // default
+    if (!currentUser) return "contributor";
 
-    // Check Profiles collection for admin
-    const profileDoc = await getDoc(doc(db, "Profiles", currentUser.uid));
-    if (profileDoc.exists()) {
-      const profileData = profileDoc.data();
-      if (profileData.role === "admin") return "admin";
+    try {
+      // Check Profiles collection for admin
+      const profileDoc = await getDoc(doc(db, "Profiles", currentUser.uid));
+      if (profileDoc.exists()) {
+        const profileData = profileDoc.data();
+        if (profileData.role === "admin") return "admin";
+      }
+      
+      return "contributor";
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+      return "contributor";
     }
-
-    // Agar admin nahi mila, to contributor hai
-    return "contributor";
   };
+
   // Function to generate slug from title
   const generateSlug = (title) => {
     if (!title) return "";
@@ -731,6 +756,49 @@ const Upload = ({
       .trim()
       .slice(0, 100);
   };
+
+  // Fetch user role and specialization when component mounts
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!currentUser?.uid) return;
+      
+      try {
+        // Fetch user role
+        const role = await fetchUserRole();
+        setUserRole(role);
+        
+        // Fetch specialization only for contributors
+        if (role !== "admin") {
+          const docSnap = await getDoc(doc(db, "Contributors", currentUser.uid));
+          if (docSnap.exists()) {
+            const spec = docSnap.data().specialization;
+            setSpecialization(spec);
+            
+            // Auto-select first allowed type for new uploads
+            if (!editMode) {
+              const allowedTypes = specializationToAssetTypes[spec] || [];
+              if (allowedTypes.length > 0 && !allowedTypes.includes(formData.type)) {
+                setFormData(prev => ({
+                  ...prev,
+                  type: allowedTypes[0]
+                }));
+              }
+            }
+            
+            // For edit mode, validate if current asset type is allowed
+            if (editMode && assetToEdit && !allowedTypes.includes(assetToEdit.type)) {
+              alert(`This asset type is not allowed for your specialization. You can only edit ${spec} assets.`);
+              if (onUploadClose) onUploadClose();
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    
+    fetchUserData();
+  }, [currentUser?.uid, editMode, assetToEdit]);
 
   // Initialize form data with existing asset data when in edit mode
   useEffect(() => {
@@ -924,7 +992,6 @@ const Upload = ({
           thumbnail: file,
           type: "models", // Automatically set type to models
           category: prev.category || "Props / Miscellaneous",
-          // 👇 MODEL FIELD KO TOUCH MAT KARO - SIRF THUMBNAIL SET KARO
         }));
 
         setThumbnailType("3dmodel");
@@ -1184,7 +1251,7 @@ const Upload = ({
     assetId,
     title,
     ownerId,
-    ownerName, // contributor ka naam
+    ownerName,
     status = "pending"
   ) => {
     console.log("🔔 Attempting to save contributor notification...", {
@@ -1199,7 +1266,7 @@ const Upload = ({
         title,
         ownerId,
         ownerName,
-        status, // contributor who uploaded
+        status,
         message: `Your asset "${title}" uploaded by ${ownerName} is currently ${status}.`,
         read: false,
         createdAt: serverTimestamp(),
@@ -1271,6 +1338,15 @@ const Upload = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Check if contributor is trying to upload wrong type
+    if (userRole !== "admin" && specialization) {
+      const allowedTypes = specializationToAssetTypes[specialization] || [];
+      if (!allowedTypes.includes(formData.type)) {
+        alert(`You can only upload ${specialization} assets based on your specialization.`);
+        return;
+      }
+    }
+
     const notificationStatus = "pending";
 
     if (editMode) setIsUpdating(true);
@@ -1298,9 +1374,10 @@ const Upload = ({
       } else {
         assetStatus = "pending";
       }
+      
       let docData = {
         title: formData.title,
-        slug: formData.slug || generateSlug(formData.title), // Ensure slug is included
+        slug: formData.slug || generateSlug(formData.title),
         description: formData.description,
         type: formData.type,
         price: formData.price,
@@ -1329,14 +1406,14 @@ const Upload = ({
         date: formData.date,
         userId: currentUser?.uid ?? "anonymous",
 
-        ownerId: currentUser.uid, // <-- THIS MAKES THE ASSET PRIVATE TO THE CONTRIBUTOR
-        status: assetStatus, // default
+        ownerId: currentUser.uid,
+        status: assetStatus,
 
         // ✅ CONSISTENT NAME FIELD
         authorName: userName,
         author: userName,
-        createdBy: userName, // new assets
-        updatedBy: userName, // edits
+        createdBy: userName,
+        updatedBy: userName,
 
         // Timestamps
         createdAt: editMode ? assetToEdit.createdAt : serverTimestamp(),
@@ -1357,19 +1434,16 @@ const Upload = ({
         if (is3DFile && formData.type === "models") {
           console.log("🔄 Thumbnail se 3D model - PREVIEW ke liye");
 
-          // ✅ THUMBNAIL SE 3D MODEL KO 'thumbnailModel' FIELD MEIN SAVE KARO
           const thumbnailModelUrl = await uploadFile(
             formData.thumbnail,
             "models"
           );
-          docData.thumbnailModel = thumbnailModelUrl; // 👈 YEH LINE ZAROORI HAI
+          docData.thumbnailModel = thumbnailModelUrl;
 
-          // Thumbnail ke liye default image set karo
           docData.thumbnail = "/default-model-thumbnail.jpg";
 
           console.log("✅ ThumbnailModel saved:", docData.thumbnailModel);
         } else {
-          // Regular image/video thumbnail hai
           console.log("🖼️ Uploading regular thumbnail");
           docData.thumbnail = await uploadThumbnail(formData.thumbnail);
         }
@@ -1455,14 +1529,12 @@ const Upload = ({
 
         if (is3DFile && formData.type === "models") {
           console.log("🔄 Thumbnail se 3D model - PREVIEW ke liye");
-          // THUMBNAIL SE 3D MODEL KO 'thumbnailModel' FIELD MEIN SAVE KARO
           docData.thumbnailModel = await uploadFile(
             formData.thumbnail,
             "models"
           );
-          docData.thumbnail = "/default-model-thumbnail.jpg"; // Default image
+          docData.thumbnail = "/default-model-thumbnail.jpg";
         } else {
-          // Regular image/video thumbnail hai
           console.log("🖼️ Uploading regular thumbnail");
           docData.thumbnail = await uploadThumbnail(formData.thumbnail);
         }
@@ -1477,6 +1549,7 @@ const Upload = ({
       } else if (editMode && assetToEdit.model && !formData.model) {
         docData.model = assetToEdit.model;
       }
+      
       if (formData.type === "scripts" && formData.script) {
         docData.script = await uploadFile(formData.script, "scripts");
       } else if (editMode && assetToEdit.script && !formData.script) {
@@ -2211,11 +2284,6 @@ const Upload = ({
                     placeholder="URL Auto Generate"
                   />
                 )}
-                {/* {formData.slug && (
-                  <p className="blog-form-hint" style={{ color: '#059669', fontStyle: 'normal' }}>
-                    Slug: {formData.slug}
-                  </p>
-                )} */}
               </div>
 
               <div className="blog-form-group">
@@ -2324,22 +2392,70 @@ const Upload = ({
                   onChange={handleChange}
                   required
                   className="blog-form-select"
+                  disabled={editMode && userRole !== "admin"}
                 >
                   <option value="" disabled>
                     Select Asset Type
                   </option>
-                  <option value="models">3D Model</option>
-                  <option value="textures">Texture</option>
-                  <option value="scripts">Script</option>
-                  <option value="images">Image</option>
-                  <option value="graphics">Graphics Templates</option>
-                  <option value="mockups">Mockups</option>
-                  <option value="fonts">Fonts</option>
-                  <option value="videos">Video</option>
-                  <option value="video-templates">Video Templates</option>
-                  <option value="icons">Icons</option>
-                  <option value="hdris">HDRIs</option>
-                  <option value="other">Other</option>
+                  
+                  {/* Condition: Admin - show all types */}
+                  {userRole === "admin" ? (
+                    <>
+                      <option value="models">3D Model</option>
+                      <option value="textures">Texture</option>
+                      <option value="scripts">Script</option>
+                      <option value="images">Image</option>
+                      <option value="graphics">Graphics Templates</option>
+                      <option value="mockups">Mockups</option>
+                      <option value="fonts">Fonts</option>
+                      <option value="videos">Video</option>
+                      <option value="video-templates">Video Templates</option>
+                      <option value="icons">Icons</option>
+                      <option value="hdris">HDRIs</option>
+                      <option value="other">Other</option>
+                    </>
+                  ) : (
+                    // Condition: Contributor - show only specialization types
+                    (() => {
+                      const allowedTypes = specializationToAssetTypes[specialization] || [];
+                      const typeLabels = {
+                        "models": "3D Model",
+                        "textures": "Texture",
+                        "scripts": "Script",
+                        "images": "Image",
+                        "graphics": "Graphics Templates",
+                        "mockups": "Mockups",
+                        "fonts": "Fonts",
+                        "videos": "Video",
+                        "video-templates": "Video Templates",
+                        "icons": "Icons",
+                        "hdris": "HDRIs",
+                      };
+                      
+                      if (allowedTypes.length === 0) {
+                        return <option value="" disabled>No asset types available for your specialization</option>;
+                      }
+                      
+                      // Check if current type is allowed, otherwise show disabled
+                      const isCurrentTypeAllowed = allowedTypes.includes(formData.type);
+                      
+                      return (
+                        <>
+                          {!isCurrentTypeAllowed && formData.type && (
+                            <option value={formData.type} disabled>
+                              {formData.type} (Not allowed for your specialization)
+                            </option>
+                          )}
+                          
+                          {allowedTypes.map(type => (
+                            <option key={type} value={type}>
+                              {typeLabels[type] || type}
+                            </option>
+                          ))}
+                        </>
+                      );
+                    })()
+                  )}
                 </select>
               </div>
 
@@ -2472,11 +2588,9 @@ const Upload = ({
 
               {formData.type === "models" && (
                 <>
-                  {/* Model Field - VISIBLE but OPTIONAL since we're using thumbnail field */}
                   <div className="blog-form-group">
                     <label className="blog-form-label">
                       3D Model File (Optional)
-                      {/* Required star hata do */}
                     </label>
                     <input
                       type="file"
@@ -2484,7 +2598,6 @@ const Upload = ({
                       onChange={handleChange}
                       accept=".glb,.gltf,.stl,.obj,.fbx,.blend,.zip"
                       className="blog-form-file"
-                      // required={!editMode} 👈 REQUIRED HATA DO
                     />
                     <p className="blog-form-hint">
                       Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend,
