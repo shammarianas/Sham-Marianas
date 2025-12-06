@@ -4366,7 +4366,7 @@ ul {
 }
 
 .report-category-badge {
-  padding: 4px 8px;
+  /* padding: 4px 8px; */
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
