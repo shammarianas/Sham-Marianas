@@ -16,6 +16,7 @@ import {
   FiX,
   FiMail,
   FiCalendar,
+  FiHash,
 } from "react-icons/fi";
 import {
   collection,
@@ -66,6 +67,7 @@ const SellerComplaints = () => {
             const data = supportDoc.data();
             allComplaints.push({
               id: supportDoc.id,
+              complaintId: data.complaintId || `CO-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Get complaint ID or generate fallback
               userId: contributorId,
               sellerName:
                 contributorData.username ||
@@ -111,11 +113,15 @@ const SellerComplaints = () => {
   };
 
   const filteredComplaints = complaints.filter((complaint) => {
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Search in multiple fields including complaint ID
     const matchesSearch =
-      complaint.sellerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.complainant.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.type.toLowerCase().includes(searchTerm.toLowerCase());
+      complaint.sellerName.toLowerCase().includes(searchLower) ||
+      complaint.sellerEmail.toLowerCase().includes(searchLower) ||
+      complaint.complaintId.toLowerCase().includes(searchLower) || // Search by complaint ID
+      complaint.subject.toLowerCase().includes(searchLower) ||
+      complaint.type.toLowerCase().includes(searchLower);
 
     const matchesStatus =
       statusFilter === "all" || complaint.status === statusFilter;
@@ -234,6 +240,15 @@ const SellerComplaints = () => {
     setStatusFilter("all");
   };
 
+  // ✅ Function to copy complaint ID to clipboard
+  const copyComplaintId = (complaintId) => {
+    navigator.clipboard.writeText(complaintId).then(() => {
+      alert(`Complaint ID copied: ${complaintId}`);
+    }).catch(err => {
+      console.error('Failed to copy complaint ID:', err);
+    });
+  };
+
   if (loading) {
     return (
       <div className="user-reports-dashboard">
@@ -349,7 +364,7 @@ const SellerComplaints = () => {
             <input
               type="text"
               className="filter-search-input"
-              placeholder="Search requests by seller, complainant, or subject..."
+              placeholder="Search by Complaint ID, seller name, email, or subject..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -371,7 +386,6 @@ const SellerComplaints = () => {
             <button className="filter-button" onClick={resetFilters}>
               <FiRefreshCw /> Reset
             </button>
-            
           </div>
         </div>
       </div>
@@ -387,6 +401,7 @@ const SellerComplaints = () => {
             filename="seller-complaints-reports"
             variant="secondary"
            columns={[
+            { header: "Complaint ID", accessor: (c) => c.complaintId || "N/A" },
             { header: "Contributor", accessor: (c) => c.sellerName || "N/A" },
              { header: "Email", accessor: (c) => c.sellerEmail || "N/A" },
              { header: "Contact Email", accessor: (c) => c.complainantEmail || "N/A" },
@@ -409,8 +424,8 @@ const SellerComplaints = () => {
           <table className="report-table">
             <thead>
               <tr>
+                <th>Complaint ID</th>
                 <th>Contributor</th>
-                <th>Contact Email</th>
                 <th>Type</th>
                 <th>Subject</th>
                 <th>Created</th>
@@ -422,6 +437,21 @@ const SellerComplaints = () => {
               {filteredComplaints.map((complaint) => (
                 <tr key={complaint.id}>
                   <td>
+                    <div 
+                      className="complaint-id-cell" 
+                      title="Click to copy Complaint ID"
+                      onClick={() => copyComplaintId(complaint.complaintId)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="complaint-id-display">
+                        <FiHash style={{ marginRight: '6px', fontSize: '0.9rem' }} />
+                        <span className="complaint-id-text" style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                          {complaint.complaintId}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
                     <div className="report-user">
                       <div className="report-user-info">
                         <div className="report-user-name">
@@ -431,11 +461,6 @@ const SellerComplaints = () => {
                           {complaint.sellerEmail}
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="report-user-email-single">
-                      {complaint.complainantEmail}
                     </div>
                   </td>
                   <td>{getTypeBadge(complaint.type)}</td>
@@ -546,7 +571,27 @@ const SellerComplaints = () => {
             <div className="modal-body">
               <div className="report-detail-grid">
                 <div className="detail-section">
-                  <h4>Contributor Information</h4>
+                  <h4>Complaint Information</h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Complaint ID:</span>
+                    <span className="detail-value" style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#3b82f6' }}>
+                      {selectedComplaint.complaintId}
+                      <button
+                        onClick={() => copyComplaintId(selectedComplaint.complaintId)}
+                        style={{ 
+                          marginLeft: '8px', 
+                          background: 'none', 
+                          border: 'none', 
+                          color: '#6b7280',
+                          cursor: 'pointer',
+                          fontSize: '0.9rem'
+                        }}
+                        title="Copy Complaint ID"
+                      >
+                        📋
+                      </button>
+                    </span>
+                  </div>
                   <div className="detail-item">
                     <span className="detail-label">Contributor Name:</span>
                     <span className="detail-value">
