@@ -474,7 +474,6 @@ const SellerAnalytics = () => {
                     <th>Revenue</th>
                     <th>Growth</th>
                     <th>Products</th>
-                    <th>Rating</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -504,16 +503,10 @@ const SellerAnalytics = () => {
                       </td>
                       <td>
                         <div className="comp-dis">
-                          <FiShoppingCart style={{ marginRight: '4px' }} />
-                          {seller.products} products
+                          {seller.products} Assets
                         </div>
                       </td>
-                      <td>
-                        <div className="comp-dis">
-                          <FiStar style={{ marginRight: '4px', color: '#fbbf24' }} />
-                          {seller.rating}/5.0
-                        </div>
-                      </td>
+                      
                       <td>
                         {getStatusBadge(seller.status)}
                       </td>
