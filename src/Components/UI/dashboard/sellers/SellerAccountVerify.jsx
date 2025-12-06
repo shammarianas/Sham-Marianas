@@ -12,11 +12,16 @@ import {
   FiSearch,
   FiFilter,
   FiRefreshCw,
-  FiDownload,
   FiList,
   FiUsers,
   FiTrendingUp,
   FiX,
+  FiUser,
+  FiPhone,
+  FiGlobe,
+  FiLink,
+  FiTag,
+  FiFileText,
 } from "react-icons/fi";
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
@@ -31,18 +36,29 @@ const SellerAccountVerify = () => {
     { header: "Seller Name", accessor: (item) => item.name || "N/A" },
     { header: "Email", accessor: (item) => item.email || "N/A" },
     {
-      header: "Business Name",
-      accessor: (item) => item.businessName || "Unknown",
+      header: "Specialization",
+      accessor: (item) => item.specialization || "Unknown",
     },
-    { header: "Category", accessor: (item) => item.category || "General" },
-    { header: "Location", accessor: (item) => item.location || "N/A" },
+    { 
+      header: "Location", 
+      accessor: (item) => {
+        if (item.city && item.country) {
+          return `${item.city}, ${item.country}`;
+        } else if (item.city) {
+          return item.city;
+        } else if (item.country) {
+          return item.country;
+        }
+        return "N/A";
+      }
+    },
     {
       header: "Join Date",
       accessor: (item) => {
         if (!item.joinDate) return "N/A";
         const dateObj = new Date(item.joinDate);
-        if (isNaN(dateObj.getTime())) return item.joinDate; // fallback if not a valid date
-        return dateObj.toISOString().split("T")[0]; // format: YYYY-MM-DD
+        if (isNaN(dateObj.getTime())) return item.joinDate;
+        return dateObj.toISOString().split("T")[0];
       },
     },
     { header: "Status", accessor: (item) => item.status || "Pending" },
@@ -54,19 +70,40 @@ const SellerAccountVerify = () => {
         const ref = collection(db, "Contributors");
         const snapshot = await getDocs(ref);
 
-        const data = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-
-          // Convert Firestore timestamp to readable date--------
-          joinDate: docSnap.data().joinDate?.toDate().toLocaleDateString(),
-          location: docSnap.data().countryCode || "N/A",
-          email: docSnap.data().email || "N/A",
-          name: docSnap.data().fullName || docSnap.data().username,
-          businessName: docSnap.data().specialization || "Unknown",
-          category: docSnap.data().specialization || "General",
-          documents: docSnap.data().documents || [], // If you add docs later
-        }));
+        const data = snapshot.docs.map((docSnap) => {
+          const sellerData = docSnap.data();
+          
+          return {
+            id: docSnap.id,
+            ...sellerData,
+            
+            // Personal Information
+            name: sellerData.fullName || sellerData.username || "N/A",
+            username: sellerData.username || "N/A",
+            email: sellerData.email || "N/A",
+            phone: sellerData.phone || "N/A",
+            dob: sellerData.dob || "N/A",
+            
+            // Location Information
+            city: sellerData.city || "N/A",
+            country: sellerData.country || sellerData.countryCode || "N/A",
+            
+            // Professional Information
+            specialization: sellerData.specialization || "Unknown",
+            portfolioLink: sellerData.portfolioLink || sellerData.website || "N/A",
+            keywords: sellerData.keywords || sellerData.skills || "N/A",
+            bio: sellerData.bio || sellerData.description || "N/A",
+            
+            // Dates
+            joinDate: sellerData.joinDate?.toDate().toLocaleDateString() || "N/A",
+            
+            // Status
+            status: sellerData.status || "pending",
+            
+            // Other
+            documents: sellerData.documents || [],
+          };
+        });
 
         setSellers(data);
         setLoading(false);
@@ -163,7 +200,8 @@ const SellerAccountVerify = () => {
     const matchesSearch =
       seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       seller.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      seller.businessName.toLowerCase().includes(searchTerm.toLowerCase());
+      seller.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      seller.username.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || seller.status === statusFilter;
@@ -206,6 +244,16 @@ const SellerAccountVerify = () => {
   const resetFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
+  };
+
+  // Helper function to get formatted location
+  const getFormattedLocation = (seller) => {
+    if (seller.country) {
+      return seller.country;
+    } else if (seller.country) {
+      return seller.country;
+    }
+    return "N/A";
   };
 
   return (
@@ -322,7 +370,7 @@ const SellerAccountVerify = () => {
             <input
               type="text"
               className="filter-search-input"
-              placeholder="Search sellers by name, email, or business..."
+              placeholder="Search sellers by name, email, username, or business..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -372,9 +420,8 @@ const SellerAccountVerify = () => {
             <thead>
               <tr>
                 <th>Seller</th>
-                <th>Business</th>
-                <th>Category</th>
-                <th>Location</th>
+                <th>Specialization</th>
+                <th>Country</th>
                 <th>Join Date</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -395,27 +442,15 @@ const SellerAccountVerify = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="comp-dis" title={seller.businessName}>
-                      {seller.businessName}
+                    <div className="comp-dis" title={seller.specialization}>
+                      {seller.specialization}
                     </div>
                   </td>
-                  <td>
-                    <span
-                      className={`report-category-badge ${
-                        seller.category === "3D Models"
-                          ? "technical"
-                          : seller.category === "Graphics"
-                          ? "billing"
-                          : "general"
-                      }`}
-                    >
-                      {seller.category}
-                    </span>
-                  </td>
+                  
                   <td>
                     <div className="comp-dis">
                       <FiMapPin style={{ marginRight: "4px" }} />
-                      {seller.location}
+                      {getFormattedLocation(seller)}
                     </div>
                   </td>
                   <td>
@@ -487,7 +522,7 @@ const SellerAccountVerify = () => {
 
               {filteredSellers.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="no-reports">
+                  <td colSpan="6" className="no-reports">
                     No sellers found matching your filters
                   </td>
                 </tr>
@@ -516,65 +551,118 @@ const SellerAccountVerify = () => {
 
             <div className="modal-body">
               <div className="report-detail-grid">
+                {/* Personal Information Section */}
                 <div className="detail-section">
-                  <h4>Seller Information</h4>
+                  <h4>
+                    <FiUser style={{ marginRight: "8px" }} />
+                    Personal Information
+                  </h4>
                   <div className="detail-item">
-                    <span className="detail-label">Name:</span>
+                    <span className="detail-label">Full Name:</span>
                     <span className="detail-value">{selectedSeller.name}</span>
                   </div>
                   <div className="detail-item">
+                    <span className="detail-label">Username:</span>
+                    <span className="detail-value">{selectedSeller.username}</span>
+                  </div>
+                  <div className="detail-item">
                     <span className="detail-label">Email:</span>
-                    <span className="detail-value">{selectedSeller.email}</span>
+                    <span className="detail-value">
+                      <FiMail style={{ marginRight: "6px" }} />
+                      {selectedSeller.email}
+                    </span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Location:</span>
+                    <span className="detail-label">Phone:</span>
                     <span className="detail-value">
-                      {selectedSeller.location}
+                      <FiPhone style={{ marginRight: "6px" }} />
+                      {selectedSeller.phone}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Date of Birth:</span>
+                    <span className="detail-value">
+                      <FiCalendar style={{ marginRight: "6px" }} />
+                      {selectedSeller.dob}
                     </span>
                   </div>
                 </div>
 
+                {/* Location Information Section */}
                 <div className="detail-section">
-                  <h4>Business Information</h4>
+                  <h4>
+                    <FiMapPin style={{ marginRight: "8px" }} />
+                    Location Information
+                  </h4>
                   <div className="detail-item">
-                    <span className="detail-label">Business Name:</span>
-                    <span className="detail-value">
-                      {selectedSeller.businessName}
-                    </span>
+                    <span className="detail-label">City:</span>
+                    <span className="detail-value">{selectedSeller.city}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Category:</span>
+                    <span className="detail-label">Country:</span>
                     <span className="detail-value">
-                      {selectedSeller.category}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Join Date:</span>
-                    <span className="detail-value">
-                      {selectedSeller.joinDate}
+                      <FiGlobe style={{ marginRight: "6px" }} />
+                      {selectedSeller.country}
                     </span>
                   </div>
                 </div>
 
+                {/* Professional Information Section */}
+                <div className="detail-section">
+                  <h4>
+                    <FiUserCheck style={{ marginRight: "8px" }} />
+                    Professional Information
+                  </h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Specialization:</span>
+                    <span className="detail-value">{selectedSeller.specialization}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Portfolio Link:</span>
+                    <span className="detail-value">
+                      <FiLink style={{ marginRight: "6px" }} />
+                      {selectedSeller.portfolioLink && selectedSeller.portfolioLink !== "N/A" ? (
+                        <a href={selectedSeller.portfolioLink} target="_blank" rel="noopener noreferrer">
+                          View Portfolio
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Keywords/Skills:</span>
+                    <span className="detail-value">
+                      <FiTag style={{ marginRight: "6px" }} />
+                      {selectedSeller.keywords}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Dates Section */}
+                <div className="detail-section">
+                  <h4>
+                    <FiCalendar style={{ marginRight: "8px" }} />
+                    Dates
+                  </h4>
+                  <div className="detail-item">
+                    <span className="detail-label">Joining Date:</span>
+                    <span className="detail-value">{selectedSeller.joinDate}</span>
+                  </div>
+                </div>
+
+                {/* Bio Section */}
                 <div className="detail-section full-width">
-                  <h4>Submitted Documents</h4>
-                  <div className="detail-description">
-                    <div className="documents-list">
-                      {selectedSeller.documents.map((doc, index) => (
-                        <div key={index} className="document-item">
-                          <div className="document-icon">📄</div>
-                          <div className="document-info">
-                            <div className="document-name">{doc}</div>
-                            <button className="action-button secondary small">
-                              View Document
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  <h4>
+                    <FiFileText style={{ marginRight: "8px" }} />
+                    Biography
+                  </h4>
+                  <div className="detail-bio">
+                    <p>{selectedSeller.bio}</p>
                   </div>
                 </div>
 
+                {/* Verification Status Section */}
                 <div className="detail-section">
                   <h4>Verification Status</h4>
                   <div className="detail-item">
@@ -619,7 +707,7 @@ const SellerAccountVerify = () => {
               <button
                 className="action-button warning"
                 onClick={() => {
-                  handleUnverify(selectedSeller);
+                  handleUnverify(selectedSeller.id);
                   setShowDetailsModal(false);
                 }}
               >

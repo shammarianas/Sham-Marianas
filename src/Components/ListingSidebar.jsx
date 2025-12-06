@@ -68,7 +68,7 @@ const filterData = {
       options: ["720 (HD)", "1080 (Full HD)", "2K", "4K (UHD)"],
     },
   },
-  Pictures: {
+  Images: {
     categories: {
       label: "Category / Subject",
       options: [
@@ -280,7 +280,7 @@ const filterData = {
 const categoryMapping = {
   Videos: "Videos",
   "video-templates": "VideoTemplates",
-  Pictures: "Pictures",
+  Images: "Images",
   graphics: "GraphicTemplates",
   Mockups: "Mockups",
   Fonts: "Fonts",

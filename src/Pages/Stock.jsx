@@ -4,7 +4,7 @@ import AOS from "aos"; // Import AOS (Animate On Scroll) library
 import Lines from "../Components/Lines";
 import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
-import Marq2 from "../Components/marq2";
+import MarqStock from "../Components/marqStock";
 import Header from "../Components/stock/Header";
 
 export default function StockPage() {
@@ -24,7 +24,7 @@ export default function StockPage() {
       <ProgressScroll />
       <Lines />
       <Header />
-      <Marq2 />
+      <MarqStock />
     </>
   );
 }
