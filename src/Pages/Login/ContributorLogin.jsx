@@ -9,7 +9,16 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "../../../firebase";
-import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  getDoc,
+  query,
+  collection,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
@@ -199,6 +208,7 @@ const ContributorLogin = () => {
 
   // ✅ CONTRIBUTOR SPECIFIC FIELDS
   const [fullName, setFullName] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState(""); // "", "checking", "available", "taken"
   const [phone, setPhone] = useState("");
   const [birthday, setBirthday] = useState("");
   const [countryCode, setCountryCode] = useState("+1");
@@ -268,8 +278,57 @@ const ContributorLogin = () => {
     }
   };
 
-  const handleUsernameChange = (e) => setUsername(e.target.value);
+  const usernameTimeoutRef = useRef(null);
 
+  const handleUsernameChange = (e) => {
+    const value = e.target.value.trim();
+    setUsername(value);
+
+    // Clear previous timeout
+    if (usernameTimeoutRef.current) {
+      clearTimeout(usernameTimeoutRef.current);
+    }
+
+    if (value.length < 3) {
+      setUsernameStatus("");
+      setError(""); // Clear previous error
+      return;
+    }
+
+    setUsernameStatus("checking");
+    setError(""); // Clear error while checking
+
+    // 400ms delay — user type karna band kare to check karega
+    usernameTimeoutRef.current = setTimeout(async () => {
+      try {
+        const q = query(
+          collection(db, "Contributors"),
+          where("username", "==", value.toLowerCase())
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          setUsernameStatus("available");
+        } else {
+          setUsernameStatus("taken");
+          setError("Username already taken");
+        }
+      } catch (err) {
+        console.error("Username check failed:", err);
+        setUsernameStatus("");
+        setError("Failed to check username");
+      }
+    }, 400);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (usernameTimeoutRef.current) {
+        clearTimeout(usernameTimeoutRef.current);
+      }
+    };
+  }, []);
   // ✅ CONTRIBUTOR HANDLERS
   const handleFullNameChange = (e) => setFullName(e.target.value);
 
@@ -398,6 +457,15 @@ const ContributorLogin = () => {
 
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
+      return false;
+    }
+    if (usernameStatus === "taken") {
+      setError("Please choose a different username");
+      return false;
+    }
+
+    if (username && usernameStatus !== "available" && username.length >= 3) {
+      setError("Please wait for username check or choose another");
       return false;
     }
 
@@ -609,6 +677,30 @@ const ContributorLogin = () => {
   // 🔵 Creates/updates contributor profile
   const handleContributorProfile = async (user) => {
     try {
+      const usernameLower = username.toLowerCase().trim();
+
+      if (usernameStatus === "taken") {
+        setError("Username is no longer available. Please choose another.");
+        return;
+      }
+      if (!usernameLower) {
+        setError("Username is required");
+        return;
+      }
+
+      // Check karo koi aur Contributor same username use to nahi kar raha
+      const usernameQuery = query(
+        collection(db, "Contributors"),
+        where("username", "==", usernameLower)
+      );
+      const querySnapshot = await getDocs(usernameQuery);
+
+      if (!querySnapshot.empty) {
+        setError("This username is already taken. Please choose another.");
+        return;
+      }
+
+      // Agar unique hai → save kar do
       await updateProfile(user, { displayName: username });
 
       const contributorRef = doc(db, "Contributors", user.uid);
@@ -616,16 +708,16 @@ const ContributorLogin = () => {
       await setDoc(
         contributorRef,
         {
-          username,
+          username: usernameLower, // lowercase save karo (search ke liye easy)
+          displayUsername: username, // original case (UI ke liye)
           fullName,
           email: user.email,
           emailVerified: user.emailVerified,
-          profilePic: user.photoURL,
+          profilePic: user.photoURL || "",
           uid: user.uid,
           role: "contributor",
           status: "pending",
 
-          // 👉 Contributor specific details
           phone: `${countryCode} ${phone}`,
           birthday,
           countryCode,
@@ -637,7 +729,6 @@ const ContributorLogin = () => {
           experience,
           bio,
 
-          // 👉 Stats
           totalUploads: 0,
           approvedUploads: 0,
           totalEarnings: 0,
@@ -645,7 +736,6 @@ const ContributorLogin = () => {
           rating: 0,
           reviews: 0,
 
-          // 👉 Timestamps
           createdAt: serverTimestamp(),
           joinDate: serverTimestamp(),
           lastLogin: serverTimestamp(),
@@ -655,24 +745,10 @@ const ContributorLogin = () => {
       );
 
       setCurrentStep(5);
-      setSuccess(
-        "Contributor account created successfully! Under review. You'll receive an email when approved."
-      );
-
-      // // Send welcome email
-      // await fetch(
-      //   "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
-      //   {
-      //     method: "POST",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify({
-      //       email: email,
-      //       name: fullName || username,
-      //     }),
-      //   }
-      // );
+      setSuccess("Contributor account created successfully! Under review.");
     } catch (err) {
-      setError("Failed to create contributor profile: " + err.message);
+      console.error("Profile error:", err);
+      setError("Failed to create profile. Try a different username.");
     }
   };
 
@@ -1001,6 +1077,17 @@ const ContributorLogin = () => {
                           onChange={handleUsernameChange}
                         />
                       </div>
+                      {usernameStatus === "checking" && (
+                        <small style={{ color: "#999" }}>Checking...</small>
+                      )}
+                      {usernameStatus === "available" && (
+                        <small style={{ color: "#4caf50" }}>Available!</small>
+                      )}
+                      {usernameStatus === "taken" && (
+                        <small style={{ color: "#ff6b6b" }}>
+                          Already taken
+                        </small>
+                      )}
                     </div>
                   </div>
 
