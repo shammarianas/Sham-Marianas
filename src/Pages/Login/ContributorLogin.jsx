@@ -9,7 +9,16 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "../../../firebase";
-import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  getDoc,
+  query,
+  collection,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
@@ -64,26 +73,120 @@ const countryCodes = [
 ];
 // Country code data (existing) ke neeche country list aur city list add karein
 const countries = [
-  { name: "United States", code: "US", cities: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"] },
-  { name: "United Kingdom", code: "GB", cities: ["London", "Manchester", "Birmingham", "Liverpool", "Glasgow"] },
-  { name: "India", code: "IN", cities: ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai"] },
-  { name: "Pakistan", code: "PK", cities: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad"] },
-  { name: "Canada", code: "CA", cities: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"] },
-  { name: "Australia", code: "AU", cities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"] },
-  { name: "Germany", code: "DE", cities: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"] },
-  { name: "France", code: "FR", cities: ["Paris", "Marseille", "Lyon", "Toulouse", "Nice"] },
-  { name: "Japan", code: "JP", cities: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Nagoya"] },
-  { name: "China", code: "CN", cities: ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu"] },
-  { name: "Brazil", code: "BR", cities: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza"] },
-  { name: "South Africa", code: "ZA", cities: ["Johannesburg", "Cape Town", "Durban", "Pretoria", "Port Elizabeth"] },
-  { name: "UAE", code: "AE", cities: ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman"] },
-  { name: "Saudi Arabia", code: "SA", cities: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"] },
+  {
+    name: "United States",
+    code: "US",
+    cities: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"],
+  },
+  {
+    name: "United Kingdom",
+    code: "GB",
+    cities: ["London", "Manchester", "Birmingham", "Liverpool", "Glasgow"],
+  },
+  {
+    name: "India",
+    code: "IN",
+    cities: ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai"],
+  },
+  {
+    name: "Pakistan",
+    code: "PK",
+    cities: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad"],
+  },
+  {
+    name: "Canada",
+    code: "CA",
+    cities: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
+  },
+  {
+    name: "Australia",
+    code: "AU",
+    cities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
+  },
+  {
+    name: "Germany",
+    code: "DE",
+    cities: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"],
+  },
+  {
+    name: "France",
+    code: "FR",
+    cities: ["Paris", "Marseille", "Lyon", "Toulouse", "Nice"],
+  },
+  {
+    name: "Japan",
+    code: "JP",
+    cities: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Nagoya"],
+  },
+  {
+    name: "China",
+    code: "CN",
+    cities: ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu"],
+  },
+  {
+    name: "Brazil",
+    code: "BR",
+    cities: [
+      "São Paulo",
+      "Rio de Janeiro",
+      "Brasília",
+      "Salvador",
+      "Fortaleza",
+    ],
+  },
+  {
+    name: "South Africa",
+    code: "ZA",
+    cities: [
+      "Johannesburg",
+      "Cape Town",
+      "Durban",
+      "Pretoria",
+      "Port Elizabeth",
+    ],
+  },
+  {
+    name: "UAE",
+    code: "AE",
+    cities: ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman"],
+  },
+  {
+    name: "Saudi Arabia",
+    code: "SA",
+    cities: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"],
+  },
   { name: "Singapore", code: "SG", cities: ["Singapore"] },
-  { name: "Malaysia", code: "MY", cities: ["Kuala Lumpur", "Penang", "Johor Bahru", "Ipoh", "Malacca"] },
-  { name: "Turkey", code: "TR", cities: ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya"] },
-  { name: "Spain", code: "ES", cities: ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza"] },
-  { name: "Italy", code: "IT", cities: ["Rome", "Milan", "Naples", "Turin", "Palermo"] },
-  { name: "Russia", code: "RU", cities: ["Moscow", "Saint Petersburg", "Novosibirsk", "Yekaterinburg", "Kazan"] },
+  {
+    name: "Malaysia",
+    code: "MY",
+    cities: ["Kuala Lumpur", "Penang", "Johor Bahru", "Ipoh", "Malacca"],
+  },
+  {
+    name: "Turkey",
+    code: "TR",
+    cities: ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya"],
+  },
+  {
+    name: "Spain",
+    code: "ES",
+    cities: ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza"],
+  },
+  {
+    name: "Italy",
+    code: "IT",
+    cities: ["Rome", "Milan", "Naples", "Turin", "Palermo"],
+  },
+  {
+    name: "Russia",
+    code: "RU",
+    cities: [
+      "Moscow",
+      "Saint Petersburg",
+      "Novosibirsk",
+      "Yekaterinburg",
+      "Kazan",
+    ],
+  },
 ];
 
 const ContributorLogin = () => {
@@ -105,6 +208,7 @@ const ContributorLogin = () => {
 
   // ✅ CONTRIBUTOR SPECIFIC FIELDS
   const [fullName, setFullName] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState(""); // "", "checking", "available", "taken"
   const [phone, setPhone] = useState("");
   const [birthday, setBirthday] = useState("");
   const [countryCode, setCountryCode] = useState("+1");
@@ -121,8 +225,6 @@ const ContributorLogin = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-
-  
   // Auth state listener for email verification
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -176,13 +278,62 @@ const ContributorLogin = () => {
     }
   };
 
-  const handleUsernameChange = (e) => setUsername(e.target.value);
+  const usernameTimeoutRef = useRef(null);
 
+  const handleUsernameChange = (e) => {
+    const value = e.target.value.trim();
+    setUsername(value);
+
+    // Clear previous timeout
+    if (usernameTimeoutRef.current) {
+      clearTimeout(usernameTimeoutRef.current);
+    }
+
+    if (value.length < 3) {
+      setUsernameStatus("");
+      setError(""); // Clear previous error
+      return;
+    }
+
+    setUsernameStatus("checking");
+    setError(""); // Clear error while checking
+
+    // 400ms delay — user type karna band kare to check karega
+    usernameTimeoutRef.current = setTimeout(async () => {
+      try {
+        const q = query(
+          collection(db, "Contributors"),
+          where("username", "==", value.toLowerCase())
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          setUsernameStatus("available");
+        } else {
+          setUsernameStatus("taken");
+          setError("Username already taken");
+        }
+      } catch (err) {
+        console.error("Username check failed:", err);
+        setUsernameStatus("");
+        setError("Failed to check username");
+      }
+    }, 400);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (usernameTimeoutRef.current) {
+        clearTimeout(usernameTimeoutRef.current);
+      }
+    };
+  }, []);
   // ✅ CONTRIBUTOR HANDLERS
   const handleFullNameChange = (e) => setFullName(e.target.value);
 
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
     if (value.length <= 10) {
       setPhone(value);
       if (value.length !== 10) {
@@ -218,7 +369,7 @@ const ContributorLogin = () => {
     setCountry(selectedCountry);
 
     // Country change hone par cities update karein
-    const countryData = countries.find(c => c.name === selectedCountry);
+    const countryData = countries.find((c) => c.name === selectedCountry);
     if (countryData) {
       setAvailableCities(countryData.cities);
       setCity(countryData.cities[0] || "");
@@ -238,7 +389,7 @@ const ContributorLogin = () => {
   };
 
   const handleSkillKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addSkill();
     }
@@ -253,7 +404,7 @@ const ContributorLogin = () => {
   };
 
   const removeSkill = (skillToRemove) => {
-    setSkills(skills.filter(skill => skill !== skillToRemove));
+    setSkills(skills.filter((skill) => skill !== skillToRemove));
   };
 
   useEffect(() => {
@@ -308,6 +459,15 @@ const ContributorLogin = () => {
       setError("Password must be at least 6 characters");
       return false;
     }
+    if (usernameStatus === "taken") {
+      setError("Please choose a different username");
+      return false;
+    }
+
+    if (username && usernameStatus !== "available" && username.length >= 3) {
+      setError("Please wait for username check or choose another");
+      return false;
+    }
 
     return true;
   };
@@ -344,42 +504,72 @@ const ContributorLogin = () => {
       setError("");
       setSuccess("");
 
-      // Validate email first
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setError("Please enter a valid email address");
-        return;
+      let user;
+
+      // 1️⃣ Pehle login try karo (existing user?)
+      try {
+        const signInResult = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        user = signInResult.user;
+        setSuccess("Welcome back! Using your existing account...");
+      } catch (loginError) {
+        // Agar user nahi mila → tab hi naya account banao
+        if (loginError.code === "auth/user-not-found") {
+          const createResult = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          user = createResult.user;
+          setSuccess("New account created! Sending verification email...");
+        }
+        // Agar wrong password → error dikhao
+        else if (loginError.code === "auth/wrong-password") {
+          setError(
+            "Incorrect password for this email. Please enter the correct password."
+          );
+          return;
+        }
+        // Koi aur error → upar throw ho jayega
+        else {
+          throw loginError;
+        }
       }
 
-      // Create temporary user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // 2️⃣ Display name set karo agar nahi hai
+      if (!user.displayName) {
+        await updateProfile(user, { displayName: fullName || username });
+      }
 
-      // Update profile with name
-      await updateProfile(user, {
-        displayName: fullName || username
-      });
-
-      // Send verification email (Firebase will send a LINK, not code)
-      await sendEmailVerification(user, {
-        url: window.location.origin + '/contributor/email-verified', // Redirect URL after verification
-        handleCodeInApp: false
-      });
-
-      // Store temp user reference
-      setTempUser(user);
-
-      setIsVerificationSent(true);
-      setResendTimer(60); // 60 seconds timer
-      setSuccess("Verification email sent! Check your inbox and click the link to verify.");
-
-    } catch (err) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError("Email already registered. Please login or use a different email.");
-      } else if (err.code === 'auth/too-many-requests') {
-        setError("Too many attempts. Please try again later.");
+      // 3️⃣ Sirf naye users ya unverified password users ko verification bhejo
+      if (
+        !user.emailVerified &&
+        user.providerData.some((p) => p.providerId === "password")
+      ) {
+        await sendEmailVerification(user, {
+          url: window.location.origin + "/contributor/email-verified",
+        });
+        setIsVerificationSent(true);
+        setResendTimer(60);
+        setSuccess("Verification email sent! Please check your inbox.");
       } else {
-        setError("Failed to send verification: " + err.message);
+        // Already verified (Google/Apple ya pehle se verified)
+        setIsEmailVerified(true);
+        setSuccess("Email already verified! You can proceed.");
+      }
+
+      setTempUser(user);
+    } catch (err) {
+      console.error("sendVerificationEmail error:", err);
+
+      // Yeh error ab kabhi nahi aayega kyunki hum pehle login try kar rahe hain
+      if (err.code === "auth/email-already-in-use") {
+        setError("This shouldn't happen. Please refresh and try again.");
+      } else {
+        setError("Failed to proceed: " + (err.message || "Unknown error"));
       }
     }
   };
@@ -389,8 +579,8 @@ const ContributorLogin = () => {
     try {
       if (tempUser) {
         await sendEmailVerification(tempUser, {
-          url: window.location.origin + '/contributor/email-verified',
-          handleCodeInApp: false
+          url: window.location.origin + "/contributor/email-verified",
+          handleCodeInApp: false,
         });
         setResendTimer(60);
         setSuccess("Verification email resent! Check your inbox.");
@@ -412,7 +602,9 @@ const ContributorLogin = () => {
           setIsEmailVerified(true);
           setSuccess("Email verified successfully!");
         } else {
-          setError("Email not verified yet. Please check your inbox and click the verification link.");
+          setError(
+            "Email not verified yet. Please check your inbox and click the verification link."
+          );
         }
       }
     } catch (err) {
@@ -423,12 +615,18 @@ const ContributorLogin = () => {
   const loginWithEmailPassword = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       // Check if email is verified
       if (!user.emailVerified) {
-        setError("Please verify your email first. Check your inbox for verification link.");
+        setError(
+          "Please verify your email first. Check your inbox for verification link."
+        );
         await signOut(auth);
         return;
       }
@@ -457,17 +655,20 @@ const ContributorLogin = () => {
             3000
           );
         } else if (contributorData.status === "pending") {
-          setError("Your account is still under review. Please wait for admin approval.");
+          setError(
+            "Your account is still under review. Please wait for admin approval."
+          );
           await signOut(auth);
         } else if (contributorData.status === "rejected") {
-          setError("Your contributor application was rejected. Please contact support.");
+          setError(
+            "Your contributor application was rejected. Please contact support."
+          );
           await signOut(auth);
         }
       } else {
         setError("Contributor profile not found. Please register first.");
         await signOut(auth);
       }
-
     } catch (err) {
       setError("Login failed: " + err.message);
     }
@@ -476,6 +677,30 @@ const ContributorLogin = () => {
   // 🔵 Creates/updates contributor profile
   const handleContributorProfile = async (user) => {
     try {
+      const usernameLower = username.toLowerCase().trim();
+
+      if (usernameStatus === "taken") {
+        setError("Username is no longer available. Please choose another.");
+        return;
+      }
+      if (!usernameLower) {
+        setError("Username is required");
+        return;
+      }
+
+      // Check karo koi aur Contributor same username use to nahi kar raha
+      const usernameQuery = query(
+        collection(db, "Contributors"),
+        where("username", "==", usernameLower)
+      );
+      const querySnapshot = await getDocs(usernameQuery);
+
+      if (!querySnapshot.empty) {
+        setError("This username is already taken. Please choose another.");
+        return;
+      }
+
+      // Agar unique hai → save kar do
       await updateProfile(user, { displayName: username });
 
       const contributorRef = doc(db, "Contributors", user.uid);
@@ -483,16 +708,16 @@ const ContributorLogin = () => {
       await setDoc(
         contributorRef,
         {
-          username,
+          username: usernameLower, // lowercase save karo (search ke liye easy)
+          displayUsername: username, // original case (UI ke liye)
           fullName,
           email: user.email,
           emailVerified: user.emailVerified,
-          profilePic: user.photoURL,
+          profilePic: user.photoURL || "",
           uid: user.uid,
           role: "contributor",
           status: "pending",
 
-          // 👉 Contributor specific details
           phone: `${countryCode} ${phone}`,
           birthday,
           countryCode,
@@ -504,7 +729,6 @@ const ContributorLogin = () => {
           experience,
           bio,
 
-          // 👉 Stats
           totalUploads: 0,
           approvedUploads: 0,
           totalEarnings: 0,
@@ -512,7 +736,6 @@ const ContributorLogin = () => {
           rating: 0,
           reviews: 0,
 
-          // 👉 Timestamps
           createdAt: serverTimestamp(),
           joinDate: serverTimestamp(),
           lastLogin: serverTimestamp(),
@@ -522,64 +745,84 @@ const ContributorLogin = () => {
       );
 
       setCurrentStep(5);
-      setSuccess(
-        "Contributor account created successfully! Under review. You'll receive an email when approved."
-      );
-
-      // Send welcome email
-      await fetch(
-        "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email,
-            name: fullName || username,
-          }),
-        }
-      );
-
+      setSuccess("Contributor account created successfully! Under review.");
     } catch (err) {
-      setError("Failed to create contributor profile: " + err.message);
+      console.error("Profile error:", err);
+      setError("Failed to create profile. Try a different username.");
     }
   };
 
   const signUpwithEmailPassword = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     try {
-      // Use the already verified temp user or create new
       let user;
-      if (tempUser && tempUser.emailVerified) {
-        user = tempUser;
-      } else {
-        // Create final user account
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        user = userCredential.user;
 
-        // Update profile
-        await updateProfile(user, { displayName: username });
+      // 1️⃣ Pehle try karo login (agar email already registered hai)
+      try {
+        const signInResult = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        user = signInResult.user;
+        setSuccess("Welcome back! Upgrading you to Contributor role...");
+      } catch (loginError) {
+        // Agar login fail hua (wrong password ya user not found)
+        if (loginError.code === "auth/user-not-found") {
+          // Bilkul naya user → account create karo
+          const createResult = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          user = createResult.user;
 
-        // Send verification email if not verified
-        if (!user.emailVerified) {
+          // Naye user ko verification email bhejo
           await sendEmailVerification(user, {
-            url: window.location.origin + '/contributor/email-verified'
+            url: window.location.origin + "/contributor/email-verified",
           });
-          setError("Please verify your email first. Check your inbox.");
+          setSuccess(
+            "Account created! Please check your email for verification link."
+          );
+        } else if (loginError.code === "auth/wrong-password") {
+          setError(
+            "This email is already registered. Please enter your correct password to become a Contributor."
+          );
           return;
+        } else {
+          throw loginError;
         }
       }
 
-      // Create contributor profile
-      await handleContributorProfile(user);
-
-    } catch (err) {
-      if (err.code === "auth/email-already-in-use") {
-        setError("Email already exists. Please login or use a different email.");
-      } else {
-        setError("Sign-up failed: " + err.message);
+      // 2️⃣ Agar user already logged in hai aur email verified nahi → verify karwao
+      if (
+        !user.emailVerified &&
+        user.providerData[0]?.providerId === "password"
+      ) {
+        await sendEmailVerification(user, {
+          url: window.location.origin + "/contributor/email-verified",
+        });
+        setError(
+          "Please verify your email first by clicking the link sent to your inbox."
+        );
+        setTempUser(user);
+        setCurrentStep(2);
+        return;
       }
+
+      // 3️⃣ Display name update (agar nahi hai)
+      if (!user.displayName || user.displayName !== (fullName || username)) {
+        await updateProfile(user, { displayName: fullName || username });
+      }
+
+      // 4️⃣ Final: Contributor profile bana do (same user ka)
+      await handleContributorProfile(user);
+    } catch (err) {
+      console.error("Contributor signup error:", err);
+      setError("Something went wrong. Please try again.");
     }
   };
 
@@ -834,6 +1077,17 @@ const ContributorLogin = () => {
                           onChange={handleUsernameChange}
                         />
                       </div>
+                      {usernameStatus === "checking" && (
+                        <small style={{ color: "#999" }}>Checking...</small>
+                      )}
+                      {usernameStatus === "available" && (
+                        <small style={{ color: "#4caf50" }}>Available!</small>
+                      )}
+                      {usernameStatus === "taken" && (
+                        <small style={{ color: "#ff6b6b" }}>
+                          Already taken
+                        </small>
+                      )}
                     </div>
                   </div>
 
@@ -888,7 +1142,13 @@ const ContributorLogin = () => {
                         />
                       </div>
                       {phone && phone.length !== 10 && (
-                        <p style={{ color: "#ff6b6b", fontSize: "0.8rem", marginTop: "0.25rem" }}>
+                        <p
+                          style={{
+                            color: "#ff6b6b",
+                            fontSize: "0.8rem",
+                            marginTop: "0.25rem",
+                          }}
+                        >
                           Phone number must be 10 digits
                         </p>
                       )}
@@ -904,7 +1164,15 @@ const ContributorLogin = () => {
                           value={birthday}
                           onChange={handleBirthdayChange}
                           required
-                          max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+                          max={
+                            new Date(
+                              new Date().setFullYear(
+                                new Date().getFullYear() - 13
+                              )
+                            )
+                              .toISOString()
+                              .split("T")[0]
+                          }
                         />
                       </div>
                     </div>
@@ -962,7 +1230,9 @@ const ContributorLogin = () => {
                             opacity: country ? 1 : 0.6,
                           }}
                         >
-                          <option value="">{country ? "Select City" : "Select country first"}</option>
+                          <option value="">
+                            {country ? "Select City" : "Select country first"}
+                          </option>
                           {availableCities.map((cityName) => (
                             <option key={cityName} value={cityName}>
                               {cityName}
@@ -973,7 +1243,9 @@ const ContributorLogin = () => {
                     </div>
                   </div>
 
-                  <label htmlFor="password">Password * (Min. 6 characters)</label>
+                  <label htmlFor="password">
+                    Password * (Min. 6 characters)
+                  </label>
                   <div className="input">
                     <input
                       type={isPasswordVisible ? "text" : "password"}
@@ -1018,38 +1290,67 @@ const ContributorLogin = () => {
               {/* ========== STEP 2: EMAIL VERIFICATION ========== */}
               {currentStep === 2 && (
                 <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                  <div style={{ fontSize: "3rem", color: "#52b0b4", marginBottom: "1rem" }}>
+                  <div
+                    style={{
+                      fontSize: "3rem",
+                      color: "#52b0b4",
+                      marginBottom: "1rem",
+                    }}
+                  >
                     ✉️
                   </div>
                   <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
                     Verify Your Email
                   </h3>
-                  <p style={{ color: "#f5f5f5", opacity: 0.8, marginBottom: "1.5rem" }}>
-                    We've sent a verification link to:<br />
+                  <p
+                    style={{
+                      color: "#f5f5f5",
+                      opacity: 0.8,
+                      marginBottom: "1.5rem",
+                    }}
+                  >
+                    We've sent a verification link to:
+                    <br />
                     <strong>{email}</strong>
                   </p>
 
                   {!isVerificationSent ? (
                     <div>
-                      <p style={{ color: "#f5f5f5", opacity: 0.6, fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+                      <p
+                        style={{
+                          color: "#f5f5f5",
+                          opacity: 0.6,
+                          fontSize: "0.9rem",
+                          marginBottom: "1.5rem",
+                        }}
+                      >
                         Click "Next" to send verification email
                       </p>
                     </div>
                   ) : (
                     <>
-                      <div style={{
-                        backgroundColor: "rgba(82, 176, 180, 0.1)",
-                        padding: "1rem",
-                        borderRadius: "0.5rem",
-                        marginBottom: "1.5rem"
-                      }}>
+                      <div
+                        style={{
+                          backgroundColor: "rgba(82, 176, 180, 0.1)",
+                          padding: "1rem",
+                          borderRadius: "0.5rem",
+                          marginBottom: "1.5rem",
+                        }}
+                      >
                         <p style={{ color: "#f5f5f5", margin: 0 }}>
-                          <strong>Important:</strong> Check your email inbox and click the verification link.
-                          After clicking the link, come back here and click "I've Verified".
+                          <strong>Important:</strong> Check your email inbox and
+                          click the verification link. After clicking the link,
+                          come back here and click "I've Verified".
                         </p>
                       </div>
 
-                      <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "1rem",
+                          justifyContent: "center",
+                        }}
+                      >
                         <button
                           type="button"
                           className="login_btn"
@@ -1067,20 +1368,24 @@ const ContributorLogin = () => {
                             backgroundColor: "transparent",
                             border: "1px solid rgba(255,255,255,0.2)",
                             flex: 1,
-                            opacity: resendTimer > 0 ? 0.5 : 1
+                            opacity: resendTimer > 0 ? 0.5 : 1,
                           }}
                         >
-                          {resendTimer > 0 ? `Resend (${resendTimer}s)` : "Resend Link"}
+                          {resendTimer > 0
+                            ? `Resend (${resendTimer}s)`
+                            : "Resend Link"}
                         </button>
                       </div>
 
                       {isEmailVerified && (
-                        <div style={{
-                          marginTop: "1.5rem",
-                          padding: "1rem",
-                          backgroundColor: "rgba(76, 175, 80, 0.1)",
-                          borderRadius: "0.5rem"
-                        }}>
+                        <div
+                          style={{
+                            marginTop: "1.5rem",
+                            padding: "1rem",
+                            backgroundColor: "rgba(76, 175, 80, 0.1)",
+                            borderRadius: "0.5rem",
+                          }}
+                        >
                           <p style={{ color: "#4caf50", margin: 0 }}>
                             ✓ Email verified successfully! You can now proceed.
                           </p>
@@ -1089,15 +1394,18 @@ const ContributorLogin = () => {
                     </>
                   )}
 
-                  <div style={{
-                    marginTop: "1.5rem",
-                    padding: "1rem",
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                    borderRadius: "0.5rem",
-                    fontSize: "0.9rem"
-                  }}>
+                  <div
+                    style={{
+                      marginTop: "1.5rem",
+                      padding: "1rem",
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      borderRadius: "0.5rem",
+                      fontSize: "0.9rem",
+                    }}
+                  >
                     <p style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}>
-                      <strong>Note:</strong> If you don't see the email, check your spam folder.
+                      <strong>Note:</strong> If you don't see the email, check
+                      your spam folder.
                     </p>
                   </div>
                 </div>
@@ -1141,10 +1449,14 @@ const ContributorLogin = () => {
                           <option value="">Select your field</option>
                           <option value="videos">Videos</option>
                           <option value="3d-models">3D Models</option>
-                          <option value="video-templates">Video Templates</option>
+                          <option value="video-templates">
+                            Video Templates
+                          </option>
                           <option value="images">Images</option>
                           <option value="mockups">Mockups</option>
-                          <option value="graphic-templates">Graphic Templates</option>
+                          <option value="graphic-templates">
+                            Graphic Templates
+                          </option>
                           <option value="fonts">Fonts</option>
                           <option value="icons">Icons</option>
                           <option value="scripts">Scripts</option>
@@ -1188,17 +1500,27 @@ const ContributorLogin = () => {
                   </div>
 
                   <label htmlFor="skills">Skills (Press Enter)</label>
-                  <div className="skills-container" style={{ marginBottom: "1rem", position: "relative", width: "100%" }}>
-                    <div className="input" style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      padding: "0.75rem",
-                      minHeight: "48px",
-                      cursor: "text",
+                  <div
+                    className="skills-container"
+                    style={{
+                      marginBottom: "1rem",
+                      position: "relative",
                       width: "100%",
-                    }}>
+                    }}
+                  >
+                    <div
+                      className="input"
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        padding: "0.75rem",
+                        minHeight: "48px",
+                        cursor: "text",
+                        width: "100%",
+                      }}
+                    >
                       {/* Skills tags inside input */}
                       {skills.map((skill, index) => (
                         <div
@@ -1212,7 +1534,7 @@ const ContributorLogin = () => {
                             display: "flex",
                             alignItems: "center",
                             gap: "0.25rem",
-                            height: "28px"
+                            height: "28px",
                           }}
                         >
                           {skill}
@@ -1227,7 +1549,7 @@ const ContributorLogin = () => {
                               fontSize: "1.1rem",
                               padding: "0",
                               lineHeight: "1",
-                              marginLeft: "0.25rem"
+                              marginLeft: "0.25rem",
                             }}
                           >
                             ×
@@ -1251,18 +1573,21 @@ const ContributorLogin = () => {
                           outline: "none",
                           color: "#f5f5f5",
                           fontSize: "14px",
-                          padding: "0"
+                          padding: "0",
                         }}
                       />
                     </div>
 
                     {skills.length > 0 && (
-                      <p style={{
-                        fontSize: "0.75rem",
-                        color: "#999",
-                        marginTop: "0.5rem"
-                      }}>
-                        {skills.length} skill{skills.length !== 1 ? 's' : ''} added. Click × to remove.
+                      <p
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "#999",
+                          marginTop: "0.5rem",
+                        }}
+                      >
+                        {skills.length} skill{skills.length !== 1 ? "s" : ""}{" "}
+                        added. Click × to remove.
                       </p>
                     )}
                   </div>
@@ -1320,9 +1645,11 @@ const ContributorLogin = () => {
                       <strong>Important Note:</strong>
                     </p>
                     <p>
-                      Your contributor account will be <strong>under review</strong> after registration.
-                      You'll only be able to access the dashboard once your account is approved by an admin.
-                      This process usually takes 24-48 hours.
+                      Your contributor account will be{" "}
+                      <strong>under review</strong> after registration. You'll
+                      only be able to access the dashboard once your account is
+                      approved by an admin. This process usually takes 24-48
+                      hours.
                     </p>
 
                     <p>
@@ -1407,7 +1734,8 @@ const ContributorLogin = () => {
                       marginBottom: "1rem",
                     }}
                   >
-                    Your contributor account application has been submitted for review.
+                    Your contributor account application has been submitted for
+                    review.
                   </p>
                   <p
                     style={{
@@ -1417,9 +1745,11 @@ const ContributorLogin = () => {
                       marginBottom: "2rem",
                     }}
                   >
-                    <strong>Status: Pending Approval</strong><br />
-                    Our admin team will review your application. You'll receive an email notification once your account is approved.
-                    This process usually takes 24-48 hours.
+                    <strong>Status: Pending Approval</strong>
+                    <br />
+                    Our admin team will review your application. You'll receive
+                    an email notification once your account is approved. This
+                    process usually takes 24-48 hours.
                   </p>
 
                   <button
@@ -1448,7 +1778,7 @@ const ContributorLogin = () => {
                     }}
                     style={{
                       backgroundColor: "#52b0b4",
-                      marginBottom: "1rem"
+                      marginBottom: "1rem",
                     }}
                   >
                     Back to Login
@@ -1461,7 +1791,8 @@ const ContributorLogin = () => {
                       fontSize: "0.8rem",
                     }}
                   >
-                    Note: You can only access the dashboard after admin approval.
+                    Note: You can only access the dashboard after admin
+                    approval.
                   </p>
                 </div>
               )}
@@ -1501,7 +1832,8 @@ const ContributorLogin = () => {
                       disabled={currentStep === 2 && !isEmailVerified}
                       style={{
                         flex: 1,
-                        opacity: (currentStep === 2 && !isEmailVerified) ? 0.5 : 1
+                        opacity:
+                          currentStep === 2 && !isEmailVerified ? 0.5 : 1,
                       }}
                     >
                       {currentStep === 2 ? "Next" : "Next"}
@@ -1509,7 +1841,9 @@ const ContributorLogin = () => {
                   ) : (
                     <button
                       type="submit"
-                      className={`login_btn ${!termsAccepted ? "disabled" : ""}`}
+                      className={`login_btn ${
+                        !termsAccepted ? "disabled" : ""
+                      }`}
                       disabled={!termsAccepted}
                       style={{ flex: 1 }}
                     >
@@ -1568,4 +1902,4 @@ const ContributorLogin = () => {
   );
 };
 
-export default ContributorLogin; 
+export default ContributorLogin;
