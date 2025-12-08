@@ -52,8 +52,10 @@ import ReportTrack from "../Contributor-tabs/ReportTrack";
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
 // ✅ ADDED: Import Profile component
 import Profile from "../../../../Pages/Profile"; // Adjust path as needed
+import Error from "../../../../Pages/Error";
 
 import "../../../../assets/Styles/contribute-style.css";
+
 
 const UnauthorizedAccess = ({ error }) => {
   return (
@@ -221,6 +223,28 @@ const SellerDashboard = () => {
         return;
       }
 
+      try {
+        const uid = currentUser.uid;
+        const sellerDoc = await getDoc(doc(db, "Contributors", uid));
+
+        if (sellerDoc.exists()) {
+          const sellerData = sellerDoc.data();
+
+          // Check if contributor is active
+          if (sellerData.status !== "verified") {
+            setError(
+              `Your contributor account is ${sellerData.status}. You cannot access the dashboard.`
+            );
+
+            if (sellerData.status === "pending") {
+              navigate("/contributor-pending");
+            } else if (sellerData.status === "rejected") {
+              navigate("/error");
+            } else {
+              navigate("/error");
+            }
+            return;
+          }
       const sellerDocRef = doc(db, "Contributors", uid);
       const sellerDoc = await getDoc(sellerDocRef);
 
@@ -252,6 +276,8 @@ const SellerDashboard = () => {
         } else if (sellerData.status === "rejected") {
           navigate("/contributor-rejected");
         } else {
+          setError("You are not registered as a contributor");
+          navigate("/error");
           navigate("/become-contributor");
         }
         return;
