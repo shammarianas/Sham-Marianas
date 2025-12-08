@@ -56,6 +56,7 @@ import Error from "../../../../Pages/Error";
 
 import "../../../../assets/Styles/contribute-style.css";
 
+
 const UnauthorizedAccess = ({ error }) => {
   return (
     <div className="unauthorized-access">
@@ -182,59 +183,26 @@ const SellerDashboard = () => {
 
   // Check seller status and fetch data
   useEffect(() => {
-  const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-    // Reset states for safety
-    setError(null);
-    setIsSeller(false);
-    setUserData(null);
-
-    if (!currentUser) {
-      setError("Please log in to access the contributor dashboard");
-      navigate("/contributor-login");
-      return;
-    }
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (!currentUser) {
+        setError("Please log in to access the seller dashboard");
+        navigate("/contributor-login");
+        return;
+      }
 
       try {
         const uid = currentUser.uid;
-        const authEmail = currentUser.email?.toLowerCase().trim();
+        const sellerDoc = await getDoc(doc(db, "Contributors", uid));
 
-        if (!authEmail) {
-          setError("Account email not found. Please login again.");
-          await signOut(auth);
-          navigate("/contributor-login");
-          return;
-        }
+        if (sellerDoc.exists()) {
+          const sellerData = sellerDoc.data();
 
-        // Fetch contributor document ONCE
-        const sellerDocRef = doc(db, "Contributors", uid);
-        const sellerDoc = await getDoc(sellerDocRef);
+          // Check if contributor is active
+          if (sellerData.status !== "verified") {
+            setError(
+              `Your contributor account is ${sellerData.status}. You cannot access the dashboard.`
+            );
 
-        // Case 1: Not registered as contributor
-        if (!sellerDoc.exists()) {
-          setError("You are not registered as a contributor");
-          navigate("/become-contributor");
-          return;
-        }
-
-        const sellerData = sellerDoc.data();
-        const dbEmail = (sellerData.email || "").toLowerCase().trim();
-
-<<<<<<<<< Temporary merge branch 1
-        // SECURITY: Email must match exactly
-        if (authEmail !== dbEmail) {
-          console.warn("Access blocked - Email mismatch", {
-            authEmail,
-            dbEmail,
-            uid,
-          });
-          setError(
-            "Access denied: Email does not match registered contributor account."
-          );
-          await signOut(auth);
-          navigate("/contributor-login");
-          return;
-        }
-=========
             if (sellerData.status === "pending") {
               navigate("/contributor-pending");
             } else if (sellerData.status === "rejected") {
@@ -244,43 +212,23 @@ const SellerDashboard = () => {
             }
             return;
           }
->>>>>>>>> Temporary merge branch 2
 
-        // Status check
-        if (sellerData.status !== "verified") {
-          setError(
-            `Your contributor account is ${sellerData.status}. Access denied.`
-          );
-
-        if (sellerData.status === "pending") {
-          navigate("/contributor-pending");
-        } else if (sellerData.status === "rejected") {
-          navigate("/contributor-rejected");
+          // If status = active, allow access
+          setIsSeller(true);
+          setUserData(sellerData);
+          await Promise.all([
+            fetchSellerData(uid),
+            fetchUserReports(uid),
+            setupNotificationsListener(uid), // ✅ ADDED: Setup notifications listener
+          ]);
         } else {
           setError("You are not registered as a contributor");
           navigate("/error");
-          navigate("/become-contributor");
         }
-        return;
+      } catch (error) {
+        setError(`Failed to verify seller status: ${error.message}`);
       }
-
-      // SAB KUCH THEEK — FULL ACCESS GRANT
-      setIsSeller(true);
-      setUserData({ ...sellerData, uid }); // uid bhi add kar diya for future use
-
-      // Load all data
-      await Promise.all([
-        fetchSellerData(uid),
-        fetchUserReports(uid),
-        setupNotificationsListener(uid),
-      ]);
-
-    } catch (error) {
-      console.error("Dashboard access error:", error);
-      setError("Failed to load dashboard. Please try again.");
-      // Optional: navigate("/contributor-login");
-    }
-  });
+    });
 
     return () => unsubscribe();
   }, [navigate]);
