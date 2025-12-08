@@ -329,7 +329,7 @@ const Login = () => {
   const handleUsernameChange = (e) => {
     // Koi .toLowerCase() mat lagao yahan!
     // Bas raw value lo aur state mein save karo
-    const value = e.target.value.trim();
+    const value = e.target.value.toLowerCase().replace(/\s/g, "").trim();
     setUsername(value);
 
     // Baaki sab same rahega...
