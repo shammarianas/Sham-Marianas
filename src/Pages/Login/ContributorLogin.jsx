@@ -281,7 +281,7 @@ const ContributorLogin = () => {
   const usernameTimeoutRef = useRef(null);
 
   const handleUsernameChange = (e) => {
-    const value = e.target.value.trim();
+    const value = e.target.value.toLowerCase().replace(/\s/g, "").trim();
     setUsername(value);
 
     // Clear previous timeout
@@ -1073,6 +1073,7 @@ const ContributorLogin = () => {
                           id="username"
                           required
                           placeholder="johndoe"
+                          autoCapitalize="none" // Keyboard mein capital off
                           value={username}
                           onChange={handleUsernameChange}
                         />
