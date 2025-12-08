@@ -326,19 +326,17 @@ const Login = () => {
     }
   };
 
-  // Updated username handler with validation
-
-  // Best handleUsernameChange — 100% Production Ready
   const handleUsernameChange = (e) => {
-    const value = e.target.value.trim(); // Trim spaces from both sides
+    // Koi .toLowerCase() mat lagao yahan!
+    // Bas raw value lo aur state mein save karo
+    const value = e.target.value.trim();
     setUsername(value);
 
-    // Clear any previous timeout
+    // Baaki sab same rahega...
     if (usernameTimeoutRef.current) {
       clearTimeout(usernameTimeoutRef.current);
     }
 
-    // Reset status if empty or too short
     if (!value) {
       setUsernameStatus("");
       setError("");
@@ -346,64 +344,31 @@ const Login = () => {
       return;
     }
 
-    if (value.length < 3) {
-      setUsernameStatus("invalid");
-      setError("Username must be at least 3 characters");
-      setSuccess("");
-      return;
-    }
+    // ... baaki validation same
 
-    if (value.length > 20) {
-      setUsernameStatus("invalid");
-      setError("Username must be less than 20 characters");
-      setSuccess("");
-      return;
-    }
-
-    if (/\s/.test(value)) {
-      setUsernameStatus("invalid");
-      setError("Spaces are not allowed");
-      setSuccess("");
-      return;
-    }
-
-    if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      setUsernameStatus("invalid");
-      setError("Only letters, numbers, and underscores (_)");
-      setSuccess("");
-      return;
-    }
-
-    // All basic checks passed → start checking availability
-    setUsernameStatus("checking");
-    setError("");
-    setSuccess("");
-
-    // Debounce: Wait 600ms after user stops typing
+    // Check karte waqt hi lowercase karo (sirf query ke liye)
     usernameTimeoutRef.current = setTimeout(async () => {
       try {
         const q = query(
-          collection(db, "Contributors"), // Ya "Profiles" agar user signup hai
-          where("username", "==", value.toLowerCase())
+          collection(db, "Profiles"),
+          where("username", "==", value.toLowerCase()) // ← Sirf yahan lowercase!
         );
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
           setUsernameStatus("available");
           setSuccess("Username available!");
-          setTimeout(() => setSuccess(""), 3000); // Auto clear success
+          setTimeout(() => setSuccess(""), 3000);
         } else {
           setUsernameStatus("taken");
           setError("This username is already taken");
         }
       } catch (err) {
-        console.error("Username availability check failed:", err);
         setUsernameStatus("error");
         setError("Failed to check username");
       }
-    }, 600); // 600ms = perfect balance
+    }, 600);
   };
-
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -948,6 +913,15 @@ const Login = () => {
                   <div className="width-50">
                     <label htmlFor="username" className="mb-2">
                       Username *
+                      <small
+                        style={{
+                          color: "#888",
+                          marginLeft: "8px",
+                          fontWeight: "normal",
+                        }}
+                      >
+                        (lowercase only)
+                      </small>
                     </label>
                     <div className="input" style={{ position: "relative" }}>
                       <input
@@ -957,16 +931,18 @@ const Login = () => {
                         placeholder="john_doe123"
                         value={username}
                         onChange={handleUsernameChange}
+                        autoComplete="username"
+                        autoCapitalize="none" // Keyboard mein capital off
+                        spellCheck={false}
                         style={{
-                          border:
-                            usernameStatus === "taken" ||
-                            usernameStatus === "invalid"
-                              ? "1px solid #ff6b6b"
-                              : usernameStatus === "available"
-                              ? "1px solid #4caf50"
-                              : "1px solid rgba(255,255,255,0.2)",
+                          // Yeh sab hata do → textTransform, border etc
+                          // Sirf default input style rahega (email jaisa)
+                          paddingRight:
+                            username && username.length >= 3 ? "90px" : "12px", // Status ke liye jagah
                         }}
                       />
+
+                      {/* Yeh status indicator abhi bhi dikhega, bilkul email field ki tarah clean */}
                       {username && username.length >= 3 && (
                         <div
                           style={{
@@ -974,16 +950,27 @@ const Login = () => {
                             right: "12px",
                             top: "50%",
                             transform: "translateY(-50%)",
-                            fontSize: "1.2rem",
+                            fontSize: "0.9rem",
+                            fontWeight: "500",
+                            color:
+                              usernameStatus === "available"
+                                ? "#4caf50"
+                                : "#ff6b6b",
+                            backgroundColor: "rgba(0,0,0,0.4)",
+                            padding: "2px 8px",
+                            borderRadius: "4px",
+                            pointerEvents: "none",
                           }}
                         >
-                          {usernameStatus === "checking" && "..."}
+                          {usernameStatus === "checking" && "Checking..."}
                           {usernameStatus === "available" && "Available"}
                           {usernameStatus === "taken" && "Taken"}
                           {usernameStatus === "invalid" && "Invalid"}
                         </div>
                       )}
                     </div>
+
+                    {/* Error/Success message same as before */}
                     {username && username.length >= 3 && (
                       <small
                         style={{
