@@ -56,7 +56,6 @@ import Error from "../../../../Pages/Error";
 
 import "../../../../assets/Styles/contribute-style.css";
 
-
 const UnauthorizedAccess = ({ error }) => {
   return (
     <div className="unauthorized-access">
@@ -183,61 +182,43 @@ const SellerDashboard = () => {
 
   // Check seller status and fetch data
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (!currentUser) {
-        setError("Please log in to access the seller dashboard");
-        navigate("/contributor-login");
-        return;
-      }
+  const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+    // Reset states for safety
+    setError(null);
+    setIsSeller(false);
+    setUserData(null);
 
-    try {
-      const uid = currentUser.uid;
-      const authEmail = currentUser.email?.toLowerCase().trim();
-
-      // Agar email hi nahi hai Firebase Auth mein
-      if (!authEmail) {
-        setError("Account email not found. Please login again.");
-        await signOut(auth);
-        navigate("/contributor-login");
-        return;
-      }
+    if (!currentUser) {
+      setError("Please log in to access the contributor dashboard");
+      navigate("/contributor-login");
+      return;
+    }
 
       try {
         const uid = currentUser.uid;
-        const sellerDoc = await getDoc(doc(db, "Contributors", uid));
+        const authEmail = currentUser.email?.toLowerCase().trim();
 
-        if (sellerDoc.exists()) {
-          const sellerData = sellerDoc.data();
+        if (!authEmail) {
+          setError("Account email not found. Please login again.");
+          await signOut(auth);
+          navigate("/contributor-login");
+          return;
+        }
 
-          // Check if contributor is active
-          if (sellerData.status !== "verified") {
-            setError(
-              `Your contributor account is ${sellerData.status}. You cannot access the dashboard.`
-            );
+        // Fetch contributor document ONCE
+        const sellerDocRef = doc(db, "Contributors", uid);
+        const sellerDoc = await getDoc(sellerDocRef);
 
-            if (sellerData.status === "pending") {
-              navigate("/contributor-pending");
-            } else if (sellerData.status === "rejected") {
-              navigate("/error");
-            } else {
-              navigate("/error");
-            }
-            return;
-          }
-      const sellerDocRef = doc(db, "Contributors", uid);
-      const sellerDoc = await getDoc(sellerDocRef);
+        // Case 1: Not registered as contributor
+        if (!sellerDoc.exists()) {
+          setError("You are not registered as a contributor");
+          navigate("/become-contributor");
+          return;
+        }
 
-      // Agar contributor registered hi nahi
-      if (!sellerDoc.exists()) {
-        setError("You are not registered as a contributor");
-        navigate("/become-contributor");
-        return;
-      }
+        const sellerData = sellerDoc.data();
+        const dbEmail = (sellerData.email || "").toLowerCase().trim();
 
-      const sellerData = sellerDoc.data();
-      const dbEmail = (sellerData.email || "").toLowerCase().trim();
-
-<<<<<<<<< Temporary merge branch 1
       // MAIN SECURITY: EMAIL MUST MATCH
       if (authEmail !== dbEmail) {
         console.warn("Blocked access - Email mismatch", { authEmail, dbEmail, uid });
@@ -246,53 +227,42 @@ const SellerDashboard = () => {
         navigate("/contributor-login");
         return;
       }
-=========
-            if (sellerData.status === "pending") {
-              navigate("/contributor-pending");
-            } else if (sellerData.status === "rejected") {
-              navigate("/error");
-            } else {
-              navigate("/error");
-            }
-            return;
-          }
->>>>>>>>> Temporary merge branch 2
 
-      // Status check (verified hona chahiye)
-      if (sellerData.status !== "verified") {
-        setError(`Your contributor account is ${sellerData.status}. You cannot access the dashboard.`);
+        // Status check
+        if (sellerData.status !== "verified") {
+          setError(
+            `Your contributor account is ${sellerData.status}. Access denied.`
+          );
 
         if (sellerData.status === "pending") {
           navigate("/contributor-pending");
         } else if (sellerData.status === "rejected") {
           navigate("/contributor-rejected");
         } else {
-<<<<<<<<< Temporary merge branch 1
-          navigate("/become-contributor");
-=========
           setError("You are not registered as a contributor");
           navigate("/error");
->>>>>>>>> Temporary merge branch 2
+          navigate("/become-contributor");
         }
         return;
       }
 
-          // If status = active, allow access
-          setIsSeller(true);
-          setUserData(sellerData);
-          await Promise.all([
-            fetchSellerData(uid),
-            fetchUserReports(uid),
-            setupNotificationsListener(uid), // ✅ ADDED: Setup notifications listener
-          ]);
-        } else {
-          setError("You are not registered as a contributor");
-          navigate("/error");
-        }
-      } catch (error) {
-        setError(`Failed to verify seller status: ${error.message}`);
-      }
-    });
+      // SAB KUCH THEEK — FULL ACCESS GRANT
+      setIsSeller(true);
+      setUserData({ ...sellerData, uid }); // uid bhi add kar diya for future use
+
+      // Load all data
+      await Promise.all([
+        fetchSellerData(uid),
+        fetchUserReports(uid),
+        setupNotificationsListener(uid),
+      ]);
+
+    } catch (error) {
+      console.error("Dashboard access error:", error);
+      setError("Failed to load dashboard. Please try again.");
+      // Optional: navigate("/contributor-login");
+    }
+  });
 
     return () => unsubscribe();
   }, [navigate]);
