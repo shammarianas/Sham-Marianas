@@ -219,14 +219,32 @@ const SellerDashboard = () => {
         const sellerData = sellerDoc.data();
         const dbEmail = (sellerData.email || "").toLowerCase().trim();
 
-      // MAIN SECURITY: EMAIL MUST MATCH
-      if (authEmail !== dbEmail) {
-        console.warn("Blocked access - Email mismatch", { authEmail, dbEmail, uid });
-        setError("Access denied: Email does not match registered contributor account.");
-        await signOut(auth); // Force logout for security
-        navigate("/contributor-login");
-        return;
-      }
+<<<<<<<<< Temporary merge branch 1
+        // SECURITY: Email must match exactly
+        if (authEmail !== dbEmail) {
+          console.warn("Access blocked - Email mismatch", {
+            authEmail,
+            dbEmail,
+            uid,
+          });
+          setError(
+            "Access denied: Email does not match registered contributor account."
+          );
+          await signOut(auth);
+          navigate("/contributor-login");
+          return;
+        }
+=========
+            if (sellerData.status === "pending") {
+              navigate("/contributor-pending");
+            } else if (sellerData.status === "rejected") {
+              navigate("/error");
+            } else {
+              navigate("/error");
+            }
+            return;
+          }
+>>>>>>>>> Temporary merge branch 2
 
         // Status check
         if (sellerData.status !== "verified") {
