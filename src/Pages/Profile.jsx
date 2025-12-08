@@ -62,6 +62,52 @@ const Profile = () => {
 
   const isOwnProfile = currentUser?.uid === id;
 
+  // Real-time username availability check
+const [usernameAvailable, setUsernameAvailable] = useState(true);
+const [checkingUsername, setCheckingUsername] = useState(false);
+
+useEffect(() => {
+  const checkUsernameAvailability = async () => {
+    const trimmedUsername = username.trim().toLowerCase();
+    
+    if (trimmedUsername.length < 3) {
+      setUsernameAvailable(false);
+      return;
+    }
+
+    // Don't check if username is same as current user
+    if (trimmedUsername === user?.username?.toLowerCase()) {
+      setUsernameAvailable(true);
+      return;
+    }
+
+    try {
+      setCheckingUsername(true);
+      const usernameQuery = query(
+        collection(db, "Profiles"),
+        where("username", "==", trimmedUsername)
+      );
+      const querySnapshot = await getDocs(usernameQuery);
+      
+      const isAvailable = querySnapshot.empty;
+      setUsernameAvailable(isAvailable);
+    } catch (error) {
+      console.error("Error checking username:", error);
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
+
+  // Debounce the check (wait 500ms after user stops typing)
+  const timer = setTimeout(() => {
+    if (username.trim()) {
+      checkUsernameAvailability();
+    }
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [username, user?.username]);
+
   // Get full name for display
   const getDisplayName = () => {
     if (!user) return "User";
@@ -379,92 +425,147 @@ const Profile = () => {
       alert("Failed to remove image. Please try again.");
     }
   };
+const handleSaveAccount = async () => {
+  if (!isOwnProfile) return;
+  const trimmedUsername = (username || "").trim().toLowerCase(); // ✅ Added toLowerCase()
 
-  const handleSaveAccount = async () => {
-    if (!isOwnProfile) return;
-    const trimmedUsername = (username || "").trim();
+  // Password validation
+  if (newPassword && newPassword !== confirmPassword) {
+    alert("Passwords do not match!");
+    return;
+  }
 
-    // Password validation
-    if (newPassword && newPassword !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
+  if (newPassword && newPassword.length < 6) {
+    alert("Password must be at least 6 characters long!");
+    return;
+  }
 
-    if (newPassword && newPassword.length < 6) {
-      alert("Password must be at least 6 characters long!");
-      return;
-    }
+  // Username validation
+  if (!trimmedUsername) {
+    alert("Username is required!");
+    return;
+  }
 
+  // ✅ ADDED: Check if username contains only allowed characters
+  const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+  if (!usernameRegex.test(trimmedUsername)) {
+    alert("Username can only contain letters, numbers, dots, hyphens, and underscores!");
+    return;
+  }
+
+  // ✅ ADDED: Check minimum length
+  if (trimmedUsername.length < 3) {
+    alert("Username must be at least 3 characters long!");
+    return;
+  }
+
+  // ✅ ADDED: Check maximum length
+  if (trimmedUsername.length > 20) {
+    alert("Username must be less than 20 characters!");
+    return;
+  }
+
+  // ✅ ADDED: Check if username is same as current (no change needed)
+  if (trimmedUsername === user?.username?.toLowerCase()) {
+    // Username hasn't changed, proceed with other updates
+  } else {
+    // ✅ ADDED: Check if username already exists in Firestore
     try {
-      setSaving(true);
-      const profileRef = doc(db, "Profiles", id);
-      const snap = await getDoc(profileRef);
-
-      let updates = {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        username: trimmedUsername,
-        phoneNumber: phoneNumber.trim(),
-        bio: bio.trim(), // Add bio to updates
-        updatedAt: new Date(),
-      };
-
-      if (snap.exists()) {
-        // Document exists, check username change limit
-        const d = snap.data();
-        let changeCount = d.usernameChangeCount || 0;
-        let changeYear = d.usernameChangeYear || new Date().getFullYear();
-
-        if (d.username !== trimmedUsername) {
-          const nowYear = new Date().getFullYear();
-          if (changeYear !== nowYear) {
-            changeYear = nowYear;
-            changeCount = 0;
-          }
-          if (changeCount >= 3) {
-            alert(
-              "You have reached the maximum of 3 username changes this year."
-            );
-            setSaving(false);
-            return;
-          }
-          updates.usernameChangeCount = changeCount + 1;
-          updates.usernameChangeYear = changeYear;
+      const usernameQuery = query(
+        collection(db, "Profiles"),
+        where("username", "==", trimmedUsername)
+      );
+      const querySnapshot = await getDocs(usernameQuery);
+      
+      // Check if username exists and belongs to a different user
+      let usernameExists = false;
+      querySnapshot.forEach((doc) => {
+        if (doc.id !== id) { // Different user has this username
+          usernameExists = true;
         }
+      });
+      
+      if (usernameExists) {
+        alert("This username is already taken. Please choose another one.");
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking username:", error);
+      alert("Error checking username availability. Please try again.");
+      return;
+    }
+  }
 
-        // Update existing document
-        await updateDoc(profileRef, updates);
+  try {
+    setSaving(true);
+    const profileRef = doc(db, "Profiles", id);
+    const snap = await getDoc(profileRef);
 
-        // Update password if provided
-        if (newPassword) {
+    let updates = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      username: trimmedUsername,
+      phoneNumber: phoneNumber.trim(),
+      bio: bio.trim(), // Add bio to updates
+      updatedAt: new Date(),
+    };
+
+    if (snap.exists()) {
+      // Document exists, check username change limit
+      const d = snap.data();
+      let changeCount = d.usernameChangeCount || 0;
+      let changeYear = d.usernameChangeYear || new Date().getFullYear();
+
+      if (d.username?.toLowerCase() !== trimmedUsername) {
+        const nowYear = new Date().getFullYear();
+        if (changeYear !== nowYear) {
+          changeYear = nowYear;
+          changeCount = 0;
+        }
+        if (changeCount >= 3) {
           alert(
-            "Password change requires re-authentication. Please use the password reset feature."
+            "You have reached the maximum of 3 username changes this year."
           );
+          setSaving(false);
+          return;
         }
-      } else {
-        // Document doesn't exist, create new
-        updates.uid = currentUser.uid;
-        updates.createdAt = new Date();
-        updates.usernameChangeCount = 0;
-        updates.usernameChangeYear = new Date().getFullYear();
-        updates.followers = [];
-        updates.following = [];
-        updates.followersCount = 0;
-        updates.followingCount = 0;
-        await setDoc(profileRef, updates);
+        updates.usernameChangeCount = changeCount + 1;
+        updates.usernameChangeYear = changeYear;
       }
 
-      // Clear password fields
-      setNewPassword("");
-      setConfirmPassword("");
+      // Update existing document
+      await updateDoc(profileRef, updates);
 
-      alert("Changes saved successfully!");
-    } catch (e) {
-      alert(e.message || "Failed to save changes");
-    } finally {
-      setSaving(false);
+      // Update password if provided
+      if (newPassword) {
+        alert(
+          "Password change requires re-authentication. Please use the password reset feature."
+        );
+      }
+    } else {
+      // Document doesn't exist, create new
+      updates.uid = currentUser.uid;
+      updates.createdAt = new Date();
+      updates.usernameChangeCount = 0;
+      updates.usernameChangeYear = new Date().getFullYear();
+      updates.followers = [];
+      updates.following = [];
+      updates.followersCount = 0;
+      updates.followingCount = 0;
+      await setDoc(profileRef, updates);
     }
-  };
+
+    // Clear password fields
+    setNewPassword("");
+    setConfirmPassword("");
+
+    alert("Changes saved successfully!");
+  } catch (e) {
+    alert(e.message || "Failed to save changes");
+  } finally {
+    setSaving(false);
+  }
+};
 
   const handleDeleteAccount = async () => {
     if (!isOwnProfile) return;
@@ -919,19 +1020,33 @@ const Profile = () => {
                           placeholder="Enter phone number"
                         />
                       </div>
-                      <div className="form-field full">
-                        <label>Username</label>
-                        <input
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          placeholder="username"
-                        />
-                        <small>
-                          We allow 3 username changes per year. You have{" "}
-                          {Math.max(0, 3 - (user?.usernameChangeCount || 0))}{" "}
-                          changes remaining.
-                        </small>
-                      </div>
+                     <div className="form-field full">
+  <label>Username</label>
+  <input
+    value={username}
+    onChange={(e) => setUsername(e.target.value)}
+    placeholder="username"
+    className={username && username.trim() && !usernameAvailable ? "input-error" : ""}
+  />
+  <div className="username-feedback">
+    {checkingUsername ? (
+      <small>Checking availability...</small>
+    ) : username && username.trim() ? (
+      usernameAvailable ? (
+        <small className="text-success">✓ Username is available</small>
+      ) : username.trim().toLowerCase() === user?.username?.toLowerCase() ? (
+        <small className="text-info">This is your current username</small>
+      ) : (
+        <small className="text-danger">✗ Username is already taken</small>
+      )
+    ) : (
+      <small>
+        We allow 3 username changes per year. You have{" "}
+        {Math.max(0, 3 - (user?.usernameChangeCount || 0))} changes remaining.
+      </small>
+    )}
+  </div>
+</div>
                       <div className="form-field full">
                         <label>Bio</label>
                         <textarea
