@@ -96,14 +96,14 @@ const ItemsListing = (props) => {
   return (
     <div className="item_listing">
       {loading === true ? <div className="loading">Loading...</div> : null}
-      {loading === "no_item" && (
+      {/* {loading === "no_item" && (
         <div className="no_items">
           <span>It's so empty here. How about you fill it up💦</span>
           <Link to="/upload">
             <button>Upload</button>
           </Link>
         </div>
-      )}
+      )} */}
 
       {filteredItems.map((item) => (
         <ListedItemCard key={item.id} id={item.id} data={item} />
