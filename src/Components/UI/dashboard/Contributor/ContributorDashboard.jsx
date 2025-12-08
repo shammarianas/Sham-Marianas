@@ -206,9 +206,9 @@ const SellerDashboard = () => {
             if (sellerData.status === "pending") {
               navigate("/contributor-pending");
             } else if (sellerData.status === "rejected") {
-              navigate("/Error");
+              navigate("/error");
             } else {
-              navigate("/Error");
+              navigate("/error");
             }
             return;
           }
@@ -223,7 +223,7 @@ const SellerDashboard = () => {
           ]);
         } else {
           setError("You are not registered as a contributor");
-          navigate("/Error");
+          navigate("/error");
         }
       } catch (error) {
         setError(`Failed to verify seller status: ${error.message}`);
