@@ -7,39 +7,41 @@ function Footer() {
   const path = location.pathname.toLowerCase();
 
   // Check if the current page is /stock or a category template page
-  const isTemplatePage = 
-    path === "/stock" || 
+  const isTemplatePage =
+    path === "/stock" ||
     path === "/contributorlogin" ||
     path === "/login" ||
     path == "/support" ||
     path === "/profile" ||
-    path === "//Favorites" ||  
-    path === "/MyDownloads" || 
+    path === "//Favorites" ||
+    path === "/MyDownloads" ||
     // path.includes("/category") ||
-  path.startsWith("/fonts") ||
-   path.startsWith("/video-templates") || 
-   path.startsWith("/icons") || 
-   path.startsWith("/3D-models") || 
-   path.startsWith("/mockups") || 
-   path.startsWith("/graphics-templates") || 
-   path.startsWith("/videos") || 
-   path.startsWith("/images") || 
-   path.startsWith("/scripts") || 
-   path.startsWith("/hdri") || 
-    path.startsWith("/profile/") ||   // ✅ ADDED: /profile/username
-    path.startsWith("/view/"); 
-    
+    path.startsWith("/fonts") ||
+    path.startsWith("/video-templates") ||
+    path.startsWith("/icons") ||
+    path.startsWith("/3D-models") ||
+    path.startsWith("/mockups") ||
+    path.startsWith("/graphics-templates") ||
+    path.startsWith("/videos") ||
+    path.startsWith("/images") ||
+    path.startsWith("/scripts") ||
+    path.startsWith("/hdri") ||
+    path.startsWith("/profile/") ||
+    path.startsWith("/profile/") ||
+    path.startsWith("/subscription") ||
+    path.startsWith("/view/");
 
-  
+
+
   // Check if current page is any dashboard page - ALL POSSIBLE DASHBOARD ROUTES
-  const isDashboardPage = 
-    path.includes('/dashboard') || 
-    path.includes('/admin-dashboard') || 
+  const isDashboardPage =
+    path.includes('/dashboard') ||
+    path.includes('/admin-dashboard') ||
     path.includes('/admin/dashboard') ||
     path.includes('/company-dashboard') ||
     path.includes('/company/dashboard') ||
-    path.includes('/contributor/dashboard') || 
-    path.includes('/contributordashboard') || 
+    path.includes('/contributor/dashboard') ||
+    path.includes('/contributordashboard') ||
     path === '/dashboard' ||
     path === '/admin' ||
     path === '/company' ||
@@ -88,11 +90,11 @@ function Footer() {
 
             {/* Dynamic Middle Section: Company OR Partner/Seller */}
             <div className={`d-sm-flex d-grid  ${isTemplatePage ? "col-lg-6" : "col-lg-3"} justify-content-between footer-tem-nav`}>
-              
+
               {/* Conditional: Company OR Partner/Seller */}
               {isTemplatePage ? (
                 <>
-                {/* AI Tools Section - NEWLY ADDED */}
+                  {/* AI Tools Section - NEWLY ADDED */}
                   <div className="column md-mb50">
                     <h6 className="sub-title mb-30">AI Tools</h6>
                     <ul className="rest fz-14 opacity-7">
@@ -183,87 +185,87 @@ function Footer() {
                 </div>
 
                 <ul className="rest social-icon d-flex align-items-center">
-      {/* Conditional Social Media Links for Template vs Non-Template Pages */}
-      {isTemplatePage ? (
-        /* TEMPLATE PAGE SOCIAL LINKS */
-        <>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="#" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fa-brands fa-youtube"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fa-brands fa-pinterest"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fab fa-behance"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fa-brands fa-dribbble"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fab fa-instagram"></i>
-              </div>
-            </a>
-          </li>
-        </>
-      ) : (
-        /* NON-TEMPLATE PAGE SOCIAL LINKS (Regular Website) */
-        <>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.youtube.com/c/ShamMarianasSM" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fa-brands fa-youtube"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.facebook.com/shammarianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fab fa-facebook-f"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fab fa-behance"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fa-brands fa-pinterest"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fab fa-instagram"></i>
-              </div>
-            </a>
-          </li>
-        </>
-      )}
-    </ul>
+                  {/* Conditional Social Media Links for Template vs Non-Template Pages */}
+                  {isTemplatePage ? (
+                    /* TEMPLATE PAGE SOCIAL LINKS */
+                    <>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="#" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fa-brands fa-youtube"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fa-brands fa-pinterest"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fab fa-behance"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fa-brands fa-dribbble"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fab fa-instagram"></i>
+                          </div>
+                        </a>
+                      </li>
+                    </>
+                  ) : (
+                    /* NON-TEMPLATE PAGE SOCIAL LINKS (Regular Website) */
+                    <>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.youtube.com/c/ShamMarianasSM" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fa-brands fa-youtube"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.facebook.com/shammarianas" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fab fa-facebook-f"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fab fa-behance"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fa-brands fa-pinterest"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                          <div className="hover-anim circle-a">
+                            <i className="fab fa-instagram"></i>
+                          </div>
+                        </a>
+                      </li>
+                    </>
+                  )}
+                </ul>
               </div>
             </div>
           </div>
