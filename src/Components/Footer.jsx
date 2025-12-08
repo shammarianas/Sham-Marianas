@@ -14,10 +14,21 @@ function Footer() {
     path == "/support" ||
     path === "/profile" ||
     path === "//Favorites" ||  
-    path === "/MyDownloads" ||  
+    path === "/MyDownloads" || 
+    // path.includes("/category") ||
+  path.startsWith("/fonts") ||
+   path.startsWith("/video-templates") || 
+   path.startsWith("/icons") || 
+   path.startsWith("/3D-models") || 
+   path.startsWith("/mockups") || 
+   path.startsWith("/graphics-templates") || 
+   path.startsWith("/videos") || 
+   path.startsWith("/images") || 
+   path.startsWith("/scripts") || 
+   path.startsWith("/hdri") || 
     path.startsWith("/profile/") ||   // ✅ ADDED: /profile/username
-    path.startsWith("/view/") ||  
-    path.includes("/category");
+    path.startsWith("/view/"); 
+    
 
   
   // Check if current page is any dashboard page - ALL POSSIBLE DASHBOARD ROUTES
