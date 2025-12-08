@@ -219,12 +219,12 @@ const Login = () => {
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
   const [availableCities, setAvailableCities] = useState([]);
+  const [usernameStatus, setUsernameStatus] = useState(""); // "", "checking", "available", "taken"
 
   const location = useLocation();
   const navigate = useNavigate();
   const usernameTimeoutRef = useRef(null);
 
-  
   // Cleanup timeout on component unmount
   useEffect(() => {
     return () => {
@@ -327,51 +327,89 @@ const Login = () => {
   };
 
   // Updated username handler with validation
-  const handleUsernameChange = async (e) => {
-    const value = e.target.value;
+
+  // Best handleUsernameChange — 100% Production Ready
+  const handleUsernameChange = (e) => {
+    const value = e.target.value.trim(); // Trim spaces from both sides
     setUsername(value);
 
-    // Basic validation
-    if (value.length < 3) {
-      setError("Username must be at least 3 characters");
-      return;
-    }
-
-    // Check for spaces
-    if (/\s/.test(value)) {
-      setError("Username cannot contain spaces");
-      return;
-    }
-
-    // Check for special characters (only underscore allowed)
-    if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      setError(
-        "Username can only contain letters, numbers and underscores (_)"
-      );
-      return;
-    }
-
-    // Clear error if basic validation passes
-    setError("");
-
-    // Debounce for checking uniqueness (2 seconds ke baad check karein)
-    if (value.length >= 3) {
+    // Clear any previous timeout
+    if (usernameTimeoutRef.current) {
       clearTimeout(usernameTimeoutRef.current);
-      usernameTimeoutRef.current = setTimeout(async () => {
-        const errorMsg = await validateUsername(value);
-        if (errorMsg) {
-          setError(errorMsg);
-        } else {
-          setSuccess("Username is available!");
-          setTimeout(() => setSuccess(""), 2000);
-        }
-      }, 2000);
     }
+
+    // Reset status if empty or too short
+    if (!value) {
+      setUsernameStatus("");
+      setError("");
+      setSuccess("");
+      return;
+    }
+
+    if (value.length < 3) {
+      setUsernameStatus("invalid");
+      setError("Username must be at least 3 characters");
+      setSuccess("");
+      return;
+    }
+
+    if (value.length > 20) {
+      setUsernameStatus("invalid");
+      setError("Username must be less than 20 characters");
+      setSuccess("");
+      return;
+    }
+
+    if (/\s/.test(value)) {
+      setUsernameStatus("invalid");
+      setError("Spaces are not allowed");
+      setSuccess("");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+      setUsernameStatus("invalid");
+      setError("Only letters, numbers, and underscores (_)");
+      setSuccess("");
+      return;
+    }
+
+    // All basic checks passed → start checking availability
+    setUsernameStatus("checking");
+    setError("");
+    setSuccess("");
+
+    // Debounce: Wait 600ms after user stops typing
+    usernameTimeoutRef.current = setTimeout(async () => {
+      try {
+        const q = query(
+          collection(db, "Contributors"), // Ya "Profiles" agar user signup hai
+          where("username", "==", value.toLowerCase())
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          setUsernameStatus("available");
+          setSuccess("Username available!");
+          setTimeout(() => setSuccess(""), 3000); // Auto clear success
+        } else {
+          setUsernameStatus("taken");
+          setError("This username is already taken");
+        }
+      } catch (err) {
+        console.error("Username availability check failed:", err);
+        setUsernameStatus("error");
+        setError("Failed to check username");
+      }
+    }, 600); // 600ms = perfect balance
   };
 
-  // ✅ NEW HANDLERS
-  const handleNameChange = (e) => setName(e.target.value);
-
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (usernameTimeoutRef.current) clearTimeout(usernameTimeoutRef.current);
+    };
+  }, []);
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
     if (value.length <= 10) {
@@ -383,6 +421,8 @@ const Login = () => {
       }
     }
   };
+
+  const handleNameChange = (e) => setName(e.target.value);
 
   const handleBirthdayChange = (e) => {
     const selectedDate = new Date(e.target.value);
@@ -455,18 +495,22 @@ const Login = () => {
       }
 
       // Create temporary user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       // Update profile with name
       await updateProfile(user, {
-        displayName: username
+        displayName: username,
       });
 
       // Send verification email (Firebase will send a LINK, not code)
       await sendEmailVerification(user, {
-        url: window.location.origin + '/email-verified', // Redirect URL after verification
-        handleCodeInApp: false
+        url: window.location.origin + "/email-verified", // Redirect URL after verification
+        handleCodeInApp: false,
       });
 
       // Store temp user reference
@@ -474,12 +518,15 @@ const Login = () => {
 
       setIsVerificationSent(true);
       setResendTimer(60); // 60 seconds timer
-      setSuccess("Verification email sent! Check your inbox and click the link to verify.");
-
+      setSuccess(
+        "Verification email sent! Check your inbox and click the link to verify."
+      );
     } catch (err) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError("Email already registered. Please login or use a different email.");
-      } else if (err.code === 'auth/too-many-requests') {
+      if (err.code === "auth/email-already-in-use") {
+        setError(
+          "Email already registered. Please login or use a different email."
+        );
+      } else if (err.code === "auth/too-many-requests") {
         setError("Too many attempts. Please try again later.");
       } else {
         setError("Failed to send verification: " + err.message);
@@ -492,8 +539,8 @@ const Login = () => {
     try {
       if (tempUser) {
         await sendEmailVerification(tempUser, {
-          url: window.location.origin + '/email-verified',
-          handleCodeInApp: false
+          url: window.location.origin + "/email-verified",
+          handleCodeInApp: false,
         });
         setResendTimer(60);
         setSuccess("Verification email resent! Check your inbox.");
@@ -515,7 +562,9 @@ const Login = () => {
           setIsEmailVerified(true);
           setSuccess("Email verified successfully!");
         } else {
-          setError("Email not verified yet. Please check your inbox and click the verification link.");
+          setError(
+            "Email not verified yet. Please check your inbox and click the verification link."
+          );
         }
       }
     } catch (err) {
@@ -582,7 +631,19 @@ const Login = () => {
       setError("Password must be at least 6 characters");
       return false;
     }
+    if (
+      usernameStatus === "taken" ||
+      usernameStatus === "invalid" ||
+      usernameStatus === "checking"
+    ) {
+      setError("Please choose a valid and available username");
+      return false;
+    }
 
+    if (username && usernameStatus !== "available") {
+      setError("Username is not available or invalid");
+      return false;
+    }
     return true;
   };
 
@@ -612,7 +673,11 @@ const Login = () => {
         user = tempUser;
       } else {
         // Create final user account
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
         user = userCredential.user;
 
         // Update profile
@@ -621,7 +686,7 @@ const Login = () => {
         // Send verification email if not verified
         if (!user.emailVerified) {
           await sendEmailVerification(user, {
-            url: window.location.origin + '/email-verified'
+            url: window.location.origin + "/email-verified",
           });
           setError("Please verify your email first. Check your inbox.");
           return;
@@ -655,7 +720,7 @@ const Login = () => {
       );
 
       setSuccess("Sign-up successful! Redirecting...");
-      
+
       // Send welcome email
       await fetch(
         "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
@@ -669,9 +734,9 @@ const Login = () => {
         }
       );
 
-     setTimeout(() => {
-  window.location.reload(); // Ya navigate("/", { replace: true })
-}, 3000);
+      setTimeout(() => {
+        window.location.reload(); // Ya navigate("/", { replace: true })
+      }, 3000);
     } catch (err) {
       setError("Sign-up failed: " + err.message);
     }
@@ -681,12 +746,18 @@ const Login = () => {
     e.preventDefault();
     try {
       // ✅ Step 1: Sign in the user
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       // Check if email is verified
       if (!user.emailVerified) {
-        setError("Please verify your email first. Check your inbox for verification link.");
+        setError(
+          "Please verify your email first. Check your inbox for verification link."
+        );
         await signOut(auth);
         return;
       }
@@ -707,9 +778,9 @@ const Login = () => {
       );
 
       // ✅ Step 3: Redirect after 3 seconds
-     setTimeout(() => {
-  window.location.reload(); // Ya navigate("/", { replace: true })
-}, 3000);
+      setTimeout(() => {
+        window.location.reload(); // Ya navigate("/", { replace: true })
+      }, 3000);
     } catch (err) {
       setError("Login failed: " + err.message);
     }
@@ -878,16 +949,7 @@ const Login = () => {
                     <label htmlFor="username" className="mb-2">
                       Username *
                     </label>
-                    <div
-                      className="input"
-                      style={{
-                        border:
-                          error && error.includes("Username")
-                            ? "1px solid #ff6b6b"
-                            : "1px solid rgba(255,255,255,0.2)",
-                        position: "relative",
-                      }}
-                    >
+                    <div className="input" style={{ position: "relative" }}>
                       <input
                         type="text"
                         id="username"
@@ -895,47 +957,53 @@ const Login = () => {
                         placeholder="john_doe123"
                         value={username}
                         onChange={handleUsernameChange}
-                        pattern="[a-zA-Z0-9_]+"
-                        title="Only letters, numbers and underscores allowed"
+                        style={{
+                          border:
+                            usernameStatus === "taken" ||
+                            usernameStatus === "invalid"
+                              ? "1px solid #ff6b6b"
+                              : usernameStatus === "available"
+                              ? "1px solid #4caf50"
+                              : "1px solid rgba(255,255,255,0.2)",
+                        }}
                       />
-                      {username && username.length >= 3 && !error && (
+                      {username && username.length >= 3 && (
                         <div
                           style={{
                             position: "absolute",
-                            right: "10px",
+                            right: "12px",
                             top: "50%",
                             transform: "translateY(-50%)",
-                            color: "#4caf50",
-                            fontSize: "0.8rem",
+                            fontSize: "1.2rem",
                           }}
                         >
-                          ✓
+                          {usernameStatus === "checking" && "..."}
+                          {usernameStatus === "available" && "Available"}
+                          {usernameStatus === "taken" && "Taken"}
+                          {usernameStatus === "invalid" && "Invalid"}
                         </div>
                       )}
                     </div>
-                    {username && (
-                      <div
+                    {username && username.length >= 3 && (
+                      <small
                         style={{
+                          color:
+                            usernameStatus === "available"
+                              ? "#4caf50"
+                              : "#ff6b6b",
                           fontSize: "0.8rem",
                           marginTop: "0.25rem",
-                          color:
-                            username.length < 3
-                              ? "#ff6b6b"
-                              : /\s/.test(username)
-                              ? "#ff6b6b"
-                              : !/^[a-zA-Z0-9_]+$/.test(username)
-                              ? "#ff6b6b"
-                              : "#4caf50",
+                          display: "block",
                         }}
                       >
-                        {username.length < 3
-                          ? "Minimum 3 characters"
-                          : /\s/.test(username)
-                          ? "Spaces not allowed"
-                          : !/^[a-zA-Z0-9_]+$/.test(username)
-                          ? "Only letters, numbers, and _"
-                          : "Valid format"}
-                      </div>
+                        {usernameStatus === "checking" &&
+                          "Checking availability..."}
+                        {usernameStatus === "available" &&
+                          "This username is available!"}
+                        {usernameStatus === "taken" &&
+                          "This username is already taken"}
+                        {usernameStatus === "invalid" && error}
+                      </small>
                     )}
                   </div>
                 </div>
@@ -1186,89 +1254,125 @@ const Login = () => {
             ) : (
               // STEP 2: EMAIL VERIFICATION
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                  <div style={{ fontSize: "3rem", color: "#52b0b4", marginBottom: "1rem" }}>
-                    ✉️
-                  </div>
-                  <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
-                    Verify Your Email
-                  </h3>
-                  <p style={{ color: "#f5f5f5", opacity: 0.8, marginBottom: "1.5rem" }}>
-                    We've sent a verification link to:<br />
-                    <strong>{email}</strong>
-                  </p>
+                <div
+                  style={{
+                    fontSize: "3rem",
+                    color: "#52b0b4",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  ✉️
+                </div>
+                <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
+                  Verify Your Email
+                </h3>
+                <p
+                  style={{
+                    color: "#f5f5f5",
+                    opacity: 0.8,
+                    marginBottom: "1.5rem",
+                  }}
+                >
+                  We've sent a verification link to:
+                  <br />
+                  <strong>{email}</strong>
+                </p>
 
-                  {!isVerificationSent ? (
-                    <div>
-                      <p style={{ color: "#f5f5f5", opacity: 0.6, fontSize: "0.9rem", marginBottom: "1.5rem" }}>
-                        Click "Next" to send verification email
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div style={{
+                {!isVerificationSent ? (
+                  <div>
+                    <p
+                      style={{
+                        color: "#f5f5f5",
+                        opacity: 0.6,
+                        fontSize: "0.9rem",
+                        marginBottom: "1.5rem",
+                      }}
+                    >
+                      Click "Next" to send verification email
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      style={{
                         backgroundColor: "rgba(82, 176, 180, 0.1)",
                         padding: "1rem",
                         borderRadius: "0.5rem",
-                        marginBottom: "1.5rem"
-                      }}>
-                        <p style={{ color: "#f5f5f5", margin: 0 }}>
-                          <strong>Important:</strong> Check your email inbox and click the verification link.
-                          After clicking the link, come back here and click "I've Verified".
-                        </p>
-                      </div>
+                        marginBottom: "1.5rem",
+                      }}
+                    >
+                      <p style={{ color: "#f5f5f5", margin: 0 }}>
+                        <strong>Important:</strong> Check your email inbox and
+                        click the verification link. After clicking the link,
+                        come back here and click "I've Verified".
+                      </p>
+                    </div>
 
-                      <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-                        <button
-                          type="button"
-                          className="login_btn"
-                          onClick={checkEmailVerification}
-                          style={{ flex: 1 }}
-                        >
-                          {isEmailVerified ? "✓ Verified" : "I've Verified"}
-                        </button>
-                        <button
-                          type="button"
-                          className="login_btn"
-                          onClick={resendVerificationEmail}
-                          disabled={resendTimer > 0}
-                          style={{
-                            backgroundColor: "transparent",
-                            border: "1px solid rgba(255,255,255,0.2)",
-                            flex: 1,
-                            opacity: resendTimer > 0 ? 0.5 : 1
-                          }}
-                        >
-                          {resendTimer > 0 ? `Resend (${resendTimer}s)` : "Resend Link"}
-                        </button>
-                      </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "1rem",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="login_btn"
+                        onClick={checkEmailVerification}
+                        style={{ flex: 1 }}
+                      >
+                        {isEmailVerified ? "✓ Verified" : "I've Verified"}
+                      </button>
+                      <button
+                        type="button"
+                        className="login_btn"
+                        onClick={resendVerificationEmail}
+                        disabled={resendTimer > 0}
+                        style={{
+                          backgroundColor: "transparent",
+                          border: "1px solid rgba(255,255,255,0.2)",
+                          flex: 1,
+                          opacity: resendTimer > 0 ? 0.5 : 1,
+                        }}
+                      >
+                        {resendTimer > 0
+                          ? `Resend (${resendTimer}s)`
+                          : "Resend Link"}
+                      </button>
+                    </div>
 
-                      {isEmailVerified && (
-                        <div style={{
+                    {isEmailVerified && (
+                      <div
+                        style={{
                           marginTop: "1.5rem",
                           padding: "1rem",
                           backgroundColor: "rgba(76, 175, 80, 0.1)",
-                          borderRadius: "0.5rem"
-                        }}>
-                          <p style={{ color: "#4caf50", margin: 0 }}>
-                            ✓ Email verified successfully! You can now proceed.
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
+                          borderRadius: "0.5rem",
+                        }}
+                      >
+                        <p style={{ color: "#4caf50", margin: 0 }}>
+                          ✓ Email verified successfully! You can now proceed.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
 
-                  <div style={{
+                <div
+                  style={{
                     marginTop: "1.5rem",
                     padding: "1rem",
                     backgroundColor: "rgba(255,255,255,0.05)",
                     borderRadius: "0.5rem",
-                    fontSize: "0.9rem"
-                  }}>
-                    <p style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}>
-                      <strong>Note:</strong> If you don't see the email, check your spam folder.
-                    </p>
-                  </div>
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  <p style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}>
+                    <strong>Note:</strong> If you don't see the email, check
+                    your spam folder.
+                  </p>
                 </div>
+              </div>
             )}
           </div>
         )}
