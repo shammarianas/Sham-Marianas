@@ -56,6 +56,7 @@ import Error from "../../../../Pages/Error";
 
 import "../../../../assets/Styles/contribute-style.css";
 
+
 const UnauthorizedAccess = ({ error }) => {
   return (
     <div className="unauthorized-access">
@@ -77,12 +78,7 @@ const ProfileWrapper = ({ userId }) => {
 };
 
 // ✅ ADDED: Notification Dropdown Component
-const NotificationDropdown = ({
-  notifications,
-  onMarkAsRead,
-  onMarkAllAsRead,
-  onClose,
-}) => {
+const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
   return (
     <div className="notification-dropdown">
       <div className="notification-header">
@@ -100,21 +96,13 @@ const NotificationDropdown = ({
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`notification-item ${
-                notification.read ? "read" : "unread"
-              }`}
+              className={`notification-item ${notification.read ? 'read' : 'unread'}`}
               onClick={() => onMarkAsRead(notification.id)}
             >
               <div className="notification-icon">
-                {notification.type === "approved" && (
-                  <FiCheckCircle className="icon-approved" />
-                )}
-                {notification.type === "rejected" && (
-                  <FiXCircle className="icon-rejected" />
-                )}
-                {notification.type === "revision" && (
-                  <FiClock className="icon-revision" />
-                )}
+                {notification.type === 'approved' && <FiCheckCircle className="icon-approved" />}
+                {notification.type === 'rejected' && <FiXCircle className="icon-rejected" />}
+                {notification.type === 'revision' && <FiClock className="icon-revision" />}
               </div>
               <div className="notification-content">
                 <p className="notification-message">{notification.message}</p>
@@ -133,13 +121,13 @@ const NotificationDropdown = ({
 
 // ✅ ADDED: Format notification time
 const formatNotificationTime = (timestamp) => {
-  if (!timestamp) return "Just now";
-
+  if (!timestamp) return 'Just now';
+  
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
-
-  if (diffInSeconds < 60) return "Just now";
+  
+  if (diffInSeconds < 60) return 'Just now';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
   return `${Math.floor(diffInSeconds / 86400)}d ago`;
@@ -182,104 +170,63 @@ const SellerDashboard = () => {
   // ✅ ADDED: Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   // Check seller status and fetch data
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      // Reset states
-      setError(null);
-      setIsSeller(false);
-      setUserData(null);
-
       if (!currentUser) {
-        setError("Please log in to access the contributor dashboard");
+        setError("Please log in to access the seller dashboard");
         navigate("/contributor-login");
         return;
       }
 
       try {
         const uid = currentUser.uid;
-        const authEmail = currentUser.email?.toLowerCase().trim();
+        const sellerDoc = await getDoc(doc(db, "Contributors", uid));
 
-        if (!authEmail) {
-          setError("Account email not found. Please login again.");
-          await signOut(auth);
-          navigate("/contributor-login");
-          return;
-        }
+        if (sellerDoc.exists()) {
+          const sellerData = sellerDoc.data();
 
-        // Fetch contributor document ONCE
-        const sellerDocRef = doc(db, "Contributors", uid);
-        const sellerDoc = await getDoc(sellerDocRef);
+          // Check if contributor is active
+          if (sellerData.status !== "verified") {
+            setError(
+              `Your contributor account is ${sellerData.status}. You cannot access the dashboard.`
+            );
 
-        // Case 1: Not registered as contributor
-        if (!sellerDoc.exists()) {
-          setError("You are not registered as a contributor");
-          navigate("/become-contributor");
-          return;
-        }
-
-        const sellerData = sellerDoc.data();
-        const dbEmail = (sellerData.email || "").toLowerCase().trim();
-
-        // SECURITY: Email must match exactly
-        if (authEmail !== dbEmail) {
-          console.warn("Access blocked - Email mismatch", {
-            authEmail,
-            dbEmail,
-            uid,
-          });
-          setError(
-            "Access denied: Email does not match registered contributor account."
-          );
-          await signOut(auth);
-          navigate("/contributor-login");
-          return;
-        }
-
-        // Status check
-        if (sellerData.status !== "verified") {
-          setError(
-            `Your contributor account is ${sellerData.status}. Access denied.`
-          );
-
-          if (sellerData.status === "pending") {
-            navigate("/contributor-pending");
-          } else if (sellerData.status === "rejected") {
-            navigate("/contributor-rejected");
-          } else {
-            navigate("/error");
+            if (sellerData.status === "pending") {
+              navigate("/contributor-pending");
+            } else if (sellerData.status === "rejected") {
+              navigate("/error");
+            } else {
+              navigate("/error");
+            }
+            return;
           }
-          return;
+
+          // If status = active, allow access
+          setIsSeller(true);
+          setUserData(sellerData);
+          await Promise.all([
+            fetchSellerData(uid),
+            fetchUserReports(uid),
+            setupNotificationsListener(uid), // ✅ ADDED: Setup notifications listener
+          ]);
+        } else {
+          setError("You are not registered as a contributor");
+          navigate("/error");
         }
-
-        // All checks passed → Grant access
-        setIsSeller(true);
-        setUserData({ ...sellerData, uid });
-
-        // Load additional data
-        await Promise.all([
-          fetchSellerData(uid),
-          fetchUserReports(uid),
-          setupNotificationsListener(uid),
-        ]);
       } catch (error) {
-        console.error("Dashboard access error:", error);
-        setError("Failed to load dashboard. Please try again later.");
-        // Optionally sign out or redirect
+        setError(`Failed to verify seller status: ${error.message}`);
       }
     });
 
@@ -301,13 +248,11 @@ const SellerDashboard = () => {
           ...doc.data(),
         });
       });
-
+      
       setNotifications(notificationsData);
-
+      
       // Calculate unread count
-      const unread = notificationsData.filter(
-        (notification) => !notification.read
-      ).length;
+      const unread = notificationsData.filter(notification => !notification.read).length;
       setUnreadCount(unread);
     });
   };
@@ -317,14 +262,10 @@ const SellerDashboard = () => {
     if (!userData?.uid) return;
 
     try {
-      const notificationRef = doc(
-        db,
-        `Contributors/${userData.uid}/Notifications`,
-        notificationId
-      );
+      const notificationRef = doc(db, `Contributors/${userData.uid}/Notifications`, notificationId);
       await updateDoc(notificationRef, {
         read: true,
-        readAt: serverTimestamp(),
+        readAt: serverTimestamp()
       });
     } catch (error) {
       console.error("Error marking notification as read:", error);
@@ -336,21 +277,12 @@ const SellerDashboard = () => {
     if (!userData?.uid) return;
 
     try {
-      const unreadNotifications = notifications.filter(
-        (notification) => !notification.read
-      );
-      const batch = unreadNotifications.map((notification) =>
-        updateDoc(
-          doc(
-            db,
-            `Contributors/${userData.uid}/Notifications`,
-            notification.id
-          ),
-          {
-            read: true,
-            readAt: serverTimestamp(),
-          }
-        )
+      const unreadNotifications = notifications.filter(notification => !notification.read);
+      const batch = unreadNotifications.map(notification => 
+        updateDoc(doc(db, `Contributors/${userData.uid}/Notifications`, notification.id), {
+          read: true,
+          readAt: serverTimestamp()
+        })
       );
 
       await Promise.all(batch);
@@ -372,10 +304,7 @@ const SellerDashboard = () => {
         timestamp: serverTimestamp(),
       };
 
-      await setDoc(
-        doc(collection(db, `Contributors/${userData.uid}/Notifications`)),
-        notificationData
-      );
+      await setDoc(doc(collection(db, `Contributors/${userData.uid}/Notifications`)), notificationData);
     } catch (error) {
       console.error("Error creating notification:", error);
     }
@@ -389,7 +318,7 @@ const SellerDashboard = () => {
   const fetchUserReports = async (uid) => {
     try {
       const supportQuery = query(
-        collection(db, `Contributors/${uid}/Support`),
+        collection(db, `Contributors/${uid}/Support`), 
         orderBy("createdAt", "desc")
       );
 
@@ -886,7 +815,7 @@ const SellerDashboard = () => {
               {activeTab === "guidelines" && "Guidelines"}
               {activeTab === "contact" && "Contact Support"}
               {activeTab === "report-track" && "Track Reports"}
-              {activeTab === "profile" && "Profile"}
+              {activeTab === "profile" && "Profile"} 
               {activeTab === "billing" && "Billing & Invoices"}
               {activeTab === "feedback" && "Feedback"}
             </h1>
@@ -894,16 +823,13 @@ const SellerDashboard = () => {
           <div className="header-right m-0">
             {/* ✅ UPDATED: Notification Button with Badge */}
             <div className="notification-container" ref={notificationRef}>
-              <button
-                className="header-btn notification-btn"
-                onClick={toggleNotifications}
-              >
+              <button className="header-btn notification-btn" onClick={toggleNotifications}>
                 <FiBell className="btn-icon" />
                 {unreadCount > 0 && (
                   <span className="notification-badge">{unreadCount}</span>
                 )}
               </button>
-
+              
               {/* Notification Dropdown */}
               {showNotifications && (
                 <NotificationDropdown
@@ -914,7 +840,7 @@ const SellerDashboard = () => {
                 />
               )}
             </div>
-
+            
             <button className="header-btn">
               <FiSettings className="btn-icon" />
             </button>
