@@ -25,11 +25,11 @@ const ProfileByUsername = () => {
           setUserId(userDoc.id);
         } else {
           // User not found
-          navigate("/404", { replace: true });
+          navigate("/error", { replace: true });
         }
       } catch (error) {
         console.error("Error fetching user:", error);
-        navigate("/404", { replace: true });
+        navigate("/error", { replace: true });
       } finally {
         setLoading(false);
       }
