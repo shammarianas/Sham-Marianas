@@ -190,6 +190,18 @@ const SellerDashboard = () => {
         return;
       }
 
+    try {
+      const uid = currentUser.uid;
+      const authEmail = currentUser.email?.toLowerCase().trim();
+
+      // Agar email hi nahi hai Firebase Auth mein
+      if (!authEmail) {
+        setError("Account email not found. Please login again.");
+        await signOut(auth);
+        navigate("/contributor-login");
+        return;
+      }
+
       try {
         const uid = currentUser.uid;
         const sellerDoc = await getDoc(doc(db, "Contributors", uid));
@@ -212,6 +224,58 @@ const SellerDashboard = () => {
             }
             return;
           }
+      const sellerDocRef = doc(db, "Contributors", uid);
+      const sellerDoc = await getDoc(sellerDocRef);
+
+      // Agar contributor registered hi nahi
+      if (!sellerDoc.exists()) {
+        setError("You are not registered as a contributor");
+        navigate("/become-contributor");
+        return;
+      }
+
+      const sellerData = sellerDoc.data();
+      const dbEmail = (sellerData.email || "").toLowerCase().trim();
+
+<<<<<<<<< Temporary merge branch 1
+      // MAIN SECURITY: EMAIL MUST MATCH
+      if (authEmail !== dbEmail) {
+        console.warn("Blocked access - Email mismatch", { authEmail, dbEmail, uid });
+        setError("Access denied: Email does not match registered contributor account.");
+        await signOut(auth); // Force logout for security
+        navigate("/contributor-login");
+        return;
+      }
+=========
+            if (sellerData.status === "pending") {
+              navigate("/contributor-pending");
+            } else if (sellerData.status === "rejected") {
+              navigate("/error");
+            } else {
+              navigate("/error");
+            }
+            return;
+          }
+>>>>>>>>> Temporary merge branch 2
+
+      // Status check (verified hona chahiye)
+      if (sellerData.status !== "verified") {
+        setError(`Your contributor account is ${sellerData.status}. You cannot access the dashboard.`);
+
+        if (sellerData.status === "pending") {
+          navigate("/contributor-pending");
+        } else if (sellerData.status === "rejected") {
+          navigate("/contributor-rejected");
+        } else {
+<<<<<<<<< Temporary merge branch 1
+          navigate("/become-contributor");
+=========
+          setError("You are not registered as a contributor");
+          navigate("/error");
+>>>>>>>>> Temporary merge branch 2
+        }
+        return;
+      }
 
           // If status = active, allow access
           setIsSeller(true);
