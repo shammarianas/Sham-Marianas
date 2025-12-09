@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 
 const UserCard = ({ userId }) => {
   const [user, setUser] = useState(null);
+  const [profilePath, setProfilePath] = useState(`/profile/${userId}`); // ✅ ابتدائی value
 
   useEffect(() => {
     if (!userId) return;
@@ -16,7 +17,13 @@ const UserCard = ({ userId }) => {
         const profileSnap = await getDoc(profileRef);
 
         if (profileSnap.exists()) {
-          setUser(profileSnap.data());
+          const userData = profileSnap.data();
+          setUser(userData);
+
+          // ✅ اگر username موجود ہے تو اسے استعمال کریں
+          if (userData.username) {
+            setProfilePath(`/Profile/${userData.username}`); // ✅ نیا path
+          }
         } else {
           // ✅ AGAR PROFILES MAI NAHI MILA, TO CONTRIBUTORS CHECK KARO
           const contributorRef = doc(db, "Contributors", userId);
@@ -24,7 +31,7 @@ const UserCard = ({ userId }) => {
 
           if (contributorSnap.exists()) {
             const contributorData = contributorSnap.data();
-            setUser({
+            const userObj = {
               username:
                 contributorData.username ||
                 contributorData.displayName ||
@@ -32,14 +39,14 @@ const UserCard = ({ userId }) => {
               profilePic:
                 contributorData.profilePic ||
                 "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png",
-            });
+            };
+            setUser(userObj);
           } else {
             setUser(null);
           }
         }
       } catch (error) {
         if (error?.code === "permission-denied") {
-          // Silent fallback when rules disallow read
           setUser(null);
         } else {
           console.warn("UserCard fetch error:", error);
@@ -62,7 +69,9 @@ const UserCard = ({ userId }) => {
           alt={user?.username || "User"}
         />
       </div>
-      <Link to={`/Profile/${userId}`}>
+      <Link to={profilePath}>
+        {" "}
+        {/* ✅ یہاں profilePath استعمال کریں */}
         <span className="username">{user?.username || "User"}</span>
       </Link>
     </div>

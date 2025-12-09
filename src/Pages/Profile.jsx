@@ -28,13 +28,14 @@ import ItemsListing from "../Components/ItemsListing";
 import { Helmet } from "react-helmet-async";
 
 const Profile = () => {
-  const { id } = useParams();
+  const { username: urlUsername } = useParams(); // ✅ URL سے username لیں (variable name conflict سے بچنے کے لیے)
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [userId, setUserId] = useState(null); // نیا state
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -60,11 +61,86 @@ const Profile = () => {
   // State for billing history modal
   const [showBillingModal, setShowBillingModal] = useState(false);
 
-  const isOwnProfile = currentUser?.uid === id;
+  const isOwnProfile = currentUser?.uid === userId; // 'id' کی بجائے 'userId'
 
   // Real-time username availability check
   const [usernameAvailable, setUsernameAvailable] = useState(true);
   const [checkingUsername, setCheckingUsername] = useState(false);
+
+  useEffect(() => {
+    const findUserByUsername = async () => {
+      if (!urlUsername) {
+        console.log("No username in URL");
+        return;
+      }
+
+      console.log("Finding user with username:", urlUsername);
+      setLoading(true);
+
+      try {
+        const usernameLower = urlUsername.toLowerCase();
+
+        // ✅ Check Profiles collection first
+        let q = query(
+          collection(db, "Profiles"),
+          where("username", "==", usernameLower)
+        );
+        let querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          console.log("User found in Profiles:", userDoc.id, userDoc.data());
+          setUserId(userDoc.id);
+          setUser(userDoc.data());
+          setLoading(false);
+          return;
+        }
+
+        // ✅ If not found, check Contributors collection
+        q = query(
+          collection(db, "Contributors"),
+          where("username", "==", usernameLower)
+        );
+        querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          console.log(
+            "User found in Contributors:",
+            userDoc.id,
+            userDoc.data()
+          );
+
+          // Map contributor fields to match your profile structure
+          setUserId(userDoc.id);
+          setUser({
+            username:
+              userDoc.data().username ||
+              userDoc.data().displayName ||
+              "Contributor",
+            profilePic:
+              userDoc.data().profilePic ||
+              "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png",
+            ...userDoc.data(), // include other fields if needed
+          });
+          setLoading(false);
+          return;
+        }
+
+        // ❌ Not found in either collection
+        console.log("User not found in Profiles or Contributors");
+        setUserId(null);
+        setUser(null);
+        setLoading("not_found");
+        // navigate("/404"); // optional
+      } catch (error) {
+        console.error("Error finding user:", error);
+        setLoading("error");
+      }
+    };
+
+    findUserByUsername();
+  }, [urlUsername]);
 
   useEffect(() => {
     const checkUsernameAvailability = async () => {
@@ -166,18 +242,18 @@ const Profile = () => {
   const authorName = getAuthorName(user);
 
   const followUser = async () => {
-    if (!user || !currentUser) {
+    if (!user || !currentUser || !userId) {
       alert("Please login to follow this user");
       return;
     }
 
-    if (currentUser.uid === id) {
+    if (currentUser.uid === userId) {
       alert("You cannot follow yourself");
       return;
     }
 
     try {
-      const userRef = doc(db, "Profiles", id);
+      const userRef = doc(db, "Profiles", userId);
       const followerRef = doc(db, "Profiles", currentUser.uid);
 
       const [userDoc, followerDoc] = await Promise.all([
@@ -199,15 +275,15 @@ const Profile = () => {
           userFollowers = userFollowers.filter(
             (uid) => uid !== currentUser.uid
           );
-          followerFollowing = followerFollowing.filter((uid) => uid !== id);
+          followerFollowing = followerFollowing.filter((uid) => uid !== userId);
           setIsFollowing(false);
         } else {
           // Follow
           if (!userFollowers.includes(currentUser.uid)) {
             userFollowers.push(currentUser.uid);
           }
-          if (!followerFollowing.includes(id)) {
-            followerFollowing.push(id);
+          if (!followerFollowing.includes(userId)) {
+            followerFollowing.push(userId);
           }
           setIsFollowing(true);
         }
@@ -248,43 +324,43 @@ const Profile = () => {
   }, [user?.username, isOwnProfile]);
 
   // Fetch user profile data
-  useEffect(() => {
-    const userRef = doc(db, "Profiles", id);
+  // useEffect(() => {
+  //   const userRef = doc(db, "Profiles", userId);
 
-    const unsubscribe = onSnapshot(userRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setUser(data);
-        if (currentUser && currentUser.uid === id) {
-          setFirstName(
-            data.firstName ||
-            (currentUser?.displayName || "").split(" ")[0] ||
-            ""
-          );
-          setLastName(
-            data.lastName ||
-            (currentUser?.displayName || "").split(" ")[1] ||
-            ""
-          );
-          setUsername(data.username || currentUser?.displayName || "");
-          setPhoneNumber(data.phoneNumber || currentUser?.phoneNumber || "");
-          setBio(data.bio || ""); // Set bio from Firestore
-        }
+  //   const unsubscribe = onSnapshot(userRef, (docSnap) => {
+  //     if (docSnap.exists()) {
+  //       const data = docSnap.data();
+  //       setUser(data);
+  //       if (currentUser && currentUser.uid === id) {
+  //         setFirstName(
+  //           data.firstName ||
+  //             (currentUser?.displayName || "").split(" ")[0] ||
+  //             ""
+  //         );
+  //         setLastName(
+  //           data.lastName ||
+  //             (currentUser?.displayName || "").split(" ")[1] ||
+  //             ""
+  //         );
+  //         setUsername(data.username || currentUser?.displayName || "");
+  //         setPhoneNumber(data.phoneNumber || currentUser?.phoneNumber || "");
+  //         setBio(data.bio || ""); // Set bio from Firestore
+  //       }
 
-        // Check if current user is following this user
-        if (currentUser && currentUser.uid && data.followers) {
-          setIsFollowing(data.followers.includes(currentUser.uid));
-        } else {
-          setIsFollowing(false);
-        }
-      } else {
-        setUser(null);
-        setIsFollowing(false);
-      }
-    });
+  //       // Check if current user is following this user
+  //       if (currentUser && currentUser.uid && data.followers) {
+  //         setIsFollowing(data.followers.includes(currentUser.uid));
+  //       } else {
+  //         setIsFollowing(false);
+  //       }
+  //     } else {
+  //       setUser(null);
+  //       setIsFollowing(false);
+  //     }
+  //   });
 
-    return () => unsubscribe();
-  }, [id, currentUser]);
+  //   return () => unsubscribe();
+  // }, [userId, currentUser]);
 
   // Check followers count
   useEffect(() => {
@@ -292,7 +368,7 @@ const Profile = () => {
       if (!user) return;
 
       try {
-        const userRef = doc(db, "Profiles", id);
+        const userRef = doc(db, "Profiles", userId);
         const userDoc = await getDoc(userRef);
 
         if (userDoc.exists()) {
@@ -314,13 +390,16 @@ const Profile = () => {
     };
 
     checkFollowersCount();
-  }, [user, id]);
+  }, [user, userId]);
 
   useEffect(() => {
     const fetchItems = async () => {
       let itemsQuery;
 
-      itemsQuery = query(collection(db, "Assets"), where("userId", "==", id));
+      itemsQuery = query(
+        collection(db, "Assets"),
+        where("userId", "==", userId)
+      );
 
       const snapshot = await getDocs(itemsQuery);
       const itemsData = snapshot.docs.map((doc) => ({
@@ -334,7 +413,7 @@ const Profile = () => {
     };
 
     fetchItems();
-  }, [id]);
+  }, [userId]);
 
   // Handle image selection
   const handleImageSelect = (e) => {
@@ -367,7 +446,7 @@ const Profile = () => {
 
   // Upload profile image
   const uploadProfileImage = async () => {
-    if (!selectedImage || !isOwnProfile || !currentUser) return;
+    if (!selectedImage || !isOwnProfile || !currentUser || !userId) return;
 
     try {
       setUploadingImage(true);
@@ -383,7 +462,7 @@ const Profile = () => {
       const downloadURL = await getDownloadURL(storageRef);
 
       // Update profile in Firestore
-      const profileRef = doc(db, "Profiles", id);
+      const profileRef = doc(db, "Profiles", userId);
       await updateDoc(profileRef, {
         profilePic: downloadURL,
         updatedAt: new Date(),
@@ -405,7 +484,7 @@ const Profile = () => {
 
   // Remove profile image
   const removeProfileImage = async () => {
-    if (!isOwnProfile) return;
+    if (!isOwnProfile || !userId) return;
 
     try {
       const confirmed = window.confirm(
@@ -413,7 +492,7 @@ const Profile = () => {
       );
       if (!confirmed) return;
 
-      const profileRef = doc(db, "Profiles", id);
+      const profileRef = doc(db, "Profiles", userId);
       await updateDoc(profileRef, {
         profilePic: null,
         updatedAt: new Date(),
@@ -426,7 +505,7 @@ const Profile = () => {
     }
   };
   const handleSaveAccount = async () => {
-    if (!isOwnProfile) return;
+    if (!isOwnProfile || !userId) return; // ✅ userId check
     const trimmedUsername = (username || "").trim().toLowerCase(); // ✅ Added toLowerCase()
 
     // Password validation
@@ -449,7 +528,9 @@ const Profile = () => {
     // ✅ ADDED: Check if username contains only allowed characters
     const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
     if (!usernameRegex.test(trimmedUsername)) {
-      alert("Username can only contain letters, numbers, dots, hyphens, and underscores!");
+      alert(
+        "Username can only contain letters, numbers, dots, hyphens, and underscores!"
+      );
       return;
     }
 
@@ -480,7 +561,8 @@ const Profile = () => {
         // Check if username exists and belongs to a different user
         let usernameExists = false;
         querySnapshot.forEach((doc) => {
-          if (doc.id !== id) { // Different user has this username
+          if (doc.id !== id) {
+            // Different user has this username
             usernameExists = true;
           }
         });
@@ -498,7 +580,7 @@ const Profile = () => {
 
     try {
       setSaving(true);
-      const profileRef = doc(db, "Profiles", id);
+      const profileRef = doc(db, "Profiles", userId);
       const snap = await getDoc(profileRef);
 
       let updates = {
@@ -651,7 +733,7 @@ const Profile = () => {
     if (!isOwnProfile) return;
 
     try {
-      const profileRef = doc(db, "Profiles", id);
+      const profileRef = doc(db, "Profiles", userId);
 
       // Update status
       await updateDoc(profileRef, { status: "active" });
@@ -671,7 +753,7 @@ const Profile = () => {
     if (!confirmed) return;
 
     try {
-      const profileRef = doc(db, "Profiles", id);
+      const profileRef = doc(db, "Profiles", userId);
 
       // Update status
       await updateDoc(profileRef, { status: "deactivated" });
@@ -748,7 +830,7 @@ const Profile = () => {
         />
         <meta
           property="og:url"
-          content={`https://shammarianas.vercel.app/#/profile/${id}`}
+          content={`https://shammarianas.vercel.app/#/profile/${userId}`}
         />
         <meta
           name="twitter:title"
@@ -768,7 +850,7 @@ const Profile = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <link
           rel="canonical"
-          href={`https://shammarianas.me/#/profile/${id}`}
+          href={`https://shammarianas.me/#/${user?.username}`} // ✅ update
         />
       </Helmet>
 
@@ -929,14 +1011,18 @@ const Profile = () => {
                 <div className="actions">
                   {currentUser ? (
                     <button
-                      className={`follow_btn ${currentUser.uid === id ? "disabled" : ""
-                        }`}
-                      onClick={currentUser.uid === id ? () => { } : followUser}
-                      disabled={currentUser.uid === id}
+                      className={`follow_btn ${
+                        currentUser.uid === userId ? "disabled" : ""
+                      }`}
+                      onClick={
+                        currentUser.uid === userId ? () => {} : followUser
+                      }
+                      disabled={currentUser.uid === userId}
                     >
                       <i
-                        className={`icon fas ${isFollowing ? "fa-check" : "fa-plus"
-                          }`}
+                        className={`icon fas ${
+                          isFollowing ? "fa-check" : "fa-plus"
+                        }`}
                       ></i>
                       <span>{isFollowing ? "Following" : "Follow"}</span>
                     </button>
@@ -959,16 +1045,18 @@ const Profile = () => {
               {/* Navigation Tabs */}
               <div className="profile-nav-tabs">
                 <button
-                  className={`profile-nav-tab ${activeTab === "profile" ? "active" : ""
-                    }`}
+                  className={`profile-nav-tab ${
+                    activeTab === "profile" ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab("profile")}
                 >
                   <i className="icon fas fa-user-cog"></i>
                   <span>Profile Settings</span>
                 </button>
                 <button
-                  className={`profile-nav-tab ${activeTab === "subscription" ? "active" : ""
-                    }`}
+                  className={`profile-nav-tab ${
+                    activeTab === "subscription" ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab("subscription")}
                 >
                   <i className="icon fas fa-crown"></i>
@@ -1022,23 +1110,38 @@ const Profile = () => {
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
                           placeholder="username"
-                          className={username && username.trim() && !usernameAvailable ? "input-error" : ""}
+                          className={
+                            username && username.trim() && !usernameAvailable
+                              ? "input-error"
+                              : ""
+                          }
                         />
                         <div className="username-feedback">
                           {checkingUsername ? (
                             <small>Checking availability...</small>
                           ) : username && username.trim() ? (
                             usernameAvailable ? (
-                              <small className="text-success">✓ Username is available</small>
-                            ) : username.trim().toLowerCase() === user?.username?.toLowerCase() ? (
-                              <small className="text-info">This is your current username</small>
+                              <small className="text-success">
+                                ✓ Username is available
+                              </small>
+                            ) : username.trim().toLowerCase() ===
+                              user?.username?.toLowerCase() ? (
+                              <small className="text-info">
+                                This is your current username
+                              </small>
                             ) : (
-                              <small className="text-danger">✗ Username is already taken</small>
+                              <small className="text-danger">
+                                ✗ Username is already taken
+                              </small>
                             )
                           ) : (
                             <small>
                               We allow 3 username changes per year. You have{" "}
-                              {Math.max(0, 3 - (user?.usernameChangeCount || 0))} changes remaining.
+                              {Math.max(
+                                0,
+                                3 - (user?.usernameChangeCount || 0)
+                              )}{" "}
+                              changes remaining.
                             </small>
                           )}
                         </div>
@@ -1095,10 +1198,11 @@ const Profile = () => {
                     <div className="danger-zone-content">
                       <div className="danger-actions">
                         <button
-                          className={`butn butn-sm butn-bord ${user?.status === "deactivated"
+                          className={`butn butn-sm butn-bord ${
+                            user?.status === "deactivated"
                               ? "butn-bg main-colorbg"
                               : "butn-danger"
-                            } radius-5`}
+                          } radius-5`}
                           onClick={
                             user?.status === "deactivated"
                               ? handleActivateAccount
@@ -1106,10 +1210,11 @@ const Profile = () => {
                           }
                         >
                           <i
-                            className={`icon fas ${user?.status === "deactivated"
+                            className={`icon fas ${
+                              user?.status === "deactivated"
                                 ? "fa-play"
                                 : "fa-pause"
-                              }`}
+                            }`}
                           ></i>
                           <span>
                             {user?.status === "deactivated"

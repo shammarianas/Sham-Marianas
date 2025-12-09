@@ -1,15 +1,18 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { useUser } from "../Context/UserProvider";
 import Search from "./Search";
 import "../assets/Styles/navbar-logo.css";
+import { db } from "../../firebase";
+import { doc, getDoc } from "firebase/firestore"; // ✅ Firestore functions
 
 const Navbar = () => {
   const { currentUser } = useUser() || "";
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const cartCount = cart.length;
   const currentPage = useLocation().pathname;
+  const [username, setUsername] = useState(null);
 
   // ✅ NEW: Check if current page needs "Template" button
   const showTemplateButton = [
@@ -21,10 +24,58 @@ const Navbar = () => {
     "/contact",
     "/project-details",
     "/Blog-details",
-  ].some(path =>
+  ].some((path) =>
     path === "/" ? currentPage === "/" : currentPage.startsWith(path)
   );
 
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (!currentUser?.uid) {
+        setUsername(null);
+        return;
+      }
+
+      try {
+        // ✅ پہلے Profiles collection میں تلاش کریں
+        const profileRef = doc(db, "Profiles", currentUser.uid);
+        const profileSnap = await getDoc(profileRef);
+
+        if (profileSnap.exists()) {
+          const profileData = profileSnap.data();
+          setUsername(profileData.username || null);
+        } else {
+          // ✅ اگر Profiles میں نہیں ملا تو Contributors میں تلاش کریں
+          const contributorRef = doc(db, "Contributors", currentUser.uid);
+          const contributorSnap = await getDoc(contributorRef);
+
+          if (contributorSnap.exists()) {
+            const contributorData = contributorSnap.data();
+            setUsername(contributorData.username || null);
+          } else {
+            setUsername(null);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching username:", error);
+        setUsername(null);
+      }
+    };
+
+    fetchUsername();
+  }, [currentUser]);
+
+  //
+  const getProfileLink = () => {
+    if (!currentUser?.uid) return "/login";
+
+    // اگر username موجود ہے تو username کے ذریعے
+    if (username) {
+      return `/Profile/${username}`;
+    }
+
+    // ورنہ user ID کے ذریعے
+    return `/Profile/${currentUser.uid}`;
+  };
   useEffect(() => {
     const handleScroll = () => {
       const navbar = document.querySelector(".navbar");
@@ -208,8 +259,6 @@ const Navbar = () => {
               )}
             </div>
 
-
-
             {/* for coming soon */}
             {/* <div className="contact-button">
               
@@ -320,34 +369,42 @@ const Navbar = () => {
         </Link>
 
         {/* SIRF EXPLORE + SEARCH admin mein hide */}
-        {!["/Login", "/Upload", "/reset", "/admin", "/Contributor", "/contributor/dashboard", "/contributordashboard"].includes(
-          currentPage
-        ) && (
-            <>
-              <Link to="/stock">
-                <div className="d-none d-md-block  ml-auto vi-more">
-                  <span className="butn butn-sm butn-bord radius-30">
-                    <span>Explore</span>
-                  </span>
-                  <span className="icon ti-arrow-top-right"></span>
-                </div>
-              </Link>
-              <Search />
-            </>
-          )}
+        {![
+          "/Login",
+          "/Upload",
+          "/reset",
+          "/admin",
+          "/Contributor",
+          "/contributor/dashboard",
+          "/contributordashboard",
+        ].includes(currentPage) && (
+          <>
+            <Link to="/stock">
+              <div className="d-none d-md-block  ml-auto vi-more">
+                <span className="butn butn-sm butn-bord radius-30">
+                  <span>Explore</span>
+                </span>
+                <span className="icon ti-arrow-top-right"></span>
+              </div>
+            </Link>
+            <Search />
+          </>
+        )}
 
         <div className="right">
           <div className="nav_buttons">
             <div className="navbar_dropdown">
               {currentUser?.uid ? (
-                <Link to={`/Profile/${currentUser?.uid}`}>
+                // ✅ یہاں update کریں
+                <Link to={getProfileLink()}>
                   <button className="signed_in">
                     <i className="icon fa-solid fa-user"></i>
                     <span className="username">
-                      {/* {currentUser?.displayName || "User"} */}
                       {(() => {
                         if (!currentUser) return "User";
-                        const fullName = `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+                        const fullName = `${currentUser.firstName || ""} ${
+                          currentUser.lastName || ""
+                        }`.trim();
                         if (fullName) return fullName;
                         return currentUser.displayName || "User";
                       })()}
@@ -369,7 +426,7 @@ const Navbar = () => {
                     <Link to="/Favorites">My Favorites</Link>
                   </li>
                   <li>
-                    <Link to={`/Profile/${currentUser?.uid}`}>Profile</Link>
+                    <Link to={getProfileLink()}>Profile</Link>
                   </li>
                   <li>
                     <Link to="/Support">Support</Link>
@@ -387,87 +444,94 @@ const Navbar = () => {
       </div>
 
       {/* Bottom bar ONLY on non-main pages */}
-      {!["/", "/Login", "/Upload", "/reset", "/admin", "/Contributor", "/contributor/dashboard", "/contributordashboard"].includes(
-        currentPage
-      ) && (
-          <div className="bottom-bar">
-            <div className="links">
-              <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
-                {navItems.map(({ path, icon, label }) => {
-                  if (label == "More") {
-                    return (
-                      <nav
-                        key={path}
-                        style={{ position: "relative" }}
-                        className="navbar navbar-expand-lg"
-                      >
-                        <div className="">
-                          <div
-                            className="collapse navbar-collapse justify-content-center"
-                            id="navbarSupportedContent"
-                          >
-                            <span className="navbar-nav">
-                              <li
-                                onMouseLeave={handleDropdownMouseLeave}
-                                onMouseMove={handleDropdownMouseMove}
-                                className="nav-item dropdown"
-                              >
-                                <p
-                                  className="nav-link dropdown-toggle"
-                                  data-toggle="dropdown"
-                                  href="#"
-                                  role="button"
-                                  aria-haspopup="true"
-                                  aria-expanded="false"
-                                >
-                                  <span
-                                    style={{ marginTop: "3px" }}
-                                    className="rolling-text"
-                                  >
-                                    More
-                                  </span>
-                                </p>
-                                <ul
-                                  style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                  }}
-                                  className="dropdown-menu"
-                                >
-                                  {moreDropdownItems.map(({ path, label }) => (
-                                    <li key={path}>
-                                      <Link className="dropdown-item" to={path}>
-                                        {label}
-                                      </Link>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </li>
-                            </span>
-                          </div>
-                        </div>
-                      </nav>
-                    );
-                  }
+      {![
+        "/",
+        "/Login",
+        "/Upload",
+        "/reset",
+        "/admin",
+        "/Contributor",
+        "/contributor/dashboard",
+        "/contributordashboard",
+      ].includes(currentPage) && (
+        <div className="bottom-bar">
+          <div className="links">
+            <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
+              {navItems.map(({ path, icon, label }) => {
+                if (label == "More") {
                   return (
-                    <li key={path}>
-                      <NavLink
-                        className={({ isActive }) =>
-                          isActive ? "active" : undefined
-                        }
-                        to={path}
-                      >
-                        <i className={`fa-solid ${icon}`}></i>
-                        {label}
-                      </NavLink>
-                    </li>
+                    <nav
+                      key={path}
+                      style={{ position: "relative" }}
+                      className="navbar navbar-expand-lg"
+                    >
+                      <div className="">
+                        <div
+                          className="collapse navbar-collapse justify-content-center"
+                          id="navbarSupportedContent"
+                        >
+                          <span className="navbar-nav">
+                            <li
+                              onMouseLeave={handleDropdownMouseLeave}
+                              onMouseMove={handleDropdownMouseMove}
+                              className="nav-item dropdown"
+                            >
+                              <p
+                                className="nav-link dropdown-toggle"
+                                data-toggle="dropdown"
+                                href="#"
+                                role="button"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                              >
+                                <span
+                                  style={{ marginTop: "3px" }}
+                                  className="rolling-text"
+                                >
+                                  More
+                                </span>
+                              </p>
+                              <ul
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                }}
+                                className="dropdown-menu"
+                              >
+                                {moreDropdownItems.map(({ path, label }) => (
+                                  <li key={path}>
+                                    <Link className="dropdown-item" to={path}>
+                                      {label}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </li>
+                          </span>
+                        </div>
+                      </div>
+                    </nav>
                   );
-                })}
-              </ul>
-            </div>
-            <div className="buttons"></div>
+                }
+                return (
+                  <li key={path}>
+                    <NavLink
+                      className={({ isActive }) =>
+                        isActive ? "active" : undefined
+                      }
+                      to={path}
+                    >
+                      <i className={`fa-solid ${icon}`}></i>
+                      {label}
+                    </NavLink>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-        )}
+          <div className="buttons"></div>
+        </div>
+      )}
     </>
   );
 };
