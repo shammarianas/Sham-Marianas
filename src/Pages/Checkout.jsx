@@ -216,11 +216,62 @@ const Checkout = () => {
     return "Complete Your Purchase";
   };
 
-  const steps = [
-    { number: 1, title: "Personal Info", icon: "user" },
-    { number: 2, title: "Billing Address", icon: "map-marker-alt" },
-    { number: 3, title: "Payment", icon: "credit-card" },
-  ];
+  // Progress steps similar to ContributorLogin
+  const renderProgressSteps = () => (
+    <div
+      className="progress-steps"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        marginBottom: "2rem",
+        padding: "0 1rem",
+      }}
+    >
+      {[1, 2, 3].map((step) => (
+        <div
+          key={step}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            flex: 1,
+          }}
+        >
+          <div
+            style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              backgroundColor: activeStep >= step ? "#52b0b4" : "#181818",
+              color: activeStep >= step ? "#0f0f0f" : "#f5f5f5",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: "bold",
+              border:
+                activeStep === step
+                  ? "2px solid #52b0b4"
+                  : "2px solid #181818",
+            }}
+          >
+            {step}
+          </div>
+          <span
+            style={{
+              fontSize: "0.8rem",
+              marginTop: "0.5rem",
+              color: activeStep >= step ? "#f5f5f5" : "#666",
+              textAlign: "center",
+            }}
+          >
+            {step === 1 && "Personal Info"}
+            {step === 2 && "Billing Address"}
+            {step === 3 && "Payment"}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 
   const countries = [
     "United States",
@@ -234,115 +285,178 @@ const Checkout = () => {
   ];
 
   return (
-    <div className="checkout-page">
-      <div className="checkout-container">
+    <div className="checkout-page" style={{ padding: "2rem" }}>
+      <div className="checkout-container" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         {/* Header */}
-        <div className="checkout-header">
+        <div className="checkout-header" style={{ textAlign: "center", marginBottom: "2rem" }}>
           <div className="header-content">
-            <h1>{getOrderTitle()}</h1>
-            <p>Secure checkout with enterprise-grade security</p>
+            <h1 style={{ color: "#f5f5f5", marginBottom: "0.5rem" }}>{getOrderTitle()}</h1>
+            <p style={{ color: "#999" }}>Secure checkout with enterprise-grade security</p>
           </div>
         </div>
 
         {/* Progress Steps */}
-        <div className="progress-steps">
-          {steps.map((step, index) => (
-            <div key={step.number} className="step-container">
-              <div
-                className={`step ${activeStep >= step.number ? "active" : ""}`}
-              >
-                <div className="step-icon">
-                  <i className={`fas fa-${step.icon}`}></i>
-                </div>
-                <div className="step-content">
-                  <div className="step-number">Step {step.number}</div>
-                  <div className="step-title">{step.title}</div>
-                </div>
-              </div>
-              {index < steps.length - 1 && (
-                <div
-                  className={`step-connector ${
-                    activeStep > step.number ? "active" : ""
-                  }`}
-                ></div>
-              )}
-            </div>
-          ))}
-        </div>
+        {renderProgressSteps()}
 
-        <div className="checkout-content">
-          <div className="form-section">
+        <div className="checkout-content" style={{ 
+          display: "grid", 
+          gridTemplateColumns: "1fr 350px", 
+          gap: "2rem",
+          alignItems: "start" 
+        }}>
+          {/* Left Side: Form Section */}
+          <div className="form-section" style={{ backgroundColor: "#0f0f0f", borderRadius: "8px", padding: "2rem" }}>
             <form onSubmit={handleSubmit}>
-              {/* Step 1 & 2 - Bilkul Same */}
+              {/* ========== STEP 1: PERSONAL INFORMATION ========== */}
               {activeStep === 1 && (
                 <div className="form-step active">
-                  <div className="step-header">
-                    <h2>
-                      <i className="fas fa-user"></i> Personal Information
+                  <div className="step-header" style={{ marginBottom: "1.5rem" }}>
+                    <h2 style={{ color: "#f5f5f5", display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                      <i className="fas fa-user" style={{ color: "#52b0b4" }}></i> Personal Information
                     </h2>
-                    <p>Tell us about yourself</p>
+                    <p style={{ color: "#999" }}>Tell us about yourself</p>
                   </div>
+                  
                   <div className="form-grid">
-                    <div className="form-group">
-                      <label className="form-label">First Name *</label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={personalInfo.firstName}
-                        onChange={handlePersonalInfoChange}
-                        className="form-input"
-                        placeholder="Enter your first name"
-                        required
-                      />
+                    <div className="form-row-1 mb-0">
+                      <div className="width-50" style={{ paddingRight: "0.5rem" }}>
+                        <label htmlFor="firstName" className="mb-2" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                          First Name *
+                        </label>
+                        <div className="input">
+                          <input
+                            type="text"
+                            id="firstName"
+                            name="firstName"
+                            value={personalInfo.firstName}
+                            onChange={handlePersonalInfoChange}
+                            placeholder="John"
+                            required
+                            style={{
+                              width: "100%",
+                              padding: "12px",
+                              backgroundColor: "#181818",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              borderRadius: "4px",
+                              color: "#f5f5f5",
+                              fontSize: "14px",
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="width-50" style={{ paddingLeft: "0.5rem" }}>
+                        <label htmlFor="lastName" className="mb-2" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                          Last Name *
+                        </label>
+                        <div className="input">
+                          <input
+                            type="text"
+                            id="lastName"
+                            name="lastName"
+                            value={personalInfo.lastName}
+                            onChange={handlePersonalInfoChange}
+                            placeholder="Doe"
+                            required
+                            style={{
+                              width: "100%",
+                              padding: "12px",
+                              backgroundColor: "#181818",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              borderRadius: "4px",
+                              color: "#f5f5f5",
+                              fontSize: "14px",
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Last Name *</label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={personalInfo.lastName}
-                        onChange={handlePersonalInfoChange}
-                        className="form-input"
-                        placeholder="Enter your last name"
-                        required
-                      />
+
+                    <div className="form-group" style={{ marginBottom: "1rem" }}>
+                      <label htmlFor="email" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                        Email Address *
+                      </label>
+                      <div className="input">
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={personalInfo.email}
+                          onChange={handlePersonalInfoChange}
+                          placeholder="your.email@example.com"
+                          required
+                          style={{
+                            width: "100%",
+                            padding: "12px",
+                            backgroundColor: "#181818",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            borderRadius: "4px",
+                            color: "#f5f5f5",
+                            fontSize: "14px",
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Email Address *</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={personalInfo.email}
-                        onChange={handlePersonalInfoChange}
-                        className="form-input"
-                        placeholder="your.email@example.com"
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Phone Number</label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={personalInfo.phone}
-                        onChange={handlePersonalInfoChange}
-                        className="form-input"
-                        placeholder="+1 (555) 000-0000"
-                      />
+
+                    <div className="form-group" style={{ marginBottom: "1rem" }}>
+                      <label htmlFor="phone" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                        Phone Number
+                      </label>
+                      <div className="input">
+                        <input
+                          type="tel"
+                          id="phone"
+                          name="phone"
+                          value={personalInfo.phone}
+                          onChange={handlePersonalInfoChange}
+                          placeholder="+1 (555) 000-0000"
+                          style={{
+                            width: "100%",
+                            padding: "12px",
+                            backgroundColor: "#181818",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            borderRadius: "4px",
+                            color: "#f5f5f5",
+                            fontSize: "14px",
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="form-actions">
+
+                  <div className="form-actions" style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
                     <button
                       type="button"
-                      className="btn btn-secondary"
+                      className="login_btn"
                       onClick={() => navigate(-1)}
+                      style={{
+                        flex: 1,
+                        padding: "12px 24px",
+                        backgroundColor: "transparent",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        borderRadius: "4px",
+                        color: "#f5f5f5",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                      }}
                     >
                       Back
                     </button>
                     <button
                       type="button"
-                      className="btn btn-primary"
+                      className="login_btn"
                       onClick={nextStep}
+                      style={{
+                        flex: 1,
+                        padding: "12px 24px",
+                        backgroundColor: "#52b0b4",
+                        border: "none",
+                        borderRadius: "4px",
+                        color: "#0f0f0f",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                      }}
                     >
                       Continue to Billing
                     </button>
@@ -350,92 +464,188 @@ const Checkout = () => {
                 </div>
               )}
 
+              {/* ========== STEP 2: BILLING ADDRESS ========== */}
               {activeStep === 2 && (
                 <div className="form-step active">
-                  <div className="step-header">
-                    <h2>
-                      <i className="fas fa-map-marker-alt"></i> Billing Address
+                  <div className="step-header" style={{ marginBottom: "1.5rem" }}>
+                    <h2 style={{ color: "#f5f5f5", display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                      <i className="fas fa-map-marker-alt" style={{ color: "#52b0b4" }}></i> Billing Address
                     </h2>
-                    <p>Where should we send your receipt?</p>
+                    <p style={{ color: "#999" }}>Where should we send your receipt?</p>
                   </div>
+                  
                   <div className="form-grid">
-                    <div className="form-group full-width">
-                      <label className="form-label">Street Address *</label>
-                      <input
-                        type="text"
-                        name="address"
-                        value={billingAddress.address}
-                        onChange={handleBillingAddressChange}
-                        className="form-input"
-                        placeholder="123 Main Street"
-                        required
-                      />
+                    <div className="form-group" style={{ marginBottom: "1rem" }}>
+                      <label htmlFor="address" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                        Street Address *
+                      </label>
+                      <div className="input">
+                        <input
+                          type="text"
+                          id="address"
+                          name="address"
+                          value={billingAddress.address}
+                          onChange={handleBillingAddressChange}
+                          placeholder="123 Main Street"
+                          required
+                          style={{
+                            width: "100%",
+                            padding: "12px",
+                            backgroundColor: "#181818",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            borderRadius: "4px",
+                            color: "#f5f5f5",
+                            fontSize: "14px",
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">City *</label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={billingAddress.city}
-                        onChange={handleBillingAddressChange}
-                        className="form-input"
-                        placeholder="New York"
-                        required
-                      />
+
+                    <div className="form-row-1 mb-0">
+                      <div className="width-50" style={{ paddingRight: "0.5rem" }}>
+                        <label htmlFor="city" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                          City *
+                        </label>
+                        <div className="input">
+                          <input
+                            type="text"
+                            id="city"
+                            name="city"
+                            value={billingAddress.city}
+                            onChange={handleBillingAddressChange}
+                            placeholder="New York"
+                            required
+                            style={{
+                              width: "100%",
+                              padding: "12px",
+                              backgroundColor: "#181818",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              borderRadius: "4px",
+                              color: "#f5f5f5",
+                              fontSize: "14px",
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="width-50" style={{ paddingLeft: "0.5rem" }}>
+                        <label htmlFor="state" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                          State *
+                        </label>
+                        <div className="input">
+                          <input
+                            type="text"
+                            id="state"
+                            name="state"
+                            value={billingAddress.state}
+                            onChange={handleBillingAddressChange}
+                            placeholder="NY"
+                            required
+                            style={{
+                              width: "100%",
+                              padding: "12px",
+                              backgroundColor: "#181818",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              borderRadius: "4px",
+                              color: "#f5f5f5",
+                              fontSize: "14px",
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">State *</label>
-                      <input
-                        type="text"
-                        name="state"
-                        value={billingAddress.state}
-                        onChange={handleBillingAddressChange}
-                        className="form-input"
-                        placeholder="NY"
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">ZIP Code *</label>
-                      <input
-                        type="text"
-                        name="zipCode"
-                        value={billingAddress.zipCode}
-                        onChange={handleBillingAddressChange}
-                        className="form-input"
-                        placeholder="10001"
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Country *</label>
-                      <select
-                        name="country"
-                        value={billingAddress.country}
-                        onChange={handleBillingAddressChange}
-                        className="form-input"
-                        required
-                      >
-                        {countries.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
+
+                    <div className="form-row-1 mb-0" style={{ marginTop: "1rem" }}>
+                      <div className="width-50" style={{ paddingRight: "0.5rem" }}>
+                        <label htmlFor="zipCode" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                          ZIP Code *
+                        </label>
+                        <div className="input">
+                          <input
+                            type="text"
+                            id="zipCode"
+                            name="zipCode"
+                            value={billingAddress.zipCode}
+                            onChange={handleBillingAddressChange}
+                            placeholder="10001"
+                            required
+                            style={{
+                              width: "100%",
+                              padding: "12px",
+                              backgroundColor: "#181818",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              borderRadius: "4px",
+                              color: "#f5f5f5",
+                              fontSize: "14px",
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="width-50" style={{ paddingLeft: "0.5rem" }}>
+                        <label htmlFor="country" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                          Country *
+                        </label>
+                        <div className="input">
+                          <select
+                            id="country"
+                            name="country"
+                            value={billingAddress.country}
+                            onChange={handleBillingAddressChange}
+                            required
+                            style={{
+                              width: "100%",
+                              padding: "12px",
+                              backgroundColor: "#181818",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              borderRadius: "4px",
+                              color: "#f5f5f5",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {countries.map((country) => (
+                              <option key={country} value={country}>
+                                {country}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="form-actions">
+
+                  <div className="form-actions" style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
                     <button
                       type="button"
-                      className="btn btn-secondary"
+                      className="login_btn"
                       onClick={prevStep}
+                      style={{
+                        flex: 1,
+                        padding: "12px 24px",
+                        backgroundColor: "transparent",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        borderRadius: "4px",
+                        color: "#f5f5f5",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                      }}
                     >
                       Back
                     </button>
                     <button
                       type="button"
-                      className="btn btn-primary"
+                      className="login_btn"
                       onClick={nextStep}
+                      style={{
+                        flex: 1,
+                        padding: "12px 24px",
+                        backgroundColor: "#52b0b4",
+                        border: "none",
+                        borderRadius: "4px",
+                        color: "#0f0f0f",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                      }}
                     >
                       Continue to Payment
                     </button>
@@ -443,121 +653,211 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Step 3: Payment - UI 100% SAME, PAYMENT WORKING */}
+              {/* ========== STEP 3: PAYMENT INFORMATION ========== */}
               {activeStep === 3 && (
                 <div className="form-step active">
-                  <div className="step-header">
-                    <h2>
-                      <i className="fas fa-credit-card"></i> Payment Information
+                  <div className="step-header" style={{ marginBottom: "1.5rem" }}>
+                    <h2 style={{ color: "#f5f5f5", display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                      <i className="fas fa-credit-card" style={{ color: "#52b0b4" }}></i> Payment Information
                     </h2>
-                    <p>Enter your card details securely</p>
+                    <p style={{ color: "#999" }}>Enter your card details securely</p>
                   </div>
 
-                  <div className="payment-section">
-                    <div className="payment-method-header">
-                      <div className="payment-method-icon">
+                  <div className="payment-section" style={{ marginBottom: "1.5rem" }}>
+                    <div
+                      style={{
+                        backgroundColor: "rgba(82, 176, 180, 0.1)",
+                        padding: "1rem",
+                        borderRadius: "0.5rem",
+                        marginBottom: "1.5rem",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "1rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "1.5rem",
+                          color: "#52b0b4",
+                        }}
+                      >
                         <i className="fab fa-cc-stripe"></i>
                       </div>
-                      <div className="payment-method-info">
-                        <h3>Credit/Debit Card</h3>
-                        <p>Pay securely with Stripe</p>
+                      <div>
+                        <h3 style={{ color: "#f5f5f5", margin: 0 }}>
+                          Credit/Debit Card
+                        </h3>
+                        <p style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}>
+                          Pay securely with Stripe
+                        </p>
                       </div>
                     </div>
 
-                    <div className="form-grid">
-                      <div className="form-group full-width">
-                        <label className="form-label">Card Number *</label>
-                        <div className="input-with-icon">
+                    <div className="form-group" style={{ marginBottom: "1rem" }}>
+                      <label htmlFor="cardNumber" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                        Card Number *
+                      </label>
+                      <div className="input" style={{ position: "relative", width: "100%", backgroundColor: "rgb(24, 24, 24)", border: "1px solid rgba(255, 255, 255, 0.2)", borderRadius: "4px", color: "rgb(245, 245, 245)", fontSize: "14px" }}>
+                        <div className="stripe-input">
+                          <CardNumberElement
+                            options={{
+                              style: {
+                                base: {
+                                  fontSize: "16px",
+                                  color: "#f5f5f5",
+                                  "::placeholder": { color: "#aab7c4" },
+                                  backgroundColor: "transparent",
+                                },
+                              },
+                            }}
+                          />
+                        </div>
+                        <i className="fas fa-credit-card" style={{
+                          position: "absolute",
+                          right: "12px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          color: "#999",
+                        }}></i>
+                      </div>
+                    </div>
+
+                    <div className="form-row-1 mb-0">
+                      <div className="width-50" style={{ paddingRight: "0.5rem" }}>
+                        <label htmlFor="expiry" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                          Expiry Date *
+                        </label>
+                        <div className="input" style={{ position: "relative", width: "100%",backgroundColor: "rgb(24, 24, 24)", border: "1px solid rgba(255, 255, 255, 0.2)", borderRadius: "4px", color: "rgb(245, 245, 245)", fontSize: "14px" }}>
                           <div className="stripe-input">
-                            <CardNumberElement
+                            <CardExpiryElement
                               options={{
                                 style: {
                                   base: {
-                                    fontSize: "18px",
-                                    color: "#424770",
-                                    "::placeholder": { color: "#aab7c4" },
+                                    fontSize: "16px",
+                                    color: "#f5f5f5",
+                                    backgroundColor: "transparent",
                                   },
                                 },
                               }}
                             />
                           </div>
-                          <i className="fas fa-credit-card input-icon"></i>
                         </div>
                       </div>
-
-                      <div className="form-group">
-                        <label className="form-label">Expiry Date *</label>
-                        <div className="stripe-input">
-                          <CardExpiryElement
-                            options={{
-                              style: {
-                                base: { fontSize: "18px", color: "#424770" },
-                              },
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="form-group">
-                        <label className="form-label">CVV *</label>
-                        <div className="input-with-icon">
+                      <div className="width-50" style={{ paddingLeft: "0.5rem" }}>
+                        <label htmlFor="cvv" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                          CVV *
+                        </label>
+                        <div className="input" style={{ position: "relative", width: "100%", backgroundColor: "rgb(24, 24, 24)", border: "1px solid rgba(255, 255, 255, 0.2)", borderRadius: "4px", color: "rgb(245, 245, 245)", fontSize: "14px" }}>
                           <div className="stripe-input">
                             <CardCvcElement
                               options={{
                                 style: {
-                                  base: { fontSize: "18px", color: "#424770" },
+                                  base: {
+                                    fontSize: "16px",
+                                    color: "#f5f5f5",
+                                    backgroundColor: "transparent",
+                                  },
                                 },
                               }}
                             />
                           </div>
-                          <i className="fas fa-lock input-icon"></i>
+                          <i className="fas fa-lock" style={{
+                            position: "absolute",
+                            right: "12px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            color: "#999",
+                          }}></i>
                         </div>
                       </div>
+                    </div>
 
-                      <div className="form-group full-width">
-                        <label className="form-label">Name on Card *</label>
+                    <div className="form-group" style={{ marginTop: "1rem" }}>
+                      <label htmlFor="cardName" style={{ display: "block", color: "#f5f5f5", marginBottom: "0.5rem" }}>
+                        Name on Card *
+                      </label>
+                      <div className="input">
                         <input
                           type="text"
+                          id="cardName"
                           value={cardName}
                           onChange={(e) => setCardName(e.target.value)}
-                          className="form-input"
                           placeholder="John Doe"
                           required
+                          style={{
+                            width: "100%",
+                            padding: "12px",
+                            backgroundColor: "#181818",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            borderRadius: "4px",
+                            color: "#f5f5f5",
+                            fontSize: "14px",
+                          }}
                         />
                       </div>
                     </div>
 
-                    <div className="security-notice">
-                      <i className="fas fa-shield-alt"></i>
-                      <span>
+                    <div
+                      className="security-notice"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        marginTop: "1rem",
+                        padding: "0.75rem",
+                        backgroundColor: "rgba(82, 176, 180, 0.1)",
+                        borderRadius: "0.5rem",
+                      }}
+                    >
+                      <i className="fas fa-shield-alt" style={{ color: "#52b0b4" }}></i>
+                      <span style={{ color: "#f5f5f5", fontSize: "0.9rem" }}>
                         Your payment information is encrypted and secure
                       </span>
                     </div>
                   </div>
 
-                  <div className="form-actions">
+                  <div className="form-actions" style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
                     <button
                       type="button"
-                      className="btn btn-secondary"
+                      className="login_btn"
                       onClick={prevStep}
+                      style={{
+                        flex: 1,
+                        padding: "12px 24px",
+                        backgroundColor: "transparent",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        borderRadius: "4px",
+                        color: "#f5f5f5",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                      }}
                     >
                       Back
                     </button>
                     <button
                       type="submit"
-                      className={`btn btn-primary ${loading ? "loading" : ""}`}
+                      className="login_btn"
                       disabled={loading || !cardName}
                       style={{
+                        flex: 1,
+                        padding: "12px 24px",
+                        backgroundColor: "#52b0b4",
+                        border: "none",
+                        borderRadius: "4px",
+                        color: "#0f0f0f",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        opacity: loading || !cardName ? 0.7 : 1,
                         position: "relative",
-                        minHeight: "56px",
+                        minHeight: "48px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         gap: "10px",
-                        overflow: "hidden",
                       }}
                     >
-                      {/* Default Text */}
                       {!loading && (
                         <span>
                           {freeTrial
@@ -565,17 +865,15 @@ const Checkout = () => {
                             : `Pay $${(calculateTotal() * 1.03).toFixed(2)}`}
                         </span>
                       )}
-
-                      {/* Processing Text + Spinner */}
                       {loading && (
                         <>
                           <div
                             className="spinner"
                             style={{
-                              width: "20px",
-                              height: "20px",
+                              width: "16px",
+                              height: "16px",
                               border: "2px solid transparent",
-                              borderTopColor: "#fff",
+                              borderTopColor: "#0f0f0f",
                               borderRadius: "50%",
                               animation: "spin 1s linear infinite",
                             }}
@@ -590,95 +888,283 @@ const Checkout = () => {
             </form>
           </div>
 
-          {/* Order Summary - Bilkul Same */}
-          <div className="order-summary">
+          {/* Right Side: Order Summary */}
+          <div className="order-summary" style={{ 
+            backgroundColor: "#0f0f0f", 
+            borderRadius: "8px", 
+            padding: "1.5rem",
+            position: "sticky",
+            top: "2rem"
+          }}>
             <div className="summary-card">
-              <div className="summary-header">
-                <h3>Order Summary</h3>
-                <div className="order-type-badge">
+              <div className="summary-header" style={{ 
+                display: "flex", 
+                justifyContent: "space-between", 
+                alignItems: "center", 
+                marginBottom: "1rem",
+                borderBottom: "1px solid rgba(255,255,255,0.1)",
+                paddingBottom: "1rem"
+              }}>
+                <h3 style={{ color: "#f5f5f5", margin: 0 }}>Order Summary</h3>
+                <div
+                  style={{
+                    padding: "0.25rem 0.75rem",
+                    backgroundColor: "#52b0b4",
+                    color: "#0f0f0f",
+                    borderRadius: "4px",
+                    fontSize: "0.75rem",
+                    fontWeight: "bold",
+                  }}
+                >
                   {isSubscription ? "SUBSCRIPTION" : "PURCHASE"}
                 </div>
               </div>
 
-              <div className="order-items">
+              <div className="order-items" style={{ maxHeight: "300px", overflowY: "auto", marginBottom: "1rem" }}>
                 {isSubscription ? (
-                  <div className="subscription-item">
-                    <div className="item-icon">
+                  <div
+                    className="subscription-item"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "1rem",
+                      padding: "1rem 0",
+                      borderBottom: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "1.5rem",
+                        color: "#52b0b4",
+                      }}
+                    >
                       <i className="fas fa-crown"></i>
                     </div>
-                    <div className="item-details">
-                      <h4>
-                        {freeTrial ? "Pro Plan Trial" : subscriptionItem?.name}
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ color: "#f5f5f5", margin: 0, fontSize: "0.95rem" }}>
+                        {freeTrial
+                          ? "Pro Plan Trial"
+                          : subscriptionItem?.name}
                       </h4>
-                      <p>
+                      <p
+                        style={{
+                          color: "#f5f5f5",
+                          opacity: 0.7,
+                          margin: "0.25rem 0 0 0",
+                          fontSize: "0.85rem",
+                        }}
+                      >
                         {freeTrial
                           ? "14 days free trial"
                           : `${subscriptionItem?.billingCycle} billing`}
                       </p>
                       {freeTrial && (
-                        <div className="trial-note">
+                        <div
+                          style={{
+                            color: "#52b0b4",
+                            fontSize: "0.85rem",
+                            marginTop: "0.25rem",
+                          }}
+                        >
                           ${subscriptionItem?.price}/month after trial
                         </div>
                       )}
                     </div>
-                    <div className="item-price">
+                    <div
+                      style={{
+                        color: "#f5f5f5",
+                        fontWeight: "bold",
+                        fontSize: "1rem",
+                        textAlign: "right",
+                      }}
+                    >
                       {freeTrial ? "FREE" : `$${subscriptionItem?.price}`}
                     </div>
                   </div>
                 ) : (
                   cartItems.map((item, index) => (
-                    <div className="order-item" key={index}>
-                      <div className="item-image">
+                    <div
+                      className="order-item"
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "1rem",
+                        padding: "1rem 0",
+                        borderBottom: "1px solid rgba(255,255,255,0.1)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          borderRadius: "4px",
+                          overflow: "hidden",
+                          backgroundColor: "#292929",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
                         {item.thumbs?.[0] ? (
-                          <img src={item.thumbs[0]} alt={item.name} />
+                          <img
+                            src={item.thumbs[0]}
+                            alt={item.name}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
                         ) : item.image ? (
-                          <img src={item.image} alt={item.name} />
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
                         ) : (
-                          <div className="image-placeholder">
+                          <div
+                            style={{
+                              fontSize: "1.5rem",
+                              color: "#666",
+                            }}
+                          >
                             <i className="fas fa-box"></i>
                           </div>
                         )}
                       </div>
-                      <div className="item-details">
-                        <h4>{item.name}</h4>
-                        <p>License: Commercial</p>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h4
+                          style={{
+                            color: "#f5f5f5",
+                            margin: 0,
+                            fontSize: "0.9rem",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {item.name}
+                        </h4>
+                        <p
+                          style={{
+                            color: "#f5f5f5",
+                            opacity: 0.7,
+                            margin: "0.25rem 0 0 0",
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          License: Commercial
+                        </p>
                       </div>
-                      <div className="item-price">
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
                         {item.discount > 0 && (
-                          <span className="original-price">${item.price}</span>
+                          <div
+                            style={{
+                              color: "#999",
+                              textDecoration: "line-through",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            ${item.price}
+                          </div>
                         )}
-                        <span className="final-price">
+                        <div
+                          style={{
+                            color: "#f5f5f5",
+                            fontWeight: "bold",
+                            fontSize: "0.9rem",
+                          }}
+                        >
                           $
                           {(
                             Number(item.price) -
                             (Number(item.price) * Number(item.discount || 0)) /
                               100
                           ).toFixed(2)}
-                        </span>
+                        </div>
                       </div>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="order-totals">
-                <div className="total-row">
-                  <span>Subtotal</span>
-                  <span>${calculateTotal()}</span>
+              <div
+                className="order-totals"
+                style={{ marginTop: "1.5rem" }}
+              >
+                <div
+                  className="total-row"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  <span style={{ color: "#f5f5f5", opacity: 0.8, fontSize: "0.9rem" }}>
+                    Subtotal
+                  </span>
+                  <span style={{ color: "#f5f5f5", fontSize: "0.9rem" }}>
+                    ${calculateTotal()}
+                  </span>
                 </div>
-                <div className="total-row">
-                  <span>Tax</span>
-                  <span>${(calculateTotal() * 0.03).toFixed(2)}</span>
+                <div
+                  className="total-row"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  <span style={{ color: "#f5f5f5", opacity: 0.8, fontSize: "0.9rem" }}>
+                    Tax (3%)
+                  </span>
+                  <span style={{ color: "#f5f5f5", fontSize: "0.9rem" }}>
+                    ${(calculateTotal() * 0.03).toFixed(2)}
+                  </span>
                 </div>
                 {freeTrial && (
-                  <div className="total-row discount">
+                  <div
+                    className="total-row discount"
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: "0.75rem",
+                      color: "#4caf50",
+                      fontSize: "0.9rem",
+                    }}
+                  >
                     <span>Free Trial Discount</span>
                     <span>-${calculateTotal()}</span>
                   </div>
                 )}
-                <div className="total-row grand-total">
-                  <span>Total</span>
-                  <span>
+                <div
+                  className="total-row grand-total"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginTop: "1rem",
+                    paddingTop: "1rem",
+                    borderTop: "1px solid rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <span
+                    style={{ color: "#f5f5f5", fontWeight: "bold", fontSize: "1rem" }}
+                  >
+                    Total
+                  </span>
+                  <span
+                    style={{
+                      color: "#f5f5f5",
+                      fontWeight: "bold",
+                      fontSize: "1.1rem",
+                    }}
+                  >
                     {freeTrial
                       ? "FREE"
                       : `$${(calculateTotal() * 1.03).toFixed(2)}`}
@@ -687,33 +1173,141 @@ const Checkout = () => {
               </div>
 
               {freeTrial && (
-                <div className="trial-disclaimer">
-                  <i className="fas fa-info-circle"></i>
-                  <p>
-                    No charges today. Your trial starts immediately and you can
-                    cancel anytime.
+                <div
+                  className="trial-disclaimer"
+                  style={{
+                    marginTop: "1rem",
+                    padding: "0.75rem",
+                    backgroundColor: "rgba(76, 175, 80, 0.1)",
+                    borderRadius: "0.5rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <i
+                    className="fas fa-info-circle"
+                    style={{ color: "#4caf50", flexShrink: 0 }}
+                  ></i>
+                  <p
+                    style={{
+                      color: "#f5f5f5",
+                      margin: 0,
+                      fontSize: "0.8rem",
+                      opacity: 0.9,
+                    }}
+                  >
+                    No charges today. Your trial starts immediately and you
+                    can cancel anytime.
                   </p>
                 </div>
               )}
 
-              <div className="security-features">
-                <div className="security-feature">
-                  <i className="fas fa-shield-check"></i>
-                  <span>SSL Secure Payment</span>
+              <div
+                className="security-features"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "1.5rem",
+                  paddingTop: "1rem",
+                  borderTop: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <div
+                  className="security-feature"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    flex: 1,
+                  }}
+                >
+                  <i
+                    className="fas fa-shield-check"
+                    style={{ color: "#52b0b4", fontSize: "1rem" }}
+                  ></i>
+                  <span
+                    style={{
+                      color: "#f5f5f5",
+                      fontSize: "0.65rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    SSL Secure
+                  </span>
                 </div>
-                <div className="security-feature">
-                  <i className="fas fa-lock"></i>
-                  <span>256-bit Encryption</span>
+                <div
+                  className="security-feature"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    flex: 1,
+                  }}
+                >
+                  <i
+                    className="fas fa-lock"
+                    style={{ color: "#52b0b4", fontSize: "1rem" }}
+                  ></i>
+                  <span
+                    style={{
+                      color: "#f5f5f5",
+                      fontSize: "0.65rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    256-bit Encryption
+                  </span>
                 </div>
-                <div className="security-feature">
-                  <i className="fas fa-check-circle"></i>
-                  <span>PCI Compliant</span>
+                <div
+                  className="security-feature"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    flex: 1,
+                  }}
+                >
+                  <i
+                    className="fas fa-check-circle"
+                    style={{ color: "#52b0b4", fontSize: "1rem" }}
+                  ></i>
+                  <span
+                    style={{
+                      color: "#f5f5f5",
+                      fontSize: "0.65rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    PCI Compliant
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* CSS for Stripe inputs */}
+      <style jsx="true">{`
+        .stripe-input {
+          width: 100%;
+          padding: 12px;
+          background-color: transparent;
+          color: #f5f5f5;
+        }
+        .stripe-input .InputElement {
+          color: #f5f5f5 !important;
+          background-color: transparent !important;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

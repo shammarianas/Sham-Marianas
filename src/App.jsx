@@ -93,7 +93,6 @@ export const AppRoutes = () => (
     <Route path="/Logout" element={<Logout />} />
     <Route path="/" element={<Home />} />
     <Route path="/Cart" element={<Cart />} />
-    {/* <Route path="/View/:id" element={<View />} /> */}
     <Route path="/Groups" element={<Group />} />
     <Route path="/Upload" element={<Upload />} />
     <Route path="/Checkout" element={<Checkout />} />

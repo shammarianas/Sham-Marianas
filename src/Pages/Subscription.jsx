@@ -5,73 +5,72 @@ import { useNavigate } from 'react-router-dom';
 const Subscription = () => {
   const { userProfile, currentUser } = useUser();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState('pro');
+  const [selectedPlan, setSelectedPlan] = useState('individual');
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [activeAccordion, setActiveAccordion] = useState(null);
+  const [teamMembers, setTeamMembers] = useState(2);
 
   const plans = {
-    free: {
-      name: 'Starter',
-      price: '$0',
-      period: 'forever',
+    individual: {
+      name: 'Individual',
+      price: billingCycle === 'monthly' ? '$16.50' : '$198',
+      period: billingCycle === 'monthly' ? 'month' : 'year',
       popular: false,
+      description: 'Start now',
       features: [
-        { text: '5 asset downloads per month', included: true },
-        { text: 'Basic quality assets', included: true },
-        { text: 'Standard support', included: true },
-        { text: 'Community access', included: true },
-        { text: 'Limited templates', included: true },
-        { text: 'Commercial license', included: false },
-        { text: 'Priority support', included: false },
-        { text: 'Advanced templates', included: false }
+        { text: 'Unlimited downloads of 26+ million premium assets & templates', included: true },
+        { text: 'Full AI stack: video, image, and audio gen', included: true },
+        { text: 'Lifetime commercial license', included: true },
+        { text: 'Easy cancellation', included: true },
       ],
-      buttonText: 'Current Plan',
-      buttonVariant: 'outline'
+      buttonText: 'Start now',
+      buttonVariant: 'primary',
+      priceValue: billingCycle === 'monthly' ? 16.50 : 198
     },
-    pro: {
-      name: 'Professional',
-      price: billingCycle === 'monthly' ? '$19' : '$190',
+    team: {
+      name: 'Team',
+      price: billingCycle === 'monthly' ? '$29' : '$348',
       period: billingCycle === 'monthly' ? 'month' : 'year',
       popular: true,
+      // description: '2 members',
+      // savings: billingCycle === 'monthly' ? 'Save up to 34%' : 'Save 34%',
       features: [
-        { text: 'Unlimited asset downloads', included: true },
-        { text: 'High quality assets', included: true },
-        { text: 'Priority support', included: true },
-        { text: 'Advanced templates', included: true },
-        { text: 'Commercial license', included: true },
-        { text: 'Cancel anytime', included: true },
-        { text: 'Early access to new assets', included: false },
-        { text: 'Dedicated account manager', included: false }
+        { text: 'Everything in Individual, plus:', included: true, isHeader: true },
+        { text: 'Teams save up to 34%', included: true },
+        { text: 'Scale and change members at any time', included: true },
+        { text: 'One central location for all downloads', included: true },
+        { text: 'Easy cancellation', included: true },
       ],
-      buttonText: 'Upgrade to Pro',
+      buttonText: 'Start now',
       buttonVariant: 'primary',
-      savings: billingCycle === 'yearly' ? 'Save $38' : '',
-      priceValue: billingCycle === 'monthly' ? 19 : 190
+      priceValue: billingCycle === 'monthly' ? 29 : 348,
+      showMembersDropdown: true
     },
-    premium: {
+    enterprise: {
       name: 'Enterprise',
-      price: billingCycle === 'monthly' ? '$49' : '$490',
-      period: billingCycle === 'monthly' ? 'month' : 'year',
+      price: 'Custom',
+      period: '',
       popular: false,
+      description: 'Tailored plans for teams of any size with dedicated account management',
       features: [
-        { text: 'Unlimited asset downloads', included: true },
-        { text: 'Highest quality assets', included: true },
-        { text: '24/7 priority support', included: true },
-        { text: 'All premium templates', included: true },
-        { text: 'Commercial license', included: true },
-        { text: 'Early access to new assets', included: true },
-        { text: 'Dedicated account manager', included: true },
-        { text: 'Custom asset requests', included: true }
+        { text: 'Everything in Teams, plus:', included: true, isHeader: true },
+        { text: 'Custom licensing', included: true },
+        { text: 'AI tools available only on the Ultimate Plan', included: true },
+        { text: 'Tailored indemnification', included: true },
+        { text: 'SSO for more secure, scalable access', included: true },
       ],
-      buttonText: 'Go Enterprise',
-      buttonVariant: 'primary',
-      savings: billingCycle === 'yearly' ? 'Save $98' : '',
-      priceValue: billingCycle === 'monthly' ? 49 : 490
+      buttonText: 'Contact sales',
+      buttonVariant: 'outline',
+      isCustom: true
     }
   };
 
   const handleSubscription = async (plan) => {
-    if (plan === 'free') return;
+    if (plan === 'enterprise') {
+      // Open contact sales page or modal
+      window.open('https://examplements.envelope.com/adjustment-exploring-envelope-plack/pandering-reinvestable-2', '_blank');
+      return;
+    }
     
     try {
       console.log('Processing subscription for:', plan);
@@ -84,6 +83,7 @@ const Subscription = () => {
         type: 'subscription',
         plan: plan,
         billingCycle: billingCycle,
+        teamMembers: plan === 'team' ? teamMembers : 1,
         description: `Subscribe to ${plans[plan].name} plan`
       };
 
@@ -109,13 +109,14 @@ const Subscription = () => {
     navigate('/checkout', { 
       state: { 
         freeTrial: true,
-        plan: 'pro'
+        plan: 'individual'
       }
     });
   };
 
   const isCurrentPlan = (plan) => {
-    return plan === 'free';
+    // Add your logic to check if this is the user's current plan
+    return false;
   };
 
   const toggleBillingCycle = () => {
@@ -126,6 +127,12 @@ const Subscription = () => {
     setActiveAccordion(activeAccordion === index ? null : index);
   };
 
+  const handleTeamMembersChange = (e) => {
+    const members = parseInt(e.target.value);
+    setTeamMembers(members);
+    // You can add logic to adjust price based on team size
+  };
+
   return (
     <div className="subscription-page section-padding">
       <div className="container-xxl">
@@ -134,7 +141,7 @@ const Subscription = () => {
           <h6 className="sub-title text-uppercase tracking-wider text-sm mb-15">PRICING PLANS</h6>
           <h1 className="text-5xl md-text-6xl font-bold mb-6">Choose Your Plan</h1>
           <p className="text-gray-400 mt-6 text-lg max-w-2xl mx-auto">
-            Start with our free plan and upgrade when you need more power and advanced features
+            Access millions of premium assets with our flexible pricing plans
           </p>
           
           {/* Billing Toggle */}
@@ -147,7 +154,7 @@ const Subscription = () => {
               <div className={`billing-toggle-slider ${billingCycle === 'monthly' ? 'monthly' : 'yearly'}`} />
             </button>
             <span className={`text-sm ${billingCycle === 'yearly' ? 'text-white' : 'text-gray-400'}`}>
-              Yearly <span className="text-green-400 ml-1">Save up to 20%</span>
+              Yearly <span className="text-green-400 ml-1">Save up to 34%</span>
             </span>
           </div>
         </div>
@@ -155,26 +162,29 @@ const Subscription = () => {
         {/* Pricing Cards */}
         <div className="pricing-cards">
           <div className="row justify-center">
-            {/* Free Plan */}
+            {/* Individual Plan */}
             <div className="col-lg-4 col-md-6 mb-8">
-              <div className={`pricing-card free-plan ${isCurrentPlan('free') ? 'current-plan' : ''}`}>
-                {isCurrentPlan('free') && (
+              <div className={`pricing-card individual-plan ${isCurrentPlan('individual') ? 'current-plan' : ''}`}>
+                {isCurrentPlan('individual') && (
                   <div className="current-badge">
                     CURRENT PLAN
                   </div>
                 )}
                 
                 <div className="plan-header text-center mb-8">
-                  <h3 className="plan-name mb-4">{plans.free.name}</h3>
+                  <h3 className="plan-name mb-4">{plans.individual.name}</h3>
+                  <div className="price-from">From</div>
                   <div className="price-display mb-2">
-                    <span className="price text-white">{plans.free.price}</span>
-                    <span className="period text-gray-400">/{plans.free.period}</span>
+                    <span className="price text-white">{plans.individual.price}</span>
+                    {plans.individual.period && (
+                      <span className="period text-gray-400">/{plans.individual.period}</span>
+                    )}
                   </div>
-                  <p className="plan-description text-gray-400">Perfect for getting started</p>
+                  <p className="plan-description text-gray-400">{plans.individual.description}</p>
                 </div>
 
                 <ul className="features-list space-y-4 mb-8">
-                  {plans.free.features.map((feature, index) => (
+                  {plans.individual.features.map((feature, index) => (
                     <li key={index} className="feature-item">
                       <div className={`feature-icon ${feature.included ? 'included' : 'not-included'}`}>
                         <i className={`fas ${feature.included ? 'fa-check' : 'fa-times'}`}></i>
@@ -187,45 +197,63 @@ const Subscription = () => {
                 </ul>
 
                 <button 
-                  className={`action-btn free-btn ${isCurrentPlan('free') ? 'current' : ''}`}
-                  onClick={() => handleSubscription('free')}
-                  disabled={isCurrentPlan('free')}
+                  className={`action-btn individual-btn ${isCurrentPlan('individual') ? 'current' : ''}`}
+                  onClick={() => handleSubscription('individual')}
+                  disabled={isCurrentPlan('individual')}
                 >
-                  {isCurrentPlan('free') ? 'Current Plan' : plans.free.buttonText}
+                  {isCurrentPlan('individual') ? 'Current Plan' : plans.individual.buttonText}
                 </button>
               </div>
             </div>
 
-            {/* Pro Plan */}
+            {/* Team Plan */}
             <div className="col-lg-4 col-md-6 mb-8">
-              <div className={`pricing-card pro-plan featured ${plans.pro.popular ? 'popular' : ''}`}>
-                {plans.pro.popular && (
+              <div className={`pricing-card team-plan featured ${plans.team.popular ? 'popular' : ''}`}>
+                {plans.team.popular && (
                   <div className="popular-badge">
                     MOST POPULAR
                   </div>
                 )}
                 
                 <div className="plan-header text-center mb-8">
-                  <h3 className="plan-name mb-4">{plans.pro.name}</h3>
+                  <h3 className="plan-name mb-4">{plans.team.name}</h3>
+                  <div className="price-from">From</div>
                   <div className="price-display mb-2">
-                    <span className="price pro-price">{plans.pro.price}</span>
-                    <span className="period text-gray-400">/{plans.pro.period}</span>
+                    <span className="price team-price">{plans.team.price}</span>
+                    {plans.team.period && (
+                      <span className="period text-gray-400">/{plans.team.period}</span>
+                    )}
                   </div>
-                  {plans.pro.savings && (
-                    <div className="savings-tag">
-                      {plans.pro.savings}
+                  {plans.team.showMembersDropdown && (
+                    <div className="team-members mt-4">
+                      <select 
+                        value={teamMembers}
+                        onChange={handleTeamMembersChange}
+                        className="members-dropdown"
+                      >
+                        <option value="2">2 members</option>
+                        <option value="3">3 members</option>
+                        <option value="5">5 members</option>
+                        <option value="10">10 members</option>
+                        <option value="20">20 members</option>
+                      </select>
                     </div>
                   )}
-                  <p className="plan-description text-gray-400">Best for professionals & teams</p>
+                  {plans.team.savings && (
+                    <div className="savings-tag mt-3">
+                      {plans.team.savings}
+                    </div>
+                  )}
+                  <p className="plan-description text-gray-400">{plans.team.description}</p>
                 </div>
 
                 <ul className="features-list space-y-4 mb-8">
-                  {plans.pro.features.map((feature, index) => (
-                    <li key={index} className="feature-item">
-                      <div className={`feature-icon pro-feature ${feature.included ? 'included' : 'not-included'}`}>
+                  {plans.team.features.map((feature, index) => (
+                    <li key={index} className={`feature-item ${feature.isHeader ? 'feature-header' : ''}`}>
+                      <div className={`feature-icon team-feature ${feature.included ? 'included' : 'not-included'}`}>
                         <i className={`fas ${feature.included ? 'fa-check' : 'fa-times'}`}></i>
                       </div>
-                      <span className={`feature-text ${feature.included ? 'text-white' : 'text-gray-500'}`}>
+                      <span className={`feature-text ${feature.isHeader ? 'text-lg font-semibold' : ''} ${feature.included ? 'text-white' : 'text-gray-500'}`}>
                         {feature.text}
                       </span>
                     </li>
@@ -233,42 +261,45 @@ const Subscription = () => {
                 </ul>
 
                 <button 
-                  className="action-btn pro-btn"
-                  onClick={() => handleSubscription('pro')}
+                  className="action-btn team-btn"
+                  onClick={() => handleSubscription('team')}
                 >
-                  {plans.pro.buttonText}
+                  {plans.team.buttonText}
                 </button>
               </div>
             </div>
 
-            {/* Premium Plan */}
+            {/* Enterprise Plan */}
             <div className="col-lg-4 col-md-6 mb-8">
-              <div className="pricing-card premium-plan">
+              <div className="pricing-card enterprise-plan">
                 <div className="value-badge">
                   ENTERPRISE GRADE
                 </div>
                 
                 <div className="plan-header text-center mb-8">
-                  <h3 className="plan-name mb-4">{plans.premium.name}</h3>
-                  <div className="price-display mb-2">
-                    <span className="price premium-price">{plans.premium.price}</span>
-                    <span className="period text-gray-400">/{plans.premium.period}</span>
-                  </div>
-                  {plans.premium.savings && (
-                    <div className="savings-tag">
-                      {plans.premium.savings}
+                  <h3 className="plan-name mb-4">{plans.enterprise.name}</h3>
+                  {plans.enterprise.isCustom ? (
+                    <div className="custom-price-display">
+                      <span className="custom-price">Custom Pricing</span>
+                    </div>
+                  ) : (
+                    <div className="price-display mb-2">
+                      <span className="price enterprise-price">{plans.enterprise.price}</span>
+                      {plans.enterprise.period && (
+                        <span className="period text-gray-400">/{plans.enterprise.period}</span>
+                      )}
                     </div>
                   )}
-                  <p className="plan-description text-gray-400">For large teams & organizations</p>
+                  <p className="plan-description text-gray-400 mt-4">{plans.enterprise.description}</p>
                 </div>
 
                 <ul className="features-list space-y-4 mb-8">
-                  {plans.premium.features.map((feature, index) => (
-                    <li key={index} className="feature-item">
-                      <div className={`feature-icon premium-feature ${feature.included ? 'included' : 'not-included'}`}>
+                  {plans.enterprise.features.map((feature, index) => (
+                    <li key={index} className={`feature-item ${feature.isHeader ? 'feature-header' : ''}`}>
+                      <div className={`feature-icon enterprise-feature ${feature.included ? 'included' : 'not-included'}`}>
                         <i className={`fas ${feature.included ? 'fa-check' : 'fa-times'}`}></i>
                       </div>
-                      <span className={`feature-text ${feature.included ? 'text-white' : 'text-gray-500'}`}>
+                      <span className={`feature-text ${feature.isHeader ? 'text-lg font-semibold' : ''} ${feature.included ? 'text-white' : 'text-gray-500'}`}>
                         {feature.text}
                       </span>
                     </li>
@@ -276,11 +307,22 @@ const Subscription = () => {
                 </ul>
 
                 <button 
-                  className="action-btn premium-btn"
-                  onClick={() => handleSubscription('premium')}
+                  className="action-btn enterprise-btn"
+                  onClick={() => handleSubscription('enterprise')}
                 >
-                  {plans.premium.buttonText}
+                  {plans.enterprise.buttonText}
                 </button>
+                
+                <div className="mt-4 text-center">
+                  <a 
+                    href="https://examplements.envelope.com/adjustment-exploring-envelope-plack/pandering-reinvestable-2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="learn-more-link"
+                  >
+                    Learn more
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -333,8 +375,8 @@ const Subscription = () => {
                 answer: "Yes, all paid plans come with a 14-day free trial. No credit card required to start."
               },
               {
-                question: "Do you offer discounts for students or non-profits?",
-                answer: "Yes, we offer 50% discount for students and verified non-profit organizations."
+                question: "How does team pricing work?",
+                answer: "Team plans start at 2 members and you can add or remove members at any time. Price scales based on the number of members."
               }
             ].map((faq, index) => (
               <div key={index} className="faq-item">
@@ -364,8 +406,8 @@ const Subscription = () => {
               <button className="cta-btn primary" onClick={handleFreeTrial}>
                 Start Free Trial
               </button>
-              <button className="cta-btn secondary">
-                Schedule a Demo
+              <button className="cta-btn secondary" onClick={() => handleSubscription('enterprise')}>
+                Contact Sales
               </button>
             </div>
           </div>
