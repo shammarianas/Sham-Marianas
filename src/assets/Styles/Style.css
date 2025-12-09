@@ -5500,6 +5500,7 @@ div>button.add_to_wishlist_btn.favorited {
 
 .plan-header {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
