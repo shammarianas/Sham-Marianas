@@ -61,8 +61,7 @@ const Profile = () => {
   // State for billing history modal
   const [showBillingModal, setShowBillingModal] = useState(false);
 
-  const isOwnProfile = currentUser?.uid === userId; // 'id' کی بجائے 'userId'
-
+  const isOwnProfile = currentUser?.uid === userId;
   // Real-time username availability check
   const [usernameAvailable, setUsernameAvailable] = useState(true);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -323,44 +322,59 @@ const Profile = () => {
     }
   }, [user?.username, isOwnProfile]);
 
-  // Fetch user profile data
-  // useEffect(() => {
-  //   const userRef = doc(db, "Profiles", userId);
+  //// ✅ Real-time data update (uncomment this)
+  useEffect(() => {
+    if (!userId) {
+      console.log("No userId, skipping real-time update");
+      return;
+    }
 
-  //   const unsubscribe = onSnapshot(userRef, (docSnap) => {
-  //     if (docSnap.exists()) {
-  //       const data = docSnap.data();
-  //       setUser(data);
-  //       if (currentUser && currentUser.uid === id) {
-  //         setFirstName(
-  //           data.firstName ||
-  //             (currentUser?.displayName || "").split(" ")[0] ||
-  //             ""
-  //         );
-  //         setLastName(
-  //           data.lastName ||
-  //             (currentUser?.displayName || "").split(" ")[1] ||
-  //             ""
-  //         );
-  //         setUsername(data.username || currentUser?.displayName || "");
-  //         setPhoneNumber(data.phoneNumber || currentUser?.phoneNumber || "");
-  //         setBio(data.bio || ""); // Set bio from Firestore
-  //       }
+    console.log("Setting up real-time listener for userId:", userId);
 
-  //       // Check if current user is following this user
-  //       if (currentUser && currentUser.uid && data.followers) {
-  //         setIsFollowing(data.followers.includes(currentUser.uid));
-  //       } else {
-  //         setIsFollowing(false);
-  //       }
-  //     } else {
-  //       setUser(null);
-  //       setIsFollowing(false);
-  //     }
-  //   });
+    const userRef = doc(db, "Profiles", userId);
 
-  //   return () => unsubscribe();
-  // }, [userId, currentUser]);
+    const unsubscribe = onSnapshot(
+      userRef,
+      (docSnap) => {
+        console.log("Real-time update received:", docSnap.exists());
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          console.log("User data updated:", data);
+
+          // ✅ Merge new data with existing user state
+          setUser((prevUser) => ({
+            ...prevUser,
+            ...data,
+          }));
+
+          // If it's own profile, set form fields
+          if (currentUser && currentUser.uid === userId) {
+            setFirstName(data.firstName || "");
+            setLastName(data.lastName || "");
+            setUsername(data.username || "");
+            setPhoneNumber(data.phoneNumber || "");
+            setBio(data.bio || ""); // Set bio from Firestore
+          }
+
+          // Check if current user is following this user
+          if (currentUser && currentUser.uid && data.followers) {
+            setIsFollowing(data.followers.includes(currentUser.uid));
+          } else {
+            setIsFollowing(false);
+          }
+        } else {
+          console.log("User document doesn't exist");
+          setUser(null);
+          setIsFollowing(false);
+        }
+      },
+      (error) => {
+        console.error("Error in real-time listener:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [userId, currentUser]);
 
   // Check followers count
   useEffect(() => {
@@ -561,7 +575,7 @@ const Profile = () => {
         // Check if username exists and belongs to a different user
         let usernameExists = false;
         querySnapshot.forEach((doc) => {
-          if (doc.id !== id) {
+          if (doc.id !== userId) {
             // Different user has this username
             usernameExists = true;
           }
@@ -686,14 +700,14 @@ const Profile = () => {
       // Delete subcollections
       const subcollections = ["favorites", "downloads"];
       for (const sub of subcollections) {
-        const snap = await getDocs(collection(db, "Profiles", id, sub));
+        const snap = await getDocs(collection(db, "Profiles", userId, sub));
         for (const docSnap of snap.docs) {
-          await deleteDoc(doc(db, "Profiles", id, sub, docSnap.id));
+          await deleteDoc(doc(db, "Profiles", userId, sub, docSnap.id));
         }
       }
 
       // Delete profile
-      await deleteDoc(doc(db, "Profiles", id));
+      await deleteDoc(doc(db, "Profiles", userId));
 
       // Remove from followers arrays
       const profileQuery = query(collection(db, "Profiles"));
@@ -701,15 +715,15 @@ const Profile = () => {
 
       for (const u of usersSnap.docs) {
         const data = u.data();
-        if (data.followers?.includes(id)) {
+        if (data.followers?.includes(userId)) {
           await updateDoc(doc(db, "Profiles", u.id), {
-            followers: data.followers.filter((f) => f !== id),
+            followers: data.followers.filter((f) => f !== userId),
             followersCount: data.followersCount ? data.followersCount - 1 : 0,
           });
         }
-        if (data.following?.includes(id)) {
+        if (data.following?.includes(userId)) {
           await updateDoc(doc(db, "Profiles", u.id), {
-            following: data.following.filter((f) => f !== id),
+            following: data.following.filter((f) => f !== userId),
             followingCount: data.followingCount ? data.followingCount - 1 : 0,
           });
         }
@@ -1149,7 +1163,7 @@ const Profile = () => {
                       <div className="form-field full">
                         <label>Bio</label>
                         <textarea
-                          value={currentUser?.bio}
+                          value={bio}
                           onChange={(e) => setBio(e.target.value)}
                           placeholder="Tell others about yourself..."
                           rows="3"
