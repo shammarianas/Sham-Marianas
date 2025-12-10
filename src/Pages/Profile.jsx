@@ -187,9 +187,77 @@ const Profile = () => {
   const getDisplayName = () => {
     if (!user) return "User";
 
-    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
-    if (fullName) return fullName;
-    return user.username || "User";
+    // ✅ Priority 1: fullName (Contributor mein yeh field hai)
+    if (user.fullName && user.fullName.trim()) {
+      return user.fullName.trim();
+    }
+
+    // ✅ Priority 2: displayUsername (Contributor ka specific field)
+    if (user.displayUsername && user.displayUsername.trim()) {
+      return user.displayUsername.trim();
+    }
+
+    // ✅ Priority 3: username (common field)
+    if (user.username && user.username.trim()) {
+      return user.username.trim();
+    }
+
+    // ✅ Priority 4: firstName + lastName combination
+    const firstName = user.firstName || user.firstname || user.first_name;
+    const lastName = user.lastName || user.lastname || user.last_name;
+
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`.trim();
+    } else if (firstName) {
+      return firstName.trim();
+    } else if (lastName) {
+      return lastName.trim();
+    }
+
+    // ✅ Priority 5: displayName (agar exist kare)
+    if (user.displayName && user.displayName.trim()) {
+      return user.displayName.trim();
+    }
+
+    // ✅ Priority 6: authorName
+    if (user.authorName && user.authorName.trim()) {
+      return user.authorName.trim();
+    }
+
+    // ✅ Priority 7: email se name extract karen
+    if (user.email) {
+      const emailName = user.email.split("@")[0];
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+
+    return "User";
+  };
+
+  // Email get karne ka function
+  const getDisplayEmail = () => {
+    if (!user) return "Email not available";
+
+    // Priority order for email
+    if (user.email && user.email.trim()) {
+      return user.email.trim();
+    }
+
+    // Check if there's email in user object
+    if (user.userEmail && user.userEmail.trim()) {
+      return user.userEmail.trim();
+    }
+
+    // Check current user's email if it's own profile
+    if (isOwnProfile && currentUser?.email) {
+      return currentUser.email;
+    }
+
+    // Check if there's contactEmail
+    if (user.contactEmail && user.contactEmail.trim()) {
+      return user.contactEmail.trim();
+    }
+
+    return "Email not available";
   };
 
   // Get initials for avatar
@@ -1010,7 +1078,13 @@ const Profile = () => {
                 <div className="profile_details">
                   <div className="details">
                     <h1 className="username">{getDisplayName()}</h1>
-                    <span className="email">{user ? user.email : "Email"}</span>
+                    <span className="email">
+                      {user?.email ||
+                        (isOwnProfile && currentUser?.email) ||
+                        user?.userEmail ||
+                        user?.contactEmail ||
+                        "Email not available"}
+                    </span>{" "}
                     {/* <span className="bio">{user?.bio || "No bio yet"}</span>  */}
                   </div>
                 </div>
