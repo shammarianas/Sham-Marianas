@@ -187,22 +187,7 @@ const Profile = () => {
   const getDisplayName = () => {
     if (!user) return "User";
 
-    // ✅ Priority 1: fullName (Contributor mein yeh field hai)
-    if (user.fullName && user.fullName.trim()) {
-      return user.fullName.trim();
-    }
-
-    // ✅ Priority 2: displayUsername (Contributor ka specific field)
-    if (user.displayUsername && user.displayUsername.trim()) {
-      return user.displayUsername.trim();
-    }
-
-    // ✅ Priority 3: username (common field)
-    if (user.username && user.username.trim()) {
-      return user.username.trim();
-    }
-
-    // ✅ Priority 4: firstName + lastName combination
+    // ✅ Priority 1: firstName + lastName combination (Pehle yeh check)
     const firstName = user.firstName || user.firstname || user.first_name;
     const lastName = user.lastName || user.lastname || user.last_name;
 
@@ -212,6 +197,21 @@ const Profile = () => {
       return firstName.trim();
     } else if (lastName) {
       return lastName.trim();
+    }
+
+    // ✅ Priority 2: fullName (Contributor mein yeh field hai)
+    if (user.fullName && user.fullName.trim()) {
+      return user.fullName.trim();
+    }
+
+    // ✅ Priority 3: displayUsername (Contributor ka specific field)
+    if (user.displayUsername && user.displayUsername.trim()) {
+      return user.displayUsername.trim();
+    }
+
+    // ✅ Priority 4: username (common field)
+    if (user.username && user.username.trim()) {
+      return user.username.trim();
     }
 
     // ✅ Priority 5: displayName (agar exist kare)
@@ -232,7 +232,6 @@ const Profile = () => {
 
     return "User";
   };
-
   // Email get karne ka function
   const getDisplayEmail = () => {
     if (!user) return "Email not available";
