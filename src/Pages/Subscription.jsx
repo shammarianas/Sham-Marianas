@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from "../Context/UserProvider";
 import { useNavigate } from 'react-router-dom';
 
@@ -9,11 +9,44 @@ const Subscription = () => {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [activeAccordion, setActiveAccordion] = useState(null);
   const [teamMembers, setTeamMembers] = useState(2);
+  const [teamPlanPrice, setTeamPlanPrice] = useState(16); // Default for 2 members monthly
+
+  // Calculate team price based on members and billing cycle
+  useEffect(() => {
+    calculateTeamPrice();
+  }, [teamMembers, billingCycle]);
+
+  const calculateTeamPrice = () => {
+    let basePricePerMember = billingCycle === 'monthly' ? 8 : 96; // $8/month or $96/year per member
+    
+    // Calculate total price
+    const totalPrice = basePricePerMember * teamMembers;
+    
+    // Apply yearly discount if yearly billing
+    if (billingCycle === 'yearly') {
+      // Already accounted for in basePricePerMember
+    }
+    
+    setTeamPlanPrice(totalPrice);
+  };
+
+  const getPriceDisplay = () => {
+    if (billingCycle === 'monthly') {
+      return `$${teamPlanPrice}`;
+    } else {
+      return `$${teamPlanPrice}`;
+    }
+  };
+
+  const getPricePerMember = () => {
+    const pricePerMember = teamPlanPrice / teamMembers;
+    return billingCycle === 'monthly' ? `$${pricePerMember}/member` : `$${pricePerMember}/member`;
+  };
 
   const plans = {
     individual: {
       name: 'Individual',
-      price: billingCycle === 'monthly' ? '$16.50' : '$198',
+      price: billingCycle === 'monthly' ? '$9' : '$108',
       period: billingCycle === 'monthly' ? 'month' : 'year',
       popular: false,
       description: 'Start now',
@@ -25,15 +58,14 @@ const Subscription = () => {
       ],
       buttonText: 'Start now',
       buttonVariant: 'primary',
-      priceValue: billingCycle === 'monthly' ? 16.50 : 198
+      priceValue: billingCycle === 'monthly' ? 9 : 108
     },
     team: {
       name: 'Team',
-      price: billingCycle === 'monthly' ? '$29' : '$348',
+      price: getPriceDisplay(),
+      pricePerMember: getPricePerMember(),
       period: billingCycle === 'monthly' ? 'month' : 'year',
       popular: true,
-      // description: '2 members',
-      // savings: billingCycle === 'monthly' ? 'Save up to 34%' : 'Save 34%',
       features: [
         { text: 'Everything in Individual, plus:', included: true, isHeader: true },
         { text: 'Teams save up to 34%', included: true },
@@ -43,8 +75,9 @@ const Subscription = () => {
       ],
       buttonText: 'Start now',
       buttonVariant: 'primary',
-      priceValue: billingCycle === 'monthly' ? 29 : 348,
-      showMembersDropdown: true
+      priceValue: teamPlanPrice,
+      showMembersDropdown: true,
+      teamMembers: teamMembers
     },
     enterprise: {
       name: 'Enterprise',
@@ -65,9 +98,21 @@ const Subscription = () => {
     }
   };
 
+  // Team member options with pricing info
+  const teamMemberOptions = [
+    { value: 2, label: '2 members', price: billingCycle === 'monthly' ? '$16' : '$192' },
+    { value: 3, label: '3 members', price: billingCycle === 'monthly' ? '$24' : '$288' },
+    { value: 4, label: '4 members', price: billingCycle === 'monthly' ? '$32' : '$384' },
+    { value: 5, label: '5 members', price: billingCycle === 'monthly' ? '$40' : '$480' },
+    { value: 6, label: '6 members', price: billingCycle === 'monthly' ? '$48' : '$576' },
+    { value: 7, label: '7 members', price: billingCycle === 'monthly' ? '$56' : '$672' },
+    { value: 8, label: '8 members', price: billingCycle === 'monthly' ? '$64' : '$768' },
+    { value: 9, label: '9 members', price: billingCycle === 'monthly' ? '$72' : '$864' },
+    { value: 10, label: '10 members', price: billingCycle === 'monthly' ? '$80' : '$960' },
+  ];
+
   const handleSubscription = async (plan) => {
     if (plan === 'enterprise') {
-      // Open contact sales page or modal
       window.open('https://examplements.envelope.com/adjustment-exploring-envelope-plack/pandering-reinvestable-2', '_blank');
       return;
     }
@@ -75,22 +120,22 @@ const Subscription = () => {
     try {
       console.log('Processing subscription for:', plan);
       
-      // Create subscription item for checkout
       const subscriptionItem = {
-        id: `sub_${plan}_${billingCycle}`,
+        id: `sub_${plan}_${billingCycle}_${teamMembers}`,
         name: `${plans[plan].name} Plan - ${billingCycle === 'monthly' ? 'Monthly' : 'Yearly'}`,
         price: plans[plan].priceValue,
         type: 'subscription',
         plan: plan,
         billingCycle: billingCycle,
         teamMembers: plan === 'team' ? teamMembers : 1,
-        description: `Subscribe to ${plans[plan].name} plan`
+        pricePerMember: plan === 'team' ? teamPlanPrice / teamMembers : plans[plan].priceValue,
+        description: plan === 'team' 
+          ? `${plans[plan].name} plan for ${teamMembers} members` 
+          : `${plans[plan].name} plan`
       };
 
-      // Store subscription data in localStorage or context for checkout page
       localStorage.setItem('pendingSubscription', JSON.stringify(subscriptionItem));
       
-      // Navigate to checkout page
       navigate('/checkout', { 
         state: { 
           subscriptionItem: subscriptionItem,
@@ -105,7 +150,6 @@ const Subscription = () => {
   };
 
   const handleFreeTrial = () => {
-    // Navigate to checkout with free trial option
     navigate('/checkout', { 
       state: { 
         freeTrial: true,
@@ -115,7 +159,6 @@ const Subscription = () => {
   };
 
   const isCurrentPlan = (plan) => {
-    // Add your logic to check if this is the user's current plan
     return false;
   };
 
@@ -130,7 +173,6 @@ const Subscription = () => {
   const handleTeamMembersChange = (e) => {
     const members = parseInt(e.target.value);
     setTeamMembers(members);
-    // You can add logic to adjust price based on team size
   };
 
   return (
@@ -166,9 +208,7 @@ const Subscription = () => {
             <div className="col-lg-4 col-md-6 mb-8">
               <div className={`pricing-card individual-plan ${isCurrentPlan('individual') ? 'current-plan' : ''}`}>
                 {isCurrentPlan('individual') && (
-                  <div className="current-badge">
-                    CURRENT PLAN
-                  </div>
+                  <div className="current-badge">CURRENT PLAN</div>
                 )}
                 
                 <div className="plan-header text-center mb-8">
@@ -210,9 +250,7 @@ const Subscription = () => {
             <div className="col-lg-4 col-md-6 mb-8">
               <div className={`pricing-card team-plan featured ${plans.team.popular ? 'popular' : ''}`}>
                 {plans.team.popular && (
-                  <div className="popular-badge">
-                    MOST POPULAR
-                  </div>
+                  <div className="popular-badge">MOST POPULAR</div>
                 )}
                 
                 <div className="plan-header text-center mb-8">
@@ -224,27 +262,48 @@ const Subscription = () => {
                       <span className="period text-gray-400">/{plans.team.period}</span>
                     )}
                   </div>
+                  
+                  {/* Price per member display */}
+                  <div className="price-per-member mb-2">
+                    <span className="text-green-400 text-sm font-medium">
+                      {plans.team.pricePerMember}
+                    </span>
+                  </div>
+                  
                   {plans.team.showMembersDropdown && (
-                    <div className="team-members mt-4">
-                      <select 
-                        value={teamMembers}
-                        onChange={handleTeamMembersChange}
-                        className="members-dropdown"
-                      >
-                        <option value="2">2 members</option>
-                        <option value="3">3 members</option>
-                        <option value="5">5 members</option>
-                        <option value="10">10 members</option>
-                        <option value="20">20 members</option>
-                      </select>
+                    <div className="team-members">
+                      <div className="members-select-wrapper">
+                        <select 
+                          value={teamMembers}
+                          onChange={handleTeamMembersChange}
+                          className="members-dropdown"
+                        >
+                          {teamMemberOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label} - {option.price}/{billingCycle === 'monthly' ? 'month' : 'year'}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="dropdown-arrow">
+                          <i className="fas fa-chevron-down"></i>
+                        </div>
+                      </div>
                     </div>
                   )}
-                  {plans.team.savings && (
-                    <div className="savings-tag mt-3">
-                      {plans.team.savings}
+                  
+                  {/* Savings calculation */}
+                  <div className="savings-calculation mt-2">
+                    <div className="savings-tag">
+                      {teamMembers === 2 ? 'Save 11%' : 
+                       teamMembers === 3 ? 'Save 25%' :
+                       teamMembers === 4 ? 'Save 33%' :
+                       teamMembers === 5 ? 'Save 38%' :
+                       teamMembers >= 6 ? 'Save up to 40%' : 'Save up to 34%'}
                     </div>
-                  )}
-                  <p className="plan-description text-gray-400">{plans.team.description}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Compared to individual plans
+                    </p>
+                  </div>
                 </div>
 
                 <ul className="features-list space-y-4 mb-8">
@@ -266,15 +325,14 @@ const Subscription = () => {
                 >
                   {plans.team.buttonText}
                 </button>
+                
               </div>
             </div>
 
             {/* Enterprise Plan */}
             <div className="col-lg-4 col-md-6 mb-8">
               <div className="pricing-card enterprise-plan">
-                <div className="value-badge">
-                  ENTERPRISE GRADE
-                </div>
+                <div className="value-badge">ENTERPRISE GRADE</div>
                 
                 <div className="plan-header text-center mb-8">
                   <h3 className="plan-name mb-4">{plans.enterprise.name}</h3>
@@ -305,7 +363,17 @@ const Subscription = () => {
                     </li>
                   ))}
                 </ul>
-
+<div className="mt-4 text-center">
+                  <a 
+                    href="https://examplements.envelope.com/adjustment-exploring-envelope-plack/pandering-reinvestable-2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="learn-more-link"
+                  >
+                    <i className="fas fa-info-circle mr-2"></i>
+                    Learn more
+                  </a>
+                </div>
                 <button 
                   className="action-btn enterprise-btn"
                   onClick={() => handleSubscription('enterprise')}
@@ -313,15 +381,45 @@ const Subscription = () => {
                   {plans.enterprise.buttonText}
                 </button>
                 
-                <div className="mt-4 text-center">
-                  <a 
-                    href="https://examplements.envelope.com/adjustment-exploring-envelope-plack/pandering-reinvestable-2"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="learn-more-link"
-                  >
-                    Learn more
-                  </a>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Summary Table */}
+        <div className="pricing-summary mt-12">
+          <div className="summary-card">
+            <h4 className="summary-title mb-4">Team Plan Pricing Summary</h4>
+            <div className="summary-content">
+              <div className="summary-row">
+                <div className="summary-label">Billing Cycle:</div>
+                <div className="summary-value capitalize">{billingCycle}</div>
+              </div>
+              <div className="summary-row">
+                <div className="summary-label">Team Members:</div>
+                <div className="summary-value">{teamMembers} members</div>
+              </div>
+              <div className="summary-row">
+                <div className="summary-label">Price per Member:</div>
+                <div className="summary-value text-green-400">
+                  {billingCycle === 'monthly' ? '$8' : '$96'}/{billingCycle === 'monthly' ? 'month' : 'year'}
+                </div>
+              </div>
+              <div className="summary-row">
+                <div className="summary-label">Total Price:</div>
+                <div className="summary-value font-bold text-xl">
+                  {getPriceDisplay()}/{billingCycle === 'monthly' ? 'month' : 'year'}
+                </div>
+              </div>
+              <div className="summary-row">
+                <div className="summary-label">Savings:</div>
+                <div className="summary-value text-green-400">
+                  {teamMembers === 2 ? '11%' : 
+                   teamMembers === 3 ? '25%' :
+                   teamMembers === 4 ? '33%' :
+                   teamMembers === 5 ? '38%' :
+                   teamMembers >= 6 ? '40%' : 'up to 34%'} off individual plans
                 </div>
               </div>
             </div>
@@ -329,7 +427,7 @@ const Subscription = () => {
         </div>
 
         {/* Trust Indicators */}
-        <div className="trust-section">
+        <div className="trust-section mt-12">
           <div className="trust-border">
             <p className="trust-text">Trusted by 10,000+ designers and developers worldwide</p>
             <div className="trust-badges">
@@ -363,6 +461,10 @@ const Subscription = () => {
           <div className="faq-container">
             {[
               {
+                question: "How does team pricing work?",
+                answer: `Team plans cost $${billingCycle === 'monthly' ? '8' : '96'} per member per ${billingCycle === 'monthly' ? 'month' : 'year'}. For ${teamMembers} members, the total is ${getPriceDisplay()} per ${billingCycle === 'monthly' ? 'month' : 'year'}. You can add or remove members at any time, and we'll adjust the price accordingly.`
+              },
+              {
                 question: "Can I switch between plans?",
                 answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and we'll prorate the charges."
               },
@@ -373,10 +475,6 @@ const Subscription = () => {
               {
                 question: "Is there a free trial for paid plans?",
                 answer: "Yes, all paid plans come with a 14-day free trial. No credit card required to start."
-              },
-              {
-                question: "How does team pricing work?",
-                answer: "Team plans start at 2 members and you can add or remove members at any time. Price scales based on the number of members."
               }
             ].map((faq, index) => (
               <div key={index} className="faq-item">
