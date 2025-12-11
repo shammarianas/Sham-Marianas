@@ -382,7 +382,7 @@ const Profile = () => {
   useEffect(() => {
     if (user?.username && isOwnProfile) {
       // Create a better URL with username
-      const newUrl = `/${user.username}`;
+      const newUrl = `/profile/${user.username}`;
 
       // Replace history without reloading
       window.history.replaceState(null, "", newUrl);
