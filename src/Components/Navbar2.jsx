@@ -139,7 +139,7 @@ const Navbar = () => {
     if (!currentUser?.uid) return "/login";
 
     if (username) {
-      return `/${username}`; // ✅ Twitter style: /username
+      return `/profile/${username}`; // ✅ Twitter style: /username
     }
 
     return `/profile`; // Fallback
