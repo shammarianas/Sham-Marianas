@@ -130,7 +130,6 @@ export const AppRoutes = () => (
     <Route path="/services/brandingpage" element={<BrandingPage />} />
     <Route path="/services/demo" element={<Demo />} />
     <Route path="/:username" element={<Profile />} />
-    <Route path="/:username" element={<Profile />} />
     <Route path="/:Category" element={<CategoryTemplate />} />
     <Route path="/error" element={<Error />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
