@@ -13,6 +13,7 @@ const Navbar = () => {
   const cartCount = cart.length;
   const currentPage = useLocation().pathname;
   const [username, setUsername] = useState(null);
+  const [userProfileData, setUserProfileData] = useState(null); // ✅ New state for profile data
 
   // ✅ NEW: Check if current page needs "Template" button
   const showTemplateButton = [
@@ -29,9 +30,10 @@ const Navbar = () => {
   );
 
   useEffect(() => {
-    const fetchUsername = async () => {
+    const fetchUserData = async () => {
       if (!currentUser?.uid) {
         setUsername(null);
+        setUserProfileData(null);
         return;
       }
 
@@ -43,6 +45,7 @@ const Navbar = () => {
         if (profileSnap.exists()) {
           const profileData = profileSnap.data();
           setUsername(profileData.username || null);
+          setUserProfileData(profileData);
         } else {
           // ✅ اگر Profiles میں نہیں ملا تو Contributors میں تلاش کریں
           const contributorRef = doc(db, "Contributors", currentUser.uid);
@@ -51,20 +54,87 @@ const Navbar = () => {
           if (contributorSnap.exists()) {
             const contributorData = contributorSnap.data();
             setUsername(contributorData.username || null);
+            setUserProfileData(contributorData);
           } else {
             setUsername(null);
+            setUserProfileData(null);
           }
         }
       } catch (error) {
         console.error("Error fetching username:", error);
         setUsername(null);
+        setUserProfileData(null);
       }
     };
 
-    fetchUsername();
+    fetchUserData();
   }, [currentUser]);
 
-  //
+  // ✅ Profile mein jo getDisplayName function hai usi logic ko yahan implement karna
+  const getDisplayName = () => {
+    if (!userProfileData) {
+      // Agar profile data nahi mila to auth se basic info lein
+      if (currentUser?.displayName) return currentUser.displayName;
+      if (currentUser?.email) {
+        const emailName = currentUser.email.split("@")[0];
+        return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+      }
+      return "User";
+    }
+
+    // ✅ Priority 1: firstName + lastName combination (Pehle yeh check)
+    const firstName = userProfileData.firstName || userProfileData.firstname || userProfileData.first_name;
+    const lastName = userProfileData.lastName || userProfileData.lastname || userProfileData.last_name;
+
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`.trim();
+    } else if (firstName) {
+      return firstName.trim();
+    } else if (lastName) {
+      return lastName.trim();
+    }
+
+    // ✅ Priority 2: fullName (Contributor mein yeh field hai)
+    if (userProfileData.fullName && userProfileData.fullName.trim()) {
+      return userProfileData.fullName.trim();
+    }
+
+    // ✅ Priority 3: displayUsername (Contributor ka specific field)
+    if (userProfileData.displayUsername && userProfileData.displayUsername.trim()) {
+      return userProfileData.displayUsername.trim();
+    }
+
+    // ✅ Priority 4: username (common field)
+    if (userProfileData.username && userProfileData.username.trim()) {
+      return userProfileData.username.trim();
+    }
+
+    // ✅ Priority 5: displayName (agar exist kare)
+    if (userProfileData.displayName && userProfileData.displayName.trim()) {
+      return userProfileData.displayName.trim();
+    }
+
+    // ✅ Priority 6: authorName
+    if (userProfileData.authorName && userProfileData.authorName.trim()) {
+      return userProfileData.authorName.trim();
+    }
+
+    // ✅ Priority 7: email se name extract karen
+    if (userProfileData.email) {
+      const emailName = userProfileData.email.split("@")[0];
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+
+    // ✅ Fallback to auth user info
+    if (currentUser?.displayName) return currentUser.displayName;
+    if (currentUser?.email) {
+      const emailName = currentUser.email.split("@")[0];
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+
+    return "User";
+  };
+
   const getProfileLink = () => {
     if (!currentUser?.uid) return "/login";
 
@@ -76,6 +146,7 @@ const Navbar = () => {
     // ورنہ user ID کے ذریعے
     return `/Profile/${currentUser.uid}`;
   };
+
   useEffect(() => {
     const handleScroll = () => {
       const navbar = document.querySelector(".navbar");
@@ -189,7 +260,7 @@ const Navbar = () => {
 
                 <li
                   onMouseLeave={handleDropdownMouseLeave}
-                  onMouseMove={handleDropdownMouseMove}
+                  onMouseMove={handleDropdownMouseLeave}
                   className="nav-item dropdown"
                 >
                   <Link
@@ -395,19 +466,12 @@ const Navbar = () => {
           <div className="nav_buttons">
             <div className="navbar_dropdown">
               {currentUser?.uid ? (
-                // ✅ یہاں update کریں
+                // ✅ یہاں update کریں - ab getDisplayName function use karen
                 <Link to={getProfileLink()}>
                   <button className="signed_in">
                     <i className="icon fa-solid fa-user"></i>
                     <span className="username">
-                      {(() => {
-                        if (!currentUser) return "User";
-                        const fullName = `${currentUser.firstName || ""} ${
-                          currentUser.lastName || ""
-                        }`.trim();
-                        if (fullName) return fullName;
-                        return currentUser.displayName || "User";
-                      })()}
+                      {getDisplayName()}
                     </span>
                   </button>
                 </Link>
