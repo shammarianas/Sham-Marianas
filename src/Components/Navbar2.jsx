@@ -68,13 +68,11 @@ const Navbar = () => {
   const getProfileLink = () => {
     if (!currentUser?.uid) return "/login";
 
-    // اگر username موجود ہے تو username کے ذریعے
     if (username) {
-      return `/Profile/${username}`;
+      return `/${username}`; // ✅ Twitter style: /username
     }
 
-    // ورنہ user ID کے ذریعے
-    return `/Profile/${currentUser.uid}`;
+    return `/profile`; // Fallback
   };
   useEffect(() => {
     const handleScroll = () => {
