@@ -58,9 +58,9 @@ const getFooterImage = async () => {
 const getLicenseTermsContent = (licenseType, asset) => {
   // Main Heading
   const header = {
-   text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' : 
-              licenseType === 'Free for Commercial Use' ? 'FREE FOR COMMERCIAL USE LICENSE' :
-              'DIGITAL ASSET LICENSE', 
+    text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' :
+      licenseType === 'Free for Commercial Use' ? 'FREE FOR COMMERCIAL USE LICENSE' :
+        'DIGITAL ASSET LICENSE',
     style: 'header',
     alignment: 'left',
     bold: true,
@@ -87,7 +87,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
         text: 'This license lets you use any designs, templates, graphics, logos, photos, videos, or branding material created by Sham Marianas completely free in your personal or commercial projects; you just have to give simple credit in the final work: “Designed by Sham Marianas”.',
         margin: [0, 0, 0, 10],
         lineHeight: 1.4,
-color: '#7f8c8d'
+        color: '#7f8c8d'
       },
 
       // How to give credit
@@ -177,7 +177,7 @@ color: '#7f8c8d'
         text: 'This license confirms the rights and obligations for using the item "Certified Guarantee Warranty Verify Stamp Word Concept" on your website under the FREE commercial  LICENSE (WITH ATTRIBUTION) terms.',
         margin: [0, 0, 0, 10],
         lineHeight: 1.4,
-color: '#7f8c8d'
+        color: '#7f8c8d'
       },
 
       // How to give credit
@@ -498,17 +498,17 @@ const getDocDefinition = async (asset, licenseType, user) => {
               { text: 'License ID:', fillColor: '#4a4a4a', color: 'white' },
               { text: licenseId, bold: true, fillColor: '#e0e0e0' }
             ],
-            ['Licensee:', { text: user?.displayName || user?.email || 'User', bold: true }],
+            // ['Licensee:', { text: user?.displayName || user?.email || 'User', bold: true }],
             [
               { text: 'URL:', fillColor: '#4a4a4a', color: 'white' },
               {
-  text: asset.viewUrl || `https://shammarianas.com/View/${asset.slug || asset.id || asset._id}`,
-  bold: true,
-  color: '#52b0b4',
-  link: asset.viewUrl || `https://shammarianas.com/View/${asset.slug || asset.id || asset._id}`,
-  decoration: 'underline',
-  fillColor: '#e0e0e0'
-}
+                text: asset.viewUrl || `https://shammarianas.com/View/${asset.slug || asset.id || asset._id}`,
+                bold: true,
+                color: '#52b0b4',
+                link: asset.viewUrl || `https://shammarianas.com/View/${asset.slug || asset.id || asset._id}`,
+                decoration: 'underline',
+                fillColor: '#e0e0e0'
+              }
             ]
           ]
         },

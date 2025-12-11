@@ -7,6 +7,69 @@ const UserCard = ({ userId }) => {
   const [user, setUser] = useState(null);
   const [profilePath, setProfilePath] = useState(`/profile/${userId}`); // ✅ ابتدائی value
 
+  // ✅ Profile ki tarah hi getDisplayName function
+  const getDisplayName = () => {
+    if (!user) return "User";
+
+    // ✅ Priority 1: firstName + lastName combination (Pehle yeh check)
+    const firstName = user.firstName || user.firstname || user.first_name;
+    const lastName = user.lastName || user.lastname || user.last_name;
+
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`.trim();
+    } else if (firstName) {
+      return firstName.trim();
+    } else if (lastName) {
+      return lastName.trim();
+    }
+
+    // ✅ Priority 2: fullName (Contributor mein yeh field hai)
+    if (user.fullName && user.fullName.trim()) {
+      return user.fullName.trim();
+    }
+
+    // ✅ Priority 3: displayUsername (Contributor ka specific field)
+    if (user.displayUsername && user.displayUsername.trim()) {
+      return user.displayUsername.trim();
+    }
+
+    // ✅ Priority 4: username (common field)
+    if (user.username && user.username.trim()) {
+      return user.username.trim();
+    }
+
+    // ✅ Priority 5: displayName (agar exist kare)
+    if (user.displayName && user.displayName.trim()) {
+      return user.displayName.trim();
+    }
+
+    // ✅ Priority 6: authorName
+    if (user.authorName && user.authorName.trim()) {
+      return user.authorName.trim();
+    }
+
+    // ✅ Priority 7: email se name extract karen
+    if (user.email) {
+      const emailName = user.email.split("@")[0];
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    }
+
+    return "User";
+  };
+
+  // ✅ Get initials for avatar
+  const getInitials = () => {
+    const displayName = getDisplayName();
+    if (displayName === "User") return "U";
+    
+    // Get first two letters of display name
+    const words = displayName.split(' ');
+    if (words.length >= 2) {
+      return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+    }
+    return displayName.charAt(0).toUpperCase();
+  };
+
   useEffect(() => {
     if (!userId) return;
 
@@ -20,7 +83,7 @@ const UserCard = ({ userId }) => {
           const userData = profileSnap.data();
           setUser(userData);
 
-          // ✅ اگر username موجود ہے تو اسے استعمال کریں
+          // ✅  username
           if (userData.username) {
             setProfilePath(`/Profile/${userData.username}`); // ✅ نیا path
           }
@@ -32,6 +95,7 @@ const UserCard = ({ userId }) => {
           if (contributorSnap.exists()) {
             const contributorData = contributorSnap.data();
             const userObj = {
+              ...contributorData,
               username:
                 contributorData.username ||
                 contributorData.displayName ||
@@ -41,6 +105,11 @@ const UserCard = ({ userId }) => {
                 "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png",
             };
             setUser(userObj);
+            
+            // ✅ Contributor ka username bhi check karen profile path ke liye
+            if (contributorData.username) {
+              setProfilePath(`/Profile/${contributorData.username}`);
+            }
           } else {
             setUser(null);
           }
@@ -61,18 +130,19 @@ const UserCard = ({ userId }) => {
   return (
     <div className="user">
       <div className="user_image">
-        <img
-          src={
-            user?.profilePic ||
-            "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png"
-          }
-          alt={user?.username || "User"}
-        />
+        {user?.profilePic ? (
+          <img
+            src={user.profilePic}
+            alt={getDisplayName()}
+          />
+        ) : (
+          <div className="profile-initials">{getInitials()}</div>
+        )}
       </div>
       <Link to={profilePath}>
         {" "}
-        {/* ✅ یہاں profilePath استعمال کریں */}
-        <span className="username">{user?.username || "User"}</span>
+        {/* ✅  profilePath   */}
+        <span className="username">{getDisplayName()}</span>
       </Link>
     </div>
   );
