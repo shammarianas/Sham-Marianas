@@ -3184,19 +3184,20 @@ ul {
 
 /* Dashboard Content - Two Columns */
 .dashboard-content {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 2rem;
+  /* display: grid; */
+  /* grid-template-columns: 1fr 2fr;
+  gap: 2rem; */
 }
 
 /* Left Column - Analytics */
 .analytics-column {
   display: flex;
-  flex-direction: column;
+  /* flex-direction: column; */
   gap: 1.5rem;
 }
 
 .content-card {
+  width: 50%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -3303,6 +3304,7 @@ ul {
 
 /* Right Column - Users */
 .users-column {
+  margin-top: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
