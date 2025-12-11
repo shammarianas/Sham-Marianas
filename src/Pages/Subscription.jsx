@@ -104,12 +104,7 @@ const Subscription = () => {
     { value: 3, label: '3 members', price: billingCycle === 'monthly' ? '$24' : '$288' },
     { value: 4, label: '4 members', price: billingCycle === 'monthly' ? '$32' : '$384' },
     { value: 5, label: '5 members', price: billingCycle === 'monthly' ? '$40' : '$480' },
-    { value: 6, label: '6 members', price: billingCycle === 'monthly' ? '$48' : '$576' },
-    { value: 7, label: '7 members', price: billingCycle === 'monthly' ? '$56' : '$672' },
-    { value: 8, label: '8 members', price: billingCycle === 'monthly' ? '$64' : '$768' },
-    { value: 9, label: '9 members', price: billingCycle === 'monthly' ? '$72' : '$864' },
-    { value: 10, label: '10 members', price: billingCycle === 'monthly' ? '$80' : '$960' },
-  ];
+    ];
 
   const handleSubscription = async (plan) => {
     if (plan === 'enterprise') {
@@ -297,8 +292,7 @@ const Subscription = () => {
                       {teamMembers === 2 ? 'Save 11%' : 
                        teamMembers === 3 ? 'Save 25%' :
                        teamMembers === 4 ? 'Save 33%' :
-                       teamMembers === 5 ? 'Save 38%' :
-                       teamMembers >= 6 ? 'Save up to 40%' : 'Save up to 34%'}
+                       teamMembers === 5 ? 'Save 38%': ''}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Compared to individual plans
