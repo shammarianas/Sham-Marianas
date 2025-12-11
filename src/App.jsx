@@ -83,6 +83,7 @@ const ScrollToTop = () => {
 
 export const AppRoutes = () => (
   <Routes>
+    {/* Static routes first */}
     <Route path="/Login" element={<Login />} />
     <Route path="/login" element={<Login />} />
     <Route path="/ContributorLogin" element={<ContributorLogin />} />
@@ -105,10 +106,7 @@ export const AppRoutes = () => (
     <Route path="/Privacy" element={<Privacy />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/blog" element={<Blog />} />
-    <Route path="/blog/:id" element={<BlogDetails />} />
-    <Route path="/blog-details/:id" element={<BlogDetails />} />
     <Route path="/portfolio" element={<Portfolio />} />
-    <Route path="/project-details/:id" element={<PortfolioDetails />} />
     <Route path="/Support" element={<Support />} />
     <Route path="/about" element={<AboutUs />} />
     <Route path="/page-team" element={<PageTeam />} />
@@ -129,19 +127,28 @@ export const AppRoutes = () => (
     <Route path="/services/exhibition" element={<BoothDesign />} />
     <Route path="/services/brandingpage" element={<BrandingPage />} />
     <Route path="/services/demo" element={<Demo />} />
-    <Route path="/:username" element={<Profile />} />
-    <Route path="/:Category" element={<CategoryTemplate />} />
     <Route path="/error" element={<Error />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
-    <Route path="/blog-category/:category" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
+    
+    {/* Dynamic routes with parameters - order matters! */}
     <Route path="/View/:slug" element={<View />} />
-    // اس میں:
+    <Route path="/blog/:id" element={<BlogDetails />} />
+    <Route path="/blog-details/:id" element={<BlogDetails />} />
+    <Route path="/project-details/:id" element={<PortfolioDetails />} />
+    <Route path="/blog-category/:category" element={<BlogCategory />} />
+    
+    {/* Profile routes - should come before generic dynamic route */}
     <Route path="/Profile/:username" element={<Profile />} />
-    {/* <Route path="/Profile/:id" element={<Profile />} /> */}
+    
+    {/* Generic dynamic route for Category - should be LAST */}
+    <Route path="/:Category" element={<CategoryTemplate />} />
+    
+    {/* Remove this duplicate generic route */}
+    {/* <Route path="/:username" element={<Profile />} */}
   </Routes>
 );
 
