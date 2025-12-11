@@ -44,6 +44,8 @@
     }
 
     .view-all-link {
-        width: auto
+        width: auto;
+        padding: 3rem 1rem;
+        padding-bottom: 1rem;
     }
 }
