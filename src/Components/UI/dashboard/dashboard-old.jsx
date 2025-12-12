@@ -1015,8 +1015,6 @@ const AdminDashboard = () => {
         className={`sidebar ${sidebarOpen ? "open" : "closed"}`}
         ref={sidebarRef}
       >
-       
-
         <div className="custom-dropdown" ref={dropdownRef}>
           <button
             className="dashboard-dropdown"

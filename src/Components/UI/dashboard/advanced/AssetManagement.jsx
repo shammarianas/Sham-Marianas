@@ -778,7 +778,7 @@ const handleRejectAsset = async (assetId, assetName, contributorId) => {
         </div>
       )}
 
-      {loading && <div className="loading-overlay">Loading...</div>}
+      {loading && <div className="loading-overlay">Loading Asset Management...</div>}
 
       {/* Asset Details Modal */}
       {showAssetDialog && selectedAsset && (
