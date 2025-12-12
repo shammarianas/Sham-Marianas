@@ -409,11 +409,6 @@ ul {
   border-color: var(--primary);
 }
 
-.card-body {
-  padding: 1.5rem;
-  background-color: var(--gray-dark);
-}
-
 .card-footer {
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-color);
@@ -2034,7 +2029,7 @@ ul {
 
 @media (max-width: 768px) {
   .assets-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    /* grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); */
     gap: 1rem;
   }
 
@@ -4468,6 +4463,9 @@ grid-template-columns: 2fr 1fr;
   .header-title {
     font-size: 26px;
   }
+  .filter-text {
+    font-size: 14px;
+  }
 }
 
 /* Dynamic Pie Chart Colors */
@@ -5755,13 +5753,13 @@ margin: 1rem;
   }
 
   /* Hide desktop header on mobile */
-  /* .header {
+  .header {
     display: none;
   }
 
   .header-right {
     display: none;
-  } */
+  }
 
   /* Adjust content for mobile */
   .content-container {

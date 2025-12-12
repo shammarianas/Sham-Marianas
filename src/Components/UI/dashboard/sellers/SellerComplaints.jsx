@@ -249,21 +249,30 @@ const SellerComplaints = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="user-reports-dashboard">
-        <div className="loading-overlay">
-          <div className="loading-content">
-            <div className="loading-spinner"></div>
-            <p>Loading contributor complaints...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="user-reports-dashboard">
+  //       <div className="loading-overlay">
+  //         <div className="loading-content">
+  //           <div className="loading-spinner"></div>
+  //           <p>Loading contributor complaints...</p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="user-reports-dashboard">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading Seller Complaints...</p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-content">
