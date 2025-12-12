@@ -506,7 +506,7 @@
           flex: 1;
         }
 
-        .header-title {
+        /* .header-title {
           display: flex;
           align-items: center;
           gap: 12px;
@@ -514,7 +514,7 @@
           font-weight: 700;
           color: var(--text-primary);
           margin-bottom: 8px;
-        }
+        } */
 
         .header-icon {
           color: #52b0b4;
