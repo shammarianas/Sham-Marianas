@@ -28,7 +28,7 @@
 }
 
 .details-media-img {
-    object-fit: fill;
+    object-fit: cover;
     width: 100%;
     height: -webkit-fill-available;
     display: block
@@ -44,6 +44,8 @@
     }
 
     .view-all-link {
-        width: auto
+        width: auto;
+        padding: 3rem 1rem;
+        padding-bottom: 1rem;
     }
 }

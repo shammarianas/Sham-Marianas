@@ -15,13 +15,15 @@ function Footer() {
     path === "/profile" ||
     path === "//Favorites" ||
     path === "/MyDownloads" ||
+    path === "/privacy-policy-template" ||
+    path === "/terms-of-template" ||
     // path.includes("/category") ||
     path.startsWith("/fonts") ||
     path.startsWith("/video-templates") ||
     path.startsWith("/icons") ||
-    path.startsWith("/3D-models") ||
+    path.startsWith("/models") ||
     path.startsWith("/mockups") ||
-    path.startsWith("/graphics-templates") ||
+    path.startsWith("/graphics") ||
     path.startsWith("/videos") ||
     path.startsWith("/images") ||
     path.startsWith("/scripts") ||
@@ -62,7 +64,7 @@ function Footer() {
       <Cursor />
 
       <footer className="clean-footer crev">
-        <div className="container pb-40 pt-40 ontop">
+        <div className="container mt-100 pb-40 pt-40 ontop">
           <div className="row justify-content-between">
             <div className="col-lg-2">
               <div className="logo icon-img-100 md-mb80">
@@ -153,8 +155,8 @@ function Footer() {
                     <h6 className="sub-title mb-30">Get Started</h6>
                     <ul className="rest fz-14 opacity-7">
                       <li className="mb-15"><Link to="/privacy-policy">Privacy Policy</Link></li>
-                      <li className="mb-15"><a href="/terms-and-conditions">Terms & Conditions</a></li>
-                      <li className="mb-15"><a href="#">Help Center</a></li>
+                      <li className="mb-15"><Link to="/terms-and-conditions">Terms & Conditions</Link></li>
+                      <li className="mb-15"><Link to="/support">Help Center</Link></li>
                     </ul>
                   </div>
                 </>
@@ -165,9 +167,9 @@ function Footer() {
                 <div className="column md-mb50">
                   <h6 className="sub-title mb-30">Resources</h6>
                   <ul className="rest fz-14 opacity-7">
-                    <li className="mb-15"><a href="#">Privacy Policy</a></li>
-                    <li className="mb-15"><a href="#">Terms & Conditions</a></li>
-                    <li className="mb-15"><a href="#">Support</a></li>
+                    <li className="mb-15"><Link to="/privacy-policy-template">Privacy Policy</Link></li>
+                    <li className="mb-15"><Link to="/terms-of-template">Terms & Conditions</Link></li>
+                    <li className="mb-15"><Link to="/support">Support</Link></li>
                   </ul>
                 </div>
               )}
