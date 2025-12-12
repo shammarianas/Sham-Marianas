@@ -371,7 +371,7 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
                 </span>
               </div>
             </div>
-            <div className="card-body">
+            <div >
               <div className="filter-controls-grid">
                 <div className="search-input-wrapper">
                   <FiSearch className="search-icon" />

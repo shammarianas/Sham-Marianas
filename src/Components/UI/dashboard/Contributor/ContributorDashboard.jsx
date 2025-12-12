@@ -66,15 +66,15 @@ const UnauthorizedAccess = ({ error }) => {
   );
 };
 
-const ProfileWrapper = ({ userId }) => {
+const ProfileWrapper = ({ username }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (userId) {
+    if (username) {
       // Direct profile page par navigate karo
-      navigate(`/profile/${userId}`);
+      navigate(`/profile/${username}`);
     }
-  }, [userId, navigate]);
+  }, [username, navigate]);
 };
 
 // ✅ ADDED: Notification Dropdown Component
@@ -598,7 +598,7 @@ const SellerDashboard = () => {
 
       // ✅ ADDED: Profile tab
       case "profile":
-        return <ProfileWrapper userId={userData?.uid} />;
+        return <ProfileWrapper username={userData?.username} />;
 
       case "billing":
         return <BillingInvoices {...commonProps} />;
