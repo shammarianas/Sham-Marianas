@@ -40,7 +40,7 @@ import PortfolioList from "./company/PortfolioList";
 import BlogEditorModal from "../../../Pages/BlogEditor";
 import ProjectModal from "../../../Pages/PortfolioUpload";
 
-// Import icons
+// Import icons - اضافی آئیکن شامل کیا
 import {
   FiUsers,
   FiFileText,
@@ -55,6 +55,8 @@ import {
   FiRefreshCw,
   FiBriefcase,
   FiMessageCircle,
+  FiMenu, // ہیمبرگر مینو آئیکن
+  FiChevronLeft, // بند کرنے کا آئیکن
 } from "react-icons/fi";
 
 import "./style.css";
@@ -172,7 +174,9 @@ const AdminDashboard = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // نیا state sidebar کے لیے
   const dropdownRef = useRef(null);
+  const sidebarRef = useRef(null);
   const navigate = useNavigate();
 
   // Notification states
@@ -181,7 +185,7 @@ const AdminDashboard = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
 
-  // ADDED: State variables for request counts
+  // State variables for request counts
   const [pendingRequests, setPendingRequests] = useState(0);
   const [pendingAssets, setPendingAssets] = useState(0);
   const [pendingSellers, setPendingSellers] = useState(0);
@@ -210,7 +214,42 @@ const AdminDashboard = () => {
     };
   }, []);
 
-  // ADDED: Setup real-time count listeners
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (window.innerWidth <= 768) {
+        if (
+          sidebarRef.current &&
+          !sidebarRef.current.contains(event.target) &&
+          sidebarOpen
+        ) {
+          setSidebarOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [sidebarOpen]);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Setup real-time count listeners
   useEffect(() => {
     if (!isAdmin) return;
 
@@ -278,7 +317,7 @@ const AdminDashboard = () => {
     setupCountListeners();
   }, [isAdmin]);
 
-  // IMPROVED: Setup real-time notifications listener
+  // Setup real-time notifications listener
   const setupAdminNotificationsListener = useCallback(() => {
     console.log("Setting up admin notifications listener...");
 
@@ -326,7 +365,7 @@ const AdminDashboard = () => {
     );
   }, []);
 
-  // IMPROVED: Mark notification as read
+  // Mark notification as read
   const markNotificationAsRead = async (notificationId) => {
     console.log("Marking notification as read:", notificationId);
 
@@ -357,7 +396,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // IMPROVED: Mark all notifications as read
+  // Mark all notifications as read
   const markAllNotificationsAsRead = async () => {
     console.log("Marking all notifications as read");
 
@@ -394,7 +433,20 @@ const AdminDashboard = () => {
     setShowNotifications(!showNotifications);
   };
 
-  // IMPROVED: Create notification for admin - FIXED DUPLICATE ISSUE
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Handle tab click on mobile - close sidebar
+  const handleTabClick = (tabNumber) => {
+    setActiveTab(tabNumber);
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
+  };
+
+  // Create notification for admin
   const createAdminNotification = async (
     type,
     message,
@@ -889,12 +941,82 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="admin-dashboard" style={{ display: "flex" }}>
+    <div className="admin-dashboard">
+      {/* Mobile Header with Hamburger Menu */}
+<div className="mobile-header">
+  <button className="hamburger-menu" onClick={toggleSidebar}>
+    {sidebarOpen ? (
+      <svg 
+        stroke="currentColor" 
+        fill="none" 
+        strokeWidth="2" 
+        viewBox="0 0 24 24" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className="close-icon" 
+        height="1em" 
+        width="1em" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    ) : (
+      <FiMenu className="hamburger-icon" />
+    )}
+  </button>
+  
+  {/* <div className="mobile-notification">
+    <button
+      className={`header-btn notification-btn ${
+        unreadCount > 0 ? "has-new" : ""
+      }`}
+      onClick={toggleNotifications}
+    >
+      <FiBell className="btn-icon" />
+      {unreadCount > 0 && (
+        <span className="notification-badge">
+          {unreadCount > 99 ? "99+" : unreadCount}
+        </span>
+      )}
+    </button>
+  </div> */}
+</div>
+
+{/* Sidebar */}
+<div
+  className={`sidebar ${sidebarOpen ? "open" : "closed"}`}
+  ref={sidebarRef}
+>
+  {/* Close button for mobile inside sidebar */}
+  {sidebarOpen && window.innerWidth <= 768 && (
+    <button className="sidebar-close-btn" onClick={toggleSidebar}>
+      <svg 
+        stroke="currentColor" 
+        fill="none" 
+        strokeWidth="2" 
+        viewBox="0 0 24 24" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className="close-icon" 
+        height="1em" 
+        width="1em" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  )}
+</div>
+
       {/* Sidebar */}
       <div
-        className="sidebar"
-        style={{ position: "fixed", width: "260px", overflowY: "auto" }}
+        className={`sidebar ${sidebarOpen ? "open" : "closed"}`}
+        ref={sidebarRef}
       >
+       
+
         <div className="custom-dropdown" ref={dropdownRef}>
           <button
             className="dashboard-dropdown"
@@ -939,7 +1061,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 1 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(1)}
+                      onClick={() => handleTabClick(1)}
                     >
                       User Information
                     </li>
@@ -947,7 +1069,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 2 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(2)}
+                      onClick={() => handleTabClick(2)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                         <span>User Report</span>
@@ -960,7 +1082,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 3 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(3)}
+                      onClick={() => handleTabClick(3)}
                     >
                       Payment & Plan
                     </li>
@@ -978,7 +1100,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 4 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(4)}
+                      onClick={() => handleTabClick(4)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                         <span>Seller Account Verify</span>
@@ -991,7 +1113,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 5 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(5)}
+                      onClick={() => handleTabClick(5)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                         <span>Asset Request</span>
@@ -1004,7 +1126,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 6 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(6)}
+                      onClick={() => handleTabClick(6)}
                     >
                       Seller Earning
                     </li>
@@ -1012,7 +1134,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 7 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(7)}
+                      onClick={() => handleTabClick(7)}
                     >
                       Seller Report
                     </li>
@@ -1020,7 +1142,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 8 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(8)}
+                      onClick={() => handleTabClick(8)}
                     >
                       Seller Analytic
                     </li>
@@ -1028,7 +1150,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 9 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(9)}
+                      onClick={() => handleTabClick(9)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                         <span>Seller Complaints</span>
@@ -1051,7 +1173,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 10 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(10)}
+                      onClick={() => handleTabClick(10)}
                     >
                       Download
                     </li>
@@ -1059,7 +1181,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 11 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(11)}
+                      onClick={() => handleTabClick(11)}
                     >
                       Earning
                     </li>
@@ -1067,7 +1189,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 12 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(12)}
+                      onClick={() => handleTabClick(12)}
                     >
                       Analytic
                     </li>
@@ -1075,7 +1197,7 @@ const AdminDashboard = () => {
                       className={`submenu-item ${
                         activeTab === 13 ? "active" : ""
                       }`}
-                      onClick={() => setActiveTab(13)}
+                      onClick={() => handleTabClick(13)}
                     >
                       Asset
                     </li>
@@ -1088,7 +1210,7 @@ const AdminDashboard = () => {
                   className={`menu-item dropdown-header comp-menu ${
                     activeTab === 1 ? "active" : ""
                   }`}
-                  onClick={() => setActiveTab(1)}
+                  onClick={() => handleTabClick(1)}
                 >
                   <FiFileText className="menu-icon" />
                   <span className="nav-label">Blogs</span>
@@ -1097,7 +1219,7 @@ const AdminDashboard = () => {
                   className={`menu-item dropdown-header comp-menu ${
                     activeTab === 2 ? "active" : ""
                   }`}
-                  onClick={() => setActiveTab(2)}
+                  onClick={() => handleTabClick(2)}
                 >
                   <FiBriefcase className="menu-icon" />
                   <span className="nav-label">Portfolio</span>
@@ -1130,11 +1252,13 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Overlay for mobile when sidebar is open */}
+      {sidebarOpen && window.innerWidth <= 768 && (
+        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+      )}
+
       {/* Main Content */}
-      <div
-        className="main-content"
-        style={{ marginLeft: "250px", overflowY: "auto" }}
-      >
+      <div className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
         <div className="header">
           <h1 className="page-title">
             {activeTab === 1 && selectedDashboard === "admin" && ""}
@@ -1158,7 +1282,7 @@ const AdminDashboard = () => {
               ""}
           </h1>
 
-          {/* ADDED: Notification Button in Header */}
+          {/* Notification Button in Header */}
           <div className="header-right">
             <div className="notification-container" ref={notificationRef}>
               <button

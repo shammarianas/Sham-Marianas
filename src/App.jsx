@@ -61,7 +61,8 @@ import BlogCategory from "./Pages/Blog-Category";
 import Subscription from "./Pages/Subscription";
 import ContributorLogin from "./Pages/Login/ContributorLogin";
 import ContributorDashboard from "./Components/UI/dashboard/Contributor/ContributorDashboard";
-
+import PrivacyPolicyTemplate from "./Pages/Get Started/privacyTemplate";
+import TermsandConditionTemplate from "./Pages/Get Started/termsOfTemplate";
 // STRIPE IMPORTS - ADDED
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
@@ -128,8 +129,10 @@ export const AppRoutes = () => (
     <Route path="/services/brandingpage" element={<BrandingPage />} />
     <Route path="/services/demo" element={<Demo />} />
     <Route path="/error" element={<Error />} />
-    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+    <Route path="/privacy-policy" element={<PrivacyPolicyTemplate />} />
+    <Route path="/privacy-policy-template" element={<PrivacyPolicyTemplate />} />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
+    <Route path="/terms-of-template" element={<TermsandConditionTemplate />} />
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />

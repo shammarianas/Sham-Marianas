@@ -8160,10 +8160,10 @@ footer.clean-footer.crev .circle-blur {
     display: none;
   }
 
-  .navbar.nav-scroll {
+  /* .navbar.nav-scroll {
     padding-top: 15px;
     padding-bottom: 15px;
-  }
+  } */
 
   .navbar .container {
     padding: 0;
