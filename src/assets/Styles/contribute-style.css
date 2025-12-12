@@ -541,12 +541,6 @@
           font-size: 14px;
           border: 1px solid rgba(82, 176, 180, 0.2);
         }
-.reports-content-grid{
-grid-template-columns: 2fr 1fr;
-}
-.action-button{
-padding: 1rem;
-}
         /* Table Controls */
         .table-controls {
           display: flex;
