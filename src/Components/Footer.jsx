@@ -17,6 +17,7 @@ function Footer() {
     path === "/MyDownloads" ||
     path === "/privacy-policy-template" ||
     path === "/terms-of-template" ||
+    path === "/seller-guidelines" ||
     // path.includes("/category") ||
     path.startsWith("/fonts") ||
     path.startsWith("/video-templates") ||

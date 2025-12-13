@@ -532,7 +532,7 @@ const refreshAssets = useCallback(() => {
       </div>
 
       {/* Filters */}
-      <div className="content-card filters-card">
+      <div className="content-card filters-card w-100">
         <div className="card-body">
           <div className="asset-filters-grid">
             <div className="search-input-wrapper">
@@ -569,7 +569,7 @@ const refreshAssets = useCallback(() => {
 
       {/* Assets Grid */}
       {filteredAssets.length === 0 ? (
-        <div className="content-card">
+        <div className="content-card w-100">
           <div className="card-body empty-state">
             <FiBox className="empty-icon" />
             <h3 className="empty-title">No assets found</h3>

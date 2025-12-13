@@ -137,7 +137,7 @@ const DashboardOverview = ({
       {/* Upload Modal */}
       {showUploadDialog && (
         <div className="modal-overlay" onClick={handleUploadClose}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Upload New Asset</h3>
               <button className="modal-close" onClick={handleUploadClose}>
@@ -431,7 +431,7 @@ const DashboardOverview = ({
 
       {/* Recent Activity */}
       <div className="recent-reports-card">
-        <div className="recent-reports-header">
+        <div className="recent-reports-header p-0">
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Recent Activity
           </h3>
