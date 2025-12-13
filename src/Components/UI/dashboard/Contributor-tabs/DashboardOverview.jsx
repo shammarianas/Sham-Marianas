@@ -192,9 +192,8 @@ const DashboardOverview = ({
               All time content submissions
             </div>
             <div
-              className={`report-stat-trend ${
-                trends.totalUploads.isPositive ? "positive" : "negative"
-              }`}
+              className={`report-stat-trend ${trends.totalUploads.isPositive ? "positive" : "negative"
+                }`}
             >
               {trends.totalUploads.value > 0 ? "+" : ""}
               {trends.totalUploads.value.toFixed(1)}%
@@ -220,9 +219,8 @@ const DashboardOverview = ({
           <div className="report-stat-content">
             <div className="report-stat-subtext">In review process</div>
             <div
-              className={`report-stat-trend ${
-                trends.underRevision.isPositive ? "positive" : "negative"
-              }`}
+              className={`report-stat-trend ${trends.underRevision.isPositive ? "positive" : "negative"
+                }`}
             >
               {trends.underRevision.value > 0 ? "+" : ""}
               {trends.underRevision.value.toFixed(1)}%
@@ -250,9 +248,8 @@ const DashboardOverview = ({
               {approvalRate}% approval rate
             </div>
             <div
-              className={`report-stat-trend ${
-                trends.published.isPositive ? "positive" : "negative"
-              }`}
+              className={`report-stat-trend ${trends.published.isPositive ? "positive" : "negative"
+                }`}
             >
               {trends.published.value > 0 ? "+" : ""}
               {trends.published.value.toFixed(1)}%
@@ -280,9 +277,8 @@ const DashboardOverview = ({
           <div className="report-stat-content">
             <div className="report-stat-subtext">Lifetime earnings</div>
             <div
-              className={`report-stat-trend ${
-                trends.earnings.isPositive ? "positive" : "negative"
-              }`}
+              className={`report-stat-trend ${trends.earnings.isPositive ? "positive" : "negative"
+                }`}
             >
               {trends.earnings.value > 0 ? "+" : ""}
               {trends.earnings.value.toFixed(1)}%
@@ -316,7 +312,7 @@ const DashboardOverview = ({
                   <span className="metric-status excellent">Excellent</span>
                 </div>
                 <div className="d-flex justify-content-between ">
-                <div className="metric-target">Target: 80%</div>
+                  <div className="metric-target">Target: 80%</div>
                   <div className="metric-target">{approvalRate}%</div>
                 </div>
                 <div className="category-progress-bar">
@@ -335,23 +331,22 @@ const DashboardOverview = ({
                   <span className="metric-status poor">Poor</span>
                 </div>
                 <div className="d-flex justify-content-between ">
-                    <div className="metric-target">Target: Below 10%</div>
+                  <div className="metric-target">Target: Below 10%</div>
                   <div className="metric-target">
-                  {stats.totalUploads > 0
-                    ? ((stats.rejections / stats.totalUploads) * 100).toFixed(1)
-                    : 0}
-                  %
-                </div>
+                    {stats.totalUploads > 0
+                      ? ((stats.rejections / stats.totalUploads) * 100).toFixed(1)
+                      : 0}
+                    %
+                  </div>
                 </div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill poor"
                     style={{
-                      width: `${
-                        stats.totalUploads > 0
+                      width: `${stats.totalUploads > 0
                           ? (stats.rejections / stats.totalUploads) * 100
                           : 0
-                      }%`,
+                        }%`,
                     }}
                   ></div>
                 </div>
@@ -363,26 +358,25 @@ const DashboardOverview = ({
                   <span className="metric-status average">Average</span>
                 </div>
                 <div className="d-flex justify-content-between">
-                    <div className="metric-target">Target: Below 15%</div>
+                  <div className="metric-target">Target: Below 15%</div>
                   <div className="metric-target">
-                  {stats.totalUploads > 0
-                    ? (
+                    {stats.totalUploads > 0
+                      ? (
                         (stats.underRevision / stats.totalUploads) *
                         100
                       ).toFixed(1)
-                    : 0}
-                  %
-                </div>
+                      : 0}
+                    %
+                  </div>
                 </div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill average"
                     style={{
-                      width: `${
-                        stats.totalUploads > 0
+                      width: `${stats.totalUploads > 0
                           ? (stats.underRevision / stats.totalUploads) * 100
                           : 0
-                      }%`,
+                        }%`,
                     }}
                   ></div>
                 </div>
@@ -477,17 +471,16 @@ const DashboardOverview = ({
                   </td>
                   <td>
                     <span
-                      className={`report-status-badge ${
-                        asset.status || "pending"
-                      }`}
+                      className={`report-status-badge ${asset.status || "pending"
+                        }`}
                     >
                       {asset.status === "approved"
                         ? "Approved"
                         : asset.status === "pending"
-                        ? "Pending"
-                        : asset.status === "rejected"
-                        ? "Rejected"
-                        : "Pending"}
+                          ? "Pending"
+                          : asset.status === "rejected"
+                            ? "Rejected"
+                            : "Pending"}
                     </span>
                   </td>
                   <td>
@@ -550,9 +543,8 @@ const DashboardOverview = ({
                   {getPageNumbers().map((page) => (
                     <button
                       key={page}
-                      className={`pagination-number ${
-                        page === currentPage ? "active" : ""
-                      }`}
+                      className={`pagination-number ${page === currentPage ? "active" : ""
+                        }`}
                       onClick={() => handlePageClick(page)}
                     >
                       {page}
@@ -658,29 +650,75 @@ const DashboardOverview = ({
         <div className="footer-content">
           <div className="footer-section">
             <h4>CONTRIBUTOR CONTENT</h4>
-            <p>Manage and track your content performance</p>
-          </div>
-          <div className="footer-section">
-            <h4>Quick Links</h4>
             <div className="footer-links">
               <a href="#upload" onClick={handleOpenUpload}>
-                Upload New File
+                Contributer Upload Guidelines
               </a>
-              <a href="#guidelines">Content Guidelines</a>
-              <a href="#support">Support</a>
+              <a href="#guidelines">Contributer Terms & Conditions</a>
+              <a href="#support">About Us</a>
+              <a href="#support">Blog</a>
             </div>
           </div>
           <div className="footer-section">
-            <h4>Stats Summary</h4>
-            <div className="footer-stats">
-              <span>Total Uploads: {stats.totalUploads}</span>
-              <span>Published: {stats.published}</span>
-              <span>Earnings: {formatCurrency(stats.totalEarnings)}</span>
+            <h4>AI TOOLS</h4>
+            <div className="footer-links">
+              <a href="#" >
+                AI Image Generator
+              </a>
+              <a href="#" >
+                AI Video Generator
+              </a>
+              <a href="#" >
+                All AI Tools
+              </a>
+            </div>
+          </div>
+          <div className="footer-section">
+            <h4>HELP</h4>
+            <div className="footer-links">
+              <a href="#" >
+                Support Center
+              </a>
+              <a href="#" >
+                Contect
+              </a>
             </div>
           </div>
         </div>
+       <div className="footer-social d-flex flex-column px-5 pb-3">
+       <div>
+          <ul className="rest social-icon d-flex align-items-center">
+          <span>Follow Us:</span>
+          <li className="hover-this cursor-pointer ml-10">
+            <a href="#" target="_blank" rel="noreferrer">
+              <div className="hover-anim circle-a">
+                <i className="fa-brands fa-youtube"></i>
+              </div>
+            </a>
+          </li>
+          <li className="hover-this cursor-pointer ml-10">
+            <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+              <div className="hover-anim circle-a">
+                <i className="fa-brands fa-pinterest"></i>
+              </div>
+            </a>
+          </li>
+          <li className="hover-this cursor-pointer ml-10">
+            <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+              <div className="hover-anim circle-a">
+                <i className="fab fa-instagram"></i>
+              </div>
+            </a>
+          </li>
+        </ul>
+       </div>
+        {/* <div class="pt-2">
+          <span>Made in Dubai</span>
+        </div> */}
+       </div>
+
         <div className="footer-bottom">
-          <p>&copy; 2024 Content Dashboard. All rights reserved.</p>
+          <p>Copyright &copy; 2026 Sham Marianas. All rights reserved.</p>
         </div>
       </div>
     </div>
