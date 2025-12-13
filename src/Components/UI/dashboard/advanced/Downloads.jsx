@@ -600,11 +600,7 @@ const Downloads = () => {
             <FiList className="panel-icon" />
             Asset Download Statistics
           </h3>
-          <div className="recent-reports-header">
-          <h3 className="panel-title">
-            <FiList className="panel-icon" />
-            Asset Download Statistics
-          </h3>
+          <div>
           <ExportButton
             data={filteredDownloads.length > 0 ? filteredDownloads : downloads}
             filename="downloads-analytics"

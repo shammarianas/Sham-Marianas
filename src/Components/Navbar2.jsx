@@ -9,6 +9,7 @@ import { doc, getDoc } from "firebase/firestore";
 
 const Navbar = () => {
   const { currentUser } = useUser() || "";
+   const [isContributor, setIsContributor] = useState(false);
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const cartCount = cart.length;
   const currentPage = useLocation().pathname;
@@ -29,6 +30,28 @@ const Navbar = () => {
   ].some((path) =>
     path === "/" ? currentPage === "/" : currentPage.startsWith(path)
   );
+
+ useEffect(() => {
+    const checkContributorStatus = async () => {
+      if (!currentUser?.uid) {
+        setIsContributor(false);
+        return;
+      }
+      
+      try {
+        const contributorRef = doc(db, "Contributors", currentUser.uid);
+        const contributorSnap = await getDoc(contributorRef);
+        setIsContributor(contributorSnap.exists()); // true if user is in Contributors collection
+      } catch (error) {
+        console.error("Error checking contributor status:", error);
+        setIsContributor(false);
+      }
+    };
+    
+    if (currentUser?.uid) {
+      checkContributorStatus();
+    }
+  }, [currentUser]); 
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -649,6 +672,10 @@ const Navbar = () => {
 
               <div className={currentUser?.uid ? "dropdown" : "hidden none"}>
                 <ul className="links">
+                  {/* Dashboard link ONLY for contributors */}
+               {isContributor && (
+        <li><Link to="/contributordashboard">Dashboard</Link></li>
+      )}
                   <li>
                     <Link to="/MyDownloads">My Downloads</Link>
                   </li>
