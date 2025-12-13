@@ -25,7 +25,7 @@ export const loginWithGithub = () => {
       ); // Use merge option to avoid overwriting existing fields
 
       alert("Login with GitHub successful!");
-      window.location.href = "/stock"; // Redirect to the home page after login
+      window.location.href = "/templates"; // Redirect to the home page after login
     })
     .catch((error) => {
       alert("Login with GitHub failed: " + error.message);

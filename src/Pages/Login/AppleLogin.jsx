@@ -34,7 +34,7 @@ export const loginWithApple = () => {
       );
 
       alert("Login with Apple successful!");
-      window.location.href = "/stock";
+      window.location.href = "/templates";
     })
     .catch((error) => {
       console.error("Apple Login Error:", error);

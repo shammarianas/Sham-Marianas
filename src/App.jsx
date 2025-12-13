@@ -32,7 +32,7 @@ import PortfolioDetails from "./Pages/project-details";
 import Support from "./Pages/Support";
 import AboutUs from "./Pages/AboutUs";
 import Services from "./Pages/services";
-import StockPage from "./Pages/Stock";
+import StockPage from "./Pages/templates";
 import MyDownloads from "./Pages/MyDownloads";
 import Favorites from "./Pages/Favorites";
 import Admin from "./Pages/Admin";
@@ -111,7 +111,7 @@ export const AppRoutes = () => (
     <Route path="/Support" element={<Support />} />
     <Route path="/about" element={<AboutUs />} />
     <Route path="/page-team" element={<PageTeam />} />
-    <Route path="/stock" element={<StockPage />} />
+    <Route path="/templates" element={<StockPage />} />
     <Route path="/services" element={<Services />} />
     <Route path="/success" element={<Success />} />
     <Route path="/services/branding" element={<BrandingDesignPage />} />

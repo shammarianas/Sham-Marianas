@@ -9,6 +9,7 @@ import { doc, getDoc } from "firebase/firestore";
 
 const Navbar = () => {
   const { currentUser } = useUser() || "";
+   const [isContributor, setIsContributor] = useState(false);
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const cartCount = cart.length;
   const currentPage = useLocation().pathname;
@@ -29,6 +30,28 @@ const Navbar = () => {
   ].some((path) =>
     path === "/" ? currentPage === "/" : currentPage.startsWith(path)
   );
+
+ useEffect(() => {
+    const checkContributorStatus = async () => {
+      if (!currentUser?.uid) {
+        setIsContributor(false);
+        return;
+      }
+      
+      try {
+        const contributorRef = doc(db, "Contributors", currentUser.uid);
+        const contributorSnap = await getDoc(contributorRef);
+        setIsContributor(contributorSnap.exists()); // true if user is in Contributors collection
+      } catch (error) {
+        console.error("Error checking contributor status:", error);
+        setIsContributor(false);
+      }
+    };
+    
+    if (currentUser?.uid) {
+      checkContributorStatus();
+    }
+  }, [currentUser]); 
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -230,7 +253,7 @@ const Navbar = () => {
             >
               <ul className="navbar-nav">
                 <li className="nav-item d-lg-none">
-                  <Link to="/stock" className="nav-link">
+                  <Link to="/templates" className="nav-link">
                     <span className="rolling-text">Template</span>
                   </Link>
                 </li>
@@ -314,7 +337,7 @@ const Navbar = () => {
             <div className="contact-button">
               {showTemplateButton ? (
                 <Link
-                  to="/stock"
+                  to="/templates"
                   className="butn butn-sm butn-bg main-colorbg radius-5"
                 >
                   <span className="text">Template</span>
@@ -331,8 +354,8 @@ const Navbar = () => {
           </div>
         </nav>
 
-        {/* Mobile Menu Toggle Button for Bottom Bar - Only on /stock */}
-        {currentPage === "/stock" && (
+        {/* Mobile Menu Toggle Button for Bottom Bar - Only on /templates */}
+        {currentPage === "/templates" && (
           <>
             {/* Mobile Hamburger Button - Only show on mobile */}
             <div className="mobile-menu-toggle d-lg-none" style={{
@@ -487,7 +510,7 @@ const Navbar = () => {
           </>
         )}
 
-        {currentPage === "/stock" && (
+        {currentPage === "/templates" && (
           <div className="bottom-bar d-none d-lg-flex">
             <div className="links">
               <ul style={{ whiteSpace: "nowrap", alignItems: "center" }}>
@@ -617,7 +640,7 @@ const Navbar = () => {
           "/contributordashboard",
         ].includes(currentPage) && (
           <>
-            <Link to="/stock">
+            <Link to="/templates">
               <div className="d-none d-md-block  ml-auto vi-more">
                 <span className="butn butn-sm butn-bord radius-30">
                   <span>Explore</span>
@@ -649,6 +672,10 @@ const Navbar = () => {
 
               <div className={currentUser?.uid ? "dropdown" : "hidden none"}>
                 <ul className="links">
+                  {/* Dashboard link ONLY for contributors */}
+               {isContributor && (
+        <li><Link to="/contributordashboard">Dashboard</Link></li>
+      )}
                   <li>
                     <Link to="/MyDownloads">My Downloads</Link>
                   </li>

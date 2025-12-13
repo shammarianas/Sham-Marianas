@@ -37,6 +37,8 @@ import {
   FiDollarSign,
   FiStar,
   FiClock,
+  FiMenu, // Hamburger icon
+  FiX, // Close icon
 } from "react-icons/fi";
 
 // Import Components
@@ -55,7 +57,6 @@ import Profile from "../../../../Pages/Profile"; // Adjust path as needed
 import Error from "../../../../Pages/Error";
 
 import "../../../../assets/Styles/contribute-style.css";
-
 
 const UnauthorizedAccess = ({ error }) => {
   return (
@@ -150,6 +151,7 @@ const SellerDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isSeller, setIsSeller] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // ✅ ADDED: Sidebar state
   const navigate = useNavigate();
 
   // ✅ ADDED: Notification states
@@ -157,15 +159,56 @@ const SellerDashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
+  const sidebarRef = useRef(null);
 
   // ✅ ADDED: Profile tab handler
   const handleProfileTab = () => {
     setActiveTab("profile");
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
   };
+
   // ✅ ADDED: Report track handler
   const handleReportTrack = () => {
     setActiveTab("report-track");
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
   };
+
+  // ✅ ADDED: Handle tab click
+  const handleTabClick = (tabName) => {
+    setActiveTab(tabName);
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
+  };
+
+  // ✅ ADDED: Toggle sidebar
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // ✅ ADDED: Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (window.innerWidth <= 768) {
+        if (
+          sidebarRef.current &&
+          !sidebarRef.current.contains(event.target) &&
+          sidebarOpen
+        ) {
+          setSidebarOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [sidebarOpen]);
 
   // ✅ ADDED: Close notifications when clicking outside
   useEffect(() => {
@@ -179,6 +222,21 @@ const SellerDashboard = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  // ✅ ADDED: Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Check seller status and fetch data
@@ -613,8 +671,28 @@ const SellerDashboard = () => {
 
   return (
     <div className="seller-dashboard">
+      {/* ✅ ADDED: Mobile Header with Hamburger Menu */}
+      <div className="mobile-header">
+        <button className="hamburger-menu" onClick={toggleSidebar}>
+          {sidebarOpen ? (
+            <FiX className="hamburger-icon" />
+          ) : (
+            <FiMenu className="hamburger-icon" />
+          )}
+        </button>
+       
+        {/* <div className="mobile-notification">
+          <button className="header-btn notification-btn" onClick={toggleNotifications}>
+            <FiBell className="btn-icon" />
+            {unreadCount > 0 && (
+              <span className="notification-badge">{unreadCount}</span>
+            )}
+          </button>
+        </div> */}
+      </div>
+
       {/* Sidebar */}
-      <div className="seller-sidebar">
+      <div className={`seller-sidebar ${sidebarOpen ? "open" : "closed"}`} ref={sidebarRef}>
         <div className="seller-sidebar-header">
           <div className="seller-brand">
             <FiShoppingBag className="brand-icon" />
@@ -631,7 +709,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "dashboard" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("dashboard")}
+                onClick={() => handleTabClick("dashboard")}
               >
                 <FiHome className="nav-c-icon" />
                 <span className="nav-c-label">Dashboard</span>
@@ -640,7 +718,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "upload" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("upload")}
+                onClick={() => handleTabClick("upload")}
               >
                 <FiUpload className="nav-c-icon" />
                 <span className="nav-c-label">Upload</span>
@@ -656,7 +734,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "under-revision" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("under-revision")}
+                onClick={() => handleTabClick("under-revision")}
               >
                 <FiClock className="nav-c-icon" />
                 <span className="nav-c-label">Under revision</span>
@@ -668,7 +746,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "rejections" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("rejections")}
+                onClick={() => handleTabClick("rejections")}
               >
                 <FiXCircle className="nav-c-icon" />
                 <span className="nav-c-label">Rejections</span>
@@ -680,7 +758,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "published" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("published")}
+                onClick={() => handleTabClick("published")}
               >
                 <FiCheckCircle className="nav-c-icon" />
                 <span className="nav-c-label">Published</span>
@@ -699,7 +777,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "stats" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("stats")}
+                onClick={() => handleTabClick("stats")}
               >
                 <FiTrendingUp className="nav-c-icon" />
                 <span className="nav-c-label">Stats</span>
@@ -715,7 +793,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "search-trends" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("search-trends")}
+                onClick={() => handleTabClick("search-trends")}
               >
                 <FiSearch className="nav-c-icon" />
                 <span className="nav-c-label">Search Trends</span>
@@ -724,7 +802,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "visual-trends" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("visual-trends")}
+                onClick={() => handleTabClick("visual-trends")}
               >
                 <FiPieChart className="nav-c-icon" />
                 <span className="nav-c-label">Visual Trends</span>
@@ -733,7 +811,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "guidelines" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("guidelines")}
+                onClick={() => handleTabClick("guidelines")}
               >
                 <FiList className="nav-c-icon" />
                 <span className="nav-c-label">Guidelines</span>
@@ -742,7 +820,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "contact" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("contact")}
+                onClick={() => handleTabClick("contact")}
               >
                 <FiMessageSquare className="nav-c-icon" />
                 <span className="nav-c-label">Contact</span>
@@ -751,7 +829,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "report-track" ? "active" : ""
                 }`}
-                onClick={handleReportTrack}
+                onClick={() => handleTabClick("report-track")}
               >
                 <FiFileText className="nav-c-icon" />
                 <span className="nav-c-label">Track Reports</span>
@@ -779,7 +857,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "billing" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("billing")}
+                onClick={() => handleTabClick("billing")}
               >
                 <FiDollarSign className="nav-c-icon" />
                 <span className="nav-c-label">Billing and invoices</span>
@@ -788,7 +866,7 @@ const SellerDashboard = () => {
                 className={`nav-c-item ${
                   activeTab === "feedback" ? "active" : ""
                 }`}
-                onClick={() => setActiveTab("feedback")}
+                onClick={() => handleTabClick("feedback")}
               >
                 <FiStar className="nav-c-icon" />
                 <span className="nav-c-label">Feedback</span>
@@ -798,8 +876,13 @@ const SellerDashboard = () => {
         </nav>
       </div>
 
+      {/* Overlay for mobile when sidebar is open */}
+      {sidebarOpen && window.innerWidth <= 768 && (
+        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+      )}
+
       {/* Main Content */}
-      <div className="seller-main-content">
+      <div className={`seller-main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
         <div className="seller-header">
           <div className="header-left">
             <h1 className="page-title">
@@ -841,9 +924,9 @@ const SellerDashboard = () => {
               )}
             </div>
             
-            <button className="header-btn">
+            {/* <button className="header-btn">
               <FiSettings className="btn-icon" />
-            </button>
+            </button> */}
           </div>
         </div>
 
