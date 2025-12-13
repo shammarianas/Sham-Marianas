@@ -128,7 +128,7 @@ const Checkout = () => {
     if (freeTrial) {
       await updateUserSubscription();
       localStorage.removeItem("pendingSubscription");
-      navigate("/stock", {
+      navigate("/templates", {
         state: { message: "Free trial started successfully!", type: "trial" },
       });
       setLoading(false);

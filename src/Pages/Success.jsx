@@ -19,7 +19,7 @@ const Success = () => {
     const verifyPayment = async () => {
       const sessionId = searchParams.get("session_id");
       if (!sessionId || !currentUser?.uid) {
-        navigate('/stock');
+        navigate('/templates');
         return;
       }
 
@@ -55,7 +55,7 @@ const Success = () => {
         <div className="cart_main error">
           <h1>Payment Verification Failed</h1>
           <p>There was an issue verifying your payment.</p>
-          <button onClick={() => navigate('/stock')} className="back_button">
+          <button onClick={() => navigate('/templates')} className="back_button">
             Return to Stock
           </button>
         </div>
@@ -86,10 +86,10 @@ const Success = () => {
           </ul>
         </div>
         <div className="action-buttons">
-          <button onClick={() => navigate('/stock')} className="view-library">
+          <button onClick={() => navigate('/templates')} className="view-library">
             Back to Stock
           </button>
-          <button onClick={() => navigate('/stock')} className="continue-shopping">
+          <button onClick={() => navigate('/templates')} className="continue-shopping">
             Continue Shopping
           </button>
         </div>
@@ -115,7 +115,7 @@ export default Success;
 //     const handleSuccess = async () => {
 //       const sessionId = searchParams.get("session_id");
 //       if (!sessionId) {
-//         navigate('/stock');
+//         navigate('/templates');
 //         return;
 //       }
 
@@ -126,13 +126,13 @@ export default Success;
 
 //         if (response.ok) {
 //           // Redirect to stock page
-//           navigate('/stock');
+//           navigate('/templates');
 //         } else {
 //           throw new Error(data.error || "Payment verification failed");
 //         }
 //       } catch (error) {
 //         console.error("Error:", error);
-//         navigate('/stock');
+//         navigate('/templates');
 //       }
 //     };
 

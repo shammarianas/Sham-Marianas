@@ -46,8 +46,8 @@ export default async function handler(req, res) {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${baseUrl}/#/stock?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/#/stock`,
+      success_url: `${baseUrl}/#/templates?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/#/templates`,
       metadata: { 
         userId: userId || 'guest',
         items: JSON.stringify(items.map(item => item.id)),
