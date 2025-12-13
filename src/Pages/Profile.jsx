@@ -800,7 +800,7 @@ const Profile = () => {
       await deleteUser(user);
 
       alert("Your account has been permanently deleted.");
-      navigate("/stock", { replace: true });
+      navigate("/templates", { replace: true });
     } catch (err) {
       if (err.code === "auth/wrong-password") {
         alert("The password you entered is incorrect.");
@@ -845,7 +845,7 @@ const Profile = () => {
       await auth.signOut();
 
       // Navigate to Stack page (replace '/stack' with your actual Stack page route)
-      navigate("/stock", { replace: true });
+      navigate("/templates", { replace: true });
     } catch (err) {
       alert("Failed to deactivate: " + err.message);
     }

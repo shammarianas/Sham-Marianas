@@ -6,9 +6,9 @@ function Footer() {
   const location = useLocation();
   const path = location.pathname.toLowerCase();
 
-  // Check if the current page is /stock or a category template page
+  // Check if the current page is /templates or a category template page
   const isTemplatePage =
-    path === "/stock" ||
+    path === "/templates" ||
     path === "/contributorlogin" ||
     path === "/login" ||
     path == "/support" ||
@@ -17,6 +17,7 @@ function Footer() {
     path === "/MyDownloads" ||
     path === "/privacy-policy-template" ||
     path === "/terms-of-template" ||
+    path === "/seller-guidelines" ||
     // path.includes("/category") ||
     path.startsWith("/fonts") ||
     path.startsWith("/video-templates") ||
@@ -143,7 +144,7 @@ function Footer() {
                       <li className="mb-15"><a href="/">Home</a></li>
                       <li className="mb-15"><a href="/services">Services</a></li>
                       <li className="mb-15"><a href="/portfolio">Portfolio</a></li>
-                      <li className="mb-15"><Link to="/stock">Templates</Link></li>
+                      <li className="mb-15"><Link to="/templates">Templates</Link></li>
                       <li className="mb-15"><a href="/about">About</a></li>
                       <li className="mb-15"><a href="/blog">Blog</a></li>
                       <li><a href="/contact">Contact us</a></li>

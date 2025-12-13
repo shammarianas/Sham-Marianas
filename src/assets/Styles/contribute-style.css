@@ -544,11 +544,12 @@
         /* Table Controls */
         .table-controls {
           display: flex;
+          flex-direction: column;
           justify-content: space-between;
+          gap: 5px;
           align-items: center;
-          padding: 16px 24px;
           background: var(--bg-secondary);
-          border-bottom: 1px solid var(--border-color);
+          /* border-bottom: 1px solid var(--border-color); */
         }
 
         .table-info {
@@ -876,6 +877,9 @@
 
         /* Empty States */
         .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
           text-align: center;
           padding: 40px 20px;
           grid-column: 1 / -1;
@@ -1360,4 +1364,168 @@
   .status-timeline:before {
     display: none;
   }
+}
+
+
+/* ✅ Responsive Styles for Seller Dashboard */
+@media (max-width: 768px) {
+  .seller-dashboard {
+    position: relative;
+    min-height: 100vh;
+  }
+
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: 60px;
+  }
+
+  .hamburger-menu {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+    flex: 1;
+    text-align: center;
+  }
+
+  .mobile-notification {
+    display: flex;
+    align-items: center;
+  }
+
+
+  .seller-sidebar.open {
+    left: 0;
+  }
+
+  .seller-sidebar.closed {
+    left: -280px;
+  }
+
+  .sidebar-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+    z-index: 1200;
+  }
+
+  /* Overlay */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+
+  /* Main Content */
+  .seller-main-content {
+    margin-left: 0;
+    padding-top: 20px;
+    width: 100%;
+    transition: margin-left 0.3s ease-in-out;
+  }
+
+  .seller-main-content.sidebar-open {
+    margin-left: 0;
+  }
+
+  /* Hide desktop header on mobile */
+  .seller-header {
+    display: none;
+  }
+
+  /* Adjust content for mobile */
+  .seller-content {
+    padding: 1rem;
+  }
+}
+
+/* ✅ Desktop Styles */
+@media (min-width: 769px) {
+  .mobile-header {
+    display: none;
+  }
+
+  .seller-sidebar {
+    position: fixed;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 100;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .seller-main-content {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease-in-out;
+  }
+
+  .sidebar-close-btn {
+    display: none;
+  }
+
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
+/* ✅ Sidebar base styles */
+.seller-sidebar {
+  position: fixed;
+  /* top: 0; */
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  z-index: 100;
+  transition: transform 0.3s ease-in-out;
+  overflow-y: auto;
+}
+
+/* ✅ Notification button */
+.notification-btn {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4757;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
