@@ -7,7 +7,7 @@ const PrivacyPolicyTemplate = () => {
         <h1 className="text-4xl fw-600 mb-6 text-center">Privacy Policy</h1>
 
         <h3 className="mt-5 fz-30 fw-600 mb-4">
-          <strong>Welcome to <span className="text-bold underline main-color">Sham Marianas</span>'s Privacy Policy</strong>
+          <strong>Welcome to <span className="text-600 underline main-color">Sham Marianas</span>'s Privacy Policy</strong>
         </h3>
 
         <p className="fotter-police-p p-color mb-4">

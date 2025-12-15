@@ -35,6 +35,7 @@ import Analytics from "./advanced/Analytics";
 import AssetManagement from "./advanced/AssetManagement";
 import BlogSection from "./company/BlogSection";
 import PortfolioList from "./company/PortfolioList";
+import Cursor from "../../../common/cusor";
 
 // Import modals
 import BlogEditorModal from "../../../Pages/BlogEditor";
@@ -941,6 +942,8 @@ const AdminDashboard = () => {
   }
 
   return (
+   <>
+    <Cursor />
     <div className="admin-dashboard">
       {/* Mobile Header with Hamburger Menu */}
 <div className="mobile-header">
@@ -1429,6 +1432,7 @@ const AdminDashboard = () => {
         )}
       </div>
     </div>
+   </>
   );
 };
 
