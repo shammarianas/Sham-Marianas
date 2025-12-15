@@ -63,6 +63,7 @@ import ContributorLogin from "./Pages/Login/ContributorLogin";
 import ContributorDashboard from "./Components/UI/dashboard/Contributor/ContributorDashboard";
 import PrivacyPolicyTemplate from "./Pages/Get Started/privacyTemplate";
 import TermsandConditionTemplate from "./Pages/Get Started/termsOfTemplate";
+import  SellerGuideline from "./Pages/Get Started/SellerGuidelines";
 // STRIPE IMPORTS - ADDED
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
@@ -133,6 +134,7 @@ export const AppRoutes = () => (
     <Route path="/privacy-policy-template" element={<PrivacyPolicyTemplate />} />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     <Route path="/terms-of-template" element={<TermsandConditionTemplate />} />
+    <Route path="/seller-guideline" element={<SellerGuideline />} />
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
