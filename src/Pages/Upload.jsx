@@ -85,7 +85,7 @@ const filterData = {
       label: "Properties",
       options: ["Alpha Channel", "Looped"],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -121,7 +121,7 @@ const filterData = {
       label: "Resolution",
       options: ["720 (HD)", "1080 (Full HD)", "2K", "4K (UHD)"],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -196,7 +196,7 @@ const filterData = {
       label: "Properties",
       options: ["Vector", "Layered"],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -236,7 +236,7 @@ const filterData = {
       label: "Properties",
       options: ["Any Type"],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -306,7 +306,7 @@ const filterData = {
         "Props / Miscellaneous",
       ],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -324,7 +324,7 @@ const filterData = {
         "Stickers",
       ],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -386,7 +386,7 @@ const filterData = {
         "Asphalt / Road",
       ],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -452,7 +452,7 @@ const filterData = {
         "HDRI Domes / Sci-fi Rooms",
       ],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -510,7 +510,7 @@ const filterData = {
         "TensorFlow.js / ML5.js (AI)",
       ],
     },
-     licenseType: {
+    licenseType: {
       label: "License Type",
       options: [
         "Free for Personal Use",
@@ -585,12 +585,12 @@ const Upload = ({
   editMode = false,
   assetToEdit = null,
   isUpdating = false,
-  setIsUpdating = () => {},
+  setIsUpdating = () => { },
 }) => {
   const { currentUser } = useUser();
   const { converting, generateAllSizes, uploadAllSizes } =
     useImageSizeConverter();
-  
+
   // State definitions
   const [userRole, setUserRole] = useState("contributor");
   const [formData, setFormData] = useState({
@@ -737,7 +737,7 @@ const Upload = ({
         const profileData = profileDoc.data();
         if (profileData.role === "admin") return "admin";
       }
-      
+
       return "contributor";
     } catch (error) {
       console.error("Error fetching user role:", error);
@@ -761,19 +761,19 @@ const Upload = ({
   useEffect(() => {
     const fetchUserData = async () => {
       if (!currentUser?.uid) return;
-      
+
       try {
         // Fetch user role
         const role = await fetchUserRole();
         setUserRole(role);
-        
+
         // Fetch specialization only for contributors
         if (role !== "admin") {
           const docSnap = await getDoc(doc(db, "Contributors", currentUser.uid));
           if (docSnap.exists()) {
             const spec = docSnap.data().specialization;
             setSpecialization(spec);
-            
+
             // Auto-select first allowed type for new uploads
             if (!editMode) {
               const allowedTypes = specializationToAssetTypes[spec] || [];
@@ -784,7 +784,7 @@ const Upload = ({
                 }));
               }
             }
-            
+
             // For edit mode, validate if current asset type is allowed
             if (editMode && assetToEdit && !allowedTypes.includes(assetToEdit.type)) {
               alert(`This asset type is not allowed for your specialization. You can only edit ${spec} assets.`);
@@ -796,7 +796,7 @@ const Upload = ({
         console.error("Error fetching user data:", error);
       }
     };
-    
+
     fetchUserData();
   }, [currentUser?.uid, editMode, assetToEdit]);
 
@@ -1374,7 +1374,7 @@ const Upload = ({
       } else {
         assetStatus = "pending";
       }
-      
+
       let docData = {
         title: formData.title,
         slug: formData.slug || generateSlug(formData.title),
@@ -1549,7 +1549,7 @@ const Upload = ({
       } else if (editMode && assetToEdit.model && !formData.model) {
         docData.model = assetToEdit.model;
       }
-      
+
       if (formData.type === "scripts" && formData.script) {
         docData.script = await uploadFile(formData.script, "scripts");
       } else if (editMode && assetToEdit.script && !formData.script) {
@@ -1818,8 +1818,8 @@ const Upload = ({
       ? "Updating..."
       : "Update Asset"
     : isSubmitting
-    ? "Uploading..."
-    : "Upload Asset";
+      ? "Uploading..."
+      : "Upload Asset";
 
   if (!currentUser) {
     return (
@@ -1858,9 +1858,8 @@ const Upload = ({
         </title>
         <meta
           name="description"
-          content={`${
-            editMode ? "Edit" : "Upload"
-          } your assets to Shammarianas`}
+          content={`${editMode ? "Edit" : "Upload"
+            } your assets to Shammarianas`}
         />
       </Helmet>
 
@@ -2261,12 +2260,19 @@ const Upload = ({
                 <input
                   type="text"
                   name="title"
+                  maxLength={100}
                   value={formData.title}
                   onChange={handleChange}
                   required
                   className="blog-form-input"
                   placeholder="Enter asset title..."
                 />
+                <div className="blog-form-hint">
+                  <span className={formData.title.length > 100 ? "char-over" : ""}>
+                    {formData.title.length}
+                  </span>
+                  /100 characters
+                </div>
               </div>
 
               <div className="blog-form-group">
@@ -2373,6 +2379,7 @@ const Upload = ({
                 </label>
                 <textarea
                   name="description"
+                  maxLength={500}
                   value={formData.description}
                   onChange={handleChange}
                   required
@@ -2380,6 +2387,12 @@ const Upload = ({
                   placeholder="Describe your asset..."
                   rows="4"
                 />
+                <div className="blog-form-hint">
+                  <span className={formData.description.length > 500 ? "char-over" : ""}>
+                    {formData.description.length}
+                  </span>
+                  /500 characters
+                </div>
               </div>
 
               <div className="blog-form-group">
@@ -2397,7 +2410,7 @@ const Upload = ({
                   <option value="" disabled>
                     Select Asset Type
                   </option>
-                  
+
                   {/* Condition: Admin - show all types */}
                   {userRole === "admin" ? (
                     <>
@@ -2431,14 +2444,14 @@ const Upload = ({
                         "icons": "Icons",
                         "hdris": "HDRIs",
                       };
-                      
+
                       if (allowedTypes.length === 0) {
                         return <option value="" disabled>No asset types available for your specialization</option>;
                       }
-                      
+
                       // Check if current type is allowed, otherwise show disabled
                       const isCurrentTypeAllowed = allowedTypes.includes(formData.type);
-                      
+
                       return (
                         <>
                           {!isCurrentTypeAllowed && formData.type && (
@@ -2446,7 +2459,7 @@ const Upload = ({
                               {formData.type} (Not allowed for your specialization)
                             </option>
                           )}
-                          
+
                           {allowedTypes.map(type => (
                             <option key={type} value={type}>
                               {typeLabels[type] || type}
@@ -2922,12 +2935,12 @@ const Upload = ({
                   {converting
                     ? "Converting Images..."
                     : editMode
-                    ? isUpdating
-                      ? "Updating..."
-                      : "Update Asset"
-                    : isSubmitting
-                    ? "Uploading..."
-                    : "Upload Asset"}
+                      ? isUpdating
+                        ? "Updating..."
+                        : "Update Asset"
+                      : isSubmitting
+                        ? "Uploading..."
+                        : "Upload Asset"}
                 </button>
               </div>
             </form>

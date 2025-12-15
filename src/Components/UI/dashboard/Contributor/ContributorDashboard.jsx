@@ -52,9 +52,12 @@ import SearchTrends from "../Contributor-tabs/SearchTrends";
 import Support from "../../../../Pages/Support";
 import ReportTrack from "../Contributor-tabs/ReportTrack";
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
+import SellerGuideline from "../../../../Pages/Get Started/SellerGuidelines"; 
 // ✅ ADDED: Import Profile component
 import Profile from "../../../../Pages/Profile"; // Adjust path as needed
 import Error from "../../../../Pages/Error";
+import Cursor from "../../../../common/cusor";
+
 
 import "../../../../assets/Styles/contribute-style.css";
 
@@ -172,6 +175,13 @@ const SellerDashboard = () => {
   // ✅ ADDED: Report track handler
   const handleReportTrack = () => {
     setActiveTab("report-track");
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleSellerGuidelines = () => {
+    setActiveTab("guidelines");
     if (window.innerWidth <= 768) {
       setSidebarOpen(false);
     }
@@ -646,7 +656,7 @@ const SellerDashboard = () => {
         return <VisualTrends {...commonProps} />;
 
       case "guidelines":
-        return <Guidelines {...commonProps} />;
+        return <SellerGuideline {...commonProps} />;
 
       case "contact":
         return <Support {...commonProps} />;
@@ -670,6 +680,8 @@ const SellerDashboard = () => {
   };
 
   return (
+   <>
+    <Cursor />
     <div className="seller-dashboard">
       {/* ✅ ADDED: Mobile Header with Hamburger Menu */}
       <div className="mobile-header">
@@ -862,7 +874,7 @@ const SellerDashboard = () => {
                 <FiDollarSign className="nav-c-icon" />
                 <span className="nav-c-label">Billing and invoices</span>
               </li>
-              <li
+              {/* <li
                 className={`nav-c-item ${
                   activeTab === "feedback" ? "active" : ""
                 }`}
@@ -870,7 +882,7 @@ const SellerDashboard = () => {
               >
                 <FiStar className="nav-c-icon" />
                 <span className="nav-c-label">Feedback</span>
-              </li>
+              </li> */}
             </ul>
           </div>
         </nav>
@@ -948,6 +960,7 @@ const SellerDashboard = () => {
         </div>
       </div>
     </div>
+   </>
   );
 };
 
