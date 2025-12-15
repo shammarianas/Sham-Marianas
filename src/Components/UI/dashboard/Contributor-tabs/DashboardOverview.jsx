@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   FiUpload,
   FiClock,
-  FiXCircle,
   FiCheckCircle,
   FiDollarSign,
   FiTrendingUp,
@@ -11,8 +10,6 @@ import {
   FiDownload,
   FiStar,
   FiFileText,
-  FiUsers,
-  FiAlertCircle,
   FiTrendingDown,
   FiPieChart,
   FiList,
@@ -22,7 +19,7 @@ import {
   FiChevronLeft,
 } from "react-icons/fi";
 import Upload from "../../../../Pages/Upload";
-
+import Cursor from "../../../../common/cusor";
 
 const DashboardOverview = ({
   userData,
@@ -47,6 +44,11 @@ const DashboardOverview = ({
   const handleStats = () => {
     // Ya toh tab change karein
     setActiveTab("stats");
+  };
+
+  const handleGuidelines = () => {
+    // ✅ FIXED: Use "guidelines" instead of "seller-guideline"
+    setActiveTab("guidelines");
   };
 
   // Calculate additional stats
@@ -133,6 +135,8 @@ const DashboardOverview = ({
   };
 
   return (
+    <>
+     <Cursor />
     <div className="user-reports-dashboard">
       {/* Upload Modal */}
       {showUploadDialog && (
@@ -344,8 +348,8 @@ const DashboardOverview = ({
                     className="category-progress-fill poor"
                     style={{
                       width: `${stats.totalUploads > 0
-                          ? (stats.rejections / stats.totalUploads) * 100
-                          : 0
+                        ? (stats.rejections / stats.totalUploads) * 100
+                        : 0
                         }%`,
                     }}
                   ></div>
@@ -374,8 +378,8 @@ const DashboardOverview = ({
                     className="category-progress-fill average"
                     style={{
                       width: `${stats.totalUploads > 0
-                          ? (stats.underRevision / stats.totalUploads) * 100
-                          : 0
+                        ? (stats.underRevision / stats.totalUploads) * 100
+                        : 0
                         }%`,
                     }}
                   ></div>
@@ -413,7 +417,7 @@ const DashboardOverview = ({
 
               <button
                 className="action-button secondary"
-                onClick={() => console.log("Guidelines")}
+                onClick={handleGuidelines}
               >
                 <FiStar className="button-icon" />
                 Guidelines
@@ -646,7 +650,7 @@ const DashboardOverview = ({
       </div> */}
 
       {/* Footer */}
-      <div className="dashboard-footer">
+      {/* <div className="dashboard-footer">
         <div className="footer-content">
           <div className="footer-section">
             <h4>CONTRIBUTOR CONTENT</h4>
@@ -676,52 +680,167 @@ const DashboardOverview = ({
           <div className="footer-section">
             <h4>HELP</h4>
             <div className="footer-links">
-              <a href="#" >
+              <Link to="/support" className="footer-link">
                 Support Center
-              </a>
-              <a href="#" >
-                Contect
-              </a>
+              </Link>
+              <Link to="/contact" className="footer-link">
+                Contact
+              </Link>
             </div>
           </div>
         </div>
-       <div className="footer-social d-flex flex-column px-5 pb-3">
-       <div>
-          <ul className="rest social-icon d-flex align-items-center">
-          <span>Follow Us:</span>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="#" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fa-brands fa-youtube"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fa-brands fa-pinterest"></i>
-              </div>
-            </a>
-          </li>
-          <li className="hover-this cursor-pointer ml-10">
-            <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
-              <div className="hover-anim circle-a">
-                <i className="fab fa-instagram"></i>
-              </div>
-            </a>
-          </li>
-        </ul>
-       </div>
-        {/* <div class="pt-2">
-          <span>Made in Dubai</span>
-        </div> */}
-       </div>
+        <div className="footer-social d-flex flex-column px-5 pb-3">
+          <div>
+            <ul className="rest social-icon d-flex align-items-center">
+              <span>Follow Us:</span>
+              <li className="hover-this cursor-pointer ml-10">
+                <a href="#" target="_blank" rel="noreferrer">
+                  <div className="hover-anim circle-a">
+                    <i className="fa-brands fa-youtube"></i>
+                  </div>
+                </a>
+              </li>
+              <li className="hover-this cursor-pointer ml-10">
+                <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                  <div className="hover-anim circle-a">
+                    <i className="fa-brands fa-pinterest"></i>
+                  </div>
+                </a>
+              </li>
+              <li className="hover-this cursor-pointer ml-10">
+                <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                  <div className="hover-anim circle-a">
+                    <i className="fab fa-instagram"></i>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
 
         <div className="footer-bottom">
           <p>Copyright &copy; 2026 Sham Marianas. All rights reserved.</p>
         </div>
-      </div>
+      </div> */}
+
+      <footer className="clean-footer crev">
+        <div className="container mt-100 pb-40 pt-40 ontop">
+          <div className="row justify-content-between">
+            {/* <div className="col-lg-2">
+              <div className="logo icon-img-100 md-mb80">
+                <img src="/assets/imgs/logo.png" alt="" />
+              </div>
+            </div> */}
+
+            <div className="col-lg-3 md-mb50">
+              <h6 className="sub-title mb-30">Contributer Content</h6>
+              <ul className="rest fz-14 opacity-7">
+                <li className="mb-15">
+                  <Link to="/seller-guideline">Contributer Upload Guidelines</Link>
+                </li>
+                <li className="mb-15">
+                  <a href="/seller-guideline">Contributer Terms & Conditions</a>
+                </li>
+                <li className="mb-15">
+                  <a href="/subscription">Pricing & Fees</a>
+                </li>
+              </ul>
+            </div>
+
+            <div className="col-lg-2 md-mb50">
+              <h6 className="sub-title mb-30">Help</h6>
+              <ul className="rest fz-14 opacity-7">
+                <li className="mb-15">
+                  <Link to="/support">Support Center</Link>
+                </li>
+                <li className="mb-15">
+                  <a href="/contect">Contact</a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Newsletter & Social */}
+            <div className="col-lg-4 p-0">
+              <div className="column subscribe-minimal">
+                <ul className="rest social-icon d-flex align-items-center">
+
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="#" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fa-brands fa-youtube"></i>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fa-brands fa-pinterest"></i>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fab fa-behance"></i>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fa-brands fa-dribbble"></i>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fab fa-instagram"></i>
+                      </div>
+                    </a>
+                  </li>
+
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-30 pb-30 mt-80 bord-thin-top">
+            <div className="text-center">
+              <p className="fz-14">
+                © 2025 All Rights Reserved By{" "}
+                <span className="underline main-color">
+                  <a href="/" target="_blank" rel="noreferrer">
+                    Sham Marianas
+                  </a>
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="circle-blur">
+          <img src="\assets\imgs\patterns\blur1.png" alt="" />
+        </div>
+      </footer>
+
     </div>
+
+<style>
+  {`
+  footer.clean-footer.crev:after{
+      top: 0;
+    left: 0px;
+    bottom: 40px;
+    right: 0px;
+  }
+    footer.clean-footer.crev .circle-blur {
+    z-index: 0;
+  }
+  `}
+</style>
+
+    </>
   );
 };
 

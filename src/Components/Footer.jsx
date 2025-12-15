@@ -17,7 +17,7 @@ function Footer() {
     path === "/MyDownloads" ||
     path === "/privacy-policy-template" ||
     path === "/terms-of-template" ||
-    path === "/seller-guidelines" ||
+    path === "/seller-guideline" ||
     // path.includes("/category") ||
     path.startsWith("/fonts") ||
     path.startsWith("/video-templates") ||
@@ -127,7 +127,7 @@ function Footer() {
                         <Link to="/ContributorLogin">Sell on Marketplace</Link>
                       </li>
                       <li className="mb-15">
-                        <a href="/seller-guidelines">Seller Guidelines</a>
+                        <a href="/seller-guideline">Seller Guidelines</a>
                       </li>
                       <li className="mb-15">
                         <a href="/subscription">Pricing & Fees</a>
