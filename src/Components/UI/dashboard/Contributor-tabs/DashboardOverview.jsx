@@ -739,10 +739,10 @@ const DashboardOverview = ({
                   <Link to="/seller-guideline">Contributer Upload Guidelines</Link>
                 </li>
                 <li className="mb-15">
-                  <a href="/seller-guideline">Contributer Terms & Conditions</a>
+                  <Link to="/contributor-policies">Contributer Terms & Conditions</Link>
                 </li>
                 <li className="mb-15">
-                  <a href="/subscription">Pricing & Fees</a>
+                  <Link to="/pricing-and-fees">Pricing & Fees</Link>
                 </li>
               </ul>
             </div>
@@ -829,13 +829,16 @@ const DashboardOverview = ({
 <style>
   {`
   footer.clean-footer.crev:after{
-      top: 0;
+    top: 0;
     left: 0px;
     bottom: 40px;
     right: 0px;
   }
-    footer.clean-footer.crev .circle-blur {
+  footer.clean-footer.crev .circle-blur {
     z-index: 0;
+  }
+  .row{
+    margin: 0.75rem !important;
   }
   `}
 </style>
