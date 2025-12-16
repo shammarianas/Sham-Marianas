@@ -149,7 +149,7 @@ const BillingInvoices = () => {
                       accept=".jpg,.jpeg,.png,.pdf"
                       onChange={(e) => handleDocumentUpload('idCard', e.target.files[0])}
                     />
-                    <button className="butn butn-bord mt-20">
+                    <button className="butn-contribute butn butn-bord mt-20">
                       <span>Choose File</span>
                     </button>
                     {documents.idCard && (
@@ -172,7 +172,7 @@ const BillingInvoices = () => {
                       accept=".jpg,.jpeg,.png,.pdf"
                       onChange={(e) => handleDocumentUpload('proofOfAddress', e.target.files[0])}
                     />
-                    <button className="butn butn-bord mt-20">
+                    <button className="butn-contribute butn butn-bord mt-20">
                       <span>Choose File</span>
                     </button>
                     {documents.proofOfAddress && (
@@ -403,17 +403,17 @@ const BillingInvoices = () => {
         {/* Navigation Buttons */}
         <div className="step-navigation mt-60">
           <div className="row">
-            <div className="col-md-6">
+            <div className="col-md-8">
               {currentStep > 1 && (
-                <button className="butn butn-bord" onClick={prevStep}>
+                <button className="butn-contribute butn butn-bord" onClick={prevStep}>
                   <span>Previous</span>
                 </button>
               )}
             </div>
-            <div className="col-md-6 text-end">
+            <div className="col-md-4 text-end">
               {currentStep < steps.length ? (
                 <button 
-                  className="butn butn-bg" 
+                  className="butn-contribute butn butn-bg" 
                   onClick={nextStep}
                   disabled={
                     (currentStep === 1 && !agreementAccepted) ||
@@ -423,7 +423,7 @@ const BillingInvoices = () => {
                   <span>Next Step</span>
                 </button>
               ) : (
-                <button className="butn butn-bg" onClick={submitApplication}>
+                <button className="butn-contribute butn butn-bg" onClick={submitApplication}>
                   <span>Submit Application</span>
                 </button>
               )}
