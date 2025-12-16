@@ -305,13 +305,13 @@ const MyDownloads = () => {
                       <div className="asset-preview">
                         {is3D ? (
                           <div className="model-preview">
-                            <Link to={`/View/${asset.id}`}>
+                         <Link to={`/View/${asset.slug || asset.id}`}>
                               <SimpleModelViewer modelUrl={modelUrl} />
                             </Link>
                           </div>
                         ) : (
                           <div className="image-preview">
-                            <Link to={`/View/${asset.id}`}>
+                            <Link to={`/View/${asset.slug || asset.id}`}>
                               {(() => {
                                 const src = asset.thumbnail;
                                 if (!src) return <div className="no-preview">No Preview</div>;
@@ -358,7 +358,7 @@ const MyDownloads = () => {
                       </div>
 
                       <div className="asset-details">
-                        <div className="creator-info">
+                        <div className="creator-info col-md-4">
                           <div>
                             <div className="asset-info">
                               <Link to={`/View/${asset.id}`} className="asset-title-link">
@@ -388,7 +388,7 @@ const MyDownloads = () => {
                           </div>
                         </div>
 
-                        <div className="price-section">
+                        <div className="price-section col-md-3">
                           <span className="price">
                             {(() => {
                               const price = Number(asset.price) || 0;
@@ -407,7 +407,7 @@ const MyDownloads = () => {
                           </span>
                         </div>
 
-                        <div className="download-actions">
+                        <div className="download-actions ">
                           <button
                             className="download-license license-badge"
                             onClick={() => handleDownloadLicense(asset)}

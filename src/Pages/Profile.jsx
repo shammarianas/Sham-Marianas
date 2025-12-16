@@ -1155,13 +1155,13 @@ const Profile = () => {
               {activeTab === "profile" && (
                 <div className="tab-content">
                   <div className="account-details-card">
-                    <div className="info-banner">
+                    {/* <div className="info-banner">
                       <span className="icon">i</span>
                       <span>
                         Some fields are not editable here. Please update them
                         via your Google account.
                       </span>
-                    </div>
+                    </div> */}
                     <div className="form-grid">
                       <div className="form-field">
                         <label>First name</label>

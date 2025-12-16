@@ -947,16 +947,6 @@
 }
 
 
-
-
-
-
-
-
-
-
-
-
 .billing-invoices-container {
   padding: 120px 0;
   background: #0f0f0f;
@@ -976,6 +966,7 @@
   position: relative;
   max-width: 800px;
   margin: 0 auto;
+  gap: 30px;
 }
 
 .step-item {
@@ -1003,7 +994,7 @@
 .step-item.active .step-number {
   background: #52b0b4;
   border-color: #52b0b4;
-  color: #0f0f0f;
+  color: #ffffff;
 }
 
 .step-title {
@@ -1021,8 +1012,8 @@
 .step-connector {
   position: absolute;
   top: 25px;
-  left: 60px;
-  right: -60px;
+  left: 52px;
+  right: -74px;
   height: 2px;
   background: rgba(255, 255, 255, 0.1);
   z-index: -1;
@@ -1104,6 +1095,8 @@
 .checkbox-container input:checked~.checkmark:after {
   display: block;
 }
+
+
 
 /* Documents Upload */
 .documents-grid {
@@ -1326,12 +1319,32 @@
 .step-navigation .butn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background-color: #52b0b4;
+  color: #f0f0f0;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .step-navigation .butn:disabled:hover {
   background: transparent;
   border-color: #fff;
   color: #fff;
+}
+.butn-contribute{
+  padding: 1rem 2rem;
+  width: 100%;
+  background-color: #52b0b4;
+  color: #f5f5f5;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  margin-top: 0.5rem;
 }
 
 /* Responsive Design */

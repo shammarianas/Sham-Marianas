@@ -18,7 +18,9 @@ function Footer() {
     path === "/privacy-policy-template" ||
     path === "/terms-of-template" ||
     path === "/seller-guideline" ||
-    // path.includes("/category") ||
+    path === "/contributor-policies" ||
+    path === "/pricing-and-fees" ||
+    path.startsWith("/error") ||
     path.startsWith("/fonts") ||
     path.startsWith("/video-templates") ||
     path.startsWith("/icons") ||
