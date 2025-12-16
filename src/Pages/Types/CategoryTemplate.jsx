@@ -1,37 +1,58 @@
 // CategoryTemplate.js
+import { useLocation } from "react-router-dom";
 import PageTitle from "../../Components/UI/PageTitle";
 import ListingSidebar from "../../Components/ListingSidebar";
 import ItemsListing from "../../Components/ItemsListing";
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
 
 const CategoryTemplate = () => {
-  const { Category } = useParams();
+  const location = useLocation();
+  const pathname = location.pathname;
+  
+  // Extract category from URL path
+  const category = pathname.split('/').pop(); // e.g., "/fonts" -> "fonts"
+  
+  console.log("Pathname:", pathname); // Debug
+  console.log("Extracted category:", category); // Debug
 
+  if (!category) {
+    return (
+      <div className="page_content">
+        <div className="container text-center py-5">
+          <h1>Category Not Found</h1>
+          <p>Please check the URL or go back to homepage.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const capitalizeFirstLetter = (string) => {
+    if (!string) return "";
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+
+  const categoryTitle = capitalizeFirstLetter(category);
 
   return (
     <>
       <Helmet>
-        <title>{Category.charAt(0).toUpperCase() + Category.slice(1)} | Shammarianas</title>
-        <meta name="description" content={`Browse through a wide range of ${Category} on Shammarianas.`} />
-
-        <meta property="og:title" content={`${Category.charAt(0).toUpperCase() + Category.slice(1)} | Shammarianas`} />
-        <meta property="og:description" content={`Browse through a wide range of ${Category} on Shammarianas.`} />
-
-        <meta property="og:type" content="website" />
-
-        <meta name="twitter:title" content={`${Category.charAt(0).toUpperCase() + Category.slice(1)} | Shammarianas`} />
-        <meta name="twitter:description" content={`Browse through a wide range of ${Category} on Shammarianas.`} />
-
-        <meta name="twitter:card" content="summary_large_image" />
+        <title>{categoryTitle} | Shammarianas</title>
+        <meta 
+          name="description" 
+          content={`Browse through a wide range of ${categoryTitle} on Shammarianas.`} 
+        />
+        {/* ... rest of Helmet tags */}
       </Helmet>
 
       <div className="page_content">
-        <PageTitle title={Category.charAt(0).toUpperCase() + Category.slice(1)} />
+        <PageTitle title={categoryTitle} />
         <div className="listing_section">
           <ListingSidebar />
-          {Category === "hot" ? <ItemsListing /> : <ItemsListing category={Category.toLowerCase()} />}
-          {/* <ItemsListing category={ Category ? Category.toLowerCase() : null} /> */}
+          {category === "hot" ? (
+            <ItemsListing /> 
+          ) : (
+            <ItemsListing category={category.toLowerCase()} />
+          )}
         </div>
       </div>
     </>

@@ -154,10 +154,22 @@ export const AppRoutes = () => (
     <Route path="/Profile/:username" element={<Profile />} />
     
     {/* Generic dynamic route for Category - should be LAST */}
-    <Route path="/:Category" element={<CategoryTemplate />} />
+    {/* <Route path="/:Category" element={<CategoryTemplate />} /> */}
+    <Route path="/fonts" element={<CategoryTemplate />} />
+    <Route path="/video-templates" element={<CategoryTemplate />} />
+    <Route path="/icons" element={<CategoryTemplate />} />
+    <Route path="/models" element={<CategoryTemplate />} />
+    <Route path="/mockups" element={<CategoryTemplate />} />
+    <Route path="/graphics" element={<CategoryTemplate />} />
+    <Route path="/videos" element={<CategoryTemplate />} />
+    <Route path="/images" element={<CategoryTemplate />} />
+    <Route path="/scripts" element={<CategoryTemplate />} />
+    <Route path="/hdri" element={<CategoryTemplate />} />
+    <Route path="/hdris" element={<CategoryTemplate />} /> {/* both hdri and hdris */}
+    <Route path="/textures" element={<CategoryTemplate />} /> {/* if you have this */}
+    <Route path="/More" element={<CategoryTemplate />} /> {/* if you have this */}
     
-    {/* Remove this duplicate generic route */}
-    {/* <Route path="/:username" element={<Profile />} */}
+<Route path="*" element={<Error />} />
   </Routes>
 );
 
