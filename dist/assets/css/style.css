@@ -630,6 +630,9 @@ figure {
 .butn.butn-bord:hover span {
   color: #fff;
 }
+.butn.butn-bord:hover i{
+  color: #fff;
+}
 
 .butn.butn-bord-thin {
   border-color: rgba(255, 255, 255, 0.12);
@@ -8160,10 +8163,10 @@ footer.clean-footer.crev .circle-blur {
     display: none;
   }
 
-  /* .navbar.nav-scroll {
+  .navbar.nav-scroll {
     padding-top: 15px;
     padding-bottom: 15px;
-  } */
+  }
 
   .navbar .container {
     padding: 0;
@@ -10140,6 +10143,139 @@ footer.clean-footer.crev .circle-blur {
   line-height: 1.6;
 }
 
+/* Dynamic Pricing Styles */
+.price-per-member {
+  background: rgba(34, 197, 94, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: inline-block;
+  /* margin: 8px auto; */
+}
+
+.members-select-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.members-dropdown {
+  width: 100%;
+  padding: 12px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  font-size: 14px;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.members-dropdown:focus {
+  outline: none;
+  border-color: #09f;
+  box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
+}
+
+.dropdown-arrow {
+  position: absolute;
+      right: 4px;
+    font-size: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+.savings-calculation {
+  text-align: center;
+}
+
+.savings-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #00b894, #00a085);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.dynamic-pricing-info {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #09f;
+}
+
+/* Pricing Summary */
+.pricing-summary {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.summary-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 24px;
+  backdrop-filter: blur(10px);
+}
+
+.summary-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+}
+
+.summary-content {
+  margin-top: 20px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.summary-value {
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Team plan specific styles */
+.team-plan {
+  position: relative;
+  border: 2px solid #09f;
+  transform: scale(1.02);
+  z-index: 1;
+}
+
+
+.team-price {
+  background: linear-gradient(135deg, #09f, #00ffaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 42px;
+  font-weight: 700;
+}
+
 /* CTA Section */
 .cta-section {
   margin-top: 5rem;
@@ -11261,6 +11397,10 @@ footer.clean-footer.crev .circle-blur {
   .submit_button {
     width: 100%;
     max-width: 250px;
+  }
+  .support_section{
+    width: 100% !important;
+    margin: 80px 0;
   }
 }
 
