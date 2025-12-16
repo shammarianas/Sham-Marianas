@@ -5100,20 +5100,23 @@ div>button.add_to_wishlist_btn.favorited {
 .form-actions {
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Danger Zone Card */
 .danger-zone-card {
-  background: rgba(30, 30, 30, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 24px;
-  margin: 24px auto;
-  border: 2px solid rgba(244, 67, 54, 0.3);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 65%;
+    display: flex;
+    background: rgba(30, 30, 30, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px auto;
+    border: 2px solid rgba(244, 67, 54, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    justify-content: center;
 }
 
 .warning-icon {
@@ -5191,6 +5194,10 @@ div>button.add_to_wishlist_btn.favorited {
   border: 2px solid #f44336 !important;
   color: #f44336 !important;
   background: transparent !important;
+}
+
+.butn-danger i {
+ padding-right: 10px;
 }
 
 .butn-danger.butn-bg {

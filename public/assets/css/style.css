@@ -630,6 +630,9 @@ figure {
 .butn.butn-bord:hover span {
   color: #fff;
 }
+.butn.butn-bord:hover i{
+  color: #fff;
+}
 
 .butn.butn-bord-thin {
   border-color: rgba(255, 255, 255, 0.12);

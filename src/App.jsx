@@ -64,6 +64,8 @@ import ContributorDashboard from "./Components/UI/dashboard/Contributor/Contribu
 import PrivacyPolicyTemplate from "./Pages/Get Started/privacyTemplate";
 import TermsandConditionTemplate from "./Pages/Get Started/termsOfTemplate";
 import  SellerGuideline from "./Pages/Get Started/SellerGuidelines";
+import PricingAndFees from "./Pages/Get Started/pricing&fee";
+import ContributorPolicies from "./Pages/Get Started/ContributorPolicies";
 // STRIPE IMPORTS - ADDED
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
@@ -135,6 +137,8 @@ export const AppRoutes = () => (
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     <Route path="/terms-of-template" element={<TermsandConditionTemplate />} />
     <Route path="/seller-guideline" element={<SellerGuideline />} />
+    <Route path="/pricing-and-fees" element={<PricingAndFees />} />
+    <Route path="/contributor-policies" element={<ContributorPolicies />} />
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
@@ -150,10 +154,22 @@ export const AppRoutes = () => (
     <Route path="/Profile/:username" element={<Profile />} />
     
     {/* Generic dynamic route for Category - should be LAST */}
-    <Route path="/:Category" element={<CategoryTemplate />} />
+    {/* <Route path="/:Category" element={<CategoryTemplate />} /> */}
+    <Route path="/fonts" element={<CategoryTemplate />} />
+    <Route path="/video-templates" element={<CategoryTemplate />} />
+    <Route path="/icons" element={<CategoryTemplate />} />
+    <Route path="/models" element={<CategoryTemplate />} />
+    <Route path="/mockups" element={<CategoryTemplate />} />
+    <Route path="/graphics" element={<CategoryTemplate />} />
+    <Route path="/videos" element={<CategoryTemplate />} />
+    <Route path="/images" element={<CategoryTemplate />} />
+    <Route path="/scripts" element={<CategoryTemplate />} />
+    <Route path="/hdri" element={<CategoryTemplate />} />
+    <Route path="/hdris" element={<CategoryTemplate />} /> {/* both hdri and hdris */}
+    <Route path="/textures" element={<CategoryTemplate />} /> {/* if you have this */}
+    <Route path="/More" element={<CategoryTemplate />} /> {/* if you have this */}
     
-    {/* Remove this duplicate generic route */}
-    {/* <Route path="/:username" element={<Profile />} */}
+<Route path="*" element={<Error />} />
   </Routes>
 );
 

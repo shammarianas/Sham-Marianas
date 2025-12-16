@@ -649,11 +649,11 @@ const SellerDashboard = () => {
       case "stats":
         return <Statistics {...commonProps} />;
 
-      case "search-trends":
-        return <SearchTrends {...commonProps} />;
+      // case "search-trends":
+      //   return <SearchTrends {...commonProps} />;
 
-      case "visual-trends":
-        return <VisualTrends {...commonProps} />;
+      // case "visual-trends":
+      //   return <VisualTrends {...commonProps} />;
 
       case "guidelines":
         return <SellerGuideline {...commonProps} />;
@@ -801,7 +801,7 @@ const SellerDashboard = () => {
           <div className="nav-c-section">
             <div className="nav-c-section-title">RESOURCES AND HELP</div>
             <ul className="nav-c-menu">
-              <li
+              {/* <li
                 className={`nav-c-item ${
                   activeTab === "search-trends" ? "active" : ""
                 }`}
@@ -818,7 +818,7 @@ const SellerDashboard = () => {
               >
                 <FiPieChart className="nav-c-icon" />
                 <span className="nav-c-label">Visual Trends</span>
-              </li>
+              </li> */}
               <li
                 className={`nav-c-item ${
                   activeTab === "guidelines" ? "active" : ""
