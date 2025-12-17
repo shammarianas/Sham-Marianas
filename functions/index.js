@@ -498,6 +498,236 @@ exports.sendContributorStatusEmail = functions.https.onRequest((req, res) => {
 // =============================
 // GENERATE DOWNLOAD URL (ENHANCED)
 // =============================
+// exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
+//   // ✅ CORS headers
+//   res.set("Access-Control-Allow-Origin", "*");
+//   res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+//   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+//   if (req.method === "OPTIONS") {
+//     return res.status(204).send("");
+//   }
+
+//   if (req.method !== "POST") {
+//     return res.status(405).json({ error: "Method not allowed" });
+//   }
+
+//   try {
+//     // ✅ Authentication
+//     const authHeader = req.headers.authorization;
+//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//       return res.status(401).json({ error: "Login required" });
+//     }
+
+//     const token = authHeader.split("Bearer ")[1];
+//     const decodedToken = await admin.auth().verifyIdToken(token);
+//     const uid = decodedToken.uid;
+
+//     console.log(`✅ User authenticated: ${uid}`);
+
+//     // ✅ Get assetId
+//     const { assetId } = req.body;
+//     if (!assetId) {
+//       return res.status(400).json({ error: "assetId required" });
+//     }
+
+//     const db = admin.firestore();
+
+//     // ✅ **TRANSACTION**
+//     const transactionResult = await db.runTransaction(async (transaction) => {
+//       console.log("🔍 Starting transaction for asset:", assetId);
+
+//       // ============ READ PHASE ============
+//       const assetRef = db.collection("Assets").doc(assetId);
+//       const assetSnap = await transaction.get(assetRef);
+//       if (!assetSnap.exists) {
+//         throw new Error("Asset not found");
+//       }
+//       const asset = assetSnap.data();
+
+//       // ============ ✅ CRITICAL FIX: ADD DOWNLOAD TRACKING HERE ============
+
+//       // 1️⃣ Update ASSET download count (for both individual & team)
+//       transaction.update(assetRef, {
+//         downloadsCount: (asset.downloadsCount || 0) + 1,
+//         lastDownloadedAt: admin.firestore.FieldValue.serverTimestamp(),
+//         updatedAt: admin.firestore.FieldValue.serverTimestamp()
+//       });
+
+//       console.log(`📈 Asset download count incremented: ${(asset.downloadsCount || 0) + 1}`);
+
+//       // 2️⃣ Create download record in Downloads collection
+//       const downloadId = `${uid}_${assetId}_${Date.now()}`;
+//       const downloadRef = db.collection("Downloads").doc(downloadId);
+
+//       transaction.set(downloadRef, {
+//         id: downloadId,
+//         assetId: assetId,
+//         assetTitle: asset.title || "Untitled Asset",
+//         assetType: asset.type || "unknown",
+//         userId: uid,
+//         userEmail: decodedToken.email || null,
+//         userName: decodedToken.name || "User",
+//         downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
+//         timestamp: Date.now(),
+//         downloadMethod: "direct", // or "team_subscription"
+//         status: "completed"
+//       });
+
+//       console.log(`📝 Download record created: ${downloadId}`);
+
+//       // 3️⃣ Update USER'S Profile collection
+//       const userProfileRef = db.collection("Profiles").doc(uid);
+//       const userProfileSnap = await transaction.get(userProfileRef);
+
+//       if (userProfileSnap.exists) {
+//         const userProfile = userProfileSnap.data();
+//         const userTotalDownloads = userProfile.totalDownloads || 0;
+
+//         transaction.update(userProfileRef, {
+//           totalDownloads: userTotalDownloads + 1,
+//           lastDownloadAt: admin.firestore.FieldValue.serverTimestamp(),
+//           [`downloadHistory.${downloadId}`]: {
+//             assetId: assetId,
+//             assetTitle: asset.title || "Untitled",
+//             downloadedAt: admin.firestore.FieldValue.serverTimestamp()
+//           }
+//         });
+
+//         console.log(`👤 User profile updated. Total downloads: ${userTotalDownloads + 1}`);
+//       }
+
+//       // 4️⃣ CHECK IF THIS IS A TEAM DOWNLOAD & UPDATE TEAM COLLECTION
+//       // First, check if user has any active team subscription
+//       const userTeamsQuery = db.collection("Teams")
+//         .where("members", "array-contains", uid)
+//         .where("subscriptionStatus", "==", "active")
+//         .limit(1);
+
+//       const userTeamsSnap = await transaction.get(userTeamsQuery);
+
+//       if (!userTeamsSnap.empty) {
+//         // User is part of an active team
+//         const teamDoc = userTeamsSnap.docs[0];
+//         const teamId = teamDoc.id;
+//         const teamData = teamDoc.data();
+
+//         console.log(`👥 User ${uid} is part of active team: ${teamId}`);
+
+//         // Update Team collection - Team's download stats
+//         const teamRef = db.collection("Teams").doc(teamId);
+
+//         // Get current team downloads
+//         const currentTeamDownloads = teamData.totalDownloads || 0;
+
+//         transaction.update(teamRef, {
+//           totalDownloads: currentTeamDownloads + 1,
+//           lastDownloadAt: admin.firestore.FieldValue.serverTimestamp(),
+//           [`memberDownloads.${uid}`]: admin.firestore.FieldValue.increment(1),
+//           [`assetDownloads.${assetId}`]: admin.firestore.FieldValue.increment(1)
+//         });
+
+//         console.log(`🏢 Team ${teamId} download count: ${currentTeamDownloads + 1}`);
+
+//         // Create team-specific download record
+//         const teamDownloadRef = db.collection("Teams").doc(teamId)
+//           .collection("TeamDownloads").doc(downloadId);
+
+//         transaction.set(teamDownloadRef, {
+//           id: downloadId,
+//           assetId: assetId,
+//           assetTitle: asset.title || "Untitled",
+//           downloadedBy: uid,
+//           downloadedByEmail: decodedToken.email,
+//           downloadedByName: decodedToken.name || "Team Member",
+//           downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
+//           teamId: teamId,
+//           teamName: teamData.name || "Team"
+//         });
+
+//         console.log(`📊 Team download record created for team: ${teamId}`);
+
+//         // Also update the main download record with team info
+//         transaction.update(downloadRef, {
+//           teamId: teamId,
+//           teamName: teamData.name || "Team",
+//           downloadMethod: "team_subscription"
+//         });
+//       } else {
+//         console.log(`👤 User ${uid} is downloading as individual (no active team)`);
+//       }
+
+//       // ... [Keep all your existing purchase/subscription logic] ...
+//       // ... [Keep your URL extraction logic] ...
+
+//       return {
+//         foundUrl,
+//         filePath,
+//         assetType: asset.type,
+//         assetTitle: asset.title || "download",
+//         isFirebaseStorageUrl,
+//         // Return new counts for response
+//         newDownloadCount: (asset.downloadsCount || 0) + 1,
+//         isTeamDownload: !userTeamsSnap.empty
+//       };
+//     });
+
+//     // ✅ Extract the result
+//     const {
+//       foundUrl,
+//       filePath,
+//       assetType,
+//       assetTitle,
+//       isFirebaseStorageUrl,
+//       newDownloadCount,
+//       isTeamDownload
+//     } = transactionResult;
+
+//     let downloadUrl = foundUrl;
+
+//     // ✅ Generate signed URL if needed (keep your existing code)
+//     if (isFirebaseStorageUrl) {
+//       // ... [Your existing signed URL generation code] ...
+//     }
+
+//     // ✅ Set file name for response (keep your existing code)
+//     let fileName = (assetTitle || "download").replace(/[^\w\s.-]/gi, "_");
+//     // ... [Your existing file naming code] ...
+
+//     // ✅ Success response with team info
+//     console.log("✅ Transaction successful! File:", fileName);
+
+//     return res.status(200).json({
+//       success: true,
+//       url: downloadUrl,
+//       fileName: fileName,
+//       isPublicUrl: true,
+//       message: "Download ready",
+//       forceDownload: true,
+//       // Add tracking info
+//       downloadCount: newDownloadCount,
+//       isTeamDownload: isTeamDownload,
+//       tracked: true
+//     });
+
+//   } catch (err) {
+//     console.error("❌ Cloud Function error:", err);
+//     console.error("❌ Error stack:", err.stack);
+
+//     if (err.message.includes("Login required") || err.message.includes("token")) {
+//       return res.status(401).json({ error: "Login required" });
+//     } else if (err.message.includes("not found")) {
+//       return res.status(404).json({ error: err.message });
+//     } else if (err.message.includes("limit reached") || err.message.includes("permission")) {
+//       return res.status(403).json({ error: err.message });
+//     } else {
+//       return res.status(500).json({
+//         error: "Download failed: " + err.message,
+//         details: process.env.NODE_ENV === "development" ? err.stack : undefined,
+//       });
+//     }
+//   }
+// });
 exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
   // ✅ CORS headers
   res.set("Access-Control-Allow-Origin", "*");
@@ -522,8 +752,10 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
     const token = authHeader.split("Bearer ")[1];
     const decodedToken = await admin.auth().verifyIdToken(token);
     const uid = decodedToken.uid;
+    const userEmail = decodedToken.email || null;
+    const userName = decodedToken.name || "User";
 
-    console.log(`✅ User authenticated: ${uid}`);
+    console.log(`✅ User authenticated: ${uid} (${userEmail})`);
 
     // ✅ Get assetId
     const { assetId } = req.body;
@@ -533,42 +765,63 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
 
     const db = admin.firestore();
 
-    // ✅ **TRANSACTION**
+    // ✅ **TRANSACTION - FIXED ORDER: READS FIRST, THEN WRITES**
     const transactionResult = await db.runTransaction(async (transaction) => {
       console.log("🔍 Starting transaction for asset:", assetId);
 
-      // ============ READ PHASE ============
+      // ============ PHASE 1: ALL READS FIRST ============
+      console.log("📖 Phase 1: Reading all data...");
+
+      // 1. Read Asset data
       const assetRef = db.collection("Assets").doc(assetId);
       const assetSnap = await transaction.get(assetRef);
       if (!assetSnap.exists) {
         throw new Error("Asset not found");
       }
       const asset = assetSnap.data();
+      console.log(`✅ Asset found: ${asset.title || assetId}`);
 
-      // ... [Keep all your existing purchase/subscription logic] ...
+      // 2. Read User Profile data
+      const userProfileRef = db.collection("Profiles").doc(uid);
+      const userProfileSnap = await transaction.get(userProfileRef);
 
-      // ✅ FIXED: Better URL extraction with type checking
+      // 3. Read Team data (if any) - BEFORE ANY WRITES!
+      let teamData = null;
+      let teamId = null;
+
+      const userTeamsQuery = db
+        .collection("Teams")
+        .where("members", "array-contains", uid)
+        .where("subscriptionStatus", "==", "active")
+        .limit(1);
+
+      const userTeamsSnap = await transaction.get(userTeamsQuery);
+
+      if (!userTeamsSnap.empty) {
+        const teamDoc = userTeamsSnap.docs[0];
+        teamId = teamDoc.id;
+        teamData = teamDoc.data();
+        console.log(`👥 User is in active team: ${teamId}`);
+      }
+
+      // 4. Check purchase/subscription logic (READS ONLY)
+      // ... [Add your purchase validation reads here if any] ...
+
+      // ============ PHASE 2: URL EXTRACTION (READ-ONLY) ============
+      console.log("🔗 Phase 2: Extracting download URL...");
+
+      // ✅ URL extraction functions
       const extractUrl = (data) => {
         if (!data) return null;
 
-        // If it's already a string URL
-        if (typeof data === "string") {
-          return data;
-        }
+        if (typeof data === "string") return data;
 
-        // If it's an object
         if (data && typeof data === "object") {
-          // Check for url property
-          if (data.url && typeof data.url === "string") {
-            return data.url;
-          }
+          if (data.url && typeof data.url === "string") return data.url;
 
-          // Check for sizes.original - FIXED: Proper type checking
           if (data.sizes && data.sizes.original) {
-            if (typeof data.sizes.original === "string") {
+            if (typeof data.sizes.original === "string")
               return data.sizes.original;
-            }
-            // If original is an object with url property
             if (
               data.sizes.original &&
               typeof data.sizes.original === "object" &&
@@ -578,10 +831,8 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
             }
           }
 
-          // Check for direct downloadUrl
-          if (data.downloadUrl && typeof data.downloadUrl === "string") {
+          if (data.downloadUrl && typeof data.downloadUrl === "string")
             return data.downloadUrl;
-          }
         }
 
         return null;
@@ -590,16 +841,13 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
       const extractFilePath = (data) => {
         if (!data) return null;
 
-        if (typeof data === "string") {
-          return data;
-        }
+        if (typeof data === "string") return data;
 
         if (data && typeof data === "object") {
           if (data.path && typeof data.path === "string") return data.path;
           if (data.filePath && typeof data.filePath === "string")
             return data.filePath;
           if (data.url && typeof data.url === "string") {
-            // Extract path from Firebase Storage URL
             const match = data.url.match(/\/o\/(.*?)\?/);
             return match ? decodeURIComponent(match[1]) : null;
           }
@@ -614,9 +862,8 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
       let isFirebaseStorageUrl = false;
 
       console.log("🔍 Looking for download URL for asset type:", asset.type);
-      console.log("📋 Asset fields:", Object.keys(asset));
 
-      // Asset type based extraction - SIMPLIFIED VERSION
+      // Asset type based extraction
       const urlFields = {
         mockups: "mockupFile",
         models: "model",
@@ -631,14 +878,9 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
       };
 
       const fieldName = urlFields[asset.type];
-
       if (fieldName && asset[fieldName]) {
         foundUrl = extractUrl(asset[fieldName]);
         filePath = extractFilePath(asset[fieldName]);
-        console.log(
-          `✅ Found in ${fieldName}:`,
-          foundUrl ? "URL found" : "No URL"
-        );
       }
 
       // Special handling for arrays
@@ -672,7 +914,6 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
 
       // If still not found, try general fields
       if (!foundUrl) {
-        console.log("🔄 Trying fallback fields...");
         const fallbackFields = [
           "downloadUrl",
           "filePath",
@@ -685,54 +926,128 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
           if (asset[field]) {
             foundUrl = extractUrl(asset[field]);
             filePath = extractFilePath(asset[field]);
-            if (foundUrl) {
-              console.log(`✅ Found in fallback field ${field}`);
-              break;
-            }
+            if (foundUrl) break;
           }
         }
       }
 
-      // Debug: Log what we found
-      if (foundUrl) {
-        console.log("✅ URL found:", {
-          type: typeof foundUrl,
-          isString: typeof foundUrl === "string",
-          firstChars:
-            typeof foundUrl === "string"
-              ? foundUrl.substring(0, 100)
-              : "Not a string",
-        });
-
-        // Check if it's a Firebase Storage URL - FIXED: Only if string
-        if (
-          typeof foundUrl === "string" &&
-          foundUrl.includes("firebasestorage.googleapis.com")
-        ) {
-          isFirebaseStorageUrl = true;
-        }
-      } else {
-        console.error("❌ No URL found in any field");
-        console.error(
-          "Available fields:",
-          Object.keys(asset).map((key) => `${key}: ${typeof asset[key]}`)
-        );
-      }
-
       // Validate found URL
       if (!foundUrl || typeof foundUrl !== "string" || foundUrl.trim() === "") {
-        throw new Error(
-          `No downloadable file found for ${asset.type} asset. ` +
-            `Available fields: ${Object.keys(asset).join(", ")}`
+        throw new Error(`No downloadable file found for ${asset.type} asset.`);
+      }
+
+      // Check if it's a Firebase Storage URL
+      if (
+        typeof foundUrl === "string" &&
+        foundUrl.includes("firebasestorage.googleapis.com")
+      ) {
+        isFirebaseStorageUrl = true;
+      }
+
+      console.log("✅ URL extraction complete");
+
+      // ============ PHASE 3: ALL WRITES (AFTER ALL READS) ============
+      console.log("📝 Phase 3: Writing all updates...");
+
+      // ✅ 1. Update ASSET download count
+      transaction.update(assetRef, {
+        downloadsCount: (asset.downloadsCount || 0) + 1,
+        lastDownloadedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log(
+        `📈 Asset download count incremented: ${
+          (asset.downloadsCount || 0) + 1
+        }`
+      );
+
+      // ✅ 2. Create download record
+      const downloadId = `${uid}_${assetId}_${Date.now()}`;
+      const downloadRef = db.collection("Downloads").doc(downloadId);
+
+      const downloadData = {
+        id: downloadId,
+        assetId: assetId,
+        assetTitle: asset.title || "Untitled Asset",
+        assetType: asset.type || "unknown",
+        userId: uid,
+        userEmail: userEmail,
+        userName: userName,
+        downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
+        timestamp: Date.now(),
+        downloadMethod: "direct",
+        status: "completed",
+        ipAddress: req.ip || req.headers["x-forwarded-for"] || "unknown",
+        userAgent: req.headers["user-agent"] || "unknown",
+      };
+
+      // ✅ 3. Update USER Profile
+      if (userProfileSnap.exists) {
+        const userProfile = userProfileSnap.data();
+        const userTotalDownloads = userProfile.totalDownloads || 0;
+
+        transaction.update(userProfileRef, {
+          totalDownloads: userTotalDownloads + 1,
+          lastDownloadAt: admin.firestore.FieldValue.serverTimestamp(),
+          [`downloadHistory.${downloadId}`]: {
+            assetId: assetId,
+            assetTitle: asset.title || "Untitled",
+            downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+        });
+
+        console.log(
+          `👤 User profile updated. Total downloads: ${userTotalDownloads + 1}`
         );
       }
 
-      console.log(
-        "✅ Final URL (first 100 chars):",
-        foundUrl.substring(0, 100)
-      );
+      // ✅ 4. Update TEAM Collection (if team exists)
+      if (teamId && teamData) {
+        downloadData.teamId = teamId;
+        downloadData.teamName = teamData.name || "Team";
+        downloadData.downloadMethod = "team_subscription";
 
-      // ... [Rest of your validation and transaction logic] ...
+        const teamRef = db.collection("Teams").doc(teamId);
+        const currentTeamDownloads = teamData.totalDownloads || 0;
+
+        transaction.update(teamRef, {
+          totalDownloads: currentTeamDownloads + 1,
+          lastDownloadAt: admin.firestore.FieldValue.serverTimestamp(),
+          [`memberDownloads.${uid}`]: admin.firestore.FieldValue.increment(1),
+          [`assetDownloads.${assetId}`]:
+            admin.firestore.FieldValue.increment(1),
+        });
+
+        console.log(
+          `🏢 Team ${teamId} download count: ${currentTeamDownloads + 1}`
+        );
+
+        // Create team-specific download record
+        const teamDownloadRef = db
+          .collection("Teams")
+          .doc(teamId)
+          .collection("TeamDownloads")
+          .doc(downloadId);
+
+        transaction.set(teamDownloadRef, {
+          id: downloadId,
+          assetId: assetId,
+          assetTitle: asset.title || "Untitled",
+          downloadedBy: uid,
+          downloadedByEmail: userEmail,
+          downloadedByName: userName,
+          downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
+          teamId: teamId,
+          teamName: teamData.name || "Team",
+        });
+
+        console.log(`📊 Team download record created`);
+      }
+
+      // Set the download record
+      transaction.set(downloadRef, downloadData);
+      console.log(`📝 Download record created: ${downloadId}`);
 
       return {
         foundUrl,
@@ -740,15 +1055,25 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
         assetType: asset.type,
         assetTitle: asset.title || "download",
         isFirebaseStorageUrl,
+        newDownloadCount: (asset.downloadsCount || 0) + 1,
+        isTeamDownload: !!(teamId && teamData),
       };
     });
 
     // ✅ Extract the result
-    const { foundUrl, filePath, assetType, assetTitle, isFirebaseStorageUrl } =
-      transactionResult;
+    const {
+      foundUrl,
+      filePath,
+      assetType,
+      assetTitle,
+      isFirebaseStorageUrl,
+      newDownloadCount,
+      isTeamDownload,
+    } = transactionResult;
+
     let downloadUrl = foundUrl;
 
-    // ✅ Generate signed URL if needed
+    // ✅ CRITICAL: FORCE DOWNLOAD IN BROWSER (User paid for this!)
     if (isFirebaseStorageUrl) {
       try {
         console.log("🔧 Generating signed URL for Firebase Storage...");
@@ -770,15 +1095,13 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
           const bucket = admin.storage().bucket();
           const file = bucket.file(storagePath);
 
-          // ✅ Get file metadata to determine proper filename
-          let fileNameForDownload = (assetTitle || "download").replace(
-            /[^\w\s.-]/gi,
-            "_"
-          );
+          // ✅ Clean filename
+          let fileNameForDownload = (assetTitle || "download")
+            .replace(/[^\w\s.-]/gi, "_")
+            .replace(/\s+/g, "_");
 
-          // ✅ Determine correct file extension
+          // ✅ Add correct extension
           const getFileExtension = () => {
-            // First check the URL for extension
             if (typeof foundUrl === "string") {
               if (foundUrl.includes(".png")) return ".png";
               if (foundUrl.includes(".jpg") || foundUrl.includes(".jpeg"))
@@ -788,8 +1111,13 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
               if (foundUrl.includes(".webp")) return ".webp";
               if (foundUrl.includes(".pdf")) return ".pdf";
               if (foundUrl.includes(".zip")) return ".zip";
+              if (foundUrl.includes(".rar")) return ".rar";
+              if (foundUrl.includes(".7z")) return ".7z";
               if (foundUrl.includes(".mp4")) return ".mp4";
               if (foundUrl.includes(".mov")) return ".mov";
+              if (foundUrl.includes(".avi")) return ".avi";
+              if (foundUrl.includes(".mp3")) return ".mp3";
+              if (foundUrl.includes(".wav")) return ".wav";
               if (foundUrl.includes(".glb")) return ".glb";
               if (foundUrl.includes(".gltf")) return ".gltf";
               if (foundUrl.includes(".fbx")) return ".fbx";
@@ -801,8 +1129,6 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
               if (foundUrl.includes(".eps")) return ".eps";
               if (foundUrl.includes(".ttf")) return ".ttf";
               if (foundUrl.includes(".otf")) return ".otf";
-              if (foundUrl.includes(".woff")) return ".woff";
-              if (foundUrl.includes(".woff2")) return ".woff2";
               if (foundUrl.includes(".hdr")) return ".hdr";
               if (foundUrl.includes(".exr")) return ".exr";
               if (foundUrl.includes(".aep")) return ".aep";
@@ -812,7 +1138,6 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
               if (foundUrl.includes(".html")) return ".html";
               if (foundUrl.includes(".json")) return ".json";
               if (foundUrl.includes(".txt")) return ".txt";
-              if (foundUrl.includes(".md")) return ".md";
             }
 
             // Fallback based on asset type
@@ -850,12 +1175,12 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
             fileNameForDownload += extension;
           }
 
-          // ✅ CRITICAL FIX: Generate signed URL with FORCE DOWNLOAD header
+          // ✅ CRITICAL: FORCE DOWNLOAD (NOT OPEN IN BROWSER)
           const [signedUrl] = await file.getSignedUrl({
             version: "v4",
             action: "read",
             expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-            // ✅ THIS LINE FORCES DOWNLOAD IN BROWSER
+            // ✅ THIS IS KEY: Forces browser to download instead of opening
             responseDisposition: `attachment; filename="${encodeURIComponent(
               fileNameForDownload
             )}"`,
@@ -864,8 +1189,8 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
           });
 
           downloadUrl = signedUrl;
-          console.log("✅ Generated signed URL with force download header");
-          console.log("📁 Forced download filename:", fileNameForDownload);
+          console.log("✅ Generated signed URL with FORCE DOWNLOAD header");
+          console.log("📁 File will download as:", fileNameForDownload);
         }
       } catch (storageError) {
         console.error("❌ Error generating signed URL:", storageError);
@@ -874,34 +1199,38 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
     }
 
     // ✅ Set file name for response
-    let fileName = (assetTitle || "download").replace(/[^\w\s.-]/gi, "_");
+    let fileName = (assetTitle || "download")
+      .replace(/[^\w\s.-]/gi, "_")
+      .replace(/\s+/g, "_");
 
-    // Add extension based on URL or asset type
+    // Add extension if not present
     const addExtension = (filename, url, type) => {
       if (typeof url === "string") {
-        if (url.includes(".png"))
-          return filename.endsWith(".png") ? filename : filename + ".png";
-        if (url.includes(".jpg") || url.includes(".jpeg"))
-          return filename.endsWith(".jpg") ? filename : filename + ".jpg";
-        if (url.includes(".gif"))
-          return filename.endsWith(".gif") ? filename : filename + ".gif";
-        if (url.includes(".svg"))
-          return filename.endsWith(".svg") ? filename : filename + ".svg";
-        if (url.includes(".webp"))
-          return filename.endsWith(".webp") ? filename : filename + ".webp";
-        if (url.includes(".pdf"))
-          return filename.endsWith(".pdf") ? filename : filename + ".pdf";
-        if (url.includes(".zip"))
-          return filename.endsWith(".zip") ? filename : filename + ".zip";
-        if (url.includes(".mp4"))
-          return filename.endsWith(".mp4") ? filename : filename + ".mp4";
-        if (url.includes(".glb"))
-          return filename.endsWith(".glb") ? filename : filename + ".glb";
-        if (url.includes(".psd"))
-          return filename.endsWith(".psd") ? filename : filename + ".psd";
+        if (url.includes(".png") && !filename.endsWith(".png"))
+          return filename + ".png";
+        if (
+          (url.includes(".jpg") || url.includes(".jpeg")) &&
+          !filename.endsWith(".jpg")
+        )
+          return filename + ".jpg";
+        if (url.includes(".gif") && !filename.endsWith(".gif"))
+          return filename + ".gif";
+        if (url.includes(".svg") && !filename.endsWith(".svg"))
+          return filename + ".svg";
+        if (url.includes(".webp") && !filename.endsWith(".webp"))
+          return filename + ".webp";
+        if (url.includes(".pdf") && !filename.endsWith(".pdf"))
+          return filename + ".pdf";
+        if (url.includes(".zip") && !filename.endsWith(".zip"))
+          return filename + ".zip";
+        if (url.includes(".mp4") && !filename.endsWith(".mp4"))
+          return filename + ".mp4";
+        if (url.includes(".glb") && !filename.endsWith(".glb"))
+          return filename + ".glb";
+        if (url.includes(".psd") && !filename.endsWith(".psd"))
+          return filename + ".psd";
       }
 
-      // Fallback based on asset type
       switch (type) {
         case "images":
         case "icons":
@@ -926,7 +1255,7 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
     fileName = addExtension(fileName, downloadUrl, assetType);
 
     // ✅ Success response
-    console.log("✅ Transaction successful! File:", fileName);
+    console.log("✅ Transaction successful! Download ready.");
 
     return res.status(200).json({
       success: true,
@@ -934,12 +1263,26 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
       fileName: fileName,
       isPublicUrl: true,
       message: "Download ready",
-      // ✅ Add hint for frontend
-      forceDownload: true,
+      forceDownload: true, // Frontend should use this to force download
+      downloadCount: newDownloadCount,
+      isTeamDownload: isTeamDownload,
+      tracked: true,
+      // ✅ Add instruction for frontend
+      downloadInstructions:
+        "Use this URL with download attribute or trigger download programmatically",
     });
   } catch (err) {
     console.error("❌ Cloud Function error:", err);
     console.error("❌ Error stack:", err.stack);
+
+    // Handle transaction error specifically
+    if (err.message.includes("Firestore transactions require all reads")) {
+      console.error("⚠️ Transaction error: Reads must come before writes");
+      return res.status(500).json({
+        error: "Download failed due to system error. Please try again.",
+        code: "TRANSACTION_ERROR",
+      });
+    }
 
     if (
       err.message.includes("Login required") ||
@@ -964,6 +1307,199 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
 // =============================
 // MONTHLY RESET FUNCTION
 // =============================
+
+// =============================
+// NEW: ADD TEAM MEMBER
+// =============================
+exports.addTeamMember = functions.https.onRequest(async (req, res) => {
+  // CORS headers
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.status(204).send("");
+  }
+
+  // Only allow POST requests
+  if (req.method !== "POST") {
+    return res.status(405).send({ error: "Method Not Allowed" });
+  }
+
+  try {
+    // Extract Authorization token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        error: {
+          message: "Login required",
+          code: "unauthenticated",
+        },
+      });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+
+    // Verify Firebase ID token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const adminId = decodedToken.uid;
+
+    const { teamId, memberEmail } = req.body;
+
+    // Validate request body
+    if (!teamId || !memberEmail) {
+      return res.status(400).json({
+        error: {
+          message: "Missing required fields: teamId and memberEmail",
+          code: "invalid-argument",
+        },
+      });
+    }
+
+    const db = admin.firestore();
+
+    // Get team info
+    const teamRef = db.collection("Teams").doc(teamId);
+    const teamSnap = await teamRef.get();
+
+    if (!teamSnap.exists) {
+      return res.status(404).json({
+        error: {
+          message: "Team not found",
+          code: "not-found",
+        },
+      });
+    }
+
+    const team = teamSnap.data();
+
+    // Verify admin is team owner
+    if (team.ownerId !== adminId) {
+      return res.status(403).json({
+        error: {
+          message: "Only team owner can add members",
+          code: "permission-denied",
+        },
+      });
+    }
+
+    // Check member limit
+    if (team.members.length >= team.memberLimit) {
+      return res.status(403).json({
+        error: {
+          message: "Team member limit reached",
+          code: "resource-exhausted",
+        },
+      });
+    }
+
+    // Find user by email
+    const usersQuery = await db
+      .collection("Profiles")
+      .where("email", "==", memberEmail)
+      .limit(1)
+      .get();
+
+    if (usersQuery.empty) {
+      return res.status(404).json({
+        error: {
+          message: "User not found",
+          code: "not-found",
+        },
+      });
+    }
+
+    const memberDoc = usersQuery.docs[0];
+    const memberId = memberDoc.id;
+
+    // Check if already a member
+    if (team.members.includes(memberId)) {
+      return res.status(409).json({
+        error: {
+          message: "User is already a team member",
+          code: "already-exists",
+        },
+      });
+    }
+
+    // Add member to team
+    await teamRef.update({
+      members: admin.firestore.FieldValue.arrayUnion(memberId),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update member's profile
+    await db
+      .collection("Profiles")
+      .doc(memberId)
+      .update({
+        subscription: {
+          status: "active",
+          plan: "team",
+          type: "team",
+          teamId,
+          startDate: admin.firestore.FieldValue.serverTimestamp(),
+          downloadsUsed: 0,
+          downloadLimit: 200,
+        },
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+    // Send invitation email
+    await mailTransport.sendMail({
+      from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
+      to: memberEmail,
+      subject: "You've been added to a team",
+      html: `
+        <h2>Team Invitation</h2>
+        <p>You have been added to team <strong>${teamId}</strong>.</p>
+        <p>You now have access to 200 downloads per month as part of this team subscription.</p>
+        <br/>
+        <strong>Sham Marianas Team</strong>
+      `,
+    });
+
+    return res.status(200).json({
+      success: true,
+      teamId,
+      memberId,
+      message: "Member added successfully",
+    });
+  } catch (err) {
+    console.error("Add team member error:", err);
+
+    // Handle Firebase Auth errors
+    if (err.code === "auth/id-token-expired") {
+      return res.status(401).json({
+        error: {
+          message: "Token expired",
+          code: "unauthenticated",
+        },
+      });
+    }
+
+    if (
+      err.code === "auth/id-token-revoked" ||
+      err.code === "auth/invalid-id-token"
+    ) {
+      return res.status(401).json({
+        error: {
+          message: "Invalid token",
+          code: "unauthenticated",
+        },
+      });
+    }
+
+    // For other errors
+    return res.status(500).json({
+      error: {
+        message: err.message || "Internal server error",
+        code: "internal",
+      },
+    });
+  }
+});
 exports.resetDownloadsMonthly = onSchedule(
   {
     schedule: "0 0 1 * *",
@@ -1014,119 +1550,6 @@ exports.resetDownloadsMonthly = onSchedule(
     }
   }
 );
-
-// =============================
-// NEW: ADD TEAM MEMBER
-// =============================
-exports.addTeamMember = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "Login required");
-  }
-
-  const { teamId, memberEmail } = data;
-  const adminId = context.auth.uid;
-
-  const db = admin.firestore();
-
-  try {
-    // Get team info
-    const teamRef = db.collection("Teams").doc(teamId);
-    const teamSnap = await teamRef.get();
-
-    if (!teamSnap.exists) {
-      throw new functions.https.HttpsError("not-found", "Team not found");
-    }
-
-    const team = teamSnap.data();
-
-    // Verify admin is team owner
-    if (team.ownerId !== adminId) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "Only team owner can add members"
-      );
-    }
-
-    // Check member limit
-    if (team.members.length >= team.memberLimit) {
-      throw new functions.https.HttpsError(
-        "resource-exhausted",
-        "Team member limit reached"
-      );
-    }
-
-    // Find user by email
-    const usersQuery = await db
-      .collection("Profiles")
-      .where("email", "==", memberEmail)
-      .limit(1)
-      .get();
-
-    if (usersQuery.empty) {
-      throw new functions.https.HttpsError("not-found", "User not found");
-    }
-
-    const memberDoc = usersQuery.docs[0];
-    const memberId = memberDoc.id;
-
-    // Check if already a member
-    if (team.members.includes(memberId)) {
-      throw new functions.https.HttpsError(
-        "already-exists",
-        "User is already a team member"
-      );
-    }
-
-    // Add member to team
-    await teamRef.update({
-      members: admin.firestore.FieldValue.arrayUnion(memberId),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    // Update member's profile
-    await db
-      .collection("Profiles")
-      .doc(memberId)
-      .update({
-        subscription: {
-          status: "active",
-          plan: "team",
-          type: "team",
-          teamId,
-          startDate: admin.firestore.FieldValue.serverTimestamp(),
-          downloadsUsed: 0,
-          downloadLimit: 200,
-        },
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-    // Send invitation email
-    await mailTransport.sendMail({
-      from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
-      to: memberEmail,
-      subject: "You've been added to a team",
-      html: `
-        <h2>Team Invitation</h2>
-        <p>You have been added to team <strong>${teamId}</strong>.</p>
-        <p>You now have access to 200 downloads per month as part of this team subscription.</p>
-        <br/>
-        <strong>Sham Marianas Team</strong>
-      `,
-    });
-
-    return {
-      success: true,
-      teamId,
-      memberId,
-      message: "Member added successfully",
-    };
-  } catch (err) {
-    console.error("Add team member error:", err);
-    if (err instanceof functions.https.HttpsError) throw err;
-    throw new functions.https.HttpsError("internal", err.message);
-  }
-});
-
 // =============================
 // NEW: GET USER DASHBOARD
 // =============================
