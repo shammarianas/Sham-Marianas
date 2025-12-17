@@ -25,7 +25,20 @@ const db = initializeFirestore(app, {
 
 const auth = getAuth(app);
 const storage = getStorage(app);
-const functions = getFunctions(app);
+
+// ✅ **FIX: Explicitly specify region for functions**
+const functions = getFunctions(app, "us-central1");
+
+// ✅ **OPTIONAL: For emulator (development only)**
+if (
+  process.env.NODE_ENV === "development" ||
+  window.location.hostname === "localhost"
+) {
+  console.log("🔧 Development mode: Connecting to local emulators...");
+
+  // Uncomment if you're using Firebase emulators
+  // connectFunctionsEmulator(functions, "localhost", 5001);
+}
 
 // PRODUCTION FIX 2025 – Yeh line 100% zaruri hai
 // Bina iske phone auth nahi chalega jab Firebase ne project ko Enterprise pe shift kiya ho

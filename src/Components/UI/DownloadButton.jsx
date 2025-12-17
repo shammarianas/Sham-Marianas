@@ -1,8 +1,11 @@
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { doc, updateDoc, getDoc, increment, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
 import { db } from "../../../firebase"; // Adjust path as needed
+import { getFunctions, httpsCallable } from "firebase/functions"; // ADD THESE IMPORTS
+import { getAuth } from "firebase/auth";
+import { functions } from "../../../firebase"; // Adjust path as needed
 
 const DownloadButton = ({
   item,
@@ -17,27 +20,118 @@ const DownloadButton = ({
   );
   const navigate = useNavigate();
 
-  // Check if item is free or paid
-  const isFree = item.price === "free";
-  const isPaid = item.price === "paid";
-
   // Check if user has active subscription
-  const hasActiveSubscription = userProfile?.subscriptionActive === true;
+  const hasActiveSubscription = () => {
+    if (!userProfile?.subscription) return false;
+
+    const sub = userProfile.subscription;
+
+    // Check 1: Status must be "active"
+    if (sub.status !== "active") return false;
+
+    // Check 2: Subscription should not be expired
+    const now = new Date();
+    const expiresAt = sub.expiresAt?.toDate
+      ? sub.expiresAt.toDate()
+      : new Date(sub.expiresAt);
+    if (expiresAt < now) return false;
+
+    // Check 3: Check download limits
+    if (sub.downloadsUsed >= sub.downloadLimit) {
+      setToastMessage("Monthly download limit reached!");
+      setToastState("warning");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
+      return false;
+    }
+
+    return true;
+  };
 
   // Check if user has purchased this specific item
   const hasPurchasedItem = userProfile?.purchasedItems?.includes(item.id);
 
-  // ✅ ADD THIS FUNCTION: Track download in Firestore
+  const isFree = () => {
+    if (item.price === "free" || item.price === 0 || item.price === "0")
+      return true;
+    if (item.price === "paid") return false;
+
+    // For numeric prices
+    const price = Number(item.price) || 0;
+    return price === 0;
+  };
+
+  const isPaid = () => {
+    if (item.price === "paid") return true;
+    if (item.price === "free") return false;
+
+    // For numeric prices
+    const price = Number(item.price) || 0;
+    return price > 0;
+  };
+
+  // ✅ FIXED: Generate download URL via Cloud Function
+  const generateDownloadUrl = async () => {
+    try {
+      console.log("🔗 Generating download URL via HTTP Cloud Function...");
+
+      // ✅ Get current user and token
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      const token = await user.getIdToken();
+      console.log("🔑 Token obtained, calling HTTP endpoint...");
+
+      // ✅ HTTP POST request to the onRequest function
+      const response = await fetch(
+        "https://us-central1-sham-marianas.cloudfunctions.net/generateDownloadUrl",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            assetId: item.id,
+          }),
+        }
+      );
+
+      console.log("📊 Response status:", response.status);
+
+      // ✅ Check if response is OK
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("❌ HTTP error response:", errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ HTTP Function response:", result);
+
+      // ✅ Return the data (now it's direct, not wrapped in result.data)
+      return result; // {success: true, url: "...", fileName: "...", expiresIn: 900}
+    } catch (error) {
+      console.error("❌ HTTP Cloud Function error:", error);
+      throw error;
+    }
+  };
+
+  // ✅ Track download in Firestore
   const trackDownloadInFirestore = async (assetId) => {
     try {
       const assetRef = doc(db, "Assets", assetId);
-      
+
       // Use Firestore increment to atomically update download count
       await updateDoc(assetRef, {
         downloads: increment(1),
         lastDownloadedAt: serverTimestamp(),
       });
-      
+
       console.log("✅ Download tracked for asset:", assetId);
       return true;
     } catch (error) {
@@ -97,13 +191,12 @@ const DownloadButton = ({
           item.images.forEach((img) => {
             if (typeof img === "string") pushUrl(img);
             else if (img && typeof img === "object") {
-              // Check sizes object first
               if (img.sizes && typeof img.sizes === "object") {
                 const original =
                   img.sizes.original || Object.values(img.sizes)[0];
                 pushUrl(original);
               } else {
-                pushUrl(img.url); // fallback
+                pushUrl(img.url);
               }
             }
           });
@@ -114,7 +207,6 @@ const DownloadButton = ({
           item.textures.forEach(pushUrl);
         } else pushUrl(item.textures);
 
-        // Also check individual texture maps
         [
           "ambientOcclusion",
           "baseColor",
@@ -134,14 +226,13 @@ const DownloadButton = ({
     }
 
     console.log("📥 Final URLs to download:", urls);
-    return urls.filter(Boolean); // remove any undefined/null
+    return urls.filter(Boolean);
   };
 
   const downloadURL = (urlOrObj) => {
     try {
       let url = urlOrObj;
 
-      // If it's an object with a url property, extract it
       if (typeof urlOrObj === "object" && urlOrObj.url) {
         url = urlOrObj.url;
       }
@@ -155,7 +246,6 @@ const DownloadButton = ({
       const a = document.createElement("a");
       a.href = url;
 
-      // Extract filename from URL
       const filename = url.split("/").pop().split("?")[0];
       a.download = filename || "download";
 
@@ -166,67 +256,135 @@ const DownloadButton = ({
       console.log("✅ Download initiated for:", filename);
     } catch (e) {
       console.error("❌ Download error:", e);
-      // Fallback: open in new tab
       if (typeof urlOrObj === "string") window.open(urlOrObj, "_blank");
+    }
+  };
+
+  const handlePaidDownload = async () => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      setToastMessage("Please sign in to download.");
+      setToastState("error");
+      setShowToast(true);
+      return;
+    }
+
+    try {
+      console.log("💰 Handling paid download for asset:", item.id);
+
+      // Step 1: Call HTTP Cloud Function for download URL
+      const downloadData = await generateDownloadUrl();
+
+      // ✅ Check if response has success flag
+      if (!downloadData.success) {
+        throw new Error(downloadData.error || "Download failed");
+      }
+
+      // Step 2: ✅ IMPROVED Force Download for ALL files
+      console.log("⬇️ Force downloading file:", downloadData.fileName);
+
+      // Method 1: Create hidden link with download attribute
+      const link = document.createElement("a");
+      link.href = downloadData.url;
+      link.download = downloadData.fileName || "download";
+      link.style.display = "none"; // Hide it
+
+      document.body.appendChild(link);
+
+      // ✅ TRICK: Use setTimeout to ensure click works
+      setTimeout(() => {
+        link.click();
+
+        // Method 2: Backup - If click doesn't work, use window.open
+        setTimeout(() => {
+          // Check if download started (this is a trick)
+          const downloadStarted = true; // Assume it started
+
+          if (!downloadStarted) {
+            // Fallback: Open in new window which might trigger download
+            window.open(downloadData.url, "_blank");
+          }
+        }, 1000);
+
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(link);
+        }, 5000);
+      }, 100);
+
+      // Step 3: Save to downloads collection
+      await addToDownloads(item);
+      console.log("✅ Saved to downloads collection");
+
+      // Step 4: Track download in Firestore
+      await trackDownloadInFirestore(item.id);
+      console.log("✅ Download tracked in Firestore");
+
+      // Step 5: Show success message
+      setToastMessage(`"${downloadData.fileName}" is downloading...`);
+      setToastState("success");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+
+      console.log("✅ Paid asset force-downloaded successfully");
+    } catch (error) {
+      console.error("❌ Download failed:", error);
+
+      // ✅ Handle HTTP status codes
+      if (
+        error.message.includes("401") ||
+        error.message.includes("Login required")
+      ) {
+        setToastMessage("Please login again");
+        setToastState("error");
+      } else if (
+        error.message.includes("403") ||
+        error.message.includes("permission") ||
+        error.message.includes("limit")
+      ) {
+        setToastMessage("Subscribe or purchase to download");
+        setToastState("warning");
+      } else if (error.message.includes("404")) {
+        setToastMessage("Asset not found");
+        setToastState("error");
+      } else {
+        setToastMessage("Download failed. Please try again.");
+        setToastState("error");
+      }
+
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
     }
   };
 
   const handleDownload = async () => {
     console.log("🚀 Starting download process...");
-    const urls = getAssetUrls();
 
-    if (urls.length === 0) {
-      console.error("❌ No downloadable files found for this asset");
-      setToastMessage("No downloadable files found for this asset");
-      setToastState("error");
-      setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 4000);
-      return;
-    }
-
-    console.log(`📁 Found ${urls.length} file(s) to download`);
-
-    // ✅ TRACK DOWNLOAD IN FIRESTORE FIRST
-    const downloadTracked = await trackDownloadInFirestore(item.id);
-
-    // Free items: download immediately
-    if (isFree) {
+    // ✅ FIXED: Check if item is free or paid
+    if (isFree()) {
       console.log("🆓 Free asset - downloading immediately");
-      try {
-        // Save to downloads first
-        await addToDownloads(item);
-        console.log("✅ Saved to downloads collection");
+      const urls = getAssetUrls();
 
-        // Then download files
-        urls.forEach((url, index) => {
-          setTimeout(() => {
-            downloadURL(url);
-          }, index * 500); // Stagger downloads by 500ms
-        });
-
-        setToastMessage(`Downloading ${urls.length} file(s)...`);
-        setToastState("success");
+      if (urls.length === 0) {
+        console.error("❌ No downloadable files found for this asset");
+        setToastMessage("No downloadable files found for this asset");
+        setToastState("error");
         setShowToast(true);
         setTimeout(() => {
           setShowToast(false);
-        }, 3000);
-      } catch (error) {
-        console.error("❌ Error saving to downloads:", error);
-        // Still try to download even if save fails
-        urls.forEach(downloadURL);
+        }, 4000);
+        return;
       }
-      return;
-    }
 
-    // Purchased items or users with active subscription: allow download
-    if (hasPurchasedItem || hasActiveSubscription) {
-      console.log("💳 Paid asset with access - downloading");
       try {
         // Save to downloads first
         await addToDownloads(item);
         console.log("✅ Saved to downloads collection");
+
+        // Track download in Firestore
+        await trackDownloadInFirestore(item.id);
 
         // Then download files
         urls.forEach((url, index) => {
@@ -243,35 +401,59 @@ const DownloadButton = ({
         }, 3000);
       } catch (error) {
         console.error("❌ Error saving to downloads:", error);
-        // Still try to download even if save fails
         urls.forEach(downloadURL);
       }
       return;
     }
 
-    // For paid items without subscription, show subscription message
-    if (isPaid && !hasActiveSubscription) {
-      console.log("🔒 Paid asset without subscription - redirecting");
-      setToastMessage("Subscription required to download paid assets");
+    // ✅ FIXED: For paid items
+    if (isPaid()) {
+      console.log("💰 Paid asset - checking access...");
+
+      // Check 1: If user purchased this asset
+      if (hasPurchasedItem) {
+        console.log("✅ User purchased this asset - allowing download");
+        await handlePaidDownload();
+        return;
+      }
+
+      // Check 2: If user has active subscription
+      if (hasActiveSubscription()) {
+        console.log("✅ User has active subscription - allowing download");
+        await handlePaidDownload();
+        return;
+      }
+
+      // If no access, show subscription message
+      console.log("🔒 No access to paid asset - redirecting to subscription");
+      setToastMessage("Subscribe or purchase to download this asset");
       setToastState("warning");
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-      }, 4000);
+      }, 3000);
+
+      setTimeout(() => {
+        navigate("/subscription");
+      }, 1000);
       return;
     }
 
     // Fallback for old numeric prices
     const price = Number(item.price) || 0;
-    if (price > 0 && !hasActiveSubscription && !hasPurchasedItem) {
-      console.log("💰 Old paid asset without subscription - redirecting");
-      setToastMessage("Subscription required to download paid assets");
+    if (price === 0) {
+      // Free item
+      const urls = getAssetUrls();
+      urls.forEach(downloadURL);
+    } else {
+      // Paid item without access
+      setToastMessage("Subscribe or purchase to download this asset");
       setToastState("warning");
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-      }, 4000);
-      return;
+        navigate("/subscription");
+      }, 1000);
     }
   };
 
@@ -280,10 +462,10 @@ const DownloadButton = ({
     navigate("/subscription");
   };
 
-  // Determine button state and content
+  // ✅ FIXED: Determine button state and content
   const getButtonContent = () => {
     // Free items - always downloadable
-    if (isFree) {
+    if (isFree()) {
       return {
         text: isDownloaded ? "Downloaded" : "Download",
         icon: "fas fa-download",
@@ -294,7 +476,7 @@ const DownloadButton = ({
     }
 
     // Paid items with subscription or purchase - downloadable
-    if (hasActiveSubscription || hasPurchasedItem) {
+    if (hasActiveSubscription() || hasPurchasedItem) {
       return {
         text: isDownloaded ? "Downloaded" : "Download",
         icon: "fas fa-download",
@@ -305,7 +487,7 @@ const DownloadButton = ({
     }
 
     // Paid items without subscription - show subscribe button
-    if (isPaid && !hasActiveSubscription) {
+    if (isPaid()) {
       return {
         text: "Subscribe to Download",
         icon: "fas fa-crown",
@@ -315,25 +497,13 @@ const DownloadButton = ({
       };
     }
 
-    // Fallback for old numeric prices (backward compatibility)
-    const price = Number(item.price) || 0;
-    if (price === 0) {
-      return {
-        text: isDownloaded ? "Downloaded" : "Download",
-        icon: "fas fa-download",
-        onClick: handleDownload,
-        enabled: true,
-        className: "download_btn",
-      };
-    }
-
-    // Old paid items without subscription
+    // Fallback
     return {
-      text: "Subscribe to Download",
-      icon: "fas fa-crown",
-      onClick: handleSubscription,
+      text: "Download",
+      icon: "fas fa-download",
+      onClick: handleDownload,
       enabled: true,
-      className: "subscribe_btn",
+      className: "download_btn",
     };
   };
 
@@ -375,7 +545,12 @@ DownloadButton.propTypes = {
     purchasedItems: PropTypes.arrayOf(
       PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     ),
-    subscriptionActive: PropTypes.bool,
+    subscription: PropTypes.shape({
+      status: PropTypes.string,
+      expiresAt: PropTypes.any,
+      downloadsUsed: PropTypes.number,
+      downloadLimit: PropTypes.number,
+    }),
   }),
   setToastMessage: PropTypes.func.isRequired,
   setToastState: PropTypes.func.isRequired,

@@ -4,10 +4,12 @@ import AddToBookmark from "./AddToBookmark";
 import { useUser } from "../../Context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import SimpleModelViewer from "./SimpleModelViewer";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
-const ListedItemCard = ({ id, data, rating }) => {
+const ListedItemCard = ({ id, data, rating, userProfile }) => {
   const { currentUser } = useUser();
   const navigate = useNavigate();
+  const profile = userProfile || currentUser;
 
   // ✅ FIXED: Consistent author name extraction
   const getAuthorName = (assetData) => {
@@ -104,10 +106,17 @@ const ListedItemCard = ({ id, data, rating }) => {
     }
   };
 
-  const handleDownloadClick = (e) => {
+  const handleDownloadClick = async (e) => {
     e.preventDefault();
 
     const urls = getAssetUrls();
+
+    // ✅ پہلے چیک کریں کہ user login ہے یا نہیں
+    if (!currentUser) {
+      alert("Please login to download");
+      navigate("/login");
+      return;
+    }
 
     // Free items: download immediately
     if (isFree) {
@@ -117,10 +126,64 @@ const ListedItemCard = ({ id, data, rating }) => {
       return;
     }
 
-    // Purchased items or users with active subscription: allow download
-    if (hasPurchasedItem || hasActiveSubscription) {
+    // Purchased items: direct download
+    if (hasPurchasedItem) {
       if (urls.length) {
         urls.forEach(downloadURL);
+      }
+      return;
+    }
+
+    // ✅ Subscription check - یہاں Cloud Function کال ہوگی
+    if (hasActiveSubscription) {
+      // Check download limits
+      if (
+        profile?.subscription?.downloadsUsed >=
+        profile?.subscription?.downloadLimit
+      ) {
+        alert("Monthly download limit reached!");
+        return;
+      }
+
+      // ✅ Cloud Function call for subscribed users
+      try {
+        const functions = getFunctions();
+        const generateDownloadUrlFunc = httpsCallable(
+          functions,
+          "generateDownloadUrl"
+        );
+
+        console.log("📞 Calling Cloud Function for asset:", id);
+        const result = await generateDownloadUrlFunc({ assetId: id });
+
+        // Download file
+        const a = document.createElement("a");
+        a.href = result.data.url;
+        a.download = result.data.fileName || `download_${id}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        console.log("✅ Download started via Cloud Function");
+      } catch (error) {
+        console.error("❌ Cloud Function error:", error);
+
+        // Specific error handling
+        if (
+          error.code === "unauthenticated" ||
+          error.message.includes("Login")
+        ) {
+          alert("Please login again. Session expired.");
+        } else if (error.code === "permission-denied") {
+          alert("You don't have permission to download this asset.");
+        } else {
+          alert("Download failed: " + error.message);
+
+          // Fallback: try direct download if Cloud Function fails
+          if (urls.length) {
+            urls.forEach(downloadURL);
+          }
+        }
       }
       return;
     }
@@ -136,6 +199,11 @@ const ListedItemCard = ({ id, data, rating }) => {
     if (price > 0 && !hasActiveSubscription && !hasPurchasedItem) {
       navigate("/subscription");
       return;
+    }
+
+    // اگر سب کچھ fail ہو جائے تو direct download کرنے کی کوشش کریں
+    if (urls.length) {
+      urls.forEach(downloadURL);
     }
   };
 
