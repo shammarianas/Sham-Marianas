@@ -1265,7 +1265,7 @@ const Profile = () => {
                     </div>
                     <div className="form-actions">
                       <button
-                        className="butn butn-sm butn-bg main-colorbg radius-5"
+                        className="butn butn-sm butn-bg main-colorbg color-white radius-5"
                         onClick={handleSaveAccount}
                         disabled={saving}
                       >
