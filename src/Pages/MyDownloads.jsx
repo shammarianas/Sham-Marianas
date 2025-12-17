@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet-async";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import Cursor from "../common/cusor";
 
 // Naya (same hi rahega, bas ensure karo path sahi hai)
 import { downloadLicense } from "../utils/generateLicense";
@@ -276,6 +277,7 @@ const MyDownloads = () => {
 
   return (
     <>
+     <Cursor />
       <Helmet>
         <title>
           My Downloads - {currentUser ? currentUser.displayName : "User"}
@@ -409,14 +411,14 @@ const MyDownloads = () => {
 
                         <div className="download-actions ">
                           <button
-                            className="download-license license-badge"
+                            className="download-license license-badge butn butn-sm"
                             onClick={() => handleDownloadLicense(asset)}
                             disabled={downloadingLicense === asset.id}
-                            style={{ backgroundColor: licenseColor }}
+                            
                           >
                             {downloadingLicense === asset.id ? 'Generating...' : 'Download License'}
                           </button>
-                          <button className="download-btn primary">
+                          <button className="download-btn primary butn butn-sm">
                             Download
                           </button>
                         </div>
@@ -431,241 +433,7 @@ const MyDownloads = () => {
       </div>
 
       <style jsx>{`
-        .downloads-container {
-          max-width: 1200px;
-          width: 100%;
-          margin: 0 auto;
-          padding: 20px;
-        }
-
-        .downloads-list {
-          display: flex;
-          flex-direction: column;
-          border-radius: 8px;
-          border: 1px solid #2c2d2c;
-        }
-
-        .download-item {
-          overflow: hidden;
-          border-bottom: 1px solid #2c2d2c;
-        }
-
-        .download-item:last-child {
-          border-bottom: none;
-        }
-
-        .download-item-content {
-          display: flex;
-          padding: 20px;
-          gap: 20px;
-          align-items: center;
-        }
-
-        .asset-preview {
-          flex: 0 0 80px;
-        }
-
-        .model-preview,
-        .image-preview {
-          width: 80px;
-          height: 80px;
-          border-radius: 6px;
-          overflow: hidden;
-          position: relative;
-          background: #f8f9fa;
-          border: 1px solid #e1e5e9;
-        }
-
-        .preview-media {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .no-preview {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f1f3f5;
-          color: #868e96;
-          font-size: 12px;
-        }
-
-        .video-container {
-          width: 100%;
-          height: 100%;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .discount-badge {
-          position: absolute;
-          top: 4px;
-          right: 4px;
-          background: #e17055;
-          color: white;
-          padding: 2px 6px;
-          border-radius: 3px;
-          font-size: 10px;
-          font-weight: 600;
-        }
-
-        .asset-details {
-          flex: 1;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .creator-info {
-          display: flex;
-          align-items: flex-start;
-          gap: 4px;
-          font-size: 13px;
-          flex-direction: column;
-        }
-
-        .asset-title-link {
-          text-decoration: none;
-          color: inherit;
-        }
-
-        .asset-title {
-          font-size: 16px;
-          font-weight: 600;
-          margin: 0 0 6px 0;
-          line-height: 1.3;
-          cursor: pointer;
-        }
-
-        .asset-title:hover {
-          color: #0984e3;
-        }
-
-        .asset-meta {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .asset-type {
-          font-size: 12px;
-          font-weight: 500;
-          color: #0984e3;
-          background: #e3f2fd;
-          padding: 2px 6px;
-          border-radius: 3px;
-        }
-
-        .license-type-badge {
-          color: white;
-          padding: 2px 6px;
-          border-radius: 3px;
-          font-size: 10px;
-          font-weight: 600;
-        }
-
-        .creator-by {
-          color: #636e72;
-        }
-
-        .creator-name {
-          font-weight: 600;
-        }
-
-        .price-section {
-          display: flex;
-          margin: 0 20px;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .price {
-          font-size: 16px;
-          font-weight: 700;
-        }
-
-        .download-date {
-          font-size: 12px;
-          color: #636e72;
-        }
-
-        .download-actions {
-          display: flex;
-          gap: 10px;
-        }
-
-        .download-license {
-          padding: 8px 12px;
-          border-radius: 4px;
-          font-size: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          border: none;
-          color: white;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .download-license:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .download-btn {
-          padding: 8px 16px;
-          border-radius: 4px;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          border: none;
-        }
-
-        .download-btn.primary {
-          background: #0984e3;
-          color: white;
-        }
-
-        .download-btn.primary:hover {
-          background: #0770c4;
-        }
-
-        .loading,
-        .no_items {
-          text-align: center;
-          padding: 60px 20px;
-          font-size: 18px;
-          color: #636e72;
-        }
-
-        @media (max-width: 768px) {
-          .download-item-content {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-          }
-
-          .asset-details {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-            width: 100%;
-          }
-
-          .price-section {
-            margin: 0;
-            align-items: flex-start;
-          }
-
-          .download-actions {
-            width: 100%;
-            justify-content: flex-start;
-          }
-        }
+        
       `}</style>
     </>
   );

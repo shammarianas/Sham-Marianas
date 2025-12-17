@@ -4,7 +4,7 @@ import PageTitle from "../../Components/UI/PageTitle";
 import ListingSidebar from "../../Components/ListingSidebar";
 import ItemsListing from "../../Components/ItemsListing";
 import { Helmet } from "react-helmet-async";
-
+import Cursor from "../../common/cusor";
 const CategoryTemplate = () => {
   const location = useLocation();
   const pathname = location.pathname;
@@ -35,6 +35,7 @@ const CategoryTemplate = () => {
 
   return (
     <>
+     <Cursor />
       <Helmet>
         <title>{categoryTitle} | Shammarianas</title>
         <meta 
