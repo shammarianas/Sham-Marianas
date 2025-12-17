@@ -180,7 +180,7 @@ const Favorites = () => {
       </Helmet>
       <div className="page_content">
         <PageTitle title="My Favorites" />
-        <div className="item_listing">
+        <div className="item_listing p-3">
           {loading === true ? (
             <div className="loading">Loading...</div>
           ) : loading === "no_items" ? (
