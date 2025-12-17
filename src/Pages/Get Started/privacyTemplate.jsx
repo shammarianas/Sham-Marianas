@@ -1,0 +1,285 @@
+import React from "react";
+
+const PrivacyPolicyTemplate = () => {
+  return (
+    <div className="section-padding">
+      <div className="container mx-size">
+        <h1 className="text-4xl fw-600 mb-6 text-center">Privacy Policy</h1>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Welcome to <span className="text-600 underline main-color">Sham Marianas</span>'s Privacy Policy</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, your privacy isn't just a checkbox — it's a core part of our creative culture. Whether you're browsing, exploring, or building something epic with us, your personal information stays protected like a masterpiece in a gallery.
+        </p>
+
+        <p className="fotter-police-p p-color mb-4">
+          This privacy promise is designed for real people — no boring legal fluff, just clear, honest info on how we handle your data. We only collect what's necessary, protect it fiercely, and never trade your trust.
+        </p>
+
+        <p className="fotter-police-p p-color mb-8">
+          You're here to create, connect, and grow — we're here to make sure your digital journey is safe, seamless, and full of creative freedom.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Scope — Your Privacy, Our Commitment</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          Your privacy goes beyond mere policy — it's the foundation of everything we do. At <span className="text-bold underline main-color">Sham Marianas</span>, protecting your personal information is more than a responsibility; it's a core value. We are committed to safeguarding your data with every service we offer.
+        </p>
+
+        <p className="fotter-police-p p-color mb-8">
+          This privacy policy outlines how we manage your information, not just when you're using our platform but throughout every interaction with us. If payments are processed through PayPal Braintree, they handle your data separately.
+          From the moment you join, we prioritize the security, integrity, and confidentiality of your personal details, ensuring your trust is always respected and protected.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>What Kind of Information Do We Collect?</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, we gather only what truly matters — details that help us deliver a smarter, smoother, and more personalized experience for you.
+          This may include your name, email, contact number, location, preferences, IP address, business details, creative content you share with us, and how you interact with our site. If you're applying for a job with us, we may also collect your resume, cover letter, and other relevant details to understand you better.
+        </p>
+
+        <p className="fotter-police-p p-color mb-8">
+          To keep things safe and secure, we may verify identities through trusted third-party services. We also use cookies and similar tools to learn how you engage with our site — helping us keep everything running seamlessly and intuitively.
+          Your trust powers our platform, and we treat your data like we'd want ours treated — with care, purpose, and transparency.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>How We Gather Your Info—Smart, Seamless & Secure</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          Your journey with us naturally leaves digital footprints—and we use them to craft better experiences for you. From creating your account to joining campaigns or chatting with our support team, the information you share empowers us to serve you smarter.
+        </p>
+
+        <p className="fotter-police-p p-color mb-8">
+          Some details come straight from you; others come from how you interact with our platform. And yes, we may receive secure updates from our trusted tech partners to keep everything running smooth, fast, and future-ready.
+          Your data goes beyond storage—it fuels smoother, smarter experiences at every click.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Author Transparency & Trust</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, we build creativity on a foundation of integrity. Trust is at the core of every project we create, and we ensure that it starts with the creators behind the scenes.
+          To ensure our platform remains safe and secure, we responsibly collect and verify essential details about our authors. This not only helps us prevent fraud but also gives our clients peace of mind when they collaborate with our talented creators.
+        </p>
+
+        <p className="fotter-police-p p-color mb-8">
+          We strictly adhere to global standards, such as the EU Digital Services Act, and display verified information like the author's name, contact details, and business registration. This ensures every creator is authentic and trustworthy. If you need to get in touch with us, feel free to visit our Contact Page.
+          Our authors go the extra mile to verify their identity through secure third-party services, adding an extra layer of security. Because for us, transparency isn't just a policy—it's a promise we uphold for every member of our community.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Information We Get About You from Trusted Sources</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, we take your privacy seriously and believe in full transparency. While we mainly collect information directly from you, there are occasions when we gather additional details from trusted external sources to provide you with a seamless experience:
+        </p>
+
+        <ul className="fotter-police-p p-color mb-4 list-disc pl-6">
+          <li className="mb-2"><strong>Smooth Transactions:</strong> To ensure hassle-free transactions, we may collect your financial details (excluding payment card data) via secure payment providers.</li>
+          <li className="mb-2"><strong>Connected Platforms:</strong> If you link or log in through platforms like Google or Meta, we may access your profile information, always in line with your privacy settings.</li>
+          <li className="mb-2"><strong>Enhanced Insights:</strong> Through our trusted partners, we may receive extra insights—such as demographic data or fraud alerts—that help us deliver tailored services and improve your overall experience.</li>
+          <li className="mb-2"><strong>Rights Holder Data:</strong> If you're a rights holder, we might collect necessary permissions or releases, like a model release, when your image is featured in any of our offerings.</li>
+          <li className="mb-2"><strong>Team or Agency Info:</strong> If you're part of an organization, we may receive information from the account holder to better serve your team's needs.</li>
+        </ul>
+
+        <p className="fotter-police-p p-color mb-8">
+          Your trust and safety are our top priorities. We're committed to ensuring that you have full control over your information while enjoying a secure and seamless experience. Have questions or need assistance? Get in contact by visiting our Contact Page.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>The Ways We Use Your Personal Info</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, we believe your trust is everything—so here's how we use the personal information you share with us:
+        </p>
+
+        <ol className="fotter-police-p p-color mb-4 list-decimal pl-6">
+          <li className="mb-2"><strong>Powering Your Experience:</strong> We use your information to smoothly deliver the services you've signed up for—whether that's processing a transaction, granting access to downloads, or managing your account.</li>
+          <li className="mb-2"><strong>Making Our Platform Smarter:</strong> To keep things running smoothly and securely, we analyze site activity, fix issues, and improve your experience. This includes identifying fraud, maintaining performance, and developing better tools and services.</li>
+          <li className="mb-2"><strong>Staying in Touch with You:</strong> Expect updates about important changes, service improvements, and helpful support. We also respond to your queries and invite you to share your feedback through surveys and reviews.</li>
+          <li className="mb-2"><strong>Keeping Things Safe and Legit:</strong> We verify your identity (with your permission), protect against suspicious activity, and make sure everything complies with legal standards. This includes using third-party verification for secure onboarding and handling fraud alerts.</li>
+          <li className="mb-2"><strong>Building for the Future:</strong> Your insights help us create new features, better products, and personalized experiences. We may also use analytics to understand how people use our services and how we can reach the right audience through marketing.</li>
+          <li className="mb-2"><strong>Meeting Our Legal Duties:</strong> When the law requires it, we use your information to fulfill regulations—whether that's verifying your ID, reporting to authorities, or defending our legal rights.</li>
+        </ol>
+
+        <p className="fotter-police-p p-color mb-8">
+          If we're unable to collect certain details, we may not be able to offer you our full range of services or fulfill our legal responsibilities. Where we ask for optional details, it's always your choice.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>When Do We Share Your Info? Only When It Really Matters</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, your trust means everything to us. While we aim to keep your personal information secure and private, there are a few situations where sharing it becomes essential — always for the right reasons.
+        </p>
+
+        <ul className="fotter-police-p p-color mb-4 list-disc pl-6">
+          <li className="mb-2"><strong>With Trusted Dream-Team Partners:</strong> From secure payment processors to verified hosting providers — we work with top-tier services that help keep things fast, smooth, and professional behind the scenes.</li>
+          <li className="mb-2"><strong>For Legal & Safety Reasons:</strong> If the law calls, we answer — to protect you, us, and the creative ecosystem we're building. This includes law enforcement, courts, or government requests.</li>
+          <li className="mb-2"><strong>Inside Teams & Agencies:</strong> If you're using our services as part of a team or agency, some info may be shared with the account holder — just enough to keep things flowing.</li>
+          <li className="mb-2"><strong>Advisors with Purpose:</strong> Sometimes we bring in legal, financial, or compliance experts to guide us — and that may require sharing limited data under strict confidentiality.</li>
+          <li className="mb-2"><strong>Big Moves & Business Changes:</strong> If we're ever part of a business deal, merger, or exciting new chapter, data may be shared with trusted parties as part of the transition.</li>
+          <li className="mb-2"><strong>To Protect Our Creative Space:</strong> If we suspect fraud, misuse, or a breach, we'll act fast to defend our users, our rights, and your safety.</li>
+        </ul>
+
+        <p className="fotter-police-p p-color mb-8">
+          We never sell your data. We don't believe in spam. We only share when it helps make your experience better, safer, and smarter.
+          Have questions? Reach out here — we're here to talk.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Where Your Data Travels — And How We Keep It Safe Around the World</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-8">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, your privacy is our priority — no matter where you are or where we are. Since our team operates in places like the USA, Australia, New Zealand, Mexico, and beyond, your personal information may be securely transferred across borders to support and power the services you love.
+          We only share your data with trusted partners, even if they're located in countries with different privacy rules. But here's the key — we always make sure your information is treated with care, respect, and strong protection, just like it would be under your local laws.
+          Whether it's locked down by international agreements, secured through encrypted contracts, or handled by verified data-compliant teams, we never compromise on your safety.
+          By continuing with us, you agree to let us handle your data responsibly and globally — always with your best interest at heart.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Your Privacy. Your Power</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, we don't just protect your data — we hand you the remote. Wherever you are in the world, if your local laws support it, you may have the following rights — and we're all in to help you use them:
+        </p>
+
+        <ul className="fotter-police-p p-color mb-4 list-disc pl-6">
+          <li className="mb-2"><strong>See What We See:</strong> Want to know what info we hold about you? It's your right to ask — and our job to answer.</li>
+          <li className="mb-2"><strong>Fix What's Wrong:</strong> If something's outdated or off, let us know and we'll make it right.</li>
+          <li className="mb-2"><strong>Wipe the Slate Clean:</strong> Don't want us holding your data anymore? You can ask us to delete it — no hard feelings.</li>
+          <li className="mb-2"><strong>Put It On Pause:</strong> Feel like taking a break? You can limit how we use your info, anytime.</li>
+          <li className="mb-2"><strong>Say "No Thanks":</strong> Don't want your info used in a certain way? You can object — and we'll listen.</li>
+          <li className="mb-2"><strong>Take It With You:</strong> Do you require your data in an understandable, practical format? Just ask — it's yours.</li>
+          <li className="mb-2"><strong>Not for Sale:</strong> You can choose not to have your data shared or sold for targeted advertising. Just click "Do Not Sell or Share My Personal Information" in the footer of our site.</li>
+        </ul>
+
+        <p className="fotter-police-p p-color mb-8">
+          Before we act on a request, we might need to verify that it's really you — just to be safe. In some cases, if we're legally required to keep certain data, we'll let you know why. But don't worry—your rights will always come first.
+          You can also manage your account details anytime by logging in. Want us to permanently remove everything? Just send a data deletion request — it's your call.
+          At <span className="text-bold underline main-color">Sham Marianas</span>, protecting your privacy is our promise — and your peace of mind.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Stay in the Loop—Only If You Want To</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-8">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, we only show up in your inbox when we have something worth your time — like fresh ideas, exclusive updates, or services tailored just for you. Not feeling it? No hard feelings. One click on "unsubscribe," and we'll give you space.
+          Your digital comfort matters, too. You decide how cookies play in your browsing experience — accept them all, get notified, or block them completely. Just so you know, if you block cookies, it may affect how well our site works for you.
+          Curious about what we track and why? Dive into the full details in our [Cookie Policy].
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Cookies & Web Analytics — The Digital Pulse of Your Visit</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          When you visit <span className="text-bold underline main-color">Sham Marianas</span>, we don't just welcome you — we listen. Our system quietly collects helpful details like your device type, browser power, what pages you explore, and how long you stick around. Why? To make every click count and every visit smoother, faster, and more tailored to your vibe.
+          We use cookies and smart analytics to understand how you experience our site — which parts you love, where you linger, and how we can keep leveling up your journey with us. It's all about delivering a browsing experience that feels intuitive and personal.
+        </p>
+
+        <p className="fotter-police-p p-color mb-8">
+          You're in control — want to allow cookies, get notified when they pop up, or block them completely? You have complete control over that through your browser's settings. Just keep in mind: turning them off might make things a little less fluid.
+          We also occasionally work with trusted ad partners to show you tailored content elsewhere online — think of it as a helpful reminder, not a random interruption. And while some browsers offer "Do Not Track" signals, we currently don't act on those — but rest assured, our focus is always on creating a respectful and optimized experience for you.
+          At <span className="text-bold underline main-color">Sham Marianas</span>, every digital detail matters — because your journey deserves nothing less than seamless.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Think Before You Share</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-8">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, your privacy is a priority— but the moment you decide to post publicly, it becomes your spotlight.
+          Whether you're dropping a comment on a forum, connecting with someone on social media, or messaging another creator — you're in control of what you share. Just remember: once it's out there, it's out there.
+          If you're using a third-party platform or another website to interact, their privacy rules apply — not ours. So, always take a moment to double-check their policies before handing over your personal info.
+          Your voice matters — just make sure it's protected.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>How Long We Keep Your Info — And How You Stay in Control</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          We believe in keeping things clean and clear — and that includes your personal information. At <span className="text-bold underline main-color">Sham Marianas</span>, we only hold your data for as long as it's actually needed. No hoarding. No hidden files. Just smart, purpose-driven storage.
+          When deciding how long to keep something, we ask: Is it useful? Is it safe to keep? Are we legally required to store it?
+        </p>
+
+        <p className="fotter-police-p p-color mb-8">
+          Once it's no longer essential, we let it go.
+          If you ever feel like breaking up with us or want to manage your personal info, just say the word. Whether you're deleting an account, fixing a detail, or just want to go off the grid — we'll handle it with care.
+          Just a heads-up: in rare cases, we might need to hold on to certain info to follow the law, solve problems, stop fraud, or respond to authorities. But rest assured, even that data stays protected and handled with full transparency.
+          Because at <span className="text-bold underline main-color">Sham Marianas</span>, your data isn't just stored — it's respected.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>When We Update — You're Always in the Know</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-8">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, change doesn't sneak up on you — it stands tall, announced, and crystal clear.
+          Every now and then, we refresh our privacy policy to stay in sync with new laws, evolving technology, or to simply serve you better. These updates aren't hidden in the fine print — we make sure you see them. Whether it's a bold banner on our website or a quick email update, you'll know exactly what's new.
+          The most up-to-date version of our policy is always available on this page. That means you're never left in the dark — you're informed, empowered, and part of every step we take.
+          By continuing to explore and use <span className="text-bold underline main-color">Sham Marianas</span>, you're saying, "I trust this space. Let's move forward — together and transparently."
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Your Privacy. Your Voice. We're All Ears.</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          Need to ask, share, or sort something out? We're not just listening — we're ready to take action.
+          At <span className="text-bold underline main-color">Sham Marianas</span>, we treat your privacy like a promise. So if you ever want to review, update, or delete your personal data — or simply understand how we handle it — our Data Protection Officer is just one message away.
+          Here's how to reach out:
+        </p>
+
+        <ul className="fotter-police-p p-color mb-4 list-disc pl-6">
+          <li className="mb-2">Provide enough detail for us to confirm who you are (or that you're acting for someone else).</li>
+          <li className="mb-2">Clearly explain your query, request, or concern so we can respond swiftly and meaningfully.</li>
+        </ul>
+
+        <p className="fotter-police-p p-color mb-8">
+          We don't do delays — your request will be handled with priority and respect, all within the timeline set by law. You'll hear back from us every step of the way.
+          Your data. Your terms. Our only goal is to make it easy and secure.
+        </p>
+
+        <h3 className="mt-5 fz-30 fw-600 mb-4">
+          <strong>Speak up. We're Listening — Loud and Clear</strong>
+        </h3>
+
+        <p className="fotter-police-p p-color mb-4">
+          At <span className="text-bold underline main-color">Sham Marianas</span>, your peace of mind is our promise. If something about how we manage your personal information feels off, don't hold back — your voice deserves to be heard.
+          We don't just receive complaints — we act on them.
+          Here's what happens when you reach out:
+        </p>
+
+        <ul className="fotter-police-p p-color mb-4 list-disc pl-6">
+          <li className="mb-2">We instantly acknowledge your concern — because your time matters.</li>
+          <li className="mb-2">We dive deep into the issue and aim to resolve it quickly and fairly.</li>
+          <li className="mb-2">We keep you informed at every stage.</li>
+        </ul>
+
+        <p className="fotter-police-p p-color mb-8">
+          And if you believe that your issue hasn't been adequately addressed? You may also have the right to take it further by contacting your regional data protection authority.
+          <span className="text-bold underline main-color">Sham Marianas</span> values your privacy like a trusted bond — secure and unbreakable.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default PrivacyPolicyTemplate;

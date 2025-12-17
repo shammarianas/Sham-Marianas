@@ -800,7 +800,7 @@ const Profile = () => {
       await deleteUser(user);
 
       alert("Your account has been permanently deleted.");
-      navigate("/stock", { replace: true });
+      navigate("/templates", { replace: true });
     } catch (err) {
       if (err.code === "auth/wrong-password") {
         alert("The password you entered is incorrect.");
@@ -845,7 +845,7 @@ const Profile = () => {
       await auth.signOut();
 
       // Navigate to Stack page (replace '/stack' with your actual Stack page route)
-      navigate("/stock", { replace: true });
+      navigate("/templates", { replace: true });
     } catch (err) {
       alert("Failed to deactivate: " + err.message);
     }
@@ -1155,13 +1155,13 @@ const Profile = () => {
               {activeTab === "profile" && (
                 <div className="tab-content">
                   <div className="account-details-card">
-                    <div className="info-banner">
+                    {/* <div className="info-banner">
                       <span className="icon">i</span>
                       <span>
                         Some fields are not editable here. Please update them
                         via your Google account.
                       </span>
-                    </div>
+                    </div> */}
                     <div className="form-grid">
                       <div className="form-field">
                         <label>First name</label>

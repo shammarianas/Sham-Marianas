@@ -32,7 +32,7 @@ import PortfolioDetails from "./Pages/project-details";
 import Support from "./Pages/Support";
 import AboutUs from "./Pages/AboutUs";
 import Services from "./Pages/services";
-import StockPage from "./Pages/Stock";
+import StockPage from "./Pages/templates";
 import MyDownloads from "./Pages/MyDownloads";
 import Favorites from "./Pages/Favorites";
 import Admin from "./Pages/Admin";
@@ -61,7 +61,11 @@ import BlogCategory from "./Pages/Blog-Category";
 import Subscription from "./Pages/Subscription";
 import ContributorLogin from "./Pages/Login/ContributorLogin";
 import ContributorDashboard from "./Components/UI/dashboard/Contributor/ContributorDashboard";
-
+import PrivacyPolicyTemplate from "./Pages/Get Started/privacyTemplate";
+import TermsandConditionTemplate from "./Pages/Get Started/termsOfTemplate";
+import  SellerGuideline from "./Pages/Get Started/SellerGuidelines";
+import PricingAndFees from "./Pages/Get Started/pricing&fee";
+import ContributorPolicies from "./Pages/Get Started/ContributorPolicies";
 // STRIPE IMPORTS - ADDED
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
@@ -110,7 +114,7 @@ export const AppRoutes = () => (
     <Route path="/Support" element={<Support />} />
     <Route path="/about" element={<AboutUs />} />
     <Route path="/page-team" element={<PageTeam />} />
-    <Route path="/stock" element={<StockPage />} />
+    <Route path="/templates" element={<StockPage />} />
     <Route path="/services" element={<Services />} />
     <Route path="/success" element={<Success />} />
     <Route path="/services/branding" element={<BrandingDesignPage />} />
@@ -128,8 +132,13 @@ export const AppRoutes = () => (
     <Route path="/services/brandingpage" element={<BrandingPage />} />
     <Route path="/services/demo" element={<Demo />} />
     <Route path="/error" element={<Error />} />
-    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+    <Route path="/privacy-policy" element={<PrivacyPolicyTemplate />} />
+    <Route path="/privacy-policy-template" element={<PrivacyPolicyTemplate />} />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
+    <Route path="/terms-of-template" element={<TermsandConditionTemplate />} />
+    <Route path="/seller-guideline" element={<SellerGuideline />} />
+    <Route path="/pricing-and-fees" element={<PricingAndFees />} />
+    <Route path="/contributor-policies" element={<ContributorPolicies />} />
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
@@ -146,9 +155,28 @@ export const AppRoutes = () => (
     <Route path="/:username" element={<Profile />} />
 
     {/* Generic dynamic route for Category - should be LAST */}
+<<<<<<< HEAD
     <Route path="/:Category" element={<CategoryTemplate />} />
 
     {/* Remove this duplicate generic route */}
+=======
+    {/* <Route path="/:Category" element={<CategoryTemplate />} /> */}
+    <Route path="/fonts" element={<CategoryTemplate />} />
+    <Route path="/video-templates" element={<CategoryTemplate />} />
+    <Route path="/icons" element={<CategoryTemplate />} />
+    <Route path="/models" element={<CategoryTemplate />} />
+    <Route path="/mockups" element={<CategoryTemplate />} />
+    <Route path="/graphics" element={<CategoryTemplate />} />
+    <Route path="/videos" element={<CategoryTemplate />} />
+    <Route path="/images" element={<CategoryTemplate />} />
+    <Route path="/scripts" element={<CategoryTemplate />} />
+    <Route path="/hdri" element={<CategoryTemplate />} />
+    <Route path="/hdris" element={<CategoryTemplate />} /> {/* both hdri and hdris */}
+    <Route path="/textures" element={<CategoryTemplate />} /> {/* if you have this */}
+    <Route path="/More" element={<CategoryTemplate />} /> {/* if you have this */}
+    
+<Route path="*" element={<Error />} />
+>>>>>>> 492cb38a9508951a9cd1d15925236c352e6aaedc
   </Routes>
 );
 
