@@ -30,6 +30,7 @@ import VideoViewer from "./VideoViewer";
 import ContentViewer from "../Components/ContentViewer";
 import AssetFullScreen from "../Components/AssetFullScreen";
 import RelatedItems from "../Components/RelatedItems";
+import Cursor from "../common/cusor";
 
 const View = () => {
   const { currentUser, userProfile } = useUser();
@@ -135,6 +136,7 @@ const View = () => {
 
   return (
     <>
+     <Cursor />
       <Helmet>
         <title>{`${item.title} | shammarianas`} </title>
         <meta name="description" content={item.description} />
