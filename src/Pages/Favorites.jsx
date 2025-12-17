@@ -106,8 +106,10 @@ const Favorites = () => {
           // The document data contains the asset information
           const assetData = doc.data();
 
+          // Store both id and slug
           favoritesData.push({
             id: assetId,
+            slug: assetData.slug || assetId, // Use slug if available, otherwise use id
             ...assetData,
           });
         }
@@ -149,6 +151,26 @@ const Favorites = () => {
     return null;
   };
 
+  // Function to get the correct link for an asset
+  const getAssetLink = (asset) => {
+    if (!asset) return "#";
+    
+    // Priority: slug -> id -> title as slug
+    if (asset.slug) {
+      return `/View/${asset.slug}`;
+    } else if (asset.id) {
+      return `/View/${asset.id}`;
+    } else if (asset.title) {
+      // Create a slug from title
+      const slug = asset.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      return `/View/${slug}`;
+    }
+    return "#";
+  };
+
   return (
     <>
       <Helmet>
@@ -169,6 +191,7 @@ const Favorites = () => {
             assets.map((asset, index) => {
               const is3D = is3DModel(asset);
               const modelUrl = get3DModelUrl(asset);
+              const assetLink = getAssetLink(asset); // Get correct link
 
               return (
                 <div className="" key={index}>
@@ -187,7 +210,7 @@ const Favorites = () => {
                           </span>
                         </div>
                       ) : null}
-                      <Link className="card_image" to={`/View/${asset.id}`}>
+                      <Link className="card_image" to={assetLink}>
                         {is3D ? (
                           <SimpleModelViewer modelUrl={modelUrl} />
                         ) : (

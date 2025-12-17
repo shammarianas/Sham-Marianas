@@ -139,8 +139,7 @@ const Checkout = () => {
     if (freeTrial) {
       await updateUserSubscription();
       localStorage.removeItem("pendingSubscription");
-      localStorage.removeItem("paymentProcessing"); // 🆕 CLEAR
-      navigate("/stock", {
+      navigate("/templates", {
         state: { message: "Free trial started successfully!", type: "trial" },
       });
       setLoading(false);

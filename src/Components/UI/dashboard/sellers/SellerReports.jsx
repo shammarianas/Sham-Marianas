@@ -590,21 +590,30 @@ const SellerReports = () => {
     console.log(`✅ All reports exported: ${fileName}`);
   };
 
-  if (loading) {
-    return (
-      <div className="user-reports-dashboard">
-        <div className="loading-overlay">
-          <div className="loading-content">
-            <div className="loading-spinner"></div>
-            <p>Loading seller reports...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="user-reports-dashboard">
+  //       <div className="loading-overlay">
+  //         <div className="loading-content">
+  //           <div className="loading-spinner"></div>
+  //           <p>Loading seller reports...</p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="user-reports-dashboard">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading Seller Reports...</p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-content">
@@ -615,17 +624,7 @@ const SellerReports = () => {
           <p className="header-subtitle">
             Generate and manage seller performance reports
           </p>
-          <div className="dynamic-stats">
-            <span className="dynamic-stat-badge">
-              <FiTrendingUp /> Avg Growth: {stats.totalGrowth.toFixed(1)}%
-            </span>
-            <span className="dynamic-stat-badge">
-              <FiDollarSign /> Weekly Rev: ${stats.weeklyRevenue.toLocaleString()}
-            </span>
-            <span className="dynamic-stat-badge">
-              <FiCalendar /> Monthly Rev: ${stats.monthlyRevenue.toLocaleString()}
-            </span>
-          </div>
+         
         </div>
         <div className="header-actions">
           <span className="user-badge-count">

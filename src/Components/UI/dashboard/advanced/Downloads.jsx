@@ -270,24 +270,33 @@ const Downloads = () => {
     setSelectedAsset(null);
   };
 
-  if (loading) {
-    return (
-      <div className="user-reports-dashboard">
-        <div className="dashboard-header">
-          <div className="header-content">
-            <h2 className="header-title">
-              <FiDownload className="header-icon" />
-              Downloads Analytics
-            </h2>
-          </div>
-        </div>
-        <div className="loading">Loading download analytics...</div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="user-reports-dashboard">
+  //       <div className="dashboard-header">
+  //         <div className="header-content">
+  //           <h2 className="header-title">
+  //             <FiDownload className="header-icon" />
+  //             Downloads Analytics
+  //           </h2>
+  //         </div>
+  //       </div>
+  //       <div className="loading">Loading download analytics...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="user-reports-dashboard">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading Downloads Reports...</p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-content">
@@ -591,11 +600,7 @@ const Downloads = () => {
             <FiList className="panel-icon" />
             Asset Download Statistics
           </h3>
-          <div className="recent-reports-header">
-          <h3 className="panel-title">
-            <FiList className="panel-icon" />
-            Asset Download Statistics
-          </h3>
+          <div>
           <ExportButton
             data={filteredDownloads.length > 0 ? filteredDownloads : downloads}
             filename="downloads-analytics"

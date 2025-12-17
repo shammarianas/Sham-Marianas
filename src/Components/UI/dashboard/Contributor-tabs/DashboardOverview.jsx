@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   FiUpload,
   FiClock,
-  FiXCircle,
   FiCheckCircle,
   FiDollarSign,
   FiTrendingUp,
@@ -11,8 +10,6 @@ import {
   FiDownload,
   FiStar,
   FiFileText,
-  FiUsers,
-  FiAlertCircle,
   FiTrendingDown,
   FiPieChart,
   FiList,
@@ -22,7 +19,7 @@ import {
   FiChevronLeft,
 } from "react-icons/fi";
 import Upload from "../../../../Pages/Upload";
-
+import Cursor from "../../../../common/cusor";
 
 const DashboardOverview = ({
   userData,
@@ -47,6 +44,11 @@ const DashboardOverview = ({
   const handleStats = () => {
     // Ya toh tab change karein
     setActiveTab("stats");
+  };
+
+  const handleGuidelines = () => {
+    // ✅ FIXED: Use "guidelines" instead of "seller-guideline"
+    setActiveTab("guidelines");
   };
 
   // Calculate additional stats
@@ -133,11 +135,13 @@ const DashboardOverview = ({
   };
 
   return (
+    <>
+     <Cursor />
     <div className="user-reports-dashboard">
       {/* Upload Modal */}
       {showUploadDialog && (
         <div className="modal-overlay" onClick={handleUploadClose}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Upload New Asset</h3>
               <button className="modal-close" onClick={handleUploadClose}>
@@ -192,9 +196,8 @@ const DashboardOverview = ({
               All time content submissions
             </div>
             <div
-              className={`report-stat-trend ${
-                trends.totalUploads.isPositive ? "positive" : "negative"
-              }`}
+              className={`report-stat-trend ${trends.totalUploads.isPositive ? "positive" : "negative"
+                }`}
             >
               {trends.totalUploads.value > 0 ? "+" : ""}
               {trends.totalUploads.value.toFixed(1)}%
@@ -220,9 +223,8 @@ const DashboardOverview = ({
           <div className="report-stat-content">
             <div className="report-stat-subtext">In review process</div>
             <div
-              className={`report-stat-trend ${
-                trends.underRevision.isPositive ? "positive" : "negative"
-              }`}
+              className={`report-stat-trend ${trends.underRevision.isPositive ? "positive" : "negative"
+                }`}
             >
               {trends.underRevision.value > 0 ? "+" : ""}
               {trends.underRevision.value.toFixed(1)}%
@@ -250,9 +252,8 @@ const DashboardOverview = ({
               {approvalRate}% approval rate
             </div>
             <div
-              className={`report-stat-trend ${
-                trends.published.isPositive ? "positive" : "negative"
-              }`}
+              className={`report-stat-trend ${trends.published.isPositive ? "positive" : "negative"
+                }`}
             >
               {trends.published.value > 0 ? "+" : ""}
               {trends.published.value.toFixed(1)}%
@@ -280,9 +281,8 @@ const DashboardOverview = ({
           <div className="report-stat-content">
             <div className="report-stat-subtext">Lifetime earnings</div>
             <div
-              className={`report-stat-trend ${
-                trends.earnings.isPositive ? "positive" : "negative"
-              }`}
+              className={`report-stat-trend ${trends.earnings.isPositive ? "positive" : "negative"
+                }`}
             >
               {trends.earnings.value > 0 ? "+" : ""}
               {trends.earnings.value.toFixed(1)}%
@@ -316,7 +316,7 @@ const DashboardOverview = ({
                   <span className="metric-status excellent">Excellent</span>
                 </div>
                 <div className="d-flex justify-content-between ">
-                <div className="metric-target">Target: 80%</div>
+                  <div className="metric-target">Target: 80%</div>
                   <div className="metric-target">{approvalRate}%</div>
                 </div>
                 <div className="category-progress-bar">
@@ -335,23 +335,22 @@ const DashboardOverview = ({
                   <span className="metric-status poor">Poor</span>
                 </div>
                 <div className="d-flex justify-content-between ">
-                    <div className="metric-target">Target: Below 10%</div>
+                  <div className="metric-target">Target: Below 10%</div>
                   <div className="metric-target">
-                  {stats.totalUploads > 0
-                    ? ((stats.rejections / stats.totalUploads) * 100).toFixed(1)
-                    : 0}
-                  %
-                </div>
+                    {stats.totalUploads > 0
+                      ? ((stats.rejections / stats.totalUploads) * 100).toFixed(1)
+                      : 0}
+                    %
+                  </div>
                 </div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill poor"
                     style={{
-                      width: `${
-                        stats.totalUploads > 0
-                          ? (stats.rejections / stats.totalUploads) * 100
-                          : 0
-                      }%`,
+                      width: `${stats.totalUploads > 0
+                        ? (stats.rejections / stats.totalUploads) * 100
+                        : 0
+                        }%`,
                     }}
                   ></div>
                 </div>
@@ -363,26 +362,25 @@ const DashboardOverview = ({
                   <span className="metric-status average">Average</span>
                 </div>
                 <div className="d-flex justify-content-between">
-                    <div className="metric-target">Target: Below 15%</div>
+                  <div className="metric-target">Target: Below 15%</div>
                   <div className="metric-target">
-                  {stats.totalUploads > 0
-                    ? (
+                    {stats.totalUploads > 0
+                      ? (
                         (stats.underRevision / stats.totalUploads) *
                         100
                       ).toFixed(1)
-                    : 0}
-                  %
-                </div>
+                      : 0}
+                    %
+                  </div>
                 </div>
                 <div className="category-progress-bar">
                   <div
                     className="category-progress-fill average"
                     style={{
-                      width: `${
-                        stats.totalUploads > 0
-                          ? (stats.underRevision / stats.totalUploads) * 100
-                          : 0
-                      }%`,
+                      width: `${stats.totalUploads > 0
+                        ? (stats.underRevision / stats.totalUploads) * 100
+                        : 0
+                        }%`,
                     }}
                   ></div>
                 </div>
@@ -419,7 +417,7 @@ const DashboardOverview = ({
 
               <button
                 className="action-button secondary"
-                onClick={() => console.log("Guidelines")}
+                onClick={handleGuidelines}
               >
                 <FiStar className="button-icon" />
                 Guidelines
@@ -431,7 +429,7 @@ const DashboardOverview = ({
 
       {/* Recent Activity */}
       <div className="recent-reports-card">
-        <div className="recent-reports-header">
+        <div className="recent-reports-header p-0">
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Recent Activity
           </h3>
@@ -477,17 +475,16 @@ const DashboardOverview = ({
                   </td>
                   <td>
                     <span
-                      className={`report-status-badge ${
-                        asset.status || "pending"
-                      }`}
+                      className={`report-status-badge ${asset.status || "pending"
+                        }`}
                     >
                       {asset.status === "approved"
                         ? "Approved"
                         : asset.status === "pending"
-                        ? "Pending"
-                        : asset.status === "rejected"
-                        ? "Rejected"
-                        : "Pending"}
+                          ? "Pending"
+                          : asset.status === "rejected"
+                            ? "Rejected"
+                            : "Pending"}
                     </span>
                   </td>
                   <td>
@@ -550,9 +547,8 @@ const DashboardOverview = ({
                   {getPageNumbers().map((page) => (
                     <button
                       key={page}
-                      className={`pagination-number ${
-                        page === currentPage ? "active" : ""
-                      }`}
+                      className={`pagination-number ${page === currentPage ? "active" : ""
+                        }`}
                       onClick={() => handlePageClick(page)}
                     >
                       {page}
@@ -654,36 +650,200 @@ const DashboardOverview = ({
       </div> */}
 
       {/* Footer */}
-      <div className="dashboard-footer">
+      {/* <div className="dashboard-footer">
         <div className="footer-content">
           <div className="footer-section">
             <h4>CONTRIBUTOR CONTENT</h4>
-            <p>Manage and track your content performance</p>
-          </div>
-          <div className="footer-section">
-            <h4>Quick Links</h4>
             <div className="footer-links">
               <a href="#upload" onClick={handleOpenUpload}>
-                Upload New File
+                Contributer Upload Guidelines
               </a>
-              <a href="#guidelines">Content Guidelines</a>
-              <a href="#support">Support</a>
+              <a href="#guidelines">Contributer Terms & Conditions</a>
+              <a href="#support">About Us</a>
+              <a href="#support">Blog</a>
             </div>
           </div>
           <div className="footer-section">
-            <h4>Stats Summary</h4>
-            <div className="footer-stats">
-              <span>Total Uploads: {stats.totalUploads}</span>
-              <span>Published: {stats.published}</span>
-              <span>Earnings: {formatCurrency(stats.totalEarnings)}</span>
+            <h4>AI TOOLS</h4>
+            <div className="footer-links">
+              <a href="#" >
+                AI Image Generator
+              </a>
+              <a href="#" >
+                AI Video Generator
+              </a>
+              <a href="#" >
+                All AI Tools
+              </a>
+            </div>
+          </div>
+          <div className="footer-section">
+            <h4>HELP</h4>
+            <div className="footer-links">
+              <Link to="/support" className="footer-link">
+                Support Center
+              </Link>
+              <Link to="/contact" className="footer-link">
+                Contact
+              </Link>
             </div>
           </div>
         </div>
-        <div className="footer-bottom">
-          <p>&copy; 2024 Content Dashboard. All rights reserved.</p>
+        <div className="footer-social d-flex flex-column px-5 pb-3">
+          <div>
+            <ul className="rest social-icon d-flex align-items-center">
+              <span>Follow Us:</span>
+              <li className="hover-this cursor-pointer ml-10">
+                <a href="#" target="_blank" rel="noreferrer">
+                  <div className="hover-anim circle-a">
+                    <i className="fa-brands fa-youtube"></i>
+                  </div>
+                </a>
+              </li>
+              <li className="hover-this cursor-pointer ml-10">
+                <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                  <div className="hover-anim circle-a">
+                    <i className="fa-brands fa-pinterest"></i>
+                  </div>
+                </a>
+              </li>
+              <li className="hover-this cursor-pointer ml-10">
+                <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                  <div className="hover-anim circle-a">
+                    <i className="fab fa-instagram"></i>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
+
+        <div className="footer-bottom">
+          <p>Copyright &copy; 2026 Sham Marianas. All rights reserved.</p>
+        </div>
+      </div> */}
+
+      <footer className="clean-footer crev">
+        <div className="container mt-100 pb-40 pt-40 ontop">
+          <div className="row justify-content-between">
+            {/* <div className="col-lg-2">
+              <div className="logo icon-img-100 md-mb80">
+                <img src="/assets/imgs/logo.png" alt="" />
+              </div>
+            </div> */}
+
+            <div className="col-lg-3 md-mb50">
+              <h6 className="sub-title mb-30">Contributer Content</h6>
+              <ul className="rest fz-14 opacity-7">
+                <li className="mb-15">
+                  <Link to="/seller-guideline">Contributer Upload Guidelines</Link>
+                </li>
+                <li className="mb-15">
+                  <Link to="/contributor-policies">Contributer Terms & Conditions</Link>
+                </li>
+                <li className="mb-15">
+                  <Link to="/pricing-and-fees">Pricing & Fees</Link>
+                </li>
+              </ul>
+            </div>
+
+            <div className="col-lg-2 md-mb50">
+              <h6 className="sub-title mb-30">Help</h6>
+              <ul className="rest fz-14 opacity-7">
+                <li className="mb-15">
+                  <Link to="/support">Support Center</Link>
+                </li>
+                <li className="mb-15">
+                  <a href="/contect">Contact</a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Newsletter & Social */}
+            <div className="col-lg-4 p-0">
+              <div className="column subscribe-minimal">
+                <ul className="rest social-icon d-flex align-items-center">
+
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="#" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fa-brands fa-youtube"></i>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fa-brands fa-pinterest"></i>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fab fa-behance"></i>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fa-brands fa-dribbble"></i>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="hover-this cursor-pointer ml-10">
+                    <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                      <div className="hover-anim circle-a">
+                        <i className="fab fa-instagram"></i>
+                      </div>
+                    </a>
+                  </li>
+
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-30 pb-30 mt-80 bord-thin-top">
+            <div className="text-center">
+              <p className="fz-14">
+                © 2025 All Rights Reserved By{" "}
+                <span className="underline main-color">
+                  <a href="/" target="_blank" rel="noreferrer">
+                    Sham Marianas
+                  </a>
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="circle-blur">
+          <img src="\assets\imgs\patterns\blur1.png" alt="" />
+        </div>
+      </footer>
+
     </div>
+
+<style>
+  {`
+  footer.clean-footer.crev:after{
+    top: 0;
+    left: 0px;
+    bottom: 40px;
+    right: 0px;
+  }
+  footer.clean-footer.crev .circle-blur {
+    z-index: 0;
+  }
+  .row{
+    margin: 0.75rem !important;
+  }
+  `}
+</style>
+
+    </>
   );
 };
 
