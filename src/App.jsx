@@ -63,7 +63,7 @@ import ContributorLogin from "./Pages/Login/ContributorLogin";
 import ContributorDashboard from "./Components/UI/dashboard/Contributor/ContributorDashboard";
 import PrivacyPolicyTemplate from "./Pages/Get Started/privacyTemplate";
 import TermsandConditionTemplate from "./Pages/Get Started/termsOfTemplate";
-import  SellerGuideline from "./Pages/Get Started/SellerGuidelines";
+import SellerGuideline from "./Pages/Get Started/SellerGuidelines";
 import PricingAndFees from "./Pages/Get Started/pricing&fee";
 import ContributorPolicies from "./Pages/Get Started/ContributorPolicies";
 // STRIPE IMPORTS - ADDED
@@ -133,7 +133,10 @@ export const AppRoutes = () => (
     <Route path="/services/demo" element={<Demo />} />
     <Route path="/error" element={<Error />} />
     <Route path="/privacy-policy" element={<PrivacyPolicyTemplate />} />
-    <Route path="/privacy-policy-template" element={<PrivacyPolicyTemplate />} />
+    <Route
+      path="/privacy-policy-template"
+      element={<PrivacyPolicyTemplate />}
+    />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     <Route path="/terms-of-template" element={<TermsandConditionTemplate />} />
     <Route path="/seller-guideline" element={<SellerGuideline />} />
@@ -142,25 +145,17 @@ export const AppRoutes = () => (
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
-
     {/* Dynamic routes with parameters - order matters! */}
     <Route path="/View/:slug" element={<View />} />
     <Route path="/blog/:id" element={<BlogDetails />} />
     <Route path="/blog-details/:id" element={<BlogDetails />} />
     <Route path="/project-details/:id" element={<PortfolioDetails />} />
     <Route path="/blog-category/:category" element={<BlogCategory />} />
-
     {/* Profile routes - should come before generic dynamic route */}
     <Route path="/Profile/:username" element={<Profile />} />
     <Route path="/:username" element={<Profile />} />
-
     {/* Generic dynamic route for Category - should be LAST */}
-<<<<<<< HEAD
     <Route path="/:Category" element={<CategoryTemplate />} />
-
-    {/* Remove this duplicate generic route */}
-=======
-    {/* <Route path="/:Category" element={<CategoryTemplate />} /> */}
     <Route path="/fonts" element={<CategoryTemplate />} />
     <Route path="/video-templates" element={<CategoryTemplate />} />
     <Route path="/icons" element={<CategoryTemplate />} />
@@ -171,12 +166,13 @@ export const AppRoutes = () => (
     <Route path="/images" element={<CategoryTemplate />} />
     <Route path="/scripts" element={<CategoryTemplate />} />
     <Route path="/hdri" element={<CategoryTemplate />} />
-    <Route path="/hdris" element={<CategoryTemplate />} /> {/* both hdri and hdris */}
-    <Route path="/textures" element={<CategoryTemplate />} /> {/* if you have this */}
-    <Route path="/More" element={<CategoryTemplate />} /> {/* if you have this */}
-    
-<Route path="*" element={<Error />} />
->>>>>>> 492cb38a9508951a9cd1d15925236c352e6aaedc
+    <Route path="/hdris" element={<CategoryTemplate />} />{" "}
+    {/* both hdri and hdris */}
+    <Route path="/textures" element={<CategoryTemplate />} />{" "}
+    {/* if you have this */}
+    <Route path="/More" element={<CategoryTemplate />} />{" "}
+    {/* if you have this */}
+    <Route path="*" element={<Error />} />
   </Routes>
 );
 

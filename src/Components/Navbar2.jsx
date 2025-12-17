@@ -9,17 +9,14 @@ import { doc, getDoc } from "firebase/firestore";
 
 const Navbar = () => {
   const { currentUser } = useUser() || "";
-   const [isContributor, setIsContributor] = useState(false);
+  const [isContributor, setIsContributor] = useState(false);
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const cartCount = cart.length;
   const currentPage = useLocation().pathname;
   const [username, setUsername] = useState(null);
-<<<<<<< HEAD
-=======
   const [userProfileData, setUserProfileData] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false); // State for More menu
->>>>>>> 492cb38a9508951a9cd1d15925236c352e6aaedc
 
   const showTemplateButton = [
     "/",
@@ -34,13 +31,13 @@ const Navbar = () => {
     path === "/" ? currentPage === "/" : currentPage.startsWith(path)
   );
 
- useEffect(() => {
+  useEffect(() => {
     const checkContributorStatus = async () => {
       if (!currentUser?.uid) {
         setIsContributor(false);
         return;
       }
-      
+
       try {
         const contributorRef = doc(db, "Contributors", currentUser.uid);
         const contributorSnap = await getDoc(contributorRef);
@@ -50,11 +47,11 @@ const Navbar = () => {
         setIsContributor(false);
       }
     };
-    
+
     if (currentUser?.uid) {
       checkContributorStatus();
     }
-  }, [currentUser]); 
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -90,7 +87,6 @@ const Navbar = () => {
     fetchUsername();
   }, [currentUser]);
 
-<<<<<<< HEAD
   //
   const getProfileLink = () => {
     if (!currentUser?.uid) return "/login";
@@ -100,67 +96,6 @@ const Navbar = () => {
     }
 
     return `/profile`; // Fallback
-=======
-  const getDisplayName = () => {
-    if (!userProfileData) {
-      if (currentUser?.displayName) return currentUser.displayName;
-      if (currentUser?.email) {
-        const emailName = currentUser.email.split("@")[0];
-        return emailName.charAt(0).toUpperCase() + emailName.slice(1);
-      }
-      return "User";
-    }
-
-    const firstName = userProfileData.firstName || userProfileData.firstname || userProfileData.first_name;
-    const lastName = userProfileData.lastName || userProfileData.lastname || userProfileData.last_name;
-
-    if (firstName && lastName) {
-      return `${firstName} ${lastName}`.trim();
-    } else if (firstName) {
-      return firstName.trim();
-    } else if (lastName) {
-      return lastName.trim();
-    }
-
-    if (userProfileData.fullName && userProfileData.fullName.trim()) {
-      return userProfileData.fullName.trim();
-    }
-
-    if (userProfileData.displayUsername && userProfileData.displayUsername.trim()) {
-      return userProfileData.displayUsername.trim();
-    }
-
-    if (userProfileData.username && userProfileData.username.trim()) {
-      return userProfileData.username.trim();
-    }
-
-    if (userProfileData.displayName && userProfileData.displayName.trim()) {
-      return userProfileData.displayName.trim();
-    }
-
-    if (userProfileData.authorName && userProfileData.authorName.trim()) {
-      return userProfileData.authorName.trim();
-    }
-
-    if (userProfileData.email) {
-      const emailName = userProfileData.email.split("@")[0];
-      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
-    }
-
-    if (currentUser?.displayName) return currentUser.displayName;
-    if (currentUser?.email) {
-      const emailName = currentUser.email.split("@")[0];
-      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
-    }
-
-    return "User";
-  };
-
-  const getProfileLink = () => {
-    if (!currentUser?.uid) return "/login";
-    if (username) return `/profile/${username}`;
-    return `/profile`;
->>>>>>> 492cb38a9508951a9cd1d15925236c352e6aaedc
   };
   useEffect(() => {
     const handleScroll = () => {
@@ -367,52 +302,69 @@ const Navbar = () => {
         {currentPage === "/templates" && (
           <>
             {/* Mobile Hamburger Button - Only show on mobile */}
-            <div className="mobile-menu-toggle d-lg-none" style={{
-              position: "fixed",
-              bottom: "20px",
-              right: "20px",
-              zIndex: 1000,
-              background: "#09f",
-              color: "white",
-              width: "60px",
-              height: "60px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 4px 20px rgba(0, 153, 255, 0.5)",
-              cursor: "pointer"
-            }}>
-              <i className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`} style={{ fontSize: "24px" }} onClick={toggleMobileMenu}></i>
+            <div
+              className="mobile-menu-toggle d-lg-none"
+              style={{
+                position: "fixed",
+                bottom: "20px",
+                right: "20px",
+                zIndex: 1000,
+                background: "#09f",
+                color: "white",
+                width: "60px",
+                height: "60px",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 20px rgba(0, 153, 255, 0.5)",
+                cursor: "pointer",
+              }}
+            >
+              <i
+                className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`}
+                style={{ fontSize: "24px" }}
+                onClick={toggleMobileMenu}
+              ></i>
             </div>
 
             {/* Mobile Menu Overlay */}
-            <div className={`mobile-menu-overlay ${isMobileMenuOpen ? 'open' : ''}`} style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              background: "rgba(0, 0, 0, 0.9)",
-              zIndex: 999,
-              display: isMobileMenuOpen ? "block" : "none",
-              paddingTop: "80px"
-            }}>
-              <div className="mobile-menu-content" style={{
-                padding: "20px",
-                overflowY: "auto",
-                height: "calc(100% - 80px)"
-              }}>
-                <ul style={{
-                  listStyle: "none",
-                  padding: 0,
-                  margin: 0
-                }}>
+            <div
+              className={`mobile-menu-overlay ${
+                isMobileMenuOpen ? "open" : ""
+              }`}
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                background: "rgba(0, 0, 0, 0.9)",
+                zIndex: 999,
+                display: isMobileMenuOpen ? "block" : "none",
+                paddingTop: "80px",
+              }}
+            >
+              <div
+                className="mobile-menu-content"
+                style={{
+                  padding: "20px",
+                  overflowY: "auto",
+                  height: "calc(100% - 80px)",
+                }}
+              >
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                  }}
+                >
                   {navItems.map(({ path, label }) => {
                     if (label === "More") {
                       return (
                         <li key={path} style={{ marginBottom: "15px" }}>
-                          <div 
+                          <div
                             onClick={toggleMoreMenu}
                             style={{
                               display: "flex",
@@ -423,52 +375,60 @@ const Navbar = () => {
                               borderRadius: "10px",
                               color: "white",
                               cursor: "pointer",
-                              fontSize: "18px"
+                              fontSize: "18px",
                             }}
                           >
                             <span>{label}</span>
-                            <i className={`fas fa-chevron-${isMoreMenuOpen ? 'up' : 'down'}`}></i>
+                            <i
+                              className={`fas fa-chevron-${
+                                isMoreMenuOpen ? "up" : "down"
+                              }`}
+                            ></i>
                           </div>
-                          
+
                           {/* More dropdown items */}
                           {isMoreMenuOpen && (
-                            <div style={{
-                              marginTop: "10px",
-                              paddingLeft: "20px",
-                              borderLeft: "2px solid #09f"
-                            }}>
-                              {moreDropdownItems.map(({ path: morePath, label: moreLabel }) => (
-                                <Link
-                                  key={morePath}
-                                  to={morePath}
-                                  className="mobile-link"
-                                  style={{
-                                    display: "block",
-                                    padding: "12px",
-                                    background: "rgba(0, 153, 255, 0.1)",
-                                    borderRadius: "8px",
-                                    color: "#09f",
-                                    textDecoration: "none",
-                                    fontSize: "16px",
-                                    marginBottom: "8px",
-                                    transition: "all 0.3s ease"
-                                  }}
-                                  onClick={handleMobileLinkClick}
-                                >
-                                  {moreLabel}
-                                </Link>
-                              ))}
+                            <div
+                              style={{
+                                marginTop: "10px",
+                                paddingLeft: "20px",
+                                borderLeft: "2px solid #09f",
+                              }}
+                            >
+                              {moreDropdownItems.map(
+                                ({ path: morePath, label: moreLabel }) => (
+                                  <Link
+                                    key={morePath}
+                                    to={morePath}
+                                    className="mobile-link"
+                                    style={{
+                                      display: "block",
+                                      padding: "12px",
+                                      background: "rgba(0, 153, 255, 0.1)",
+                                      borderRadius: "8px",
+                                      color: "#09f",
+                                      textDecoration: "none",
+                                      fontSize: "16px",
+                                      marginBottom: "8px",
+                                      transition: "all 0.3s ease",
+                                    }}
+                                    onClick={handleMobileLinkClick}
+                                  >
+                                    {moreLabel}
+                                  </Link>
+                                )
+                              )}
                             </div>
                           )}
                         </li>
                       );
                     }
-                    
+
                     return (
                       <li key={path} style={{ marginBottom: "15px" }}>
                         <NavLink
                           to={path}
-                          className={({ isActive }) => 
+                          className={({ isActive }) =>
                             isActive ? "active-mobile-link" : "mobile-link"
                           }
                           style={{
@@ -480,7 +440,7 @@ const Navbar = () => {
                             textDecoration: "none",
                             fontSize: "18px",
                             textAlign: "center",
-                            transition: "all 0.3s ease"
+                            transition: "all 0.3s ease",
                           }}
                           onClick={handleMobileLinkClick}
                         >
@@ -489,30 +449,31 @@ const Navbar = () => {
                       </li>
                     );
                   })}
-                  
+
                   {/* Show more dropdown items separately if More is not in navItems */}
-                  {!navItems.find(item => item.label === "More") && moreDropdownItems.map(({ path, label }) => (
-                    <li key={path} style={{ marginBottom: "15px" }}>
-                      <Link
-                        to={path}
-                        className="mobile-link"
-                        style={{
-                          display: "block",
-                          padding: "15px",
-                          background: "rgba(0, 153, 255, 0.1)",
-                          borderRadius: "10px",
-                          color: "#09f",
-                          textDecoration: "none",
-                          fontSize: "18px",
-                          textAlign: "center",
-                          transition: "all 0.3s ease"
-                        }}
-                        onClick={handleMobileLinkClick}
-                      >
-                        {label}
-                      </Link>
-                    </li>
-                  ))}
+                  {!navItems.find((item) => item.label === "More") &&
+                    moreDropdownItems.map(({ path, label }) => (
+                      <li key={path} style={{ marginBottom: "15px" }}>
+                        <Link
+                          to={path}
+                          className="mobile-link"
+                          style={{
+                            display: "block",
+                            padding: "15px",
+                            background: "rgba(0, 153, 255, 0.1)",
+                            borderRadius: "10px",
+                            color: "#09f",
+                            textDecoration: "none",
+                            fontSize: "18px",
+                            textAlign: "center",
+                            transition: "all 0.3s ease",
+                          }}
+                          onClick={handleMobileLinkClick}
+                        >
+                          {label}
+                        </Link>
+                      </li>
+                    ))}
                 </ul>
               </div>
             </div>
@@ -624,18 +585,24 @@ const Navbar = () => {
           "/contributor/dashboard",
           "/contributordashboard",
         ].includes(currentPage) && (
-          <div className="mobile-menu-toggle d-lg-none" style={{
-            position: "absolute",
-            left: "20px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 100,
-            background: "transparent",
-            color: "white",
-            fontSize: "20px",
-            cursor: "pointer"
-          }}>
-            <i className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`} onClick={toggleMobileMenu}></i>
+          <div
+            className="mobile-menu-toggle d-lg-none"
+            style={{
+              position: "absolute",
+              left: "20px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 100,
+              background: "transparent",
+              color: "white",
+              fontSize: "20px",
+              cursor: "pointer",
+            }}
+          >
+            <i
+              className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`}
+              onClick={toggleMobileMenu}
+            ></i>
           </div>
         )}
 
@@ -665,10 +632,6 @@ const Navbar = () => {
           <div className="nav_buttons">
             <div className="navbar_dropdown">
               {currentUser?.uid ? (
-<<<<<<< HEAD
-                // ✅ یہاں update کریں
-=======
->>>>>>> 492cb38a9508951a9cd1d15925236c352e6aaedc
                 <Link to={getProfileLink()}>
                   <button className="signed_in">
                     <i className="icon fa-solid fa-user"></i>
@@ -693,9 +656,11 @@ const Navbar = () => {
               <div className={currentUser?.uid ? "dropdown" : "hidden none"}>
                 <ul className="links">
                   {/* Dashboard link ONLY for contributors */}
-               {isContributor && (
-        <li><Link to="/contributordashboard">Dashboard</Link></li>
-      )}
+                  {isContributor && (
+                    <li>
+                      <Link to="/contributordashboard">Dashboard</Link>
+                    </li>
+                  )}
                   <li>
                     <Link to="/MyDownloads">My Downloads</Link>
                   </li>
@@ -732,32 +697,40 @@ const Navbar = () => {
         "/contributordashboard",
       ].includes(currentPage) && (
         <>
-          <div className={`mobile-menu-overlay ${isMobileMenuOpen ? 'open' : ''}`} style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0, 0, 0, 0.95)",
-            zIndex: 999,
-            display: isMobileMenuOpen ? "block" : "none",
-            paddingTop: "80px"
-          }}>
-            <div className="mobile-menu-content" style={{
-              padding: "20px",
-              overflowY: "auto",
-              height: "calc(100% - 80px)"
-            }}>
-              <ul style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0
-              }}>
+          <div
+            className={`mobile-menu-overlay ${isMobileMenuOpen ? "open" : ""}`}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              background: "rgba(0, 0, 0, 0.95)",
+              zIndex: 999,
+              display: isMobileMenuOpen ? "block" : "none",
+              paddingTop: "80px",
+            }}
+          >
+            <div
+              className="mobile-menu-content"
+              style={{
+                padding: "20px",
+                overflowY: "auto",
+                height: "calc(100% - 80px)",
+              }}
+            >
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                }}
+              >
                 {navItems.map(({ path, label }) => {
                   if (label === "More") {
                     return (
                       <li key={path} style={{ marginBottom: "15px" }}>
-                        <div 
+                        <div
                           onClick={toggleMoreMenu}
                           style={{
                             display: "flex",
@@ -768,52 +741,60 @@ const Navbar = () => {
                             borderRadius: "10px",
                             color: "white",
                             cursor: "pointer",
-                            fontSize: "18px"
+                            fontSize: "18px",
                           }}
                         >
                           <span>{label}</span>
-                          <i className={`fas fa-chevron-${isMoreMenuOpen ? 'up' : 'down'}`}></i>
+                          <i
+                            className={`fas fa-chevron-${
+                              isMoreMenuOpen ? "up" : "down"
+                            }`}
+                          ></i>
                         </div>
-                        
+
                         {/* More dropdown items */}
                         {isMoreMenuOpen && (
-                          <div style={{
-                            marginTop: "10px",
-                            paddingLeft: "20px",
-                            borderLeft: "2px solid #09f"
-                          }}>
-                            {moreDropdownItems.map(({ path: morePath, label: moreLabel }) => (
-                              <Link
-                                key={morePath}
-                                to={morePath}
-                                className="mobile-link"
-                                style={{
-                                  display: "block",
-                                  padding: "12px",
-                                  background: "rgba(0, 153, 255, 0.1)",
-                                  borderRadius: "8px",
-                                  color: "#09f",
-                                  textDecoration: "none",
-                                  fontSize: "16px",
-                                  marginBottom: "8px",
-                                  transition: "all 0.3s ease"
-                                }}
-                                onClick={handleMobileLinkClick}
-                              >
-                                {moreLabel}
-                              </Link>
-                            ))}
+                          <div
+                            style={{
+                              marginTop: "10px",
+                              paddingLeft: "20px",
+                              borderLeft: "2px solid #09f",
+                            }}
+                          >
+                            {moreDropdownItems.map(
+                              ({ path: morePath, label: moreLabel }) => (
+                                <Link
+                                  key={morePath}
+                                  to={morePath}
+                                  className="mobile-link"
+                                  style={{
+                                    display: "block",
+                                    padding: "12px",
+                                    background: "rgba(0, 153, 255, 0.1)",
+                                    borderRadius: "8px",
+                                    color: "#09f",
+                                    textDecoration: "none",
+                                    fontSize: "16px",
+                                    marginBottom: "8px",
+                                    transition: "all 0.3s ease",
+                                  }}
+                                  onClick={handleMobileLinkClick}
+                                >
+                                  {moreLabel}
+                                </Link>
+                              )
+                            )}
                           </div>
                         )}
                       </li>
                     );
                   }
-                  
+
                   return (
                     <li key={path} style={{ marginBottom: "15px" }}>
                       <NavLink
                         to={path}
-                        className={({ isActive }) => 
+                        className={({ isActive }) =>
                           isActive ? "active-mobile-link" : "mobile-link"
                         }
                         style={{
@@ -825,7 +806,7 @@ const Navbar = () => {
                           textDecoration: "none",
                           fontSize: "18px",
                           textAlign: "center",
-                          transition: "all 0.3s ease"
+                          transition: "all 0.3s ease",
                         }}
                         onClick={handleMobileLinkClick}
                       >
@@ -834,30 +815,31 @@ const Navbar = () => {
                     </li>
                   );
                 })}
-                
+
                 {/* Show more dropdown items separately if More is not in navItems */}
-                {!navItems.find(item => item.label === "More") && moreDropdownItems.map(({ path, label }) => (
-                  <li key={path} style={{ marginBottom: "15px" }}>
-                    <Link
-                      to={path}
-                      className="mobile-link"
-                      style={{
-                        display: "block",
-                        padding: "15px",
-                        background: "rgba(0, 153, 255, 0.1)",
-                        borderRadius: "10px",
-                        color: "#09f",
-                        textDecoration: "none",
-                        fontSize: "18px",
-                        textAlign: "center",
-                        transition: "all 0.3s ease"
-                      }}
-                      onClick={handleMobileLinkClick}
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
+                {!navItems.find((item) => item.label === "More") &&
+                  moreDropdownItems.map(({ path, label }) => (
+                    <li key={path} style={{ marginBottom: "15px" }}>
+                      <Link
+                        to={path}
+                        className="mobile-link"
+                        style={{
+                          display: "block",
+                          padding: "15px",
+                          background: "rgba(0, 153, 255, 0.1)",
+                          borderRadius: "10px",
+                          color: "#09f",
+                          textDecoration: "none",
+                          fontSize: "18px",
+                          textAlign: "center",
+                          transition: "all 0.3s ease",
+                        }}
+                        onClick={handleMobileLinkClick}
+                      >
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
               </ul>
             </div>
           </div>

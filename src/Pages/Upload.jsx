@@ -87,10 +87,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
   VideoTemplates: {
@@ -123,10 +120,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
   Images: {
@@ -159,10 +153,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
   GraphicTemplates: {
@@ -198,10 +189,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
   Mockups: {
@@ -238,10 +226,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
     categories: {
       label: "Categories",
@@ -308,10 +293,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
   Icons: {
@@ -326,10 +308,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
   Textures: {
@@ -388,10 +367,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
   HDRIs: {
@@ -454,10 +430,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
   Scripts: {
@@ -512,10 +485,7 @@ const filterData = {
     },
     licenseType: {
       label: "License Type",
-      options: [
-        "Free for Personal Use",
-        "Free for Commercial Use",
-      ],
+      options: ["Free for Personal Use", "Free for Commercial Use"],
     },
     integrationReady: {
       label: "Integration Ready",
@@ -565,17 +535,17 @@ const assetTypeToFilterData = {
 };
 
 const specializationToAssetTypes = {
-  "videos": ["videos"],
+  videos: ["videos"],
   "3d-models": ["models"],
   "video-templates": ["video-templates"],
-  "images": ["images"],
-  "mockups": ["mockups"],
+  images: ["images"],
+  mockups: ["mockups"],
   "graphic-templates": ["graphics"],
-  "fonts": ["fonts"],
-  "icons": ["icons"],
-  "scripts": ["scripts"],
-  "hdris": ["hdris"],
-  "textures": ["textures"],
+  fonts: ["fonts"],
+  icons: ["icons"],
+  scripts: ["scripts"],
+  hdris: ["hdris"],
+  textures: ["textures"],
 };
 
 const Upload = ({
@@ -585,7 +555,7 @@ const Upload = ({
   editMode = false,
   assetToEdit = null,
   isUpdating = false,
-  setIsUpdating = () => { },
+  setIsUpdating = () => {},
 }) => {
   const { currentUser } = useUser();
   const { converting, generateAllSizes, uploadAllSizes } =
@@ -769,7 +739,9 @@ const Upload = ({
 
         // Fetch specialization only for contributors
         if (role !== "admin") {
-          const docSnap = await getDoc(doc(db, "Contributors", currentUser.uid));
+          const docSnap = await getDoc(
+            doc(db, "Contributors", currentUser.uid)
+          );
           if (docSnap.exists()) {
             const spec = docSnap.data().specialization;
             setSpecialization(spec);
@@ -777,17 +749,26 @@ const Upload = ({
             // Auto-select first allowed type for new uploads
             if (!editMode) {
               const allowedTypes = specializationToAssetTypes[spec] || [];
-              if (allowedTypes.length > 0 && !allowedTypes.includes(formData.type)) {
-                setFormData(prev => ({
+              if (
+                allowedTypes.length > 0 &&
+                !allowedTypes.includes(formData.type)
+              ) {
+                setFormData((prev) => ({
                   ...prev,
-                  type: allowedTypes[0]
+                  type: allowedTypes[0],
                 }));
               }
             }
 
             // For edit mode, validate if current asset type is allowed
-            if (editMode && assetToEdit && !allowedTypes.includes(assetToEdit.type)) {
-              alert(`This asset type is not allowed for your specialization. You can only edit ${spec} assets.`);
+            if (
+              editMode &&
+              assetToEdit &&
+              !allowedTypes.includes(assetToEdit.type)
+            ) {
+              alert(
+                `This asset type is not allowed for your specialization. You can only edit ${spec} assets.`
+              );
               if (onUploadClose) onUploadClose();
             }
           }
@@ -1060,45 +1041,481 @@ const Upload = ({
   };
 
   // File upload functions
-  const uploadFile = async (file, fileType) => {
+  const uploadFile = async (file, fileType, userId) => {
     try {
-      setLoadingState(`Uploading ${fileType} ${file.name}`);
-      const storageRef = ref(storage, `assets/${fileType}/${file.name}`);
-      const uploadSnapshot = await uploadBytes(storageRef, file);
+      setLoadingState(`Optimizing ${fileType}: ${file.name}`);
+
+      // ✅ STEP 1: Image optimization BEFORE upload
+      let optimizedFile = file;
+
+      if (file.type.startsWith("image/") && fileType !== "thumbnails") {
+        // WebP conversion for images
+        optimizedFile = await convertImageToWebP(file);
+      }
+
+      // ✅ STEP 2: Create unique filename with timestamp
+      const timestamp = Date.now();
+      const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+      const extension = file.type.startsWith("image/")
+        ? ".webp"
+        : file.name.substring(file.name.lastIndexOf("."));
+
+      const fileName = `${originalName}_${timestamp}${extension}`;
+
+      // ✅ STEP 3: Set metadata for CACHING
+      const metadata = {
+        cacheControl: "public, max-age=31536000", // 1 year cache
+        contentType: optimizedFile.type,
+        customMetadata: {
+          originalSize: file.size.toString(),
+          optimizedSize: optimizedFile.size.toString(),
+          userId: userId || "anonymous",
+          uploadedAt: timestamp.toString(),
+        },
+      };
+
+      // ✅ STEP 4: Upload to user-specific folder
+      const storageRef = ref(
+        storage,
+        `assets/${fileType}/${userId}/${fileName}`
+      );
+      const uploadSnapshot = await uploadBytes(
+        storageRef,
+        optimizedFile,
+        metadata
+      );
       const downloadURL = await getDownloadURL(uploadSnapshot.ref);
-      return downloadURL;
+
+      console.log(`✅ Uploaded ${fileType}: ${downloadURL}`);
+      console.log(
+        `📊 Size reduced: ${file.size} → ${optimizedFile.size} bytes`
+      );
+
+      return {
+        url: downloadURL,
+        sizes: {
+          original: file.size,
+          optimized: optimizedFile.size,
+          reduction: Math.round((1 - optimizedFile.size / file.size) * 100),
+        },
+        fileName: fileName,
+      };
     } catch (error) {
-      console.error(`Error uploading ${fileType}:`, error);
+      console.error(`❌ Error uploading ${fileType}:`, error);
       return null;
     }
+  };
+
+  // ✅ HELPER: Convert image to WebP
+  const convertImageToWebP = (file) => {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith("image/")) {
+        resolve(file); // Non-images ko as-is return
+        return;
+      }
+
+      const img = new Image();
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      img.onload = () => {
+        // Calculate optimal dimensions
+        const maxWidth = 1200;
+        const maxHeight = 1200;
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to WebP with quality 80%
+        canvas.toBlob(
+          (blob) => {
+            const webpFile = new File(
+              [blob],
+              file.name.replace(/\.[^/.]+$/, ".webp"),
+              {
+                type: "image/webp",
+              }
+            );
+            resolve(webpFile);
+          },
+          "image/webp",
+          0.8
+        );
+      };
+
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   const uploadThumbnail = async (file) => {
     try {
-      setLoadingState(`Uploading thumbnail`);
-      const storageRef = ref(storage, `thumbnails/${file.name}`);
-      const uploadSnapshot = await uploadBytes(storageRef, file);
+      console.log("🖼️ Uploading thumbnail started...", {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        fileSizeMB: (file.size / 1024 / 1024).toFixed(2) + "MB",
+        userId: currentUser?.uid,
+        userRole: userRole,
+      });
+
+      setLoadingState(`Uploading thumbnail...`);
+
+      // ✅ STEP 1: File validation
+      const MAX_SIZE = 5 * 1024 * 1024; // 5MB limit
+      if (file.size > MAX_SIZE) {
+        throw new Error(
+          `Thumbnail size ${(file.size / 1024 / 1024).toFixed(
+            2
+          )}MB exceeds 5MB limit. Please compress the image.`
+        );
+      }
+
+      // ✅ STEP 2: File type validation
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif",
+        "video/mp4",
+        "video/quicktime",
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error(
+          `Invalid file type: ${file.type}. Only images (JPG, PNG, WebP, GIF) and videos (MP4, MOV) are allowed.`
+        );
+      }
+
+      // ✅ STEP 3: Create optimized filename
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(2, 8);
+      let fileExtension = "";
+      let optimizedFile = file;
+
+      // Auto-convert images to WebP for better compression
+      if (file.type.startsWith("image/")) {
+        try {
+          // Convert to WebP with 80% quality
+          optimizedFile = await convertToWebP(file);
+          fileExtension = ".webp";
+        } catch (convError) {
+          console.warn("WebP conversion failed, using original:", convError);
+          fileExtension = file.name.substring(file.name.lastIndexOf("."));
+        }
+      } else {
+        fileExtension = file.name.substring(file.name.lastIndexOf("."));
+      }
+
+      const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+      const safeFileName = originalName
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "_")
+        .substring(0, 50);
+
+      const fileName = `thumb_${safeFileName}_${timestamp}_${randomId}${fileExtension}`;
+
+      // ✅ STEP 4: Determine storage path based on user role
+      let storagePath = "";
+
+      if (userRole === "admin") {
+        // Admin ke liye projects folder
+        storagePath = `projects/${fileName}`;
+      } else if (userRole === "contributor") {
+        // Contributor ke liye user-specific folder
+        if (!currentUser?.uid) {
+          throw new Error("User not authenticated");
+        }
+        storagePath = `thumbnails/${currentUser.uid}/${fileName}`;
+      } else {
+        // Default for other users
+        storagePath = `thumbnails/public/${fileName}`;
+      }
+
+      console.log("📤 Storage Path:", storagePath);
+
+      // ✅ STEP 5: Set metadata for CACHING and SEO
+      const metadata = {
+        cacheControl: "public, max-age=31536000", // 1 year cache
+        contentType: optimizedFile.type,
+        customMetadata: {
+          originalName: file.name,
+          originalSize: file.size.toString(),
+          optimizedSize: optimizedFile.size.toString(),
+          userId: currentUser?.uid || "anonymous",
+          userRole: userRole,
+          uploadedAt: timestamp.toString(),
+          reductionPercent: Math.round(
+            ((file.size - optimizedFile.size) / file.size) * 100
+          ).toString(),
+        },
+      };
+
+      // ✅ STEP 6: Upload to Firebase Storage
+      const storageRef = ref(storage, storagePath);
+      console.log("📤 Uploading to:", storageRef.fullPath);
+
+      const uploadSnapshot = await uploadBytes(
+        storageRef,
+        optimizedFile,
+        metadata
+      );
       const downloadURL = await getDownloadURL(uploadSnapshot.ref);
+
+      console.log("✅ Thumbnail uploaded successfully!");
+      console.log("🔗 Download URL:", downloadURL);
+      console.log("📊 Size reduction:", {
+        original: (file.size / 1024).toFixed(2) + "KB",
+        optimized: (optimizedFile.size / 1024).toFixed(2) + "KB",
+        reduction:
+          Math.round(((file.size - optimizedFile.size) / file.size) * 100) +
+          "%",
+      });
+
       return downloadURL;
     } catch (error) {
-      console.error("Error uploading thumbnail:", error);
-      alert("Error uploading thumbnail");
+      console.error("❌ Thumbnail upload failed:", {
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error,
+        fileInfo: {
+          name: file?.name,
+          type: file?.type,
+          size: file?.size,
+        },
+        userInfo: {
+          uid: currentUser?.uid,
+          role: userRole,
+        },
+      });
+
+      // User-friendly error messages
+      let errorMessage = "Failed to upload thumbnail. ";
+
+      if (error.message.includes("storage/unauthorized")) {
+        errorMessage +=
+          "Permission denied. Please check your storage rules or contact admin.";
+      } else if (error.message.includes("storage/retry-limit-exceeded")) {
+        errorMessage +=
+          "Network error. Please check your internet connection and try again.";
+      } else if (error.message.includes("exceeds")) {
+        errorMessage += error.message;
+      } else if (error.message.includes("Invalid file type")) {
+        errorMessage += error.message;
+      } else if (error.message.includes("User not authenticated")) {
+        errorMessage += "Please log in to upload files.";
+      } else {
+        errorMessage += error.message || "Unknown error occurred.";
+      }
+
+      alert(`❌ ${errorMessage}`);
       return null;
     }
   };
 
-  const uploadImages = async (files, fileType) => {
+  // ✅ HELPER: Convert image to WebP
+  const convertToWebP = (file) => {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith("image/")) {
+        resolve(file);
+        return;
+      }
+
+      const img = new Image();
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      img.onload = () => {
+        // Optimize dimensions for thumbnail
+        const maxWidth = 800;
+        const maxHeight = 600;
+
+        let width = img.width;
+        let height = img.height;
+
+        // Maintain aspect ratio while resizing
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // White background for transparent images
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+
+        // Draw image
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to WebP with 80% quality
+        canvas.toBlob(
+          (blob) => {
+            const webpFile = new File(
+              [blob],
+              file.name.replace(/\.[^/.]+$/, ".webp"),
+              {
+                type: "image/webp",
+              }
+            );
+            console.log("🔄 WebP conversion successful:", {
+              original: (file.size / 1024).toFixed(2) + "KB",
+              webp: (blob.size / 1024).toFixed(2) + "KB",
+              reduction:
+                Math.round(((file.size - blob.size) / file.size) * 100) + "%",
+            });
+            resolve(webpFile);
+          },
+          "image/webp",
+          0.8
+        );
+      };
+
+      img.onerror = (err) => {
+        console.warn("⚠️ Image load failed, using original file:", err);
+        resolve(file); // Fallback to original file
+      };
+
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const uploadImages = async (files, fileType, userId) => {
     try {
-      setLoadingState(`Uploading ${fileType} (${files.length} files)`);
-      const urls = await Promise.all(
-        Array.from(files).map((file) => uploadFile(file, fileType))
-      );
-      return urls.filter((url) => url !== null);
+      setLoadingState(`Processing ${files.length} images...`);
+
+      const uploadPromises = Array.from(files).map(async (file, index) => {
+        // Create multiple sizes for each image
+        const sizes = await generateImageSizes(file);
+
+        const sizePromises = sizes.map(async (size) => {
+          const sizeName = `${size.width}x${size.height}`;
+          const fileName = `${file.name.replace(
+            /\.[^/.]+$/,
+            ""
+          )}_${sizeName}_${Date.now()}.webp`;
+
+          const metadata = {
+            cacheControl: "public, max-age=31536000",
+            contentType: "image/webp",
+            customMetadata: {
+              size: sizeName,
+              originalName: file.name,
+              index: index.toString(),
+            },
+          };
+
+          const storageRef = ref(
+            storage,
+            `assets/${fileType}/${userId}/resized/${fileName}`
+          );
+
+          const uploadSnapshot = await uploadBytes(
+            storageRef,
+            size.blob,
+            metadata
+          );
+          return {
+            url: await getDownloadURL(uploadSnapshot.ref),
+            size: sizeName,
+            width: size.width,
+            height: size.height,
+          };
+        });
+
+        const allSizes = await Promise.all(sizePromises);
+
+        return {
+          originalName: file.name,
+          sizes: allSizes,
+          primary: allSizes.find((s) => s.size === "800x800") || allSizes[0],
+        };
+      });
+
+      const results = await Promise.all(uploadPromises);
+      return results;
     } catch (error) {
       console.error(`Error uploading ${fileType}:`, error);
       return [];
     }
   };
+
+  // Generate multiple image sizes
+  const generateImageSizes = async (file) => {
+    const sizes = [
+      { width: 400, height: 400 }, // Thumbnail
+      { width: 800, height: 800 }, // Mobile
+      { width: 1200, height: 1200 }, // Desktop
+    ];
+
+    return Promise.all(
+      sizes.map((size) => resizeImage(file, size.width, size.height))
+    );
+  };
+
+  const resizeImage = (file, targetWidth, targetHeight) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        // Maintain aspect ratio
+        let { width, height, x, y } = calculateAspectRatioFit(
+          img.width,
+          img.height,
+          targetWidth,
+          targetHeight
+        );
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, targetWidth, targetHeight);
+        ctx.drawImage(img, x, y, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            resolve({
+              blob,
+              width: targetWidth,
+              height: targetHeight,
+            });
+          },
+          "image/webp",
+          0.8
+        );
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
+    const ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
+    return {
+      width: srcWidth * ratio,
+      height: srcHeight * ratio,
+      x: (maxWidth - srcWidth * ratio) / 2,
+      y: (maxHeight - srcHeight * ratio) / 2,
+    };
+  }
 
   // Main form change handler - UPDATED for title to slug conversion
   const handleChange = (event) => {
@@ -1342,7 +1759,9 @@ const Upload = ({
     if (userRole !== "admin" && specialization) {
       const allowedTypes = specializationToAssetTypes[specialization] || [];
       if (!allowedTypes.includes(formData.type)) {
-        alert(`You can only upload ${specialization} assets based on your specialization.`);
+        alert(
+          `You can only upload ${specialization} assets based on your specialization.`
+        );
         return;
       }
     }
@@ -1461,48 +1880,19 @@ const Upload = ({
 
       // ✅ FIXED: handle assets by type
       if (formData.type === "images") {
-        console.log("🖼️ Processing images...", {
-          hasImages: !!formData.images,
-          isArray: Array.isArray(formData.images),
-          length: Array.isArray(formData.images) ? formData.images.length : 0,
-          firstItem: Array.isArray(formData.images) ? formData.images[0] : null,
-        });
+        if (Array.isArray(formData.images) && formData.images.length > 0) {
+          console.log("🖼️ Uploading OPTIMIZED images...");
 
-        if (
-          Array.isArray(formData.images) &&
-          formData.images.length > 0 &&
-          formData.images[0] instanceof File
-        ) {
-          console.log("🖼️ Uploading NEW images");
-          const allImageUrls = [];
+          // Use optimized upload function
+          const uploadedImages = await uploadImages(
+            formData.images,
+            "images",
+            currentUser?.uid || "anonymous"
+          );
 
-          for (const imageFile of formData.images) {
-            setLoadingState(`Generating sizes for ${imageFile.name}...`);
-
-            const imageSizes = await generateAllSizes(imageFile);
-
-            if (imageSizes) {
-              setLoadingState(`Uploading ${imageFile.name} in all sizes...`);
-
-              const uploadedUrls = await uploadAllSizes(
-                imageSizes,
-                `assets/images/${currentUser?.uid || "anonymous"}/${Date.now()}`
-              );
-
-              if (uploadedUrls) {
-                allImageUrls.push({
-                  originalName: imageFile.name,
-                  sizes: uploadedUrls,
-                });
-              }
-            }
-          }
-
-          docData.images = allImageUrls;
+          docData.images = uploadedImages;
           docData.hasMultipleSizes = true;
-        } else if (editMode && assetToEdit.images) {
-          console.log("🖼️ Keeping EXISTING images");
-          docData.images = assetToEdit.images;
+          docData.imageFormats = "webp";
         }
       }
 
@@ -1818,8 +2208,8 @@ const Upload = ({
       ? "Updating..."
       : "Update Asset"
     : isSubmitting
-      ? "Uploading..."
-      : "Upload Asset";
+    ? "Uploading..."
+    : "Upload Asset";
 
   if (!currentUser) {
     return (
@@ -1858,8 +2248,9 @@ const Upload = ({
         </title>
         <meta
           name="description"
-          content={`${editMode ? "Edit" : "Upload"
-            } your assets to Shammarianas`}
+          content={`${
+            editMode ? "Edit" : "Upload"
+          } your assets to Shammarianas`}
         />
       </Helmet>
 
@@ -2268,7 +2659,9 @@ const Upload = ({
                   placeholder="Enter asset title..."
                 />
                 <div className="blog-form-hint">
-                  <span className={formData.title.length > 100 ? "char-over" : ""}>
+                  <span
+                    className={formData.title.length > 100 ? "char-over" : ""}
+                  >
                     {formData.title.length}
                   </span>
                   /100 characters
@@ -2388,7 +2781,11 @@ const Upload = ({
                   rows="4"
                 />
                 <div className="blog-form-hint">
-                  <span className={formData.description.length > 500 ? "char-over" : ""}>
+                  <span
+                    className={
+                      formData.description.length > 500 ? "char-over" : ""
+                    }
+                  >
                     {formData.description.length}
                   </span>
                   /500 characters
@@ -2430,37 +2827,45 @@ const Upload = ({
                   ) : (
                     // Condition: Contributor - show only specialization types
                     (() => {
-                      const allowedTypes = specializationToAssetTypes[specialization] || [];
+                      const allowedTypes =
+                        specializationToAssetTypes[specialization] || [];
                       const typeLabels = {
-                        "models": "3D Model",
-                        "textures": "Texture",
-                        "scripts": "Script",
-                        "images": "Image",
-                        "graphics": "Graphics Templates",
-                        "mockups": "Mockups",
-                        "fonts": "Fonts",
-                        "videos": "Video",
+                        models: "3D Model",
+                        textures: "Texture",
+                        scripts: "Script",
+                        images: "Image",
+                        graphics: "Graphics Templates",
+                        mockups: "Mockups",
+                        fonts: "Fonts",
+                        videos: "Video",
                         "video-templates": "Video Templates",
-                        "icons": "Icons",
-                        "hdris": "HDRIs",
+                        icons: "Icons",
+                        hdris: "HDRIs",
                       };
 
                       if (allowedTypes.length === 0) {
-                        return <option value="" disabled>No asset types available for your specialization</option>;
+                        return (
+                          <option value="" disabled>
+                            No asset types available for your specialization
+                          </option>
+                        );
                       }
 
                       // Check if current type is allowed, otherwise show disabled
-                      const isCurrentTypeAllowed = allowedTypes.includes(formData.type);
+                      const isCurrentTypeAllowed = allowedTypes.includes(
+                        formData.type
+                      );
 
                       return (
                         <>
                           {!isCurrentTypeAllowed && formData.type && (
                             <option value={formData.type} disabled>
-                              {formData.type} (Not allowed for your specialization)
+                              {formData.type} (Not allowed for your
+                              specialization)
                             </option>
                           )}
 
-                          {allowedTypes.map(type => (
+                          {allowedTypes.map((type) => (
                             <option key={type} value={type}>
                               {typeLabels[type] || type}
                             </option>
@@ -2935,12 +3340,12 @@ const Upload = ({
                   {converting
                     ? "Converting Images..."
                     : editMode
-                      ? isUpdating
-                        ? "Updating..."
-                        : "Update Asset"
-                      : isSubmitting
-                        ? "Uploading..."
-                        : "Upload Asset"}
+                    ? isUpdating
+                      ? "Updating..."
+                      : "Update Asset"
+                    : isSubmitting
+                    ? "Uploading..."
+                    : "Upload Asset"}
                 </button>
               </div>
             </form>
