@@ -133,22 +133,22 @@ export const AppRoutes = () => (
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
-    
+
     {/* Dynamic routes with parameters - order matters! */}
     <Route path="/View/:slug" element={<View />} />
     <Route path="/blog/:id" element={<BlogDetails />} />
     <Route path="/blog-details/:id" element={<BlogDetails />} />
     <Route path="/project-details/:id" element={<PortfolioDetails />} />
     <Route path="/blog-category/:category" element={<BlogCategory />} />
-    
+
     {/* Profile routes - should come before generic dynamic route */}
     <Route path="/Profile/:username" element={<Profile />} />
-    
+    <Route path="/:username" element={<Profile />} />
+
     {/* Generic dynamic route for Category - should be LAST */}
     <Route path="/:Category" element={<CategoryTemplate />} />
-    
+
     {/* Remove this duplicate generic route */}
-    {/* <Route path="/:username" element={<Profile />} */}
   </Routes>
 );
 

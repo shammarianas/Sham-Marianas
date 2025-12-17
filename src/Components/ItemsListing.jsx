@@ -4,9 +4,12 @@ import { db } from "../../firebase";
 import { collection, getDocs, query, where, limit } from "firebase/firestore";
 import { useFilters } from "../Context/FilterContext";
 import { Link } from "react-router-dom";
-import useSearchStore from "../store/searchStore"; // Import the Zustand store
+import useSearchStore from "../store/searchStore";
+import { useUser } from "../Context/UserProvider";
+// Import the Zustand store
 
 const ItemsListing = (props) => {
+  const { userProfile } = useUser(); // Get user profile
   const [items, setItems] = useState([]);
   const filters = useFilters().filters;
   const [loading, setLoading] = useState(true);
@@ -106,7 +109,12 @@ const ItemsListing = (props) => {
       )} */}
 
       {filteredItems.map((item) => (
-        <ListedItemCard key={item.id} id={item.id} data={item} />
+        <ListedItemCard
+          key={item.id}
+          id={item.id}
+          data={item}
+          userProfile={userProfile}
+        />
       ))}
     </div>
   );
