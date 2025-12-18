@@ -103,7 +103,7 @@ const WebDevelopmentPage = () => {
           "CMS Development",
           // "Laravel Development",
           // "PHP Development",
-          "Python, PHP , Laravel Development",
+          "Python, PHP, Laravel Development",
           "Website Maintenance",
           "Enterprise Development",
           // "Pentesting",

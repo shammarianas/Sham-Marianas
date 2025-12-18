@@ -117,18 +117,18 @@ export const AppRoutes = () => (
     <Route path="/templates" element={<StockPage />} />
     <Route path="/services" element={<Services />} />
     <Route path="/success" element={<Success />} />
-    <Route path="/services/branding" element={<BrandingDesignPage />} />
+    <Route path="/services/branding-design" element={<BrandingDesignPage />} />
     <Route path="/services/uiux-design" element={<UiUxDesignPage />} />
-    <Route path="/services/web-design" element={<WebDesign />} />
-    <Route path="/services/ecommerce" element={<EcommercePage />} />
-    <Route path="/services/content" element={<ContentWritingPage />} />
-    <Route path="/services/product" element={<ProductDesignPage />} />
-    <Route path="/services/digital" element={<DigitalMaketerPage />} />
+    <Route path="/services/web-development" element={<WebDesign />} />
+    <Route path="/services/ecommerce-solutions" element={<EcommercePage />} />
+    <Route path="/services/content-writing" element={<ContentWritingPage />} />
+    <Route path="/services/product-design" element={<ProductDesignPage />} />
+    <Route path="/services/social-media-digital-marketing" element={<DigitalMaketerPage />} />
     <Route path="/services/video-production" element={<VideoProduction />} />
-    <Route path="/services/vfx" element={<VfxAndAds />} />
-    <Route path="/services/printing" element={<PrintMedia />} />
+    <Route path="/services/vfx-and-cgi-ads" element={<VfxAndAds />} />
+    <Route path="/services/print-media-solutions" element={<PrintMedia />} />
     <Route path="/services/ai-automation" element={<AiAutomation />} />
-    <Route path="/services/exhibition" element={<BoothDesign />} />
+    <Route path="/services/exhibition-booth-design" element={<BoothDesign />} />
     <Route path="/services/brandingpage" element={<BrandingPage />} />
     <Route path="/services/demo" element={<Demo />} />
     <Route path="/error" element={<Error />} />
@@ -155,7 +155,7 @@ export const AppRoutes = () => (
     <Route path="/Profile/:username" element={<Profile />} />
     <Route path="/:username" element={<Profile />} />
     {/* Generic dynamic route for Category - should be LAST */}
-    <Route path="/:Category" element={<CategoryTemplate />} />
+    {/* <Route path="/:Category" element={<CategoryTemplate />} /> */}
     <Route path="/fonts" element={<CategoryTemplate />} />
     <Route path="/video-templates" element={<CategoryTemplate />} />
     <Route path="/icons" element={<CategoryTemplate />} />
