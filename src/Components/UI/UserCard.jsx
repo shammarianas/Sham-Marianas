@@ -67,15 +67,15 @@ const UserCard = ({ userId }) => {
     return username
       .toLowerCase()
       .replace(/\s+/g, "") // ✅ spaces
-      .replace(/[^\w]/g, ""); // Optional: special characters  remove 
+      .replace(/[^\w]/g, ""); // Optional: special characters  remove
   };
 
   const getUsernameFromDisplayName = (displayName) => {
     if (!displayName) return null;
-    // ✅ Display name spaces username 
+    // ✅ Display name spaces username
     return displayName
       .toLowerCase()
-      .replace(/\s+/g, "") // ✅ spaces 
+      .replace(/\s+/g, "") // ✅ spaces
       .replace(/[^\w]/g, ""); // Optional: special characters remove
   };
 

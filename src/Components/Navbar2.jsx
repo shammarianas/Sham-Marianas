@@ -17,6 +17,7 @@ const Navbar = () => {
   const [userProfileData, setUserProfileData] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false); // State for More menu
+  const [displayName, setDisplayName] = useState("User"); // State for display name
 
   const showTemplateButton = [
     "/",
@@ -41,7 +42,7 @@ const Navbar = () => {
       try {
         const contributorRef = doc(db, "Contributors", currentUser.uid);
         const contributorSnap = await getDoc(contributorRef);
-        setIsContributor(contributorSnap.exists()); // true if user is in Contributors collection
+        setIsContributor(contributorSnap.exists());
       } catch (error) {
         console.error("Error checking contributor status:", error);
         setIsContributor(false);
@@ -54,37 +55,81 @@ const Navbar = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    const fetchUsername = async () => {
+    const fetchUserProfile = async () => {
       if (!currentUser?.uid) {
         setUsername(null);
+        setDisplayName("User");
         return;
       }
 
       try {
+        // First check Profiles collection
         const profileRef = doc(db, "Profiles", currentUser.uid);
         const profileSnap = await getDoc(profileRef);
 
         if (profileSnap.exists()) {
           const profileData = profileSnap.data();
+          setUserProfileData(profileData);
+
+          // Set username for profile link
           setUsername(profileData.username || null);
+
+          // Set display name - prioritize username, then firstName/lastName, then displayName
+          if (profileData.username) {
+            setDisplayName(profileData.username);
+          } else if (profileData.firstName || profileData.lastName) {
+            const fullName = `${profileData.firstName || ""} ${
+              profileData.lastName || ""
+            }`.trim();
+            setDisplayName(fullName);
+          } else if (profileData.displayName) {
+            setDisplayName(profileData.displayName);
+          } else {
+            setDisplayName("User");
+          }
         } else {
+          // Check Contributors collection
           const contributorRef = doc(db, "Contributors", currentUser.uid);
           const contributorSnap = await getDoc(contributorRef);
 
           if (contributorSnap.exists()) {
             const contributorData = contributorSnap.data();
+            setUserProfileData(contributorData);
+
+            // Set username for profile link
             setUsername(contributorData.username || null);
+
+            // Set display name for contributors
+            if (contributorData.username) {
+              setDisplayName(contributorData.username);
+            } else if (contributorData.firstName || contributorData.lastName) {
+              const fullName = `${contributorData.firstName || ""} ${
+                contributorData.lastName || ""
+              }`.trim();
+              setDisplayName(fullName);
+            } else if (contributorData.displayName) {
+              setDisplayName(contributorData.displayName);
+            } else {
+              setDisplayName("User");
+            }
           } else {
+            // Fallback to currentUser from context
             setUsername(null);
+            if (currentUser.displayName) {
+              setDisplayName(currentUser.displayName);
+            } else {
+              setDisplayName("User");
+            }
           }
         }
       } catch (error) {
-        console.error("Error fetching username:", error);
+        console.error("Error fetching user profile:", error);
         setUsername(null);
+        setDisplayName(currentUser?.displayName || "User");
       }
     };
 
-    fetchUsername();
+    fetchUserProfile();
   }, [currentUser]);
 
   //
@@ -627,7 +672,6 @@ const Navbar = () => {
             <Search />
           </>
         )}
-
         <div className="right">
           <div className="nav_buttons">
             <div className="navbar_dropdown">
@@ -635,16 +679,7 @@ const Navbar = () => {
                 <Link to={getProfileLink()}>
                   <button className="signed_in">
                     <i className="icon fa-solid fa-user"></i>
-                    <span className="username">
-                      {(() => {
-                        if (!currentUser) return "User";
-                        const fullName = `${currentUser.firstName || ""} ${
-                          currentUser.lastName || ""
-                        }`.trim();
-                        if (fullName) return fullName;
-                        return currentUser.displayName || "User";
-                      })()}
-                    </span>
+                    <span className="username">{displayName}</span>
                   </button>
                 </Link>
               ) : (
