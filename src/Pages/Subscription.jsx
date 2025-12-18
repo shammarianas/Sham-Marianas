@@ -10,7 +10,16 @@ const Subscription = () => {
   const [activeAccordion, setActiveAccordion] = useState(null);
   const [teamMembers, setTeamMembers] = useState(2);
   const [teamPlanPrice, setTeamPlanPrice] = useState(16); // Default for 2 members monthly
-
+  function openAccordion(event) {
+    document.querySelectorAll(".accordion-info").forEach((element) => {
+      element.classList.remove("active");
+      element.style.maxHeight = 0;
+      element.parentElement.classList.remove("active");
+    });
+    event.currentTarget.parentElement.classList.add("active");
+    event.currentTarget.nextElementSibling.style.maxHeight = "300px";
+    event.currentTarget.nextElementSibling.classList.add("active");
+  }
   // Calculate team price based on members and billing cycle
   useEffect(() => {
     calculateTeamPrice();
@@ -150,9 +159,8 @@ const Subscription = () => {
       const subscriptionItem = {
         id: `sub_${plan}_${billingCycle}_${teamMembers}`,
         // ✅ FIXED: صرف "Individual" یا "Team" بھیجیں، "Plan" نہیں
-        name: `${plan === "team" ? "Team" : "Individual"} Subscription - ${
-          billingCycle === "monthly" ? "Monthly" : "Yearly"
-        }`,
+        name: `${plan === "team" ? "Team" : "Individual"} Subscription - ${billingCycle === "monthly" ? "Monthly" : "Yearly"
+          }`,
         price: plans[plan].priceValue,
         type: "subscription",
         plan: plan, // یہ "individual" یا "team" ہے
@@ -232,23 +240,20 @@ const Subscription = () => {
           {/* Billing Toggle */}
           <div className="billing-toggle mt-12 flex items-center justify-center space-x-4">
             <span
-              className={`text-sm ${
-                billingCycle === "monthly" ? "text-white" : "text-gray-400"
-              }`}
+              className={`text-sm ${billingCycle === "monthly" ? "text-white" : "text-gray-400"
+                }`}
             >
               Monthly
             </span>
             <button onClick={toggleBillingCycle} className="billing-toggle-btn">
               <div
-                className={`billing-toggle-slider ${
-                  billingCycle === "monthly" ? "monthly" : "yearly"
-                }`}
+                className={`billing-toggle-slider ${billingCycle === "monthly" ? "monthly" : "yearly"
+                  }`}
               />
             </button>
             <span
-              className={`text-sm ${
-                billingCycle === "yearly" ? "text-white" : "text-gray-400"
-              }`}
+              className={`text-sm ${billingCycle === "yearly" ? "text-white" : "text-gray-400"
+                }`}
             >
               Yearly <span className="text-green-400 ml-1">Save up to 34%</span>
             </span>
@@ -261,9 +266,8 @@ const Subscription = () => {
             {/* Individual Plan */}
             <div className="col-lg-4 col-md-6 mb-8">
               <div
-                className={`pricing-card individual-plan ${
-                  isCurrentPlan("individual") ? "current-plan" : ""
-                }`}
+                className={`pricing-card individual-plan ${isCurrentPlan("individual") ? "current-plan" : ""
+                  }`}
               >
                 {isCurrentPlan("individual") && (
                   <div className="current-badge">CURRENT PLAN</div>
@@ -291,20 +295,17 @@ const Subscription = () => {
                   {plans.individual.features.map((feature, index) => (
                     <li key={index} className="feature-item">
                       <div
-                        className={`feature-icon ${
-                          feature.included ? "included" : "not-included"
-                        }`}
+                        className={`feature-icon ${feature.included ? "included" : "not-included"
+                          }`}
                       >
                         <i
-                          className={`fas ${
-                            feature.included ? "fa-check" : "fa-times"
-                          }`}
+                          className={`fas ${feature.included ? "fa-check" : "fa-times"
+                            }`}
                         ></i>
                       </div>
                       <span
-                        className={`feature-text ${
-                          feature.included ? "text-gray-300" : "text-gray-500"
-                        }`}
+                        className={`feature-text ${feature.included ? "text-gray-300" : "text-gray-500"
+                          }`}
                       >
                         {feature.text}
                       </span>
@@ -313,9 +314,8 @@ const Subscription = () => {
                 </ul>
 
                 <button
-                  className={`action-btn individual-btn ${
-                    isCurrentPlan("individual") ? "current" : ""
-                  }`}
+                  className={`action-btn individual-btn ${isCurrentPlan("individual") ? "current" : ""
+                    }`}
                   onClick={() => handleSubscription("individual")}
                   disabled={isCurrentPlan("individual")}
                 >
@@ -329,9 +329,8 @@ const Subscription = () => {
             {/* Team Plan */}
             <div className="col-lg-4 col-md-6 mb-8">
               <div
-                className={`pricing-card team-plan featured ${
-                  plans.team.popular ? "popular" : ""
-                }`}
+                className={`pricing-card team-plan featured ${plans.team.popular ? "popular" : ""
+                  }`}
               >
                 {plans.team.popular && (
                   <div className="popular-badge">MOST POPULAR</div>
@@ -384,12 +383,12 @@ const Subscription = () => {
                       {teamMembers === 2
                         ? "Save 11%"
                         : teamMembers === 3
-                        ? "Save 25%"
-                        : teamMembers === 4
-                        ? "Save 33%"
-                        : teamMembers === 5
-                        ? "Save 38%"
-                        : ""}
+                          ? "Save 25%"
+                          : teamMembers === 4
+                            ? "Save 33%"
+                            : teamMembers === 5
+                              ? "Save 38%"
+                              : ""}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Compared to individual plans
@@ -401,25 +400,21 @@ const Subscription = () => {
                   {plans.team.features.map((feature, index) => (
                     <li
                       key={index}
-                      className={`feature-item ${
-                        feature.isHeader ? "feature-header" : ""
-                      }`}
+                      className={`feature-item ${feature.isHeader ? "feature-header" : ""
+                        }`}
                     >
                       <div
-                        className={`feature-icon team-feature ${
-                          feature.included ? "included" : "not-included"
-                        }`}
+                        className={`feature-icon team-feature ${feature.included ? "included" : "not-included"
+                          }`}
                       >
                         <i
-                          className={`fas ${
-                            feature.included ? "fa-check" : "fa-times"
-                          }`}
+                          className={`fas ${feature.included ? "fa-check" : "fa-times"
+                            }`}
                         ></i>
                       </div>
                       <span
-                        className={`feature-text ${
-                          feature.isHeader ? "text-lg font-semibold" : ""
-                        } ${feature.included ? "text-white" : "text-gray-500"}`}
+                        className={`feature-text ${feature.isHeader ? "text-lg font-semibold" : ""
+                          } ${feature.included ? "text-white" : "text-gray-500"}`}
                       >
                         {feature.text}
                       </span>
@@ -468,25 +463,21 @@ const Subscription = () => {
                   {plans.enterprise.features.map((feature, index) => (
                     <li
                       key={index}
-                      className={`feature-item ${
-                        feature.isHeader ? "feature-header" : ""
-                      }`}
+                      className={`feature-item ${feature.isHeader ? "feature-header" : ""
+                        }`}
                     >
                       <div
-                        className={`feature-icon enterprise-feature ${
-                          feature.included ? "included" : "not-included"
-                        }`}
+                        className={`feature-icon enterprise-feature ${feature.included ? "included" : "not-included"
+                          }`}
                       >
                         <i
-                          className={`fas ${
-                            feature.included ? "fa-check" : "fa-times"
-                          }`}
+                          className={`fas ${feature.included ? "fa-check" : "fa-times"
+                            }`}
                         ></i>
                       </div>
                       <span
-                        className={`feature-text ${
-                          feature.isHeader ? "text-lg font-semibold" : ""
-                        } ${feature.included ? "text-white" : "text-gray-500"}`}
+                        className={`feature-text ${feature.isHeader ? "text-lg font-semibold" : ""
+                          } ${feature.included ? "text-white" : "text-gray-500"}`}
                       >
                         {feature.text}
                       </span>
@@ -548,14 +539,14 @@ const Subscription = () => {
                   {teamMembers === 2
                     ? "11%"
                     : teamMembers === 3
-                    ? "25%"
-                    : teamMembers === 4
-                    ? "33%"
-                    : teamMembers === 5
-                    ? "38%"
-                    : teamMembers >= 6
-                    ? "40%"
-                    : "up to 34%"}{" "}
+                      ? "25%"
+                      : teamMembers === 4
+                        ? "33%"
+                        : teamMembers === 5
+                          ? "38%"
+                          : teamMembers >= 6
+                            ? "40%"
+                            : "up to 34%"}{" "}
                   off individual plans
                 </div>
               </div>
@@ -599,57 +590,54 @@ const Subscription = () => {
             </p>
           </div>
 
-          <div className="faq-container">
-            {[
-              {
-                question: "How does team pricing work?",
-                answer: `Team plans cost $${
-                  billingCycle === "monthly" ? "8" : "96"
-                } per member per ${
-                  billingCycle === "monthly" ? "month" : "year"
-                }. For ${teamMembers} members, the total is ${getPriceDisplay()} per ${
-                  billingCycle === "monthly" ? "month" : "year"
-                }. You can add or remove members at any time, and we'll adjust the price accordingly.`,
-              },
-              {
-                question: "Can I switch between plans?",
-                answer:
-                  "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and we'll prorate the charges.",
-              },
-              {
-                question: "What payment methods do you accept?",
-                answer:
-                  "We accept all major credit cards, PayPal, and bank transfers for enterprise plans.",
-              },
-              {
-                question: "Is there a free trial for paid plans?",
-                answer:
-                  "Yes, all paid plans come with a 14-day free trial. No credit card required to start.",
-              },
-            ].map((faq, index) => (
-              <div key={index} className="faq-item">
-                <button
-                  className={`faq-header ${
-                    activeAccordion === index ? "active" : ""
-                  }`}
-                  onClick={() => toggleAccordion(index)}
-                >
-                  <span className="faq-question">{faq.question}</span>
-                  <i
-                    className={`fas fa-chevron-down ${
-                      activeAccordion === index ? "rotate" : ""
-                    }`}
-                  ></i>
-                </button>
-                <div
-                  className={`faq-content ${
-                    activeAccordion === index ? "active" : ""
-                  }`}
-                >
-                  <p className="faq-answer">{faq.answer}</p>
-                </div>
+          <div className="accordion bord faq-container">
+            <div className="item active wow fadeInUp" data-wow-delay=".1s">
+              <div onClick={openAccordion} className="title">
+                <h6>How does team pricing work?</h6>
+                <span className="ico ti-plus"></span>
               </div>
-            ))}
+              <div className="accordion-info">
+                <p className="">
+                  Team plans cost ${billingCycle === "monthly" ? "8" : "96"} per member per {billingCycle === "monthly" ? "month" : "year"}. For {teamMembers} members, the total is {getPriceDisplay()} per {billingCycle === "monthly" ? "month" : "year"}. You can add or remove members at any time, and we'll adjust the price accordingly.
+                </p>
+              </div>
+            </div>
+
+            <div className="item wow fadeInUp" data-wow-delay=".3s">
+              <div onClick={openAccordion} className="title">
+                <h6>Can I switch between plans?</h6>
+                <span className="ico ti-plus"></span>
+              </div>
+              <div className="accordion-info">
+                <p className="">
+                  Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and we'll prorate the charges.
+                </p>
+              </div>
+            </div>
+
+            <div className="item wow fadeInUp" data-wow-delay=".5s">
+              <div onClick={openAccordion} className="title">
+                <h6>What payment methods do you accept?</h6>
+                <span className="ico ti-plus"></span>
+              </div>
+              <div className="accordion-info">
+                <p className="">
+                  We accept all major credit cards, PayPal, and bank transfers for enterprise plans.
+                </p>
+              </div>
+            </div>
+
+            <div className="item wow fadeInUp" data-wow-delay=".5s">
+              <div onClick={openAccordion} className="title">
+                <h6>Is there a free trial for paid plans?</h6>
+                <span className="ico ti-plus"></span>
+              </div>
+              <div className="accordion-info">
+                <p className="">
+                  Yes, all paid plans come with a 14-day free trial. No credit card required to start.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
