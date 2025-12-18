@@ -201,7 +201,7 @@ const BlogCategory = () => {
           {/* ---------- SIDEBAR ---------- */}
           <div className="col-lg-4">
             <div
-              className="sidebar blog-sidebar-outdise"
+              className="sidebar-bl blog-sidebar-outdise"
               style={{ width: "100%" }}
             >
               {/* SEARCH */}

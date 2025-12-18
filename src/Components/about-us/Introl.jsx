@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function Intro() {
   return (
@@ -31,11 +32,11 @@ function Intro() {
               source for site design, SEO optimization, and professional digital
               solutions.
             </p>
-            <a href="#services" className="underline main-color mt-40">
+            <Link to="/services" className="underline main-color mt-40">
               <span className="text">
                 Our Services <i className="ti-arrow-top-right"></i>
               </span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

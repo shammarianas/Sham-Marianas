@@ -187,6 +187,13 @@ const countries = [
       "Kazan",
     ],
   },
+   {
+    name: "Other Countries",
+    code: "RU",
+    cities: [
+      "other",
+    ],
+  },
 ];
 
 const ContributorLogin = () => {
