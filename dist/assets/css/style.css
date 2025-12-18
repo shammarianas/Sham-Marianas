@@ -4160,7 +4160,15 @@ body.loaded {
   transform: translateY(-5px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
-
+.sidebar-bl {
+    color: var(--text-primary);
+    padding: 1.5rem 0;
+    height: 100vh;
+    position: sticky;
+    width: 260px;
+    background: transparent;
+    transition: width .3s ease, transform .3s ease;
+}
 .blog-sidebar {
   height: auto !important;
   padding: 0 !important;
@@ -4174,11 +4182,11 @@ body.loaded {
   padding: 0;
 }
 
-.sidebar .search-box {
+.sidebar, .sidebar-bl .search-box {
   position: relative;
 }
 
-.sidebar .search-box input {
+.sidebar, .sidebar-bl .search-box input {
   color: #fff;
   padding: 15px;
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -4187,11 +4195,11 @@ body.loaded {
   background: transparent;
 }
 
-.sidebar .search-box input:focus {
+.sidebar, .sidebar-bl .search-box input:focus {
   border-color: #fff;
 }
 
-.sidebar .search-box .icon {
+.sidebar, .sidebar-bl .search-box .icon {
   position: absolute;
   top: 50%;
   right: 15px;
@@ -4200,20 +4208,20 @@ body.loaded {
   transform: translateY(-50%);
 }
 
-.sidebar .widget {
+ .sidebar, .sidebar-bl .widget {
   /* margin-top: 50px; */
   padding: 30px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.sidebar .widget .title-widget {
+ .sidebar, .sidebar-bl .widget .title-widget {
   margin-bottom: 30px;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-size: 17px;
 }
 
-.sidebar .widget.catogry li {
+ .sidebar, .sidebar-bl .widget.catogry li {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -4222,43 +4230,43 @@ body.loaded {
   border-radius: 30px;
 }
 
-.sidebar .widget.catogry li:last-of-type {
+ .sidebar, .sidebar-bl .widget.catogry li:last-of-type {
   margin-bottom: 0;
 }
 
-.sidebar .widget.catogry li:hover {
+ .sidebar, .sidebar-bl .widget.catogry li:hover {
   background: rgba(255, 255, 255, 0.02);
 }
 
-.sidebar .widget.last-post-thum .item {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   margin-bottom: 30px;
 }
 
-.sidebar .widget.last-post-thum .item:last-of-type {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item:last-of-type {
   margin-bottom: 0;
 }
 
-.sidebar .widget.last-post-thum .item:hover .img a .date {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item:hover .img a .date {
   opacity: 1;
 }
 
-.sidebar .widget.last-post-thum .item .img {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item .img {
   width: 90px;
   height: 100px;
   border-radius: 5px;
   overflow: hidden;
 }
 
-.sidebar .widget.last-post-thum .item .img a {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item .img a {
   width: 100%;
   height: 100%;
   position: relative;
 }
 
-.sidebar .widget.last-post-thum .item .img a .date {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item .img a .date {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -4280,7 +4288,7 @@ body.loaded {
   transition: all 0.4s;
 }
 
-.sidebar .widget.last-post-thum .item .img a .date span {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item .img a .date span {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -4290,18 +4298,18 @@ body.loaded {
   line-height: 1;
 }
 
-.sidebar .widget.last-post-thum .item .img img {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item .img img {
   width: 100%;
   height: 100%;
   -o-object-fit: cover;
   object-fit: cover;
 }
 
-.sidebar .widget.last-post-thum .item .cont {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item .cont {
   padding-left: 25px;
 }
 
-.sidebar .widget.last-post-thum .item .cont h6 a {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item .cont h6 a {
   font-size: 15px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -4310,7 +4318,7 @@ body.loaded {
   word-break: break-word;
 }
 
-.sidebar .widget.last-post-thum .item .cont .tag {
+ .sidebar, .sidebar-bl .widget.last-post-thum .item .cont .tag {
   font-size: 10px;
   padding: 5px 10px;
   border-radius: 30px;
@@ -4318,7 +4326,7 @@ body.loaded {
   margin-bottom: 10px;
 }
 
-.sidebar .widget.tags a {
+ .sidebar, .sidebar-bl .widget.tags a {
   padding: 8px 15px;
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.02);
@@ -4328,7 +4336,7 @@ body.loaded {
   transition: all 0.4s;
 }
 
-.sidebar .widget.tags a:hover {
+ .sidebar, .sidebar-bl .widget.tags a:hover {
   background: #52b0b4;
 }
 
@@ -7537,7 +7545,7 @@ footer.clean-footer.crev .circle-blur {
   position: relative;
   overflow: hidden;
   padding-top: 30px;
-  height: 300px;
+  /* height: 300px; */
   -webkit-backdrop-filter: blur(50px);
   backdrop-filter: blur(50px);
   z-index: 2;
@@ -9716,7 +9724,7 @@ footer.clean-footer.crev .circle-blur {
 
 .col-md-6 {
   flex: 0 0 auto;
-  width: 50%;
+  /* width: 50%; */
 }
 
 .mb-8 {

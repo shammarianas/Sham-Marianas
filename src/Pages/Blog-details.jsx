@@ -405,7 +405,7 @@ function BlogDetails() {
             </div>
 
             <div className="col-lg-4">
-              <div className="sidebar blog-sidebar">
+              <div className="sidebar-bl blog-sidebar">
                 <div className="widget">
                   <h6 className="title-widget">Search Here</h6>
                   <form onSubmit={handleSearch} className="search-box">
