@@ -229,7 +229,7 @@ const DownloadButton = ({
     return urls.filter(Boolean);
   };
 
-  const downloadURL = (urlOrObj) => {
+  const downloadURL = async (urlOrObj) => {
     try {
       let url = urlOrObj;
 
@@ -242,18 +242,44 @@ const DownloadButton = ({
         return;
       }
 
-      console.log("⬇️ Downloading:", url);
-      const a = document.createElement("a");
-      a.href = url;
+      console.log("⬇️ Downloading via fetch-blob:", url);
 
-      const filename = url.split("/").pop().split("?")[0];
-      a.download = filename || "download";
+      // Extract filename from URL
+      const filename = url.split("/").pop().split("?")[0] || "download";
 
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      try {
+        // Use fetch-blob method for better compatibility
+        const response = await fetch(url);
+        if (!response.ok)
+          throw new Error(`Failed to fetch: ${response.status}`);
 
-      console.log("✅ Download initiated for:", filename);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+
+        document.body.appendChild(a);
+        a.click();
+
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+
+        console.log("✅ Download initiated via blob:", filename);
+      } catch (fetchError) {
+        console.log("🔄 Using direct method as fallback");
+        // Fallback to original method
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
     } catch (e) {
       console.error("❌ Download error:", e);
       if (typeof urlOrObj === "string") window.open(urlOrObj, "_blank");
@@ -282,37 +308,93 @@ const DownloadButton = ({
         throw new Error(downloadData.error || "Download failed");
       }
 
-      // Step 2: ✅ IMPROVED Force Download for ALL files
-      console.log("⬇️ Force downloading file:", downloadData.fileName);
+      // Step 2: ✅ NEW - FETCH AND DOWNLOAD METHOD (This will force download)
+      console.log(
+        "⬇️ Force downloading file via fetch-blob method:",
+        downloadData.fileName
+      );
 
-      // Method 1: Create hidden link with download attribute
-      const link = document.createElement("a");
-      link.href = downloadData.url;
-      link.download = downloadData.fileName || "download";
-      link.style.display = "none"; // Hide it
+      // New function to handle force download
+      const downloadFileFromUrl = async (url, fileName) => {
+        try {
+          console.log("📥 Fetching file as blob...");
 
-      document.body.appendChild(link);
+          // Fetch the file
+          const response = await fetch(url, {
+            method: "GET",
+            mode: "cors",
+            cache: "no-cache",
+          });
 
-      // ✅ TRICK: Use setTimeout to ensure click works
-      setTimeout(() => {
-        link.click();
-
-        // Method 2: Backup - If click doesn't work, use window.open
-        setTimeout(() => {
-          // Check if download started (this is a trick)
-          const downloadStarted = true; // Assume it started
-
-          if (!downloadStarted) {
-            // Fallback: Open in new window which might trigger download
-            window.open(downloadData.url, "_blank");
+          if (!response.ok) {
+            throw new Error(`Failed to fetch: ${response.status}`);
           }
-        }, 1000);
 
-        // Clean up
-        setTimeout(() => {
-          document.body.removeChild(link);
-        }, 5000);
-      }, 100);
+          // Get the blob data
+          const blob = await response.blob();
+
+          // Create a blob URL from the blob data
+          const blobUrl = window.URL.createObjectURL(blob);
+
+          // Create download link
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = fileName || "download";
+          link.style.display = "none";
+
+          // Append to body and click
+          document.body.appendChild(link);
+
+          // Try different click methods for compatibility
+          if (link.download !== undefined) {
+            // Modern browsers with download support
+            link.click();
+          } else {
+            // Fallback for older browsers
+            window.open(blobUrl, "_blank");
+          }
+
+          // Clean up
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+          }, 100);
+
+          console.log("✅ File fetched and download triggered via blob");
+          return true;
+        } catch (fetchError) {
+          console.error("❌ Fetch-blob method failed:", fetchError);
+
+          // Fallback: Direct download method
+          console.log("🔄 Trying direct download fallback...");
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = fileName || "download";
+          link.target = "_blank";
+
+          document.body.appendChild(link);
+
+          // Use proper click event
+          if (document.createEvent) {
+            const evt = document.createEvent("MouseEvents");
+            evt.initEvent("click", true, true);
+            link.dispatchEvent(evt);
+          } else {
+            link.click();
+          }
+
+          setTimeout(() => {
+            if (link.parentNode) {
+              document.body.removeChild(link);
+            }
+          }, 1000);
+
+          return false;
+        }
+      };
+
+      // Use the new download method
+      await downloadFileFromUrl(downloadData.url, downloadData.fileName);
 
       // Step 3: Save to downloads collection
       await addToDownloads(item);
@@ -323,12 +405,14 @@ const DownloadButton = ({
       console.log("✅ Download tracked in Firestore");
 
       // Step 5: Show success message
-      setToastMessage(`"${downloadData.fileName}" is downloading...`);
+      setToastMessage(
+        `"${downloadData.fileName}" has been downloaded. Check your downloads folder.`
+      );
       setToastState("success");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
 
-      console.log("✅ Paid asset force-downloaded successfully");
+      console.log("✅ Paid asset downloaded successfully via force method");
     } catch (error) {
       console.error("❌ Download failed:", error);
 
@@ -387,10 +471,9 @@ const DownloadButton = ({
         await trackDownloadInFirestore(item.id);
 
         // Then download files
-        urls.forEach((url, index) => {
-          setTimeout(() => {
-            downloadURL(url);
-          }, index * 500);
+        urls.forEach(async (url, index) => {
+          await new Promise((resolve) => setTimeout(resolve, index * 500));
+          await downloadURL(url);
         });
 
         setToastMessage(`Downloading ${urls.length} file(s)...`);
