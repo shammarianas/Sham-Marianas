@@ -242,16 +242,16 @@ const HeroSection = () => {
                   <span className="sub-title main-color mb-5">Our Templates</span>
                   <h3 className="fw-600 fz-50 text-u d-rotate wow">
                     <span className="rotate-text">
-                      Trending <span className="fw-200">Templates.</span>
+                      Trending <span className="fw-200">Templates</span>
                     </span>
                   </h3>
                 </div>
-                <div className="ml-auto vi-more">
+                {/* <div className="ml-auto vi-more">
                   <a href="#Hot" className="butn butn-sm butn-bord radius-30">
                     <span>View All</span>
                   </a>
                   <span className="icon ti-arrow-top-right"></span>
-                </div>
+                </div> */}
               </div>
             </div>
 
