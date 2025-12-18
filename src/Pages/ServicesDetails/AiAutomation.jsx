@@ -29,7 +29,7 @@ const AiAutomationPage = () => {
       </>,
       "From the first consultation to final deployment, we focus on business impact, user experience, and measurable ROI. Every automation solution is built with your industry needs in mind, ensuring that it is not only a fit for today but also a foundation for future growth.",
        <>
-        With <span className="text-bold underline main-color">Sham Marianas</span>
+        With <span className="text-bold underline main-color">Sham Marianas</span>{" "}
        AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
       </>,
     ],
@@ -75,7 +75,7 @@ const AiAutomationPage = () => {
       />
       <IntroSection
         title="Creating the Unreal, "
-        highlightedWords={["Shaping Ideas Into AI-Powered Solutions That Work for You"]}
+        highlightedWords={["Shaping Ideas Into AI Powered Solutions That Work for You"]}
         customClass="intro-webdev-section" // 👈 Custom class added here
         paragraphs={[
           <>

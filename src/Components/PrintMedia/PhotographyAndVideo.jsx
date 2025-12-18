@@ -78,7 +78,7 @@ function PrintMediaSolutions() {
                     data-wow-delay=".1s"
                   >
                     <div onClick={openAccordion} className="title">
-                      <h6>Why Are Print Media Solutions Necessary?</h6>
+                      <h6>Why are print media solutions necessary?</h6>
                       <span className="ico ti-plus"></span>
                     </div>
                     <div className="accordion-info">

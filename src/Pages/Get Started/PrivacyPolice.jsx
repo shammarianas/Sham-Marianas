@@ -15,7 +15,7 @@ const PrivacyPolicy = () => {
         </p>
 
         <p className="fotter-police-p p-color mb-4">
-          <strong>No Secrets Here:</strong> We’ll always tell you why we’re collecting your info—before or right when we do it. No shady stuff.
+          <strong>No Secrets Here:</strong> We’ll always tell you why we’re collecting your info before or right when we do it. No shady stuff.
         </p>
 
         <p className="fotter-police-p p-color mb-4">
@@ -23,7 +23,7 @@ const PrivacyPolicy = () => {
         </p>
 
         <p className="fotter-police-p p-color mb-4">
-          <strong>Your Info Stays Yours:</strong> We never hand over your personal data to third parties—unless the law taps us on the shoulder.
+          <strong>Your Info Stays Yours:</strong> We never hand over your personal data to third parties unless the law taps us on the shoulder.
         </p>
 
         <p className="fotter-police-p p-color mb-4">
@@ -35,7 +35,7 @@ const PrivacyPolicy = () => {
         </p>
 
         <p className="fotter-police-p p-color mb-8">
-          <strong>Fortress-Level Security:</strong> Your data is locked down tight with robust tech and strict access controls—no breaches, no funny business.
+          <strong>Fortress-Level Security:</strong> Your data is locked down tight with robust tech and strict access controls no breaches, no funny business.
         </p>
       </div>
     </div>
