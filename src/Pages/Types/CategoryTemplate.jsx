@@ -8,10 +8,10 @@ import Cursor from "../../common/cusor";
 const CategoryTemplate = () => {
   const location = useLocation();
   const pathname = location.pathname;
-  
+
   // Extract category from URL path
   const category = pathname.split('/').pop(); // e.g., "/fonts" -> "fonts"
-  
+
   console.log("Pathname:", pathname); // Debug
   console.log("Extracted category:", category); // Debug
 
@@ -35,14 +35,22 @@ const CategoryTemplate = () => {
 
   return (
     <>
-     <Cursor />
+      <Cursor />
       <Helmet>
         <title>{categoryTitle} | Shammarianas</title>
-        <meta 
-          name="description" 
-          content={`Browse through a wide range of ${categoryTitle} on Shammarianas.`} 
+        <meta
+          name="description"
+          content={`Browse through a wide range of ${categoryTitle} on Shammarianas.`}
         />
-        {/* ... rest of Helmet tags */}
+        <meta property="og:title" content={`${category.charAt(0).toUpperCase() + category.slice(1)} | Shammarianas`} />
+        <meta property="og:description" content={`Browse through a wide range of ${category} on Shammarianas.`} />
+
+        <meta property="og:type" content="website" />
+
+        <meta name="twitter:title" content={`${category.charAt(0).toUpperCase() + category.slice(1)} | Shammarianas`} />
+        <meta name="twitter:description" content={`Browse through a wide range of ${category} on Shammarianas.`} />
+
+        <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
       <div className="page_content">
@@ -50,7 +58,7 @@ const CategoryTemplate = () => {
         <div className="listing_section">
           <ListingSidebar />
           {category === "hot" ? (
-            <ItemsListing /> 
+            <ItemsListing />
           ) : (
             <ItemsListing category={category.toLowerCase()} />
           )}

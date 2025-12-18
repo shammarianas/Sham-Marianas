@@ -8,7 +8,7 @@ const data = [
     title: "1. Branding Design",
     img: "/assets/imgs/serv-icons/3.png",
     desc: "Our branding design creates strong brand identities that attract audiences, build recognition, and grow businesses for long-term success.",
-    link: "/services/branding",
+    link: "/services/branding-design",
   },
   {
     title: "2. UI-UX Design",
@@ -20,19 +20,19 @@ const data = [
     title: "3. Web Developments",
     img: "/assets/imgs/serv-icons/4.png",
     desc: "At Sham Marianas, we build cutting-edge web development solutions that blend innovation, performance, and seamless user experiences to help businesses thrive online.",
-    link: "/services/web-design",
+    link: "/services/web-development",
   },
   {
     title: "4. E-Commerce Solutions",
     img: "/assets/imgs/serv-icons/5.png",
     desc: "We build e-commerce solutions that make online selling seamless and profitable. Our expert services enhance customer reach, conversions, and sales growth",
-    link: "/services/ecommerce",
+    link: "/services/ecommerce-solutions",
   },
   {
     title: "5. Content Writing",
     img: "/assets/imgs/serv-icons/3.png",
     desc: "We create SEO-friendly content writing that captures attention, builds authority, and boosts online presence.",
-    link: "/services/content",
+    link: "/services/content-writing",
   },
   {
     title: "6. Product Design",

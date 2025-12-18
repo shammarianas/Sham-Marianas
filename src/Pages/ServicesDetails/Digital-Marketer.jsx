@@ -62,7 +62,7 @@ const DigitalMaketerPage = () => {
     {
       question: "Will you create the content too?",
       answer:
-        "Yes! We handle the entire process,  from planning to designing, writing, and publishing—so your brand stays consistent and professional.",
+        "Yes! We handle the entire process,  from planning to designing, writing, and publishing, so your brand stays consistent and professional.",
     },
     {
       question: "Can you run paid ads for me?",
@@ -77,7 +77,7 @@ const DigitalMaketerPage = () => {
     {
       question: "How do I get started?",
       answer:
-        "Simply reach out through our website —we’ll schedule a discovery call and map out your digital success journey.",
+        "Simply reach out through our website we’ll schedule a discovery call and map out your digital success journey.",
     },
   ];
 
@@ -89,7 +89,7 @@ const DigitalMaketerPage = () => {
         overlayDark="8"
       />
       <IntroSection
-        title="Posting Isn’t Enough —"
+        title="Posting Isn’t Enough,"
         highlightedWords={["We Cultivate Digital Impact"]}
         customClass="intro-webdev-section" // 👈 Custom class added here
         paragraphs={[

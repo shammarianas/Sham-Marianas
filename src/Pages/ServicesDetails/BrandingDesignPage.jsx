@@ -86,8 +86,8 @@ const BrandingDesignPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            , we craft branding and designs that go beyond just visuals we
+            </span>
+          , we craft branding and designs that go beyond just visuals we
             create identities. Your brand is your story, and we help you tell it
             with clarity, creativity, and consistency.
           </>,

@@ -23,7 +23,7 @@ function Services() {
     },
     {
       num: "03",
-      slug: "web-design",
+      slug: "web-development",
       category: "Web Development",
       title: "Innovative Solutions",
       description:
@@ -32,7 +32,7 @@ function Services() {
     },
     {
       num: "04",
-      slug: "ecommerce",
+      slug: "ecommerce-solutions",
       category: "E-Commerce Solutions",
       title: "Seamless Shopping",
       description:
@@ -41,7 +41,7 @@ function Services() {
     },
     {
       num: "05",
-      slug: "content",
+      slug: "content-writing",
       category: "Content Writing",
       title: "SEO-Optimized Content",
       description:
@@ -50,7 +50,7 @@ function Services() {
     },
     {
       num: "06",
-      slug: "product",
+      slug: "product-design",
       category: "Product Design",
       title: "User-Centric Design",
       description:
@@ -59,7 +59,7 @@ function Services() {
     },
     {
       num: "07",
-      slug: "digital",
+      slug: "social-media-digital-marketing",
       category: "Social Media & Digital Marketing",
       title: "Brand Growth",
       description:
@@ -77,7 +77,7 @@ function Services() {
     },
     {
       num: "09",
-      slug: "vfx",
+      slug: "vfx-and-cgi-ads",
       category: "VFX and CGI ADs",
       title: "High-Impact Visuals",
       description:
@@ -86,7 +86,7 @@ function Services() {
     },
     {
       num: "10",
-      slug: "printing",
+      slug: "print-media-solutions",
       category: "Print Media Solution",
       title: "Effective Branding",
       description:
@@ -104,7 +104,7 @@ function Services() {
     },
     {
       num: "12",
-      slug: "exhibition",
+      slug: "exhibition-booth-design",
       category: "Exhibition Booth Design",
       title: "Engaging Spaces",
       description:
