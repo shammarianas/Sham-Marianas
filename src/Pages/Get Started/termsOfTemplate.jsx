@@ -121,7 +121,7 @@ const TermsandConditionTemplate = () => {
           <li className="mb-2"><strong>No Name Drops:</strong> Using "<span className="text-bold underline main-color">Sham Marianas</span>" as your own brand, product, or business name without permission is a major no-no.</li>
           <li className="mb-2"><strong>No Rule Dodging:</strong> Using VPNs or tricks to bypass our policies or hide illegal activity will not be tolerated.</li>
           <li className="mb-2"><strong>No Signature Removal:</strong> Never remove copyrights, watermarks, or protective marks from our original content.</li>
-          <li className="mb-2"><strong>No Fake Faces:</strong> Impersonating someone else or lying about your identity isn't just wrong — it's banned.</li>
+          <li className="mb-2"><strong>No Fake Faces:</strong> Impersonating someone else or lying about your identity isn't just wrong it's banned.</li>
           <li className="mb-2"><strong>No Mass Grabbing:</strong> You cannot download or scrape large chunks of our content or entire databases.</li>
           <li className="mb-2"><strong>No Unauthorized Moves:</strong> If it's not clearly allowed here, it's simply not allowed.</li>
         </ul>
@@ -231,7 +231,7 @@ const TermsandConditionTemplate = () => {
         </h3>
 
         <p className="fotter-police-p p-color mb-8">
-          Do you have a new card, or have you changed your billing address? Just update your info in your account. Once you're subscribed, billing happens automatically each period—but you're always in control. Cancel anytime. As long as it makes you feel comfortable, stay.
+          Do you have a new card, or have you changed your billing address? Just update your info in your account. Once you're subscribed, billing happens automatically each period but you're always in control. Cancel anytime. As long as it makes you feel comfortable, stay.
         </p>
 
         <h3 className="mt-5 fz-30 fw-600 mb-4">
@@ -239,7 +239,7 @@ const TermsandConditionTemplate = () => {
         </h3>
 
         <p className="fotter-police-p p-color mb-8">
-          We don't handle payments directly. Instead, we use reliable outside processors to securely manage transactions. Your billing details are stored safely with them, and yes—they follow strict rules to protect your privacy.
+          We don't handle payments directly. Instead, we use reliable outside processors to securely manage transactions. Your billing details are stored safely with them, and yes they follow strict rules to protect your privacy.
         </p>
 
         <h3 className="mt-5 fz-30 fw-600 mb-4">
@@ -508,7 +508,7 @@ const TermsandConditionTemplate = () => {
 
         <h4 className="fw-600 mb-3">4. Descriptions Straight From the Source</h4>
         <p className="fotter-police-p p-color mb-4">
-          We share what suppliers give us. We double-check it, but the real story comes from them—so they're responsible for any claims or details in those offers.
+          We share what suppliers give us. We double-check it, but the real story comes from them so they're responsible for any claims or details in those offers.
         </p>
 
         <h4 className="fw-600 mb-3">5. Your Use, Your Responsibility</h4>
@@ -685,7 +685,7 @@ const TermsandConditionTemplate = () => {
         </h3>
 
         <p className="fotter-police-p p-color mb-8">
-          Got a legal issue with us at <span className="text-bold underline main-color">Sham Marianas</span>? We'll resolve it through private arbitration—a fair, fast, and confidential way to sort things out. The process is handled by an independent expert in Dubai, and both sides cover their own costs. Some serious cases (like copyright infringement or emergency legal matters) may still go to court, but only when absolutely necessary.
+          Got a legal issue with us at <span className="text-bold underline main-color">Sham Marianas</span>? We'll resolve it through private arbitration a fair, fast, and confidential way to sort things out. The process is handled by an independent expert in Dubai, and both sides cover their own costs. Some serious cases (like copyright infringement or emergency legal matters) may still go to court, but only when absolutely necessary.
         </p>
 
         <h3 className="mt-5 fz-30 fw-600 mb-4">

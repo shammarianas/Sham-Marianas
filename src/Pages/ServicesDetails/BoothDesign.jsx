@@ -25,7 +25,7 @@ const BoothDesignPage = () => {
     title: "Designed for the Modern Brand",
     paragraphs: [
       "In today’s fast-moving world of trade shows and expos, standing out is essential. Visitors don’t just look for flashy visuals, they look for experiences. Your booth should feel alive, reflect your brand’s purpose, and create a lasting emotional impact.",
-       "That’s where we come in. Our Exhibition Booth Design Services are made for brands that want to be seen, heard, and remembered. We keep every design modern, clean, and easy to explore. Whether you want a minimalist setup or an interactive digital display, our team tailors each detail to fit your goals.",
+       "That’s where we come in. Our exhibition booth design services are made for brands that want to be seen, heard, and remembered. We keep every design modern, clean, and easy to explore. Whether you want a minimalist setup or an interactive digital display, our team tailors each detail to fit your goals.",
        "We also make sure your booth feels comfortable and functional. The flow of space, lighting, materials, and colors, all are thoughtfully chosen to create a setting where people naturally want to step in and engage.",
         <>
         At <span className="text-bold underline main-color">Sham Marianas</span>

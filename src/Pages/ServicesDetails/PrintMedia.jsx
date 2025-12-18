@@ -42,7 +42,7 @@ const PrintMediaPage = () => {
   };
   const faqs = [
     {
-      question: "Why Are Print Media Solutions Necessary?",
+      question: "Why are print media solutions necessary?",
       answer:
         "In today’s digital world, print media solutions create a lasting, tangible connection that digital ads can’t. Materials like brochures, business cards, and posters build trust, leave a memorable impression, and make your brand stand out with a personal touch.",
     },
