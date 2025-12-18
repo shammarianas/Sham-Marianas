@@ -16,7 +16,7 @@ function Footer() {
     path === "//Favorites" ||
     path === "/MyDownloads" ||
     path === "/privacy-policy-template" ||
-    path === "/terms-of-template" ||
+    path === "/terms-condition-template" ||
     path === "/seller-guideline" ||
     path === "/contributor-policies" ||
     path === "/pricing-and-fees" ||
@@ -129,10 +129,10 @@ function Footer() {
                         <Link to="/ContributorLogin">Sell on Marketplace</Link>
                       </li>
                       <li className="mb-15">
-                        <a href="/seller-guideline">Seller Guidelines</a>
+                        <Link to="/seller-guideline">Seller Guidelines</Link>
                       </li>
                       <li className="mb-15">
-                        <a href="/subscription">Pricing & Fees</a>
+                        <Link to="/pricing-and-fees">Pricing & Fees</Link>
                       </li>
                     </ul>
                   </div>
@@ -171,7 +171,7 @@ function Footer() {
                   <h6 className="sub-title mb-30">Resources</h6>
                   <ul className="rest fz-14 opacity-7">
                     <li className="mb-15"><Link to="/privacy-policy-template">Privacy Policy</Link></li>
-                    <li className="mb-15"><Link to="/terms-of-template">Terms & Conditions</Link></li>
+                    <li className="mb-15"><Link to="/terms-condition-template">Terms & Conditions</Link></li>
                     <li className="mb-15"><Link to="/support">Support</Link></li>
                   </ul>
                 </div>

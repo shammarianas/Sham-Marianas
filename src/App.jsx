@@ -132,13 +132,13 @@ export const AppRoutes = () => (
     <Route path="/services/brandingpage" element={<BrandingPage />} />
     <Route path="/services/demo" element={<Demo />} />
     <Route path="/error" element={<Error />} />
-    <Route path="/privacy-policy" element={<PrivacyPolicyTemplate />} />
+    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
     <Route
       path="/privacy-policy-template"
       element={<PrivacyPolicyTemplate />}
     />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
-    <Route path="/terms-of-template" element={<TermsandConditionTemplate />} />
+    <Route path="/terms-condition-template" element={<TermsandConditionTemplate />} />
     <Route path="/seller-guideline" element={<SellerGuideline />} />
     <Route path="/pricing-and-fees" element={<PricingAndFees />} />
     <Route path="/contributor-policies" element={<ContributorPolicies />} />
