@@ -7943,3 +7943,13 @@ div.hidden.none {
     justify-content: flex-start;
   }
 }
+.list-disc {
+  padding-left: 3rem !important;
+}
+
+.list-disc li {
+  list-style-type: disc !important;
+}
+.letter-spacing-1{
+  letter-spacing: 1px !important;
+}
