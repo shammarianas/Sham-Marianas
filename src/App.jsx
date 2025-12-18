@@ -151,26 +151,26 @@ export const AppRoutes = () => (
     <Route path="/blog-details/:id" element={<BlogDetails />} />
     <Route path="/project-details/:id" element={<PortfolioDetails />} />
     <Route path="/blog-category/:category" element={<BlogCategory />} />
+
     {/* Profile routes - should come before generic dynamic route */}
     <Route path="/Profile/:username" element={<Profile />} />
     <Route path="/:username" element={<Profile />} />
-    {/* Generic dynamic route for Category - should be LAST */}
-    {/* <Route path="/:Category" element={<CategoryTemplate />} /> */}
-    <Route path="/fonts" element={<CategoryTemplate />} />
-    <Route path="/video-templates" element={<CategoryTemplate />} />
-    <Route path="/icons" element={<CategoryTemplate />} />
-    <Route path="/models" element={<CategoryTemplate />} />
-    <Route path="/mockups" element={<CategoryTemplate />} />
-    <Route path="/graphics" element={<CategoryTemplate />} />
-    <Route path="/videos" element={<CategoryTemplate />} />
-    <Route path="/images" element={<CategoryTemplate />} />
-    <Route path="/scripts" element={<CategoryTemplate />} />
-    <Route path="/hdri" element={<CategoryTemplate />} />
-    <Route path="/hdris" element={<CategoryTemplate />} />{" "}
-    {/* both hdri and hdris */}
-    <Route path="/textures" element={<CategoryTemplate />} />{" "}
-    {/* if you have this */}
-    <Route path="/More" element={<CategoryTemplate />} />{" "}
+
+    {/* Updated Category Routes - Now all start with /category */}
+    <Route path="/category/fonts" element={<CategoryTemplate />} />
+    <Route path="/category/video-templates" element={<CategoryTemplate />} />
+    <Route path="/category/icons" element={<CategoryTemplate />} />
+    <Route path="/category/models" element={<CategoryTemplate />} />
+    <Route path="/category/mockups" element={<CategoryTemplate />} />
+    <Route path="/category/graphics" element={<CategoryTemplate />} />
+    <Route path="/category/videos" element={<CategoryTemplate />} />
+    <Route path="/category/images" element={<CategoryTemplate />} />
+    <Route path="/category/scripts" element={<CategoryTemplate />} />
+    <Route path="/category/hdri" element={<CategoryTemplate />} />
+    <Route path="/category/hdris" element={<CategoryTemplate />} />
+    <Route path="/category/textures" element={<CategoryTemplate />} />
+    <Route path="/category/more" element={<CategoryTemplate />} />
+    
     {/* if you have this */}
     <Route path="*" element={<Error />} />
   </Routes>
