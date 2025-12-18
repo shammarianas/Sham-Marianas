@@ -1,16 +1,24 @@
-// CategoryTemplate.js
 import { useLocation } from "react-router-dom";
 import PageTitle from "../../Components/UI/PageTitle";
 import ListingSidebar from "../../Components/ListingSidebar";
 import ItemsListing from "../../Components/ItemsListing";
 import { Helmet } from "react-helmet-async";
 import Cursor from "../../common/cusor";
+
 const CategoryTemplate = () => {
   const location = useLocation();
   const pathname = location.pathname;
 
-  // Extract category from URL path
-  const category = pathname.split('/').pop(); // e.g., "/fonts" -> "fonts"
+  // Extract category from URL path - now looking for pattern /category/{category}
+  const pathParts = pathname.split('/');
+  
+  // Find the category part after '/category/'
+  let category = "";
+  const categoryIndex = pathParts.indexOf('category');
+  
+  if (categoryIndex !== -1 && pathParts.length > categoryIndex + 1) {
+    category = pathParts[categoryIndex + 1];
+  }
 
   console.log("Pathname:", pathname); // Debug
   console.log("Extracted category:", category); // Debug
@@ -31,7 +39,7 @@ const CategoryTemplate = () => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
-  const categoryTitle = capitalizeFirstLetter(category);
+  const categoryTitle = capitalizeFirstLetter(category.replace(/-/g, ' '));
 
   return (
     <>

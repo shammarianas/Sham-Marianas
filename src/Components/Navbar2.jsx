@@ -151,22 +151,22 @@ const Navbar = () => {
 
   // Navigation items array for consistency
   const navItems = [
-    { path: "/Videos", label: "Videos" },
-    { path: "/Models", label: "3D Models" },
-    { path: "/video-templates", label: "Video Template" },
-    { path: "/images", label: "Images" },
-    { path: "/graphics", label: "Graphic Templates" },
-    { path: "/Mockups", label: "Mockups" },
-    { path: "/Fonts", label: "Fonts" },
-    { path: "/More", label: "More" },
+    { path: "/category/videos", label: "Videos" },
+    { path: "/category/models", label: "3D Models" },
+    { path: "/category/video-templates", label: "Video Template" },
+    { path: "/category/images", label: "Images" },
+    { path: "/category/graphics", label: "Graphic Templates" },
+    { path: "/category/mockups", label: "Mockups" },
+    { path: "/category/fonts", label: "Fonts" },
+    { path: "/category/more", label: "More" },
   ];
 
   // More dropdown items
   const moreDropdownItems = [
-    { path: "/icons", label: "Icons" },
-    { path: "/textures", label: "Textures" },
-    { path: "/scripts", label: "Scripts" },
-    { path: "/hdris", label: "HDRIs" },
+    { path: "/category/icons", label: "Icons" },
+    { path: "/category/textures", label: "Textures" },
+    { path: "/category/scripts", label: "Scripts" },
+    { path: "/category/hdris", label: "HDRIs" },
   ];
 
   // If user is NOT logged in
