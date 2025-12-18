@@ -73,65 +73,147 @@ const Profile = () => {
         return;
       }
 
-      console.log("Finding user with username:", urlUsername);
+      // ✅ DECODE URL FIRST
+      const decodedUsername = decodeURIComponent(urlUsername);
+      console.log("Finding user with username:", decodedUsername);
       setLoading(true);
 
       try {
-        const usernameLower = urlUsername.toLowerCase();
+        // ✅ NORMALIZE THE USERNAME FOR SEARCHING
+        // Convert URL format to possible database formats
+        const searchVariations = [
+          decodedUsername, // sahrish-anfal
+          decodedUsername.replace(/-/g, " "), // sahrish anfal
+          decodedUsername.replace(/-/g, " ").toLowerCase(), // sahrish anfal (lowercase)
+          decodedUsername.toLowerCase(), // sahrish-anfal (lowercase)
+          decodedUsername.replace(/-/g, ""), // sahrishanfal
+        ];
 
-        // ✅ Check Profiles collection first
-        let q = query(
-          collection(db, "Profiles"),
-          where("username", "==", usernameLower)
-        );
-        let querySnapshot = await getDocs(q);
+        console.log("Searching for variations:", searchVariations);
 
-        if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
-          console.log("User found in Profiles:", userDoc.id, userDoc.data());
-          setUserId(userDoc.id);
-          setUser(userDoc.data());
-          setLoading(false);
-          return;
-        }
+        // ✅ CHECK PROFILES COLLECTION
+        let foundUser = null;
+        let foundUserId = null;
+        let foundInCollection = null;
 
-        // ✅ If not found, check Contributors collection
-        q = query(
-          collection(db, "Contributors"),
-          where("username", "==", usernameLower)
-        );
-        querySnapshot = await getDocs(q);
+        // Try each variation
+        for (const variation of searchVariations) {
+          console.log("Trying variation:", variation);
 
-        if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
-          console.log(
-            "User found in Contributors:",
-            userDoc.id,
-            userDoc.data()
+          // Search in Profiles
+          let q = query(
+            collection(db, "Profiles"),
+            where("username", "==", variation)
           );
+          let querySnapshot = await getDocs(q);
 
-          // Map contributor fields to match your profile structure
-          setUserId(userDoc.id);
-          setUser({
-            username:
-              userDoc.data().username ||
-              userDoc.data().displayName ||
-              "Contributor",
-            profilePic:
-              userDoc.data().profilePic ||
-              "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png",
-            ...userDoc.data(), // include other fields if needed
-          });
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            foundUser = userDoc.data();
+            foundUserId = userDoc.id;
+            foundInCollection = "Profiles";
+            console.log("Found in Profiles with variation:", variation);
+            break;
+          }
+
+          // Also try with username_lowercase if exists
+          q = query(
+            collection(db, "Profiles"),
+            where("username_lowercase", "==", variation.toLowerCase())
+          );
+          querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            foundUser = userDoc.data();
+            foundUserId = userDoc.id;
+            foundInCollection = "Profiles";
+            console.log(
+              "Found in Profiles with lowercase variation:",
+              variation
+            );
+            break;
+          }
+        }
+
+        // ✅ IF NOT FOUND IN PROFILES, CHECK CONTRIBUTORS
+        if (!foundUser) {
+          for (const variation of searchVariations) {
+            console.log("Trying Contributors variation:", variation);
+
+            let q = query(
+              collection(db, "Contributors"),
+              where("username", "==", variation)
+            );
+            let querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+              const userDoc = querySnapshot.docs[0];
+              foundUser = userDoc.data();
+              foundUserId = userDoc.id;
+              foundInCollection = "Contributors";
+              console.log("Found in Contributors with variation:", variation);
+              break;
+            }
+
+            // Try with username_lowercase if exists
+            q = query(
+              collection(db, "Contributors"),
+              where("username_lowercase", "==", variation.toLowerCase())
+            );
+            querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+              const userDoc = querySnapshot.docs[0];
+              foundUser = userDoc.data();
+              foundUserId = userDoc.id;
+              foundInCollection = "Contributors";
+              console.log(
+                "Found in Contributors with lowercase variation:",
+                variation
+              );
+              break;
+            }
+          }
+        }
+
+        // ✅ IF USER FOUND, SET STATE
+        if (foundUser) {
+          console.log(
+            `User found in ${foundInCollection}:`,
+            foundUserId,
+            foundUser
+          );
+          setUserId(foundUserId);
+
+          // For Contributors, map fields properly
+          if (foundInCollection === "Contributors") {
+            setUser({
+              username:
+                foundUser.username || foundUser.displayName || "Contributor",
+              profilePic:
+                foundUser.profilePic ||
+                "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png",
+              ...foundUser,
+            });
+          } else {
+            setUser(foundUser);
+          }
           setLoading(false);
           return;
         }
 
-        // ❌ Not found in either collection
-        console.log("User not found in Profiles or Contributors");
+        // ❌ NOT FOUND
+        console.log(
+          "User not found in Profiles or Contributors with any variation"
+        );
+        console.log("URL username:", urlUsername);
+        console.log("Decoded username:", decodedUsername);
+        console.log("Search variations tried:", searchVariations);
+
         setUserId(null);
         setUser(null);
         setLoading("not_found");
-        // navigate("/404"); // optional
       } catch (error) {
         console.error("Error finding user:", error);
         setLoading("error");

@@ -5,13 +5,11 @@ import { Link } from "react-router-dom";
 
 const UserCard = ({ userId }) => {
   const [user, setUser] = useState(null);
-  const [profilePath, setProfilePath] = useState(`/profile/${userId}`); // ✅ ابتدائی value
+  const [profilePath, setProfilePath] = useState(null); // Start as null
 
-  // ✅ Profile ki tarah hi getDisplayName function
   const getDisplayName = () => {
     if (!user) return "User";
 
-    // ✅ Priority 1: firstName + lastName combination (Pehle yeh check)
     const firstName = user.firstName || user.firstname || user.first_name;
     const lastName = user.lastName || user.lastname || user.last_name;
 
@@ -23,32 +21,26 @@ const UserCard = ({ userId }) => {
       return lastName.trim();
     }
 
-    // ✅ Priority 2: fullName (Contributor mein yeh field hai)
     if (user.fullName && user.fullName.trim()) {
       return user.fullName.trim();
     }
 
-    // ✅ Priority 3: displayUsername (Contributor ka specific field)
     if (user.displayUsername && user.displayUsername.trim()) {
       return user.displayUsername.trim();
     }
 
-    // ✅ Priority 4: username (common field)
     if (user.username && user.username.trim()) {
       return user.username.trim();
     }
 
-    // ✅ Priority 5: displayName (agar exist kare)
     if (user.displayName && user.displayName.trim()) {
       return user.displayName.trim();
     }
 
-    // ✅ Priority 6: authorName
     if (user.authorName && user.authorName.trim()) {
       return user.authorName.trim();
     }
 
-    // ✅ Priority 7: email se name extract karen
     if (user.email) {
       const emailName = user.email.split("@")[0];
       return emailName.charAt(0).toUpperCase() + emailName.slice(1);
@@ -57,17 +49,34 @@ const UserCard = ({ userId }) => {
     return "User";
   };
 
-  // ✅ Get initials for avatar
   const getInitials = () => {
     const displayName = getDisplayName();
     if (displayName === "User") return "U";
-    
-    // Get first two letters of display name
-    const words = displayName.split(' ');
+
+    const words = displayName.split(" ");
     if (words.length >= 2) {
       return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
     }
     return displayName.charAt(0).toUpperCase();
+  };
+
+  const formatUsernameForURL = (username) => {
+    if (!username) return null;
+
+    // ✅ Remove all spaces and convert to lowercase
+    return username
+      .toLowerCase()
+      .replace(/\s+/g, "") // ✅ सिर्फ spaces हटाएं, hyphen नहीं add करें
+      .replace(/[^\w]/g, ""); // Optional: special characters भी remove करें
+  };
+
+  const getUsernameFromDisplayName = (displayName) => {
+    if (!displayName) return null;
+    // ✅ Display name से spaces हटाकर username बनाएं
+    return displayName
+      .toLowerCase()
+      .replace(/\s+/g, "") // ✅ सिर्फ spaces हटाएं
+      .replace(/[^\w]/g, ""); // Optional: special characters remove
   };
 
   useEffect(() => {
@@ -75,7 +84,7 @@ const UserCard = ({ userId }) => {
 
     const fetchUser = async () => {
       try {
-        // ✅ PEHLE PROFILES COLLECTION CHECK KARO
+        // Try Profiles collection first
         const profileRef = doc(db, "Profiles", userId);
         const profileSnap = await getDoc(profileRef);
 
@@ -83,12 +92,22 @@ const UserCard = ({ userId }) => {
           const userData = profileSnap.data();
           setUser(userData);
 
-          // ✅  username
+          // Set profile path - prefer username, fallback to generated username
           if (userData.username) {
-            setProfilePath(`/Profile/${userData.username}`); // ✅ نیا path
+            const urlUsername = formatUsernameForURL(userData.username);
+            setProfilePath(`/${urlUsername}`);
+          } else {
+            // Generate username from display name
+            const displayName = getDisplayName();
+            if (displayName && displayName !== "User") {
+              const generatedUsername = getUsernameFromDisplayName(displayName);
+              setProfilePath(`/${generatedUsername}`);
+            } else {
+              setProfilePath(`/user/${userId}`);
+            }
           }
         } else {
-          // ✅ AGAR PROFILES MAI NAHI MILA, TO CONTRIBUTORS CHECK KARO
+          // Try Contributors collection
           const contributorRef = doc(db, "Contributors", userId);
           const contributorSnap = await getDoc(contributorRef);
 
@@ -96,52 +115,64 @@ const UserCard = ({ userId }) => {
             const contributorData = contributorSnap.data();
             const userObj = {
               ...contributorData,
-              username:
-                contributorData.username ||
-                contributorData.displayName ||
-                "Contributor",
+              username: contributorData.username || null,
               profilePic:
                 contributorData.profilePic ||
                 "https://www.kindpng.com/picc/m/78-785827_user-profile-avatar-login-account-man-people-user.png",
             };
             setUser(userObj);
-            
-            // ✅ Contributor ka username bhi check karen profile path ke liye
+
             if (contributorData.username) {
-              setProfilePath(`/Profile/${contributorData.username}`);
+              const urlUsername = formatUsernameForURL(
+                contributorData.username
+              );
+              setProfilePath(`/${urlUsername}`);
+            } else {
+              const displayName = getDisplayName();
+              if (displayName && displayName !== "User") {
+                const generatedUsername =
+                  getUsernameFromDisplayName(displayName);
+                setProfilePath(`/${generatedUsername}`);
+              } else {
+                setProfilePath(`/user/${userId}`);
+              }
             }
           } else {
             setUser(null);
+            setProfilePath(`/user/${userId}`);
           }
         }
       } catch (error) {
-        if (error?.code === "permission-denied") {
-          setUser(null);
-        } else {
-          console.warn("UserCard fetch error:", error);
-          setUser(null);
-        }
+        console.warn("UserCard fetch error:", error);
+        setUser(null);
+        setProfilePath(`/user/${userId}`);
       }
     };
 
     fetchUser();
   }, [userId]);
 
+  if (!profilePath) {
+    return (
+      <div className="user">
+        <div className="user_image">
+          <div className="profile-initials">U</div>
+        </div>
+        <span className="username">User</span>
+      </div>
+    );
+  }
+
   return (
     <div className="user">
       <div className="user_image">
         {user?.profilePic ? (
-          <img
-            src={user.profilePic}
-            alt={getDisplayName()}
-          />
+          <img src={user.profilePic} alt={getDisplayName()} />
         ) : (
           <div className="profile-initials">{getInitials()}</div>
         )}
       </div>
       <Link to={profilePath}>
-        {" "}
-        {/* ✅  profilePath   */}
         <span className="username">{getDisplayName()}</span>
       </Link>
     </div>
