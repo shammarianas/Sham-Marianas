@@ -4,7 +4,7 @@ const PricingAndFees = () => {
     return (
         <div className="section-padding">
             <div className="container mx-size">
-                <h1 className="text-4xl fw-500 mb-8 text-center">Pricing and Fees</h1>
+                <h1 className="text-4xl fw-500 mb-8 text-center">Prices and Fees</h1>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
                     <strong>Commission Structure</strong>
