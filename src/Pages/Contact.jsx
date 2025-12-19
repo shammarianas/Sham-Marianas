@@ -11,11 +11,16 @@ function Contact() {
           <div className="row">
             <div className="col-lg-4 valign">
               <div className="sec-head info-box full-width md-mb80">
-                <div className="phone fz-22 fw-600 underline main-color">
+                  <div className="phone fz-22 fw-600  main-color">
+                    <a href="tel:+971528036012">+971 52 803 6012 </a>
+                  </div>
+                <div className="morinfo mt-5 pb-30 bord-thin-bottom">
+                  <p>Dubai, United Arab Emirates</p>
+                </div>
+                <div className="phone fz-22 mt-6  fw-600  main-color">
                   <a href="tel:+923116788423">+92 311 678 8423 </a>
                 </div>
-                <div className="morinfo mt-50 pb-30 bord-thin-bottom">
-                  <h6 className="mb-15">Address</h6>
+                <div className="morinfo mt-5 pb-30 bord-thin-bottom">
                   <p>Multan, Pakistan</p>
                 </div>
                 <div className="morinfo mt-30 pb-30 bord-thin-bottom">

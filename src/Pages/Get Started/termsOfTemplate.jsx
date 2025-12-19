@@ -4,7 +4,7 @@ const TermsandConditionTemplate = () => {
   return (
     <div className="section-padding">
       <div className="container mx-size">
-        <h1 className="text-4xl fw-500 mb-8 text-center">Terms & Condition Template</h1>
+        <h1 className="text-4xl fw-500 mb-8 text-center">Terms & Conditions Template's</h1>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
           <strong>Welcome to <span className="main-color">Sham Marianas</span></strong>

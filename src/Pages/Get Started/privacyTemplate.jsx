@@ -4,7 +4,7 @@ const PrivacyPolicyTemplate = () => {
   return (
     <div className="section-padding">
       <div className="container mx-size">
-        <h1 className="text-4xl fw-500 mb-8 text-center">Privacy Policy Template</h1>
+        <h1 className="text-4xl fw-500 mb-8 text-center">Privacy Policy Template's</h1>
 
         <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
           <strong>Welcome to <span className="main-color">Sham Marianas</span>'s Privacy Policy</strong>
@@ -238,7 +238,7 @@ const PrivacyPolicyTemplate = () => {
         </ul>
         <p className="fotter-police-p p-color mb-8">
           And if you believe that your issue hasn't been adequately addressed? You may also have the right to take it further by contacting your regional data protection authority.
-          <span className="text-bold underline main-color">Sham Marianas</span> values your privacy like a trusted bond secure and unbreakable.
+          {" "}<span className="text-bold underline main-color">Sham Marianas</span> values your privacy like a trusted bond secure and unbreakable.
         </p>
       </div>
     </div>
