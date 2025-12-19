@@ -324,7 +324,7 @@ const BlogSection = ({
         </div>
       </div>
 
-      <div className="content-card filters-card">
+      <div className="content-card filters-card w-100">
         <div className="card-body">
           <div className="asset-filters-grid">
             <div className="search-input-wrapper">

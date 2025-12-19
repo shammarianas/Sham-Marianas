@@ -2,10 +2,10 @@ import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
-import { db } from "../../../firebase"; // Adjust path as needed
-import { getFunctions, httpsCallable } from "firebase/functions"; // ADD THESE IMPORTS
+import { db } from "../../../firebase"; 
+import { getFunctions, httpsCallable } from "firebase/functions"; 
 import { getAuth } from "firebase/auth";
-import { functions } from "../../../firebase"; // Adjust path as needed
+import { functions } from "../../../firebase"; 
 
 const DownloadButton = ({
   item,
