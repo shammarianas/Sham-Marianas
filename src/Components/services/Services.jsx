@@ -5,7 +5,7 @@ function Services() {
   const services = [
     {
       num: "01",
-      slug: "branding",
+      slug: "branding-design",
       category: "Branding Design",
       title: "Creative Identity",
       description:
