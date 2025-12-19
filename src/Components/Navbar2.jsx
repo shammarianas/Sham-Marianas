@@ -75,20 +75,20 @@ const Navbar = () => {
           setUsername(profileData.username || null);
 
           // Set display name - prioritize username, then firstName/lastName, then displayName
-          if (profileData.username) {
-            setDisplayName(profileData.username);
-          } else if (profileData.firstName || profileData.lastName) {
+          if (profileData.firstName || profileData.lastName) {
             const fullName = `${profileData.firstName || ""} ${
               profileData.lastName || ""
             }`.trim();
             setDisplayName(fullName);
+          } else if (profileData.username) {
+            setDisplayName(profileData.username);
           } else if (profileData.displayName) {
             setDisplayName(profileData.displayName);
           } else {
             setDisplayName("User");
           }
         } else {
-          // Check Contributors collection
+          // Check Contributors collection5
           const contributorRef = doc(db, "Contributors", currentUser.uid);
           const contributorSnap = await getDoc(contributorRef);
 
