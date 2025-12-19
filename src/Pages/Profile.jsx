@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Breadcrumbs from "../Components/Breadcrumbs";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import ListedItemCard from "../Components/UI/ListedItemCard";
 import {
   doc,
   getDoc,
@@ -13,8 +11,9 @@ import {
   getDocs,
   deleteDoc,
   where,
+  addDoc,
+  Timestamp,
 } from "firebase/firestore";
-// Firebase storage imports
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   EmailAuthProvider,
@@ -22,20 +21,20 @@ import {
   deleteUser,
 } from "firebase/auth";
 
-import { db } from "../../firebase";
+import { db, auth } from "../../firebase";
 import { useUser } from "../Context/UserProvider";
-import ItemsListing from "../Components/ItemsListing";
+import ListedItemCard from "../Components/UI/ListedItemCard";
 import { Helmet } from "react-helmet-async";
 
 const Profile = () => {
-  const { username: urlUsername } = useParams(); // ✅ URL سے username لیں (variable name conflict سے بچنے کے لیے)
+  const { username: urlUsername } = useParams();
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const [userId, setUserId] = useState(null); // نیا state
+  const [userId, setUserId] = useState(null);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -44,63 +43,49 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
-  const [bio, setBio] = useState(""); // Bio state added
+  const [bio, setBio] = useState("");
 
-  // Profile image upload states
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showImageUploadModal, setShowImageUploadModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
-  // Initialize Firebase Storage
   const storage = getStorage();
-
-  // State for active tab
   const [activeTab, setActiveTab] = useState("profile");
-
-  // State for billing history modal
   const [showBillingModal, setShowBillingModal] = useState(false);
 
+  // Subscription states
+  const [subscription, setSubscription] = useState(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(true);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+  const [pendingInvites, setPendingInvites] = useState([]);
+
   const isOwnProfile = currentUser?.uid === userId;
-  // Real-time username availability check
-  const [usernameAvailable, setUsernameAvailable] = useState(true);
-  const [checkingUsername, setCheckingUsername] = useState(false);
 
   useEffect(() => {
     const findUserByUsername = async () => {
-      if (!urlUsername) {
-        console.log("No username in URL");
-        return;
-      }
+      if (!urlUsername) return;
 
-      // ✅ DECODE URL FIRST
       const decodedUsername = decodeURIComponent(urlUsername);
       console.log("Finding user with username:", decodedUsername);
       setLoading(true);
 
       try {
-        // ✅ NORMALIZE THE USERNAME FOR SEARCHING
-        // Convert URL format to possible database formats
         const searchVariations = [
-          decodedUsername, // sahrish-anfal
-          decodedUsername.replace(/-/g, " "), // sahrish anfal
-          decodedUsername.replace(/-/g, " ").toLowerCase(), // sahrish anfal (lowercase)
-          decodedUsername.toLowerCase(), // sahrish-anfal (lowercase)
-          decodedUsername.replace(/-/g, ""), // sahrishanfal
+          decodedUsername,
+          decodedUsername.replace(/-/g, " "),
+          decodedUsername.replace(/-/g, " ").toLowerCase(),
+          decodedUsername.toLowerCase(),
+          decodedUsername.replace(/-/g, ""),
         ];
 
-        console.log("Searching for variations:", searchVariations);
-
-        // ✅ CHECK PROFILES COLLECTION
         let foundUser = null;
         let foundUserId = null;
         let foundInCollection = null;
 
-        // Try each variation
         for (const variation of searchVariations) {
-          console.log("Trying variation:", variation);
-
-          // Search in Profiles
           let q = query(
             collection(db, "Profiles"),
             where("username", "==", variation)
@@ -112,11 +97,9 @@ const Profile = () => {
             foundUser = userDoc.data();
             foundUserId = userDoc.id;
             foundInCollection = "Profiles";
-            console.log("Found in Profiles with variation:", variation);
             break;
           }
 
-          // Also try with username_lowercase if exists
           q = query(
             collection(db, "Profiles"),
             where("username_lowercase", "==", variation.toLowerCase())
@@ -128,19 +111,12 @@ const Profile = () => {
             foundUser = userDoc.data();
             foundUserId = userDoc.id;
             foundInCollection = "Profiles";
-            console.log(
-              "Found in Profiles with lowercase variation:",
-              variation
-            );
             break;
           }
         }
 
-        // ✅ IF NOT FOUND IN PROFILES, CHECK CONTRIBUTORS
         if (!foundUser) {
           for (const variation of searchVariations) {
-            console.log("Trying Contributors variation:", variation);
-
             let q = query(
               collection(db, "Contributors"),
               where("username", "==", variation)
@@ -152,11 +128,9 @@ const Profile = () => {
               foundUser = userDoc.data();
               foundUserId = userDoc.id;
               foundInCollection = "Contributors";
-              console.log("Found in Contributors with variation:", variation);
               break;
             }
 
-            // Try with username_lowercase if exists
             q = query(
               collection(db, "Contributors"),
               where("username_lowercase", "==", variation.toLowerCase())
@@ -168,25 +142,13 @@ const Profile = () => {
               foundUser = userDoc.data();
               foundUserId = userDoc.id;
               foundInCollection = "Contributors";
-              console.log(
-                "Found in Contributors with lowercase variation:",
-                variation
-              );
               break;
             }
           }
         }
 
-        // ✅ IF USER FOUND, SET STATE
         if (foundUser) {
-          console.log(
-            `User found in ${foundInCollection}:`,
-            foundUserId,
-            foundUser
-          );
           setUserId(foundUserId);
-
-          // For Contributors, map fields properly
           if (foundInCollection === "Contributors") {
             setUser({
               username:
@@ -203,14 +165,6 @@ const Profile = () => {
           return;
         }
 
-        // ❌ NOT FOUND
-        console.log(
-          "User not found in Profiles or Contributors with any variation"
-        );
-        console.log("URL username:", urlUsername);
-        console.log("Decoded username:", decodedUsername);
-        console.log("Search variations tried:", searchVariations);
-
         setUserId(null);
         setUser(null);
         setLoading("not_found");
@@ -223,6 +177,260 @@ const Profile = () => {
     findUserByUsername();
   }, [urlUsername]);
 
+  // Fetch subscription data
+  useEffect(() => {
+    if (isOwnProfile && userId) {
+      fetchSubscription();
+      fetchPendingInvites();
+    }
+  }, [isOwnProfile, userId]);
+
+  const fetchSubscription = async () => {
+    if (!isOwnProfile) return;
+
+    try {
+      setLoadingSubscription(true);
+
+      const subscriptionRef = doc(db, "UserSubscriptions", userId);
+      const subscriptionDoc = await getDoc(subscriptionRef);
+
+      if (subscriptionDoc.exists()) {
+        const subscriptionData = subscriptionDoc.data();
+        setSubscription(subscriptionData);
+
+        if (subscriptionData.subscriptionType === 'team' && subscriptionData.teamMembers > 1) {
+          await fetchTeamMembers(userId);
+        }
+      } else {
+        setSubscription(null);
+      }
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+    } finally {
+      setLoadingSubscription(false);
+    }
+  };
+
+  const fetchTeamMembers = async (ownerId) => {
+    try {
+      const teamRef = collection(db, "TeamMembers");
+      const q = query(teamRef, where("ownerId", "==", ownerId));
+      const querySnapshot = await getDocs(q);
+
+      const members = [];
+      querySnapshot.forEach((doc) => {
+        members.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      setTeamMembers(members);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+    }
+  };
+
+  const fetchPendingInvites = async () => {
+    if (!userId) return;
+
+    try {
+      const invitesRef = collection(db, "TeamInvites");
+      const q = query(
+        invitesRef,
+        where("ownerId", "==", userId),
+        where("status", "==", "pending")
+      );
+      const querySnapshot = await getDocs(q);
+
+      const invites = [];
+      querySnapshot.forEach((doc) => {
+        invites.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      setPendingInvites(invites);
+    } catch (error) {
+      console.error("Error fetching pending invites:", error);
+    }
+  };
+
+  const inviteTeamMember = async () => {
+    if (!inviteEmail || !subscription || !userId) return;
+
+    try {
+      setInviting(true);
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(inviteEmail)) {
+        alert("Please enter a valid email address");
+        return;
+      }
+
+      if (inviteEmail === currentUser.email) {
+        alert("You cannot invite yourself");
+        return;
+      }
+
+      const existingInvite = await checkExistingInvite(inviteEmail, userId);
+      if (existingInvite) {
+        alert("This email has already been invited");
+        return;
+      }
+
+      const invitesRef = collection(db, "TeamInvites");
+      await addDoc(invitesRef, {
+        ownerId: userId,
+        ownerEmail: currentUser.email,
+        ownerName: `${firstName} ${lastName}`.trim() || currentUser.displayName,
+        inviteEmail: inviteEmail,
+        subscriptionId: subscription.id || `sub_${subscription.subscriptionType}`,
+        subscriptionType: subscription.subscriptionType,
+        status: "pending",
+        invitedAt: Timestamp.now(),
+        expiresAt: Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
+      });
+
+      alert(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail("");
+      fetchPendingInvites();
+
+    } catch (error) {
+      console.error("Error inviting team member:", error);
+      alert("Failed to send invitation. Please try again.");
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const checkExistingInvite = async (email, ownerId) => {
+    const invitesRef = collection(db, "TeamInvites");
+    const q = query(
+      invitesRef,
+      where("inviteEmail", "==", email),
+      where("ownerId", "==", ownerId),
+      where("status", "==", "pending")
+    );
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+  };
+
+  const removeTeamMember = async (memberId) => {
+    if (!window.confirm("Are you sure you want to remove this team member?")) return;
+
+    try {
+      const memberRef = doc(db, "TeamMembers", memberId);
+      await deleteDoc(memberRef);
+
+      setTeamMembers(prev => prev.filter(member => member.id !== memberId));
+      alert("Team member removed successfully");
+
+      if (subscription) {
+        const subscriptionRef = doc(db, "UserSubscriptions", userId);
+        await updateDoc(subscriptionRef, {
+          teamMembers: teamMembers.length - 1,
+          updatedAt: Timestamp.now()
+        });
+      }
+    } catch (error) {
+      console.error("Error removing team member:", error);
+      alert("Failed to remove team member");
+    }
+  };
+
+  const cancelInvite = async (inviteId) => {
+    try {
+      const inviteRef = doc(db, "TeamInvites", inviteId);
+      await updateDoc(inviteRef, {
+        status: "cancelled",
+        cancelledAt: Timestamp.now()
+      });
+
+      setPendingInvites(prev => prev.filter(invite => invite.id !== inviteId));
+      alert("Invitation cancelled");
+    } catch (error) {
+      console.error("Error cancelling invite:", error);
+      alert("Failed to cancel invitation");
+    }
+  };
+
+  const formatSubscriptionStatus = (status) => {
+    switch (status) {
+      case 'active':
+        return { text: 'Active', class: 'active' };
+      case 'canceled':
+      case 'cancelled':
+        return { text: 'Cancelled', class: 'canceled' };
+      case 'past_due':
+        return { text: 'Past Due', class: 'past-due' };
+      case 'trialing':
+        return { text: 'Free Trial', class: 'trialing' };
+      case 'incomplete':
+        return { text: 'Incomplete', class: 'incomplete' };
+      default:
+        return { text: 'Inactive', class: 'inactive' };
+    }
+  };
+
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    
+    try {
+      const timestamp = date.toDate ? date.toDate() : new Date(date);
+      return timestamp.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return 'Invalid Date';
+    }
+  };
+
+  const getSubscriptionTypeDisplay = (type) => {
+    switch (type) {
+      case 'individual':
+        return 'Individual';
+      case 'team':
+        return 'Team';
+      case 'enterprise':
+        return 'Enterprise';
+      default:
+        return 'Free';
+    }
+  };
+
+  const cancelSubscription = async () => {
+    if (!subscription || !window.confirm(
+      "Are you sure you want to cancel your subscription?\n\n" +
+      "You will continue to have access until the end of your current billing period."
+    )) return;
+
+    try {
+      const subscriptionRef = doc(db, "UserSubscriptions", userId);
+      await updateDoc(subscriptionRef, {
+        status: 'cancelled',
+        cancelledAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      });
+
+      setSubscription(prev => ({
+        ...prev,
+        status: 'cancelled',
+        cancelledAt: Timestamp.now()
+      }));
+
+      alert("Subscription cancelled successfully");
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      alert("Failed to cancel subscription");
+    }
+  };
+
+  // Username availability check
   useEffect(() => {
     const checkUsernameAvailability = async () => {
       const trimmedUsername = username.trim().toLowerCase();
@@ -232,7 +440,6 @@ const Profile = () => {
         return;
       }
 
-      // Don't check if username is same as current user
       if (trimmedUsername === user?.username?.toLowerCase()) {
         setUsernameAvailable(true);
         return;
@@ -255,7 +462,6 @@ const Profile = () => {
       }
     };
 
-    // Debounce the check (wait 500ms after user stops typing)
     const timer = setTimeout(() => {
       if (username.trim()) {
         checkUsernameAvailability();
@@ -265,11 +471,79 @@ const Profile = () => {
     return () => clearTimeout(timer);
   }, [username, user?.username]);
 
-  // Get full name for display
+  // Real-time user listener
+  useEffect(() => {
+    if (!userId) return;
+
+    const userRef = doc(db, "Profiles", userId);
+    const unsubscribe = onSnapshot(
+      userRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUser((prevUser) => ({
+            ...prevUser,
+            ...data,
+          }));
+
+          if (currentUser && currentUser.uid === userId) {
+            setFirstName(data.firstName || "");
+            setLastName(data.lastName || "");
+            setUsername(data.username || "");
+            setPhoneNumber(data.phoneNumber || "");
+            setBio(data.bio || "");
+          }
+
+          if (currentUser && currentUser.uid && data.followers) {
+            setIsFollowing(data.followers.includes(currentUser.uid));
+          } else {
+            setIsFollowing(false);
+          }
+        } else {
+          setUser(null);
+          setIsFollowing(false);
+        }
+      },
+      (error) => {
+        console.error("Error in real-time listener:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [userId, currentUser]);
+
+  // Fetch items
+  useEffect(() => {
+    const fetchItems = async () => {
+      if (!userId) return;
+
+      try {
+        const itemsQuery = query(
+          collection(db, "Assets"),
+          where("userId", "==", userId)
+        );
+        const snapshot = await getDocs(itemsQuery);
+        const itemsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setItems(itemsData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching items:", error);
+        setLoading("error");
+      }
+    };
+
+    fetchItems();
+  }, [userId]);
+
+  const [usernameAvailable, setUsernameAvailable] = useState(true);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+
   const getDisplayName = () => {
     if (!user) return "User";
 
-    // ✅ Priority 1: firstName + lastName combination (Pehle yeh check)
     const firstName = user.firstName || user.firstname || user.first_name;
     const lastName = user.lastName || user.lastname || user.last_name;
 
@@ -281,32 +555,26 @@ const Profile = () => {
       return lastName.trim();
     }
 
-    // ✅ Priority 2: fullName (Contributor mein yeh field hai)
     if (user.fullName && user.fullName.trim()) {
       return user.fullName.trim();
     }
 
-    // ✅ Priority 3: displayUsername (Contributor ka specific field)
     if (user.displayUsername && user.displayUsername.trim()) {
       return user.displayUsername.trim();
     }
 
-    // ✅ Priority 4: username (common field)
     if (user.username && user.username.trim()) {
       return user.username.trim();
     }
 
-    // ✅ Priority 5: displayName (agar exist kare)
     if (user.displayName && user.displayName.trim()) {
       return user.displayName.trim();
     }
 
-    // ✅ Priority 6: authorName
     if (user.authorName && user.authorName.trim()) {
       return user.authorName.trim();
     }
 
-    // ✅ Priority 7: email se name extract karen
     if (user.email) {
       const emailName = user.email.split("@")[0];
       return emailName.charAt(0).toUpperCase() + emailName.slice(1);
@@ -314,34 +582,7 @@ const Profile = () => {
 
     return "User";
   };
-  // Email get karne ka function
-  const getDisplayEmail = () => {
-    if (!user) return "Email not available";
 
-    // Priority order for email
-    if (user.email && user.email.trim()) {
-      return user.email.trim();
-    }
-
-    // Check if there's email in user object
-    if (user.userEmail && user.userEmail.trim()) {
-      return user.userEmail.trim();
-    }
-
-    // Check current user's email if it's own profile
-    if (isOwnProfile && currentUser?.email) {
-      return currentUser.email;
-    }
-
-    // Check if there's contactEmail
-    if (user.contactEmail && user.contactEmail.trim()) {
-      return user.contactEmail.trim();
-    }
-
-    return "Email not available";
-  };
-
-  // Get initials for avatar
   const getInitials = () => {
     if (!user) return "U";
 
@@ -364,30 +605,6 @@ const Profile = () => {
     }
     return "U";
   };
-
-  const getAuthorName = (assetData) => {
-    if (!assetData) return "Unknown Author";
-
-    // Priority order for author name - same as AssetManagement.jsx
-    if (assetData.authorName && assetData.authorName !== "Unknown Author")
-      return assetData.authorName;
-    if (assetData.author && assetData.author !== "Unknown Author")
-      return assetData.author;
-    if (assetData.userDisplayName) return assetData.userDisplayName;
-    if (assetData.userName) return assetData.userName;
-    if (assetData.displayName) return assetData.displayName;
-    if (assetData.uploadedBy) return assetData.uploadedBy;
-    if (assetData.createdBy) return assetData.createdBy;
-    if (assetData.updatedBy) return assetData.updatedBy;
-
-    // Fallback to username if no name found (instead of email)
-    if (assetData.username) return assetData.username;
-
-    return "Unknown Author";
-  };
-
-  // Get author name from user
-  const authorName = getAuthorName(user);
 
   const followUser = async () => {
     if (!user || !currentUser || !userId) {
@@ -419,14 +636,12 @@ const Profile = () => {
         const isCurrentlyFollowing = userFollowers.includes(currentUser.uid);
 
         if (isCurrentlyFollowing) {
-          // Unfollow
           userFollowers = userFollowers.filter(
             (uid) => uid !== currentUser.uid
           );
           followerFollowing = followerFollowing.filter((uid) => uid !== userId);
           setIsFollowing(false);
         } else {
-          // Follow
           if (!userFollowers.includes(currentUser.uid)) {
             userFollowers.push(currentUser.uid);
           }
@@ -436,7 +651,6 @@ const Profile = () => {
           setIsFollowing(true);
         }
 
-        // Update both documents
         await Promise.all([
           updateDoc(userRef, {
             followers: userFollowers,
@@ -448,7 +662,6 @@ const Profile = () => {
           }),
         ]);
 
-        // Show success message
         alert(
           isCurrentlyFollowing
             ? "Unfollowed successfully!"
@@ -460,135 +673,15 @@ const Profile = () => {
       alert("Failed to follow/unfollow user. Please try again.");
     }
   };
-  // Effect for updating URL when username changes
-  useEffect(() => {
-    if (user?.username && isOwnProfile) {
-      // Create a better URL with username
-      const newUrl = `/profile/${user.username}`;
 
-      // Replace history without reloading
-      window.history.replaceState(null, "", newUrl);
-    }
-  }, [user?.username, isOwnProfile]);
-
-  //// ✅ Real-time data update (uncomment this)
-  useEffect(() => {
-    if (!userId) {
-      console.log("No userId, skipping real-time update");
-      return;
-    }
-
-    console.log("Setting up real-time listener for userId:", userId);
-
-    const userRef = doc(db, "Profiles", userId);
-
-    const unsubscribe = onSnapshot(
-      userRef,
-      (docSnap) => {
-        console.log("Real-time update received:", docSnap.exists());
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          console.log("User data updated:", data);
-
-          // ✅ Merge new data with existing user state
-          setUser((prevUser) => ({
-            ...prevUser,
-            ...data,
-          }));
-
-          // If it's own profile, set form fields
-          if (currentUser && currentUser.uid === userId) {
-            setFirstName(data.firstName || "");
-            setLastName(data.lastName || "");
-            setUsername(data.username || "");
-            setPhoneNumber(data.phoneNumber || "");
-            setBio(data.bio || ""); // Set bio from Firestore
-          }
-
-          // Check if current user is following this user
-          if (currentUser && currentUser.uid && data.followers) {
-            setIsFollowing(data.followers.includes(currentUser.uid));
-          } else {
-            setIsFollowing(false);
-          }
-        } else {
-          console.log("User document doesn't exist");
-          setUser(null);
-          setIsFollowing(false);
-        }
-      },
-      (error) => {
-        console.error("Error in real-time listener:", error);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [userId, currentUser]);
-
-  // Check followers count
-  useEffect(() => {
-    const checkFollowersCount = async () => {
-      if (!user) return;
-
-      try {
-        const userRef = doc(db, "Profiles", userId);
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          const followersCount = data.followers?.length || 0;
-
-          // Ensure followersCount is updated in state
-          if (followersCount !== (user.followers?.length || 0)) {
-            setUser((prev) => ({
-              ...prev,
-              followers: data.followers || [],
-              followersCount: followersCount,
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Error checking followers count:", error);
-      }
-    };
-
-    checkFollowersCount();
-  }, [user, userId]);
-
-  useEffect(() => {
-    const fetchItems = async () => {
-      let itemsQuery;
-
-      itemsQuery = query(
-        collection(db, "Assets"),
-        where("userId", "==", userId)
-      );
-
-      const snapshot = await getDocs(itemsQuery);
-      const itemsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setItems(itemsData);
-      itemsData && setLoading(false);
-
-      itemsData.length === 0 && setLoading("no_item");
-    };
-
-    fetchItems();
-  }, [userId]);
-
-  // Handle image selection
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file type
       if (!file.type.match("image.*")) {
         alert("Please select an image file (jpg, png, gif, etc.)");
         return;
       }
 
-      // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert("Image size should be less than 5MB");
         return;
@@ -596,7 +689,6 @@ const Profile = () => {
 
       setSelectedImage(file);
 
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -607,31 +699,26 @@ const Profile = () => {
     }
   };
 
-  // Upload profile image
   const uploadProfileImage = async () => {
     if (!selectedImage || !isOwnProfile || !currentUser || !userId) return;
 
     try {
       setUploadingImage(true);
 
-      // Upload to Firebase Storage
       const storageRef = ref(
         storage,
         `profile-images/${currentUser.uid}/${Date.now()}_${selectedImage.name}`
       );
       await uploadBytes(storageRef, selectedImage);
 
-      // Get download URL
       const downloadURL = await getDownloadURL(storageRef);
 
-      // Update profile in Firestore
       const profileRef = doc(db, "Profiles", userId);
       await updateDoc(profileRef, {
         profilePic: downloadURL,
         updatedAt: new Date(),
       });
 
-      // Clear states
       setSelectedImage(null);
       setImagePreview(null);
       setShowImageUploadModal(false);
@@ -645,7 +732,6 @@ const Profile = () => {
     }
   };
 
-  // Remove profile image
   const removeProfileImage = async () => {
     if (!isOwnProfile || !userId) return;
 
@@ -667,11 +753,11 @@ const Profile = () => {
       alert("Failed to remove image. Please try again.");
     }
   };
-  const handleSaveAccount = async () => {
-    if (!isOwnProfile || !userId) return; // ✅ userId check
-    const trimmedUsername = (username || "").trim().toLowerCase(); // ✅ Added toLowerCase()
 
-    // Password validation
+  const handleSaveAccount = async () => {
+    if (!isOwnProfile || !userId) return;
+    const trimmedUsername = (username || "").trim().toLowerCase();
+
     if (newPassword && newPassword !== confirmPassword) {
       alert("Passwords do not match!");
       return;
@@ -682,13 +768,11 @@ const Profile = () => {
       return;
     }
 
-    // Username validation
     if (!trimmedUsername) {
       alert("Username is required!");
       return;
     }
 
-    // ✅ ADDED: Check if username contains only allowed characters
     const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
     if (!usernameRegex.test(trimmedUsername)) {
       alert(
@@ -697,23 +781,19 @@ const Profile = () => {
       return;
     }
 
-    // ✅ ADDED: Check minimum length
     if (trimmedUsername.length < 3) {
       alert("Username must be at least 3 characters long!");
       return;
     }
 
-    // ✅ ADDED: Check maximum length
     if (trimmedUsername.length > 20) {
       alert("Username must be less than 20 characters!");
       return;
     }
 
-    // ✅ ADDED: Check if username is same as current (no change needed)
     if (trimmedUsername === user?.username?.toLowerCase()) {
-      // Username hasn't changed, proceed with other updates
+      // Username hasn't changed
     } else {
-      // ✅ ADDED: Check if username already exists in Firestore
       try {
         const usernameQuery = query(
           collection(db, "Profiles"),
@@ -721,11 +801,9 @@ const Profile = () => {
         );
         const querySnapshot = await getDocs(usernameQuery);
 
-        // Check if username exists and belongs to a different user
         let usernameExists = false;
         querySnapshot.forEach((doc) => {
           if (doc.id !== userId) {
-            // Different user has this username
             usernameExists = true;
           }
         });
@@ -751,12 +829,11 @@ const Profile = () => {
         lastName: lastName.trim(),
         username: trimmedUsername,
         phoneNumber: phoneNumber.trim(),
-        bio: bio.trim(), // Add bio to updates
+        bio: bio.trim(),
         updatedAt: new Date(),
       };
 
       if (snap.exists()) {
-        // Document exists, check username change limit
         const d = snap.data();
         let changeCount = d.usernameChangeCount || 0;
         let changeYear = d.usernameChangeYear || new Date().getFullYear();
@@ -778,17 +855,8 @@ const Profile = () => {
           updates.usernameChangeYear = changeYear;
         }
 
-        // Update existing document
         await updateDoc(profileRef, updates);
-
-        // Update password if provided
-        if (newPassword) {
-          alert(
-            "Password change requires re-authentication. Please use the password reset feature."
-          );
-        }
       } else {
-        // Document doesn't exist, create new
         updates.uid = currentUser.uid;
         updates.createdAt = new Date();
         updates.usernameChangeCount = 0;
@@ -800,10 +868,8 @@ const Profile = () => {
         await setDoc(profileRef, updates);
       }
 
-      // Clear password fields
       setNewPassword("");
       setConfirmPassword("");
-
       alert("Changes saved successfully!");
     } catch (e) {
       alert(e.message || "Failed to save changes");
@@ -817,12 +883,9 @@ const Profile = () => {
 
     try {
       const user = auth.currentUser;
-
-      // Check the provider
       const providerId = user.providerData[0]?.providerId;
 
       if (providerId === "password") {
-        // Prompt for password
         const password = prompt(
           "To permanently delete your account, please enter your password:"
         );
@@ -836,7 +899,6 @@ const Profile = () => {
         );
         if (!confirmed) return;
 
-        // Reauthenticate
         const credential = EmailAuthProvider.credential(user.email, password);
         await reauthenticateWithCredential(user, credential);
       } else {
@@ -846,7 +908,6 @@ const Profile = () => {
         return;
       }
 
-      // Delete subcollections
       const subcollections = ["favorites", "downloads"];
       for (const sub of subcollections) {
         const snap = await getDocs(collection(db, "Profiles", userId, sub));
@@ -855,10 +916,8 @@ const Profile = () => {
         }
       }
 
-      // Delete profile
       await deleteDoc(doc(db, "Profiles", userId));
 
-      // Remove from followers arrays
       const profileQuery = query(collection(db, "Profiles"));
       const usersSnap = await getDocs(profileQuery);
 
@@ -878,9 +937,7 @@ const Profile = () => {
         }
       }
 
-      // Delete Firebase Auth account
       await deleteUser(user);
-
       alert("Your account has been permanently deleted.");
       navigate("/templates", { replace: true });
     } catch (err) {
@@ -897,10 +954,7 @@ const Profile = () => {
 
     try {
       const profileRef = doc(db, "Profiles", userId);
-
-      // Update status
       await updateDoc(profileRef, { status: "active" });
-
       alert("Your account has been activated.");
     } catch (err) {
       alert("Failed to activate: " + err.message);
@@ -917,16 +971,9 @@ const Profile = () => {
 
     try {
       const profileRef = doc(db, "Profiles", userId);
-
-      // Update status
       await updateDoc(profileRef, { status: "deactivated" });
-
       alert("Your account has been deactivated.");
-
-      // Logout user
       await auth.signOut();
-
-      // Navigate to Stack page (replace '/stack' with your actual Stack page route)
       navigate("/templates", { replace: true });
     } catch (err) {
       alert("Failed to deactivate: " + err.message);
@@ -938,22 +985,19 @@ const Profile = () => {
     setLastName(user?.lastName || "");
     setUsername(user?.username || "");
     setPhoneNumber(user?.phoneNumber || "");
-    setBio(user?.bio || ""); // Reset bio
+    setBio(user?.bio || "");
     setNewPassword("");
     setConfirmPassword("");
   };
 
-  // Open billing history modal
   const handleOpenBillingModal = () => {
     setShowBillingModal(true);
   };
 
-  // Close billing history modal
   const handleCloseBillingModal = () => {
     setShowBillingModal(false);
   };
 
-  // Close image upload modal
   const handleCloseImageUploadModal = () => {
     setShowImageUploadModal(false);
     setSelectedImage(null);
@@ -1013,7 +1057,7 @@ const Profile = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <link
           rel="canonical"
-          href={`https://shammarianas.me/#/${user?.username}`} // ✅ update
+          href={`https://shammarianas.me/#/${user?.username}`}
         />
       </Helmet>
 
@@ -1165,8 +1209,7 @@ const Profile = () => {
                         user?.userEmail ||
                         user?.contactEmail ||
                         "Email not available"}
-                    </span>{" "}
-                    {/* <span className="bio">{user?.bio || "No bio yet"}</span>  */}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1237,13 +1280,6 @@ const Profile = () => {
               {activeTab === "profile" && (
                 <div className="tab-content">
                   <div className="account-details-card">
-                    {/* <div className="info-banner">
-                      <span className="icon">i</span>
-                      <span>
-                        Some fields are not editable here. Please update them
-                        via your Google account.
-                      </span>
-                    </div> */}
                     <div className="form-grid">
                       <div className="form-field">
                         <label>First name</label>
@@ -1408,95 +1444,346 @@ const Profile = () => {
               {/* Subscription Tab Content */}
               {activeTab === "subscription" && (
                 <div className="tab-content">
-                  <div className="subscription-card">
-                    <div className="subscription-header">
-                      <h2>Subscription</h2>
-                      <div className="subscription-status">
-                        <span className="status-badge free">Free Plan</span>
+                  {loadingSubscription ? (
+                    <div className="subscription-loading">
+                      <div className="loading-spinner">
+                        <i className="fas fa-spinner fa-spin"></i>
                       </div>
+                      <p>Loading subscription details...</p>
                     </div>
-
-                    <div className="subscription-plans">
-                      <div className="plan-section">
-                        <h3>Plan</h3>
-                        <div className="plan-card current-plan">
-                          <div className="plan-header">
-                            <h4>Free</h4>
-                            <span className="plan-price">$0/month</span>
-                          </div>
-                          <ul className="plan-features">
-                            <li>Basic access to platform</li>
-                            <li>Limited daily uploads</li>
-                            <li>Standard resolution downloads</li>
-                          </ul>
-                          <Link
-                            to="/subscription"
-                            className="butn butn-sm butn-bg main-colorbg radius-5 upgrade-btn"
-                          >
-                            <i className="icon fas fa-arrow-up"></i>
-                            <span>Upgrade plan</span>
-                          </Link>
-                        </div>
-                      </div>
-
-                      <div className="plan-section">
-                        <h3>Credits</h3>
-                        <div className="credits-info">
-                          <p>
-                            <strong>
-                              Limited daily use of generative AI and editing
-                              tools
-                            </strong>
-                          </p>
-                          <p className="credits-note">
-                            See limits on the Pricing page
-                          </p>
-                          <div className="credits-balance">
-                            <div className="balance-item">
-                              <span className="balance-label">
-                                Daily Credits:
-                              </span>
-                              <span className="balance-value">50/100</span>
-                            </div>
-                            <div className="balance-item">
-                              <span className="balance-label">
-                                Monthly Credits:
-                              </span>
-                              <span className="balance-value">350/500</span>
+                  ) : subscription ? (
+                    <div className="subscription-container">
+                      {/* Current Subscription Card */}
+                      <div className="subscription-card active">
+                        <div className="subscription-header">
+                          <div className="header-left">
+                            <h2>Current Subscription</h2>
+                            <div className={`status-badge ${formatSubscriptionStatus(subscription.status).class}`}>
+                              {formatSubscriptionStatus(subscription.status).text}
                             </div>
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="plan-section">
-                        <h3>Billing information</h3>
-                        <div className="billing-info">
-                          <div className="billing-details">
-                            <p>
-                              <strong>{getDisplayName()}</strong>
-                            </p>
-                            <p>
-                              {user?.email ||
-                                currentUser?.email ||
-                                "Email not available"}
-                            </p>
-                            <p style={{ color: "#999", fontSize: "0.9rem" }}>
-                              {user?.bio || "No bio added yet"}
-                            </p>
+                          <div className="header-right">
+                            <Link
+                              to="/subscription"
+                              className="butn butn-sm butn-bg main-colorbg radius-5"
+                            >
+                              <i className="icon fas fa-sync-alt"></i>
+                              <span>Change Plan</span>
+                            </Link>
                           </div>
+                        </div>
+                        
+                        <div className="subscription-info-grid">
+                          <div className="info-item">
+                            <span className="info-label">Plan Type:</span>
+                            <span className="info-value">
+                              {getSubscriptionTypeDisplay(subscription.subscriptionType)}
+                            </span>
+                          </div>
+                          
+                          <div className="info-item">
+                            <span className="info-label">Billing Cycle:</span>
+                            <span className="info-value capitalize">
+                              {subscription.billingCycle || 'Monthly'}
+                            </span>
+                          </div>
+                          
+                          <div className="info-item">
+                            <span className="info-label">Price:</span>
+                            <span className="info-value">
+                              ${subscription.price || '0'}/{subscription.billingCycle === 'yearly' ? 'year' : 'month'}
+                            </span>
+                          </div>
+                          
+                          <div className="info-item">
+                            <span className="info-label">Next Billing Date:</span>
+                            <span className="info-value">
+                              {formatDate(subscription.nextBillingDate) || formatDate(subscription.currentPeriodEnd) || 'N/A'}
+                            </span>
+                          </div>
+                          
+                          {subscription.subscriptionType === 'team' && (
+                            <>
+                              <div className="info-item">
+                                <span className="info-label">Team Members:</span>
+                                <span className="info-value">
+                                  {subscription.teamMembers || 1} members
+                                </span>
+                              </div>
+                              
+                              <div className="info-item">
+                                <span className="info-label">Price per Member:</span>
+                                <span className="info-value">
+                                  ${subscription.pricePerMember || subscription.price / (subscription.teamMembers || 1) || '0'}/member
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          
+                          <div className="info-item">
+                            <span className="info-label">Subscription Start:</span>
+                            <span className="info-value">
+                              {formatDate(subscription.createdAt) || formatDate(subscription.startDate) || 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Payment Method Section */}
+                        <div className="payment-method-section">
+                          <h3>Payment Method</h3>
+                          <div className="payment-method">
+                            {subscription.paymentMethod ? (
+                              <div className="payment-card">
+                                <i className={`fab fa-cc-${subscription.paymentMethod.brand?.toLowerCase() || 'visa'} payment-icon`}></i>
+                                <div className="payment-details">
+                                  <span className="card-type">
+                                    {subscription.paymentMethod.brand || 'Card'} ending in {subscription.paymentMethod.last4 || '****'}
+                                  </span>
+                                  {subscription.paymentMethod.expMonth && subscription.paymentMethod.expYear && (
+                                    <span className="card-expiry">
+                                      Expires {subscription.paymentMethod.expMonth}/{subscription.paymentMethod.expYear}
+                                    </span>
+                                  )}
+                                </div>
+                                <button className="butn butn-sm butn-bord radius-5">
+                                  Update
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="no-payment-method">
+                                <p>No payment method on file</p>
+                                <button className="butn butn-sm butn-bg main-colorbg radius-5">
+                                  Add Payment Method
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Team Management Section (Only for Team Plans) */}
+                        {subscription.subscriptionType === 'team' && subscription.teamMembers > 1 && (
+                          <div className="team-management-section">
+                            <h3>Team Management</h3>
+                            
+                            {/* Invite New Member */}
+                            <div className="invite-member-form">
+                              <div className="form-group">
+                                <input
+                                  type="email"
+                                  value={inviteEmail}
+                                  onChange={(e) => setInviteEmail(e.target.value)}
+                                  placeholder="Enter email address to invite"
+                                  className="form-input"
+                                />
+                                <button
+                                  className="butn butn-sm butn-bg main-colorbg radius-5"
+                                  onClick={inviteTeamMember}
+                                  disabled={inviting || !inviteEmail}
+                                >
+                                  {inviting ? 'Sending...' : 'Invite Member'}
+                                </button>
+                              </div>
+                              <p className="form-note">
+                                Invited members will receive an email to join your team
+                              </p>
+                              
+                              {/* Pending Invites */}
+                              {pendingInvites.length > 0 && (
+                                <div className="pending-invites">
+                                  <h4>Pending Invites</h4>
+                                  <div className="invites-list">
+                                    {pendingInvites.map((invite) => (
+                                      <div key={invite.id} className="invite-item">
+                                        <div className="invite-info">
+                                          <span className="invite-email">{invite.inviteEmail}</span>
+                                          <span className="invite-date">
+                                            Sent on {formatDate(invite.invitedAt)}
+                                          </span>
+                                        </div>
+                                        <button
+                                          className="cancel-invite-btn"
+                                          onClick={() => cancelInvite(invite.id)}
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Team Members List */}
+                            <div className="team-members-list">
+                              <h4>Current Team Members</h4>
+                              {teamMembers.length > 0 ? (
+                                <div className="members-grid">
+                                  {teamMembers.map((member) => (
+                                    <div key={member.id} className="member-card">
+                                      <div className="member-avatar">
+                                        {member.profilePic ? (
+                                          <img src={member.profilePic} alt={member.name} />
+                                        ) : (
+                                          <div className="avatar-initials">
+                                            {member.name?.charAt(0) || member.email?.charAt(0) || 'U'}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="member-info">
+                                        <span className="member-name">
+                                          {member.name || member.email}
+                                        </span>
+                                        <span className="member-email">{member.email}</span>
+                                        <span className={`member-status ${member.status}`}>
+                                          {member.status}
+                                        </span>
+                                      </div>
+                                      {member.id !== userId && (
+                                        <div className="member-actions">
+                                          <button 
+                                            className="action-btn remove-btn" 
+                                            title="Remove member"
+                                            onClick={() => removeTeamMember(member.id)}
+                                          >
+                                            <i className="fas fa-times"></i>
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="no-members">No team members added yet</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Billing History */}
+                        <div className="billing-history-section">
+                          <h3>Billing History</h3>
                           <div className="billing-history">
+                            {subscription.invoices && subscription.invoices.length > 0 ? (
+                              <div className="invoices-table">
+                                <table>
+                                  <thead>
+                                    <tr>
+                                      <th>Date</th>
+                                      <th>Description</th>
+                                      <th>Amount</th>
+                                      <th>Status</th>
+                                      <th>Action</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {subscription.invoices.slice(0, 3).map((invoice, index) => (
+                                      <tr key={index}>
+                                        <td>{formatDate(invoice.date)}</td>
+                                        <td>{invoice.description || 'Subscription Payment'}</td>
+                                        <td>${invoice.amount || invoice.total || '0.00'}</td>
+                                        <td>
+                                          <span className={`invoice-status ${invoice.status || 'paid'}`}>
+                                            {invoice.status || 'Paid'}
+                                          </span>
+                                        </td>
+                                        <td>
+                                          <button className="download-invoice-btn">
+                                            <i className="fas fa-download"></i> Download
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : (
+                              <div className="no-invoices">
+                                <i className="fas fa-file-invoice"></i>
+                                <p>No invoices yet</p>
+                              </div>
+                            )}
                             <button
-                              className="butn butn-sm butn-bord radius-5"
+                              className="butn butn-sm butn-bord radius-5 view-all-btn"
                               onClick={handleOpenBillingModal}
                             >
-                              <i className="icon fas fa-history"></i>
-                              <span>Billing history</span>
+                              View All Invoices
                             </button>
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Cancel Subscription Option */}
+                      {subscription.status === 'active' && (
+                        <div className="cancel-subscription-section">
+                          <div className="cancel-warning">
+                            <i className="fas fa-exclamation-triangle"></i>
+                            <div>
+                              <h4>Cancel Subscription</h4>
+                              <p>
+                                If you cancel, you'll lose access to premium features at the end of your current billing period.
+                              </p>
+                            </div>
+                          </div>
+                          <button 
+                            className="butn butn-sm butn-danger radius-5"
+                            onClick={cancelSubscription}
+                          >
+                            Cancel Subscription
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  ) : (
+                    /* No Subscription - Free Plan */
+                    <div className="subscription-card free-plan">
+                      <div className="subscription-header">
+                        <h2>Current Plan</h2>
+                        <div className="status-badge free">Free Plan</div>
+                      </div>
+                      
+                      <div className="free-plan-content">
+                        <div className="plan-details">
+                          <h3>You're on the Free Plan</h3>
+                          <p>Upgrade to unlock premium features and unlimited access</p>
+                          
+                          <div className="free-limitations">
+                            <h4>Current Limitations:</h4>
+                            <ul>
+                              <li>✓ Basic access to platform</li>
+                              <li>✓ Limited daily uploads (5 per day)</li>
+                              <li>✓ Standard resolution downloads only</li>
+                              <li>✗ No AI tools access</li>
+                              <li>✗ No commercial license</li>
+                              <li>✗ No team collaboration</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="credits-info">
+                            <h4>Credits Usage</h4>
+                            <div className="credits-progress">
+                              <div className="progress-bar">
+                                <div className="progress-fill" style={{ width: '50%' }}></div>
+                              </div>
+                              <div className="credits-text">50/100 daily credits used</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="upgrade-cta">
+                          <Link
+                            to="/subscription"
+                            className="butn butn-lg butn-bg main-colorbg radius-5 upgrade-btn"
+                          >
+                            <i className="icon fas fa-arrow-up"></i>
+                            <span>Upgrade to Premium</span>
+                          </Link>
+                          <p className="upgrade-note">
+                            Choose from Individual, Team, or Enterprise plans
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </>

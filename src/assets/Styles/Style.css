@@ -4934,7 +4934,7 @@ div>button.add_to_wishlist_btn.favorited {
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 48px;
+  /* font-size: 48px; */
   font-weight: bold;
 }
 
@@ -5515,7 +5515,814 @@ div>button.add_to_wishlist_btn.favorited {
   align-items: center;
   gap: 10px;
 }
+/* Subscription Loading State */
+.subscription-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
+.loading-spinner {
+  font-size: 3rem;
+  color: #4CAF50;
+  margin-bottom: 1.5rem;
+}
+
+.subscription-loading p {
+  color: #aaa;
+  font-size: 1.1rem;
+}
+
+/* Subscription Container */
+.subscription-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Subscription Card */
+.subscription-card {
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.subscription-card.active {
+  border-color: #4CAF50;
+}
+
+
+
+/* Subscription Header */
+.subscription-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-left h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+  border: 1px solid #4CAF50;
+}
+
+.status-badge.free {
+  background: rgba(158, 158, 158, 0.2);
+  color: #9e9e9e;
+  border: 1px solid #9e9e9e;
+}
+
+.status-badge.canceled {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  border: 1px solid #f44336;
+}
+
+.status-badge.trialing {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196F3;
+  border: 1px solid #2196F3;
+}
+
+.status-badge.past-due {
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+  border: 1px solid #FFC107;
+}
+
+.status-badge.incomplete {
+  background: rgba(255, 87, 34, 0.2);
+  color: #FF5722;
+  border: 1px solid #FF5722;
+}
+
+.header-right .butn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Subscription Info Grid */
+.subscription-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-label {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.info-value {
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Payment Method Section */
+.payment-method-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-method-section h3 {
+  color: #fff;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.payment-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.payment-icon {
+  font-size: 2rem;
+  color: #667eea;
+}
+
+.payment-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-type {
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.card-expiry {
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.no-payment-method {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.no-payment-method p {
+  color: #aaa;
+  margin: 0;
+}
+
+/* Team Management Section */
+.team-management-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-management-section h3 {
+  color: #fff;
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.invite-member-form {
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.form-note {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 0.25rem;
+}
+
+/* Pending Invites */
+.pending-invites {
+  margin-top: 1.5rem;
+}
+
+.pending-invites h4 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.invites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.invite-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.invite-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.invite-email {
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.invite-date {
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.cancel-invite-btn {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: 1px solid #f44336;
+  color: #f44336;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cancel-invite-btn:hover {
+  background: rgba(244, 67, 54, 0.1);
+}
+
+/* Team Members List */
+.team-members-list {
+  margin-top: 1.5rem;
+}
+
+.team-members-list h4 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 0.75rem;
+}
+
+.member-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.member-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.member-name {
+  color: #fff;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.member-email {
+  color: #aaa;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-status {
+  font-size: 0.7rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 10px;
+  display: inline-block;
+  width: fit-content;
+  margin-top: 0.25rem;
+}
+
+.member-status.active {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.member-status.pending {
+  background: rgba(255, 193, 7, 0.1);
+  color: #FFC107;
+}
+
+.member-status.invited {
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+}
+
+.member-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn.remove-btn:hover {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.no-members {
+  color: #aaa;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Billing History Section */
+.billing-history-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.billing-history-section h3 {
+  color: #fff;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.invoices-table {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.invoices-table table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.invoices-table th,
+.invoices-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.invoices-table th {
+  color: #aaa;
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.invoices-table td {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.invoice-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.invoice-status.paid {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.invoice-status.pending {
+  background: rgba(255, 193, 7, 0.1);
+  color: #FFC107;
+}
+
+.invoice-status.failed {
+  background: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+}
+
+.download-invoice-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.download-invoice-btn:hover {
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+.no-invoices {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #888;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.no-invoices i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+.no-invoices p {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Free Plan Content */
+.free-plan-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.plan-details h3 {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.plan-details > p {
+  color: #aaa;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.free-limitations {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.free-limitations h4 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.free-limitations ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+
+.free-limitations li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.free-limitations li:before {
+  content: '✓';
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.free-limitations li:not(:nth-child(-n+3)):before {
+  content: '✗';
+  color: #f44336;
+}
+
+.credits-info h4 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.credits-progress {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.progress-bar {
+  height: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.credits-text {
+  color: #aaa;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.upgrade-cta {
+  text-align: center;
+  padding: 2rem;
+  background:rgb(82 176 180 / 11%);;
+  border-radius: 8px;
+  border: 1px solid rgb(54 100 105);;
+}
+
+.upgrade-btn {
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upgrade-note {
+  margin-top: 0.75rem;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+/* Cancel Subscription Section */
+.cancel-subscription-section {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(244, 67, 54, 0.05);
+  border: 1px solid rgba(244, 67, 54, 0.2);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cancel-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: #f44336;
+}
+
+.cancel-warning i {
+  font-size: 1.5rem;
+  margin-top: 0.125rem;
+}
+
+.cancel-warning h4 {
+  margin: 0 0 0.25rem 0;
+  color: #f44336;
+  font-size: 1.1rem;
+}
+
+.cancel-warning p {
+  margin: 0;
+  color: #ff8a80;
+  font-size: 0.9rem;
+  max-width: 400px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .subscription-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .subscription-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group {
+    flex-direction: column;
+  }
+  
+  .members-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cancel-subscription-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .free-limitations ul {
+    grid-template-columns: 1fr;
+  }
+  
+  .invoices-table {
+    font-size: 0.8rem;
+  }
+  
+  .payment-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .payment-details {
+    width: 100%;
+  }
+  
+  .no-payment-method {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .subscription-card {
+    padding: 1.5rem;
+  }
+  
+  .header-left h2 {
+    font-size: 1.5rem;
+  }
+  
+  .team-members-list h4,
+  .payment-method-section h3,
+  .billing-history-section h3,
+  .team-management-section h3 {
+    font-size: 1.2rem;
+  }
+  
+  .member-card {
+    padding: 0.75rem;
+  }
+  
+  .free-limitations {
+    padding: 1rem;
+  }
+  
+  .upgrade-cta {
+    padding: 1.5rem;
+  }
+}
 .status-badge {
   padding: 6px 16px;
   border-radius: 20px;
