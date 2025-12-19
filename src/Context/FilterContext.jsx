@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
 
 export const FilterContext = createContext();
 
@@ -12,14 +12,32 @@ export const FilterProvider = ({ children }) => {
     applicationsSupported: [],
   });
 
-  const updateFilters = (filterType, value) => {
+  // ✅ FIXED: useCallback کے ساتھ memoize کریں
+  const updateFilters = useCallback((filterType, value) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
       [filterType]: value,
     }));
-  };
+  }, []); // ✅ Empty dependency array
 
-  const value = useMemo(() => ({ filters, updateFilters }), [filters]);
+  // ✅ FIXED: clearFilters function بھی شامل کریں اگر needed ہو
+  const clearFilters = useCallback(() => {
+    setFilters({
+      categories: [],
+      aiGenerated: [],
+      resolution: [],
+      frameRate: [],
+      properties: [],
+      applicationsSupported: [],
+    });
+  }, []);
+
+  // ✅ FIXED: Context value کو properly memoize کریں
+  const value = useMemo(() => ({ 
+    filters, 
+    updateFilters, 
+    clearFilters 
+  }), [filters, updateFilters, clearFilters]);
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;
 };
