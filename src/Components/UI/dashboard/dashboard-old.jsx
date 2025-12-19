@@ -100,9 +100,8 @@ const NotificationDropdown = ({
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`notification-item ${
-                notification.read ? "read" : "unread"
-              } ${notification.type}`}
+              className={`notification-item ${notification.read ? "read" : "unread"
+                } ${notification.type}`}
               onClick={() => onMarkAsRead(notification.id)}
             >
               <div className="notification-icon">
@@ -263,7 +262,7 @@ const AdminDashboard = () => {
           collectionGroup(db, "Support"),
           where("status", "in", ["pending", "in_progress"])
         );
-        
+
         const unsubscribeSupport = onSnapshot(supportQuery, (snapshot) => {
           console.log("Support requests count:", snapshot.size);
           setPendingRequests(snapshot.size);
@@ -274,7 +273,7 @@ const AdminDashboard = () => {
           collection(db, "Assets"),
           where("status", "==", "pending")
         );
-        
+
         const unsubscribeAssets = onSnapshot(assetsQuery, (snapshot) => {
           console.log("Asset requests count:", snapshot.size);
           setPendingAssets(snapshot.size);
@@ -285,7 +284,7 @@ const AdminDashboard = () => {
           collection(db, "Contributors"),
           where("status", "==", "pending")
         );
-        
+
         const unsubscribeSellers = onSnapshot(sellersQuery, (snapshot) => {
           console.log("Seller verification count:", snapshot.size);
           setPendingSellers(snapshot.size);
@@ -297,7 +296,7 @@ const AdminDashboard = () => {
           where("type", "==", "complaint"),
           where("status", "in", ["pending", "in_progress"])
         );
-        
+
         const unsubscribeComplaints = onSnapshot(complaintsQuery, (snapshot) => {
           console.log("Seller complaints count:", snapshot.size);
           setPendingComplaints(snapshot.size);
@@ -569,7 +568,7 @@ const AdminDashboard = () => {
           { createdAt: serverTimestamp(), promotedBy: "system" },
           { merge: true }
         );
-      } catch {}
+      } catch { }
       return true;
     }
 
@@ -866,8 +865,7 @@ const AdminDashboard = () => {
       });
       loadBlogs();
       alert(
-        `Blog ${
-          newStatus === "PUBLISHED" ? "published" : "drafted"
+        `Blog ${newStatus === "PUBLISHED" ? "published" : "drafted"
         } successfully!`
       );
     } catch (error) {
@@ -941,498 +939,833 @@ const AdminDashboard = () => {
     return <UnauthorizedAccess error={error} />;
   }
 
-  return (
-   <>
-    <Cursor />
-    <div className="admin-dashboard">
-      {/* Mobile Header with Hamburger Menu */}
-<div className="mobile-header">
-  <button className="hamburger-menu" onClick={toggleSidebar}>
-    {sidebarOpen ? (
-      <svg 
-        stroke="currentColor" 
-        fill="none" 
-        strokeWidth="2" 
-        viewBox="0 0 24 24" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        className="close-icon" 
-        height="1em" 
-        width="1em" 
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    ) : (
-      <FiMenu className="hamburger-icon" />
-    )}
-  </button>
-  
-  {/* <div className="mobile-notification">
-    <button
-      className={`header-btn notification-btn ${
-        unreadCount > 0 ? "has-new" : ""
-      }`}
-      onClick={toggleNotifications}
-    >
-      <FiBell className="btn-icon" />
-      {unreadCount > 0 && (
-        <span className="notification-badge">
-          {unreadCount > 99 ? "99+" : unreadCount}
-        </span>
-      )}
-    </button>
-  </div> */}
-</div>
+   return (
+    <>
+      <Cursor />
+      
+      {/* Inline Styles for Dashboard */}
+      <style>
+        {`
+          /* Desktop Styles */
+          @media (min-width: 769px) {
+            .admin-sidebar {
+              position: fixed !important;
+              left: 0 !important;
+              width: 270px !important;
+              height: 100vh !important;
+              color: white !important;
+              padding: 1.5rem 0 !important;
+              z-index: 1000 !important;
+              overflow-y: auto !important;
+              overflow-x: hidden;
+              transform: translateX(0) !important;
+              transition: transform 0.3s ease-in-out !important;
+            }
+            
+            .admin-main-content {
+              margin-left: 260px !important;
+              padding: 2rem !important;
+              min-height: 100vh !important;
+              background-color: #121212 !important;
+              transition: margin-left 0.3s ease-in-out !important;
+            }
+            
+            .mobile-header {
+              display: none !important;
+            }
+          }
+          
+          /* Mobile Styles */
+          @media (max-width: 768px) {
+            .admin-sidebar {
+              position: fixed !important;
+              top: 60px !important;
+              left: 0 !important;
+              width: 260px !important;
+              height: calc(100vh - 60px) !important;
+              background-color: #0f0f0f !important;
+              color: white !important;
+              padding: 1.5rem 0 !important;
+              z-index: 1000 !important;
+              overflow-y: auto !important;
+              transform: translateX(-100%) !important;
+              transition: transform 0.3s ease-in-out !important;
+              box-shadow: 2px 0 10px rgba(0,0,0,0.3) !important;
+            }
+            
+            .admin-sidebar.open {
+              transform: translateX(0) !important;
+            }
+            
+            .admin-sidebar.closed {
+              transform: translateX(-100%) !important;
+            }
+            
+            .admin-main-content {
+              margin-left: 0 !important;
+              padding: 5rem 1rem 1rem 1rem !important;
+              min-height: 100vh !important;
+              background-color: #121212 !important;
+            }
+            
+            .mobile-header {
+              display: flex !important;
+              align-items: center !important;
+              justify-content: space-between !important;
+              padding: 1rem !important;
+              background-color: #121212 !important;
+              color: white !important;
+              position: fixed !important;
+              top: 0 !important;
+              left: 0 !important;
+              right: 0 !important;
+              z-index: 1100 !important;
+              height: 60px !important;
+              border-bottom: 1px solid #333 !important;
+            }
+            
+            .hamburger-menu {
+              background: none !important;
+              border: none !important;
+              color: white !important;
+              font-size: 1.5rem !important;
+              cursor: pointer !important;
+              padding: 0.5rem !important;
+            }
+            
+            .sidebar-overlay {
+              display: block !important;
+              position: fixed !important;
+              top: 60px !important;
+              left: 0 !important;
+              right: 0 !important;
+              bottom: 0 !important;
+              background: rgba(0, 0, 0, 0.7) !important;
+              z-index: 999 !important;
+            }
+          }
+          
+          /* Common Styles */
+          .admin-dashboard-container {
+            position: relative;
+            min-height: 100vh;
+            background-color: #121212;
+            color: white;
+          }
+          
+          .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #f72585;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid #121212;
+          }
+          
+          .header-btn {
+            position: relative;
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #b0b0b0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .header-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+          }
+            ul{
+            padding:0 1rem !important;
+            }
+        `}
+      </style>
 
-{/* Sidebar */}
-<div
-  className={`sidebar ${sidebarOpen ? "open" : "closed"}`}
-  ref={sidebarRef}
->
-  {/* Close button for mobile inside sidebar */}
-  {sidebarOpen && window.innerWidth <= 768 && (
-    <button className="sidebar-close-btn" onClick={toggleSidebar}>
-      <svg 
-        stroke="currentColor" 
-        fill="none" 
-        strokeWidth="2" 
-        viewBox="0 0 24 24" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        className="close-icon" 
-        height="1em" 
-        width="1em" 
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-  )}
-</div>
-
-      {/* Sidebar */}
-      <div
-        className={`sidebar ${sidebarOpen ? "open" : "closed"}`}
-        ref={sidebarRef}
-      >
-        <div className="custom-dropdown" ref={dropdownRef}>
-          <button
-            className="dashboard-dropdown"
-            onClick={toggleDropdown}
-            title="Select Dashboard"
-          >
-            {selectedDashboard === "admin"
-              ? "Admin Dashboard"
-              : "Company Dashboard"}
-            <FiChevronDown className="dropdown-icon" />
-          </button>
-          {isDropdownOpen && (
-            <ul className="dropdown-menu">
-              <li
-                className={selectedDashboard === "admin" ? "selected" : ""}
-                onClick={() => handleDashboardChange("admin")}
-              >
-                Admin Dashboard
-              </li>
-              <li
-                className={selectedDashboard === "company" ? "selected" : ""}
-                onClick={() => handleDashboardChange("company")}
-              >
-                Company Dashboard
-              </li>
-            </ul>
-          )}
-        </div>
-
-        <div className="d-flex flex-column">
-          <div>
-            {selectedDashboard === "admin" ? (
-              <ul className="sidebar-menu">
-                {/* Users Section */}
-                <li className="menu-item dropdown-parent active">
-                  <div className="dropdown-header active">
-                    <FiUsers className="menu-icon" />
-                    <span className="nav-label">Users</span>
-                  </div>
-                  <ul className="submenu">
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 1 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(1)}
-                    >
-                      User Information
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 2 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(2)}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                        <span>User Report</span>
-                        {pendingRequests > 0 && (
-                          <span className="badge-count">{pendingRequests}</span>
-                        )}
-                      </div>
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 3 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(3)}
-                    >
-                      Payment & Plan
-                    </li>
-                  </ul>
-                </li>
-
-                {/* Sellers Section */}
-                <li className="menu-item dropdown-parent active">
-                  <div className="dropdown-header active">
-                    <FiUser className="menu-icon" />
-                    <span className="nav-label">Sellers</span>
-                  </div>
-                  <ul className="submenu">
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 4 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(4)}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                        <span>Seller Account Verify</span>
-                        {pendingSellers > 0 && (
-                          <span className="badge-count">{pendingSellers}</span>
-                        )}
-                      </div>
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 5 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(5)}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                        <span>Asset Request</span>
-                        {pendingAssets > 0 && (
-                          <span className="badge-count">{pendingAssets}</span>
-                        )}
-                      </div>
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 6 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(6)}
-                    >
-                      Seller Earning
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 7 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(7)}
-                    >
-                      Seller Report
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 8 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(8)}
-                    >
-                      Seller Analytic
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 9 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(9)}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                        <span>Seller Complaints</span>
-                        {pendingComplaints > 0 && (
-                          <span className="badge-count">{pendingComplaints}</span>
-                        )}
-                      </div>
-                    </li>
-                  </ul>
-                </li>
-
-                {/* Advanced Section */}
-                <li className="menu-item dropdown-parent active">
-                  <div className="dropdown-header active">
-                    <FiSettings className="menu-icon" />
-                    <span className="nav-label">Advanced</span>
-                  </div>
-                  <ul className="submenu">
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 10 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(10)}
-                    >
-                      Download
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 11 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(11)}
-                    >
-                      Earning
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 12 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(12)}
-                    >
-                      Analytic
-                    </li>
-                    <li
-                      className={`submenu-item ${
-                        activeTab === 13 ? "active" : ""
-                      }`}
-                      onClick={() => handleTabClick(13)}
-                    >
-                      Asset
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            ) : (
-              <ul className="sidebar-menu">
-                <li
-                  className={`menu-item dropdown-header comp-menu ${
-                    activeTab === 1 ? "active" : ""
-                  }`}
-                  onClick={() => handleTabClick(1)}
+      <div className="admin-dashboard-container">
+        {/* ===== MOBILE HEADER ===== */}
+        {window.innerWidth <= 768 && (
+          <div className="mobile-header">
+            <button className="hamburger-menu" onClick={toggleSidebar}>
+              {sidebarOpen ? (
+                <svg 
+                  stroke="currentColor" 
+                  fill="none" 
+                  strokeWidth="2" 
+                  viewBox="0 0 24 24" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="close-icon" 
+                  height="1em" 
+                  width="1em" 
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <FiFileText className="menu-icon" />
-                  <span className="nav-label">Blogs</span>
-                </li>
-                <li
-                  className={`menu-item dropdown-header comp-menu ${
-                    activeTab === 2 ? "active" : ""
-                  }`}
-                  onClick={() => handleTabClick(2)}
-                >
-                  <FiBriefcase className="menu-icon" />
-                  <span className="nav-label">Portfolio</span>
-                </li>
-              </ul>
-            )}
-          </div>
-
-          <div className="footer-sidebar">
-            <div className="sidebar-footer">
-              <button className="menu-item compact" title="Settings">
-                <FiSettings className="menu-icon" />
-                <span className="nav-label">Settings</span>
-              </button>
-              <button
-                className="menu-item compact"
-                title="Logout"
-                onClick={async () => {
-                  try {
-                    await signOut(auth);
-                    navigate("/");
-                  } catch {}
-                }}
-              >
-                <FiLogOut className="menu-icon" />
-                <span className="nav-label">Logout</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Overlay for mobile when sidebar is open */}
-      {sidebarOpen && window.innerWidth <= 768 && (
-        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
-      )}
-
-      {/* Main Content */}
-      <div className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
-        <div className="header">
-          <h1 className="page-title">
-            {activeTab === 1 && selectedDashboard === "admin" && ""}
-            {activeTab === 2 && ""}
-            {activeTab === 3 && ""}
-            {activeTab === 4 && ""}
-            {activeTab === 5 && ""}
-            {activeTab === 6 && ""}
-            {activeTab === 7 && ""}
-            {activeTab === 8 && ""}
-            {activeTab === 9 && ""}
-            {activeTab === 10 && ""}
-            {activeTab === 11 && ""}
-            {activeTab === 12 && ""}
-            {activeTab === 13 && ""}
-            {activeTab === 1 &&
-              selectedDashboard === "company" &&
-              ""}
-            {activeTab === 2 &&
-              selectedDashboard === "company" &&
-              ""}
-          </h1>
-
-          {/* Notification Button in Header */}
-          <div className="header-right">
-            <div className="notification-container" ref={notificationRef}>
-              <button
-                className={`header-btn notification-btn ${
-                  unreadCount > 0 ? "has-new" : ""
-                }`}
-                onClick={toggleNotifications}
-              >
-                <FiBell className="btn-icon" />
-                {unreadCount > 0 && (
-                  <span className="notification-badge">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Notification Dropdown */}
-              {showNotifications && (
-                <NotificationDropdown
-                  notifications={notifications}
-                  onMarkAsRead={markNotificationAsRead}
-                  onMarkAllAsRead={markAllNotificationsAsRead}
-                  onClose={() => setShowNotifications(false)}
-                />
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              ) : (
+                <FiMenu className="hamburger-icon" />
               )}
+            </button>
+            
+            <div style={{ color: 'white', fontSize: '1rem', fontWeight: '600' }}>
+              {selectedDashboard === "admin" ? "Admin Dashboard" : "Company Dashboard"}
             </div>
-          </div>
-        </div>
-
-        {error && (
-          <div className="error-alert">
-            {error}
-            <button onClick={() => setError(null)} className="close-error">
-              <FiX />
+            
+            <button
+              className="header-btn"
+              onClick={toggleNotifications}
+            >
+              <FiBell style={{ fontSize: '1.2rem' }} />
+              {unreadCount > 0 && (
+                <span className="notification-badge">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </button>
           </div>
         )}
 
-        {/* Admin Dashboard Content */}
-        {selectedDashboard === "admin" && (
-          <>
-            {activeTab === 1 && (
-              <UserInformation
-                users={users}
-                setUsers={setUsers}
-                onRoleChange={handleRoleChange}
-                onUpdateStatus={handleUpdateUserStatus}
-                onDelete={handleDeleteUser}
-                formatCurrency={formatCurrency}
-                formatDate={formatDate}
-              />
+        {/* ===== SIDEBAR ===== */}
+        <div
+          className={`admin-sidebar ${sidebarOpen ? "open" : "closed"}`}
+          ref={sidebarRef}
+        >
+          <div className="custom-dropdown" ref={dropdownRef}>
+            <button
+             className="dashboard-dropdown"
+              onClick={toggleDropdown}
+              title="Select Dashboard"
+            >
+              {selectedDashboard === "admin"
+                ? "Admin Dashboard"
+                : "Company Dashboard"}
+              <FiChevronDown style={{ fontSize: '1rem' }} />
+            </button>
+            {isDropdownOpen && (
+              <ul className="dropdown-menu">
+                <li
+                  style={{
+                    padding: '0.75rem 1rem',
+                    cursor: 'pointer',
+                    color: selectedDashboard === 'admin' ? '#52b0b4' : 'white',
+                    borderBottom: '1px solid #333',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1a1a1a'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  onClick={() => handleDashboardChange("admin")}
+                >
+                  Admin Dashboard
+                </li>
+                <li
+                  style={{
+                    padding: '0.75rem 1rem',
+                    cursor: 'pointer',
+                    color: selectedDashboard === 'company' ? '#52b0b4' : 'white',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1a1a1a'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  onClick={() => handleDashboardChange("company")}
+                >
+                  Company Dashboard
+                </li>
+              </ul>
             )}
+          </div>
 
-            {activeTab === 2 && <UserReport />}
+          <div className="d-flex flex-column">
+            <div>
+              {selectedDashboard === "admin" ? (
+                <ul style={{
+                  listStyle: 'none',
+                  margin: '1rem 0 0rem 0',
+                  padding: '0.5rem',
+                  display: 'grid',
+                  borderTop: '1px solid #333'
+                }}>
+                  {/* Users Section */}
+                  <li style={{
+                    borderRadius: '8px',
+                    margin: '0 0.5rem',
+                    color: '#b0b0b0'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      padding: '0.75rem 0',
+                      color: '#52b0b4'
+                    }}>
+                      <FiUsers style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
+                      <span style={{ whiteSpace: 'nowrap' }}>Users</span>
+                    </div>
+                    <ul style={{
+                      width: '100%',
+                      listStyle: 'none',
+                      margin: '0',
+                      borderRadius: '0.5rem',
+                      display: 'grid',
+                      padding: '0rem 1rem'
+                    }}>
+                      <li
+                        style={{
+                          fontSize: '12px',
+                          padding: '0rem 0.6rem 0.2rem 0.6rem',
+                          cursor: 'pointer',
+                          color: activeTab === 1 ? 'white' : '#b0b0b0',
+                          transition: 'all 0.2s',
+                          border: 'none',
+                          background: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          borderRadius: '0.5rem'
+                        }}
+                        onClick={() => handleTabClick(1)}
+                      >
+                        User Information
+                      </li>
+                      <li
+                        style={{
+                          fontSize: '12px',
+                          padding: '0rem 0.6rem 0.2rem 0.6rem',
+                          cursor: 'pointer',
+                          color: activeTab === 2 ? 'white' : '#b0b0b0',
+                          transition: 'all 0.2s',
+                          border: 'none',
+                          background: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          borderRadius: '0.5rem'
+                        }}
+                        onClick={() => handleTabClick(2)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <span>User Report</span>
+                          {pendingRequests > 0 && (
+                            <span style={{
+                              background: 'rgb(82, 176, 180, 0.2)',
+                              color: '#52b0b4',
+                              border: '1px solid rgba(82, 176, 180, 0.3)',
+                              padding: '0.07rem 0.3rem',
+                              borderRadius: '999px',
+                              fontSize: '0.65rem',
+                              fontWeight: '600'
+                            }}>{pendingRequests}</span>
+                          )}
+                        </div>
+                      </li>
+                      <li
+                        style={{
+                          fontSize: '12px',
+                          padding: '0rem 0.6rem 0.2rem 0.6rem',
+                          cursor: 'pointer',
+                          color: activeTab === 3 ? 'white' : '#b0b0b0',
+                          transition: 'all 0.2s',
+                          border: 'none',
+                          background: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          borderRadius: '0.5rem'
+                        }}
+                        onClick={() => handleTabClick(3)}
+                      >
+                        Payment & Plan
+                      </li>
+                    </ul>
+                  </li>
 
-            {activeTab === 3 && (
-              <PaymentPlan
-                users={users}
-                formatCurrency={(amount) => `$${amount?.toFixed(2) || "0.00"}`}
-                formatDate={(date) => {
-                  if (!date) return "N/A";
-                  const normalizedDate = normalizeDate(date);
-                  return normalizedDate
-                    ? normalizedDate.toLocaleDateString()
-                    : "N/A";
-                }}
-              />
-            )}
+                  {/* Sellers Section */}
+                  <li style={{
+                    borderRadius: '8px',
+                    margin: '0 0.5rem',
+                    color: '#b0b0b0'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      padding: '0.75rem 0',
+                      color: '#52b0b4'
+                    }}>
+                      <FiUser style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
+                      <span style={{ whiteSpace: 'nowrap' }}>Sellers</span>
+                    </div>
+                    <ul style={{
+                      width: '100%',
+                      listStyle: 'none',
+                      margin: '0',
+                      borderRadius: '0.5rem',
+                      display: 'grid',
+                      padding: '0rem 1rem'
+                    }}>
+                      <li
+                        style={{
+                          fontSize: '12px',
+                          padding: '0rem 0.6rem 0.2rem 0.6rem',
+                          cursor: 'pointer',
+                          color: activeTab === 4 ? 'white' : '#b0b0b0',
+                          transition: 'all 0.2s',
+                          border: 'none',
+                          background: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          borderRadius: '0.5rem'
+                        }}
+                        onClick={() => handleTabClick(4)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <span>Seller Account Verify</span>
+                          {pendingSellers > 0 && (
+                            <span style={{
+                              background: 'rgb(82, 176, 180, 0.2)',
+                              color: '#52b0b4',
+                              border: '1px solid rgba(82, 176, 180, 0.3)',
+                              padding: '0.07rem 0.3rem',
+                              borderRadius: '999px',
+                              fontSize: '0.65rem',
+                              fontWeight: '600'
+                            }}>{pendingSellers}</span>
+                          )}
+                        </div>
+                      </li>
+                      <li
+                        style={{
+                          fontSize: '12px',
+                          padding: '0rem 0.6rem 0.2rem 0.6rem',
+                          cursor: 'pointer',
+                          color: activeTab === 5 ? 'white' : '#b0b0b0',
+                          transition: 'all 0.2s',
+                          border: 'none',
+                          background: 'transparent',
+                          width: '100%',
+                          textAlign: 'left',
+                          borderRadius: '0.5rem'
+                        }}
+                        onClick={() => handleTabClick(5)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <span>Asset Request</span>
+                          {pendingAssets > 0 && (
+                            <span style={{
+                              background: 'rgb(82, 176, 180, 0.2)',
+                              color: '#52b0b4',
+                              border: '1px solid rgba(82, 176, 180, 0.3)',
+                              padding: '0.07rem 0.3rem',
+                              borderRadius: '999px',
+                              fontSize: '0.65rem',
+                              fontWeight: '600'
+                            }}>{pendingAssets}</span>
+                          )}
+                        </div>
+                      </li>
+                      {[6, 7, 8, 9].map((tabNum) => (
+                        <li
+                          key={tabNum}
+                          style={{
+                            fontSize: '12px',
+                            padding: '0rem 0.6rem 0.2rem 0.6rem',
+                            cursor: 'pointer',
+                            color: activeTab === tabNum ? 'white' : '#b0b0b0',
+                            transition: 'all 0.2s',
+                            border: 'none',
+                            background: 'transparent',
+                            width: '100%',
+                            textAlign: 'left',
+                            borderRadius: '0.5rem'
+                          }}
+                          onClick={() => handleTabClick(tabNum)}
+                        >
+                          {tabNum === 6 && "Seller Earning"}
+                          {tabNum === 7 && "Seller Report"}
+                          {tabNum === 8 && "Seller Analytic"}
+                          {tabNum === 9 && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                              <span>Seller Complaints</span>
+                              {pendingComplaints > 0 && (
+                                <span style={{
+                                  background: 'rgb(82, 176, 180, 0.2)',
+                                  color: '#52b0b4',
+                                  border: '1px solid rgba(82, 176, 180, 0.3)',
+                                  padding: '0.07rem 0.3rem',
+                                  borderRadius: '999px',
+                                  fontSize: '0.65rem',
+                                  fontWeight: '600'
+                                }}>{pendingComplaints}</span>
+                              )}
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
 
-            {activeTab === 4 && <SellerAccountVerify />}
+                  {/* Advanced Section */}
+                  <li style={{
+                    borderRadius: '8px',
+                    margin: '0 0.5rem',
+                    color: '#b0b0b0'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      padding: '0.75rem 0',
+                      color: '#52b0b4'
+                    }}>
+                      <FiSettings style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
+                      <span style={{ whiteSpace: 'nowrap' }}>Advanced</span>
+                    </div>
+                    <ul style={{
+                      width: '100%',
+                      listStyle: 'none',
+                      margin: '0',
+                      borderRadius: '0.5rem',
+                      display: 'grid',
+                      padding: '0rem 1rem'
+                    }}>
+                      {[10, 11, 12, 13].map((tabNum) => (
+                        <li
+                          key={tabNum}
+                          style={{
+                            fontSize: '12px',
+                            padding: '0rem 0.6rem 0.2rem 0.6rem',
+                            cursor: 'pointer',
+                            color: activeTab === tabNum ? 'white' : '#b0b0b0',
+                            transition: 'all 0.2s',
+                            border: 'none',
+                            background: 'transparent',
+                            width: '100%',
+                            textAlign: 'left',
+                            borderRadius: '0.5rem'
+                          }}
+                          onClick={() => handleTabClick(tabNum)}
+                        >
+                          {tabNum === 10 && "Download"}
+                          {tabNum === 11 && "Earning"}
+                          {tabNum === 12 && "Analytic"}
+                          {tabNum === 13 && "Asset"}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                </ul>
+              ) : (
+                <ul style={{
+                  listStyle: 'none',
+                  margin: '1rem 0 0rem 0',
+                  padding: '0.5rem',
+                  display: 'grid',
+                  gap: '10px',
+                  borderTop: '1px solid #333'
+                }}>
+                  <li
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      padding: '0.75rem 1.5rem',
+                      color: activeTab === 1 ? 'white' : '#b0b0b0',
+                      transition: 'all 0.2s',
+                      borderRadius: '8px'
+                    }}
+                    onClick={() => handleTabClick(1)}
+                  >
+                    <FiFileText style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
+                    <span style={{ whiteSpace: 'nowrap' }}>Blogs</span>
+                  </li>
+                  <li
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      padding: '0.75rem 1.5rem',
+                      color: activeTab === 2 ? 'white' : '#b0b0b0',
+                      transition: 'all 0.2s',
+                      borderRadius: '8px'
+                    }}
+                    onClick={() => handleTabClick(2)}
+                  >
+                    <FiBriefcase style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
+                    <span style={{ whiteSpace: 'nowrap' }}>Portfolio</span>
+                  </li>
+                </ul>
+              )}
+            </div>
 
-            {activeTab === 5 && (
-              <AssetRequestsDashboard
-                createAssetNotification={createAdminNotification}
-              />
-            )}
-            {activeTab === 6 && <SellerEarning />}
+            <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #333' }}>
+              <div style={{
+                position: 'relative',
+                fontSize: '12px',
+                marginTop: 'auto',
+                padding: '0.2rem 0',
+                display: 'grid'
+              }}>
+                <button style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  padding: '0.2rem 0.75rem',
+                  width: '100%',
+                  textAlign: 'left',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#b0b0b0',
+                  cursor: 'pointer',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
+                  <FiSettings style={{ fontSize: '1.1rem' }} />
+                  <span style={{ whiteSpace: 'nowrap' }}>Settings</span>
+                </button>
+                <button
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    padding: '0.2rem 0.75rem',
+                    width: '100%',
+                    textAlign: 'left',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#b0b0b0',
+                    cursor: 'pointer',
+                    alignItems: 'center',
+                    gap: '0.75rem'
+                  }}
+                  onClick={async () => {
+                    try {
+                      await signOut(auth);
+                      navigate("/");
+                    } catch {}
+                  }}
+                >
+                  <FiLogOut style={{ fontSize: '1.1rem' }} />
+                  <span style={{ whiteSpace: 'nowrap' }}>Logout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            {activeTab === 7 && <SellerReports />}
-
-            {activeTab === 8 && <SellerAnalytics />}
-
-            {activeTab === 9 && <SellerComplaints />}
-
-            {activeTab === 10 && <Downloads />}
-
-            {activeTab === 11 && <Earnings />}
-
-            {activeTab === 12 && <Analytics />}
-
-            {activeTab === 13 && (
-              <AssetManagement
-                createAssetNotification={createAdminNotification}
-              />
-            )}
-          </>
+        {/* ===== MOBILE OVERLAY ===== */}
+        {sidebarOpen && window.innerWidth <= 768 && (
+          <div className="sidebar-overlay" onClick={toggleSidebar}></div>
         )}
 
-        {/* Company Dashboard Content */}
-        {selectedDashboard === "company" && (
-          <>
-            {activeTab === 1 && (
-              <BlogSection
-                blogs={blogs}
-                onDelete={handleDeleteBlog}
-                onToggleStatus={handleToggleBlogStatus}
-                onCreate={() => setIsBlogModalOpen(true)}
-                formatDate={formatDate}
-              />
-            )}
+        {/* ===== MAIN CONTENT ===== */}
+        <div className="admin-main-content">
+          {/* Desktop Header */}
+          {window.innerWidth > 768 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '2rem'
+            }}>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: '600', color: 'white' }}>
+                {activeTab === 1 && selectedDashboard === "admin" && "User Information"}
+                {activeTab === 2 && "User Report"}
+                {activeTab === 3 && "Payment & Plan"}
+                {activeTab === 4 && "Seller Account Verify"}
+                {activeTab === 5 && "Asset Request"}
+                {activeTab === 6 && "Seller Earning"}
+                {activeTab === 7 && "Seller Report"}
+                {activeTab === 8 && "Seller Analytic"}
+                {activeTab === 9 && "Seller Complaints"}
+                {activeTab === 10 && "Downloads"}
+                {activeTab === 11 && "Earnings"}
+                {activeTab === 12 && "Analytics"}
+                {activeTab === 13 && "Asset Management"}
+                {activeTab === 1 && selectedDashboard === "company" && "Blogs"}
+                {activeTab === 2 && selectedDashboard === "company" && "Portfolio"}
+              </h1>
 
-            {activeTab === 2 && (
-              <PortfolioList
-                portfolios={portfolios}
-                onDelete={handleDeletePortfolio}
-                onCreate={loadProjects}
-                onToggleFeatured={handleTogglePortfolioFeatured}
-                onUpdateStatus={handleUpdatePortfolioStatus}
-                formatDate={formatDate}
-              />
-            )}
-          </>
-        )}
+              {/* Desktop Notification Button */}
+              <div style={{ position: 'relative' }} ref={notificationRef}>
+                <button
+                  className="header-btn"
+                  onClick={toggleNotifications}
+                >
+                  <FiBell style={{ fontSize: '1.2rem' }} />
+                  {unreadCount > 0 && (
+                    <span className="notification-badge">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </button>
 
-        {loading && <div className="loading-overlay">Loading...</div>}
+                {/* Notification Dropdown */}
+                {showNotifications && (
+                  <NotificationDropdown
+                    notifications={notifications}
+                    onMarkAsRead={markNotificationAsRead}
+                    onMarkAllAsRead={markAllNotificationsAsRead}
+                    onClose={() => setShowNotifications(false)}
+                  />
+                )}
+              </div>
+            </div>
+          )}
 
-        {/* Modals */}
-        {isBlogModalOpen && (
-          <BlogEditorModal
-            isOpen={isBlogModalOpen}
-            onClose={() => {
-              setIsBlogModalOpen(false);
-              loadBlogs();
-            }}
-          />
-        )}
+          {error && (
+            <div style={{
+              padding: '1rem',
+              backgroundColor: 'rgba(247, 37, 133, 0.2)',
+              color: '#f72585',
+              border: '1px solid rgba(247, 37, 133, 0.3)',
+              borderRadius: '4px',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              {error}
+              <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: '#f72585', cursor: 'pointer', fontSize: '1rem' }}>
+                <FiX />
+              </button>
+            </div>
+          )}
 
-        {isPortfolioModalOpen && (
-          <ProjectModal
-            isOpen={isPortfolioModalOpen}
-            onClose={() => {
-              setIsPortfolioModalOpen(false);
-              loadProjects();
-            }}
-          />
-        )}
+          {/* Admin Dashboard Content */}
+          {selectedDashboard === "admin" && (
+            <>
+              {activeTab === 1 && (
+                <UserInformation
+                  users={users}
+                  setUsers={setUsers}
+                  onRoleChange={handleRoleChange}
+                  onUpdateStatus={handleUpdateUserStatus}
+                  onDelete={handleDeleteUser}
+                  formatCurrency={formatCurrency}
+                  formatDate={formatDate}
+                />
+              )}
+
+              {activeTab === 2 && <UserReport />}
+
+              {activeTab === 3 && (
+                <PaymentPlan
+                  users={users}
+                  formatCurrency={(amount) => `$${amount?.toFixed(2) || "0.00"}`}
+                  formatDate={(date) => {
+                    if (!date) return "N/A";
+                    const normalizedDate = normalizeDate(date);
+                    return normalizedDate
+                      ? normalizedDate.toLocaleDateString()
+                      : "N/A";
+                  }}
+                />
+              )}
+
+              {activeTab === 4 && <SellerAccountVerify />}
+
+              {activeTab === 5 && (
+                <AssetRequestsDashboard
+                  createAssetNotification={createAdminNotification}
+                />
+              )}
+              {activeTab === 6 && <SellerEarning />}
+
+              {activeTab === 7 && <SellerReports />}
+
+              {activeTab === 8 && <SellerAnalytics />}
+
+              {activeTab === 9 && <SellerComplaints />}
+
+              {activeTab === 10 && <Downloads />}
+
+              {activeTab === 11 && <Earnings />}
+
+              {activeTab === 12 && <Analytics />}
+
+              {activeTab === 13 && (
+                <AssetManagement
+                  createAssetNotification={createAdminNotification}
+                />
+              )}
+            </>
+          )}
+
+          {/* Company Dashboard Content */}
+          {selectedDashboard === "company" && (
+            <>
+              {activeTab === 1 && (
+                <BlogSection
+                  blogs={blogs}
+                  onDelete={handleDeleteBlog}
+                  onToggleStatus={handleToggleBlogStatus}
+                  onCreate={() => setIsBlogModalOpen(true)}
+                  formatDate={formatDate}
+                />
+              )}
+
+              {activeTab === 2 && (
+                <PortfolioList
+                  portfolios={portfolios}
+                  onDelete={handleDeletePortfolio}
+                  onCreate={loadProjects}
+                  onToggleFeatured={handleTogglePortfolioFeatured}
+                  onUpdateStatus={handleUpdatePortfolioStatus}
+                  formatDate={formatDate}
+                />
+              )}
+            </>
+          )}
+
+          {loading && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.7)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000,
+              color: 'white',
+              fontSize: '1.5rem'
+            }}>
+              Loading...
+            </div>
+          )}
+
+          {/* Modals */}
+          {isBlogModalOpen && (
+            <BlogEditorModal
+              isOpen={isBlogModalOpen}
+              onClose={() => {
+                setIsBlogModalOpen(false);
+                loadBlogs();
+              }}
+            />
+          )}
+
+          {isPortfolioModalOpen && (
+            <ProjectModal
+              isOpen={isPortfolioModalOpen}
+              onClose={() => {
+                setIsPortfolioModalOpen(false);
+                loadProjects();
+              }}
+            />
+          )}
+        </div>
       </div>
-    </div>
-   </>
+    </>
   );
 };
 
