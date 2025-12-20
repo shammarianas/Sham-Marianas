@@ -21,16 +21,16 @@ function Footer() {
     path === "/contributor-policies" ||
     path === "/pricing-and-fees" ||
     path.startsWith("/error") ||
-    path.startsWith("/fonts") ||
-    path.startsWith("/video-templates") ||
-    path.startsWith("/icons") ||
-    path.startsWith("/models") ||
-    path.startsWith("/mockups") ||
-    path.startsWith("/graphics") ||
-    path.startsWith("/videos") ||
-    path.startsWith("/images") ||
-    path.startsWith("/scripts") ||
-    path.startsWith("/hdri") ||
+    path.startsWith("/category/fonts") ||
+    path.startsWith("/category/video-templates") ||
+    path.startsWith("/category/icons") ||
+    path.startsWith("/category/models") ||
+    path.startsWith("/category/mockups") ||
+    path.startsWith("/category/graphics") ||
+    path.startsWith("/category/videos") ||
+    path.startsWith("/category/images") ||
+    path.startsWith("/category/scripts") ||
+    path.startsWith("/category/hdri") ||
     path.startsWith("/profile/") ||
     path.startsWith("/profile/") ||
     path.startsWith("/subscription") ||

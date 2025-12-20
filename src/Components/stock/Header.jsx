@@ -286,7 +286,7 @@ const HeroSection = () => {
               <div className="page_content" key={category}>
                 <div className="section-header-row">
                   <PageTitle title={title} />
-                  <Link to={`/${category}`} className="view-all-link">
+                  <Link to={`/category/${category}`} className="view-all-link">
                     See All
                   </Link>
                 </div>
