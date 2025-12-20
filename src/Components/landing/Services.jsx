@@ -17,13 +17,13 @@ const data = [
     link: "/services/uiux-design",
   },
   {
-    title: "3. Web Developments",
+    title: "3. Web Development",
     img: "/assets/imgs/serv-icons/4.png",
     desc: "At Sham Marianas, we build cutting-edge web development solutions that blend innovation, performance, and seamless user experiences to help businesses thrive online.",
     link: "/services/web-development",
   },
   {
-    title: "4. E-Commerce Solutions",
+    title: "4. E-Commerce Solution",
     img: "/assets/imgs/serv-icons/5.png",
     desc: "We build e-commerce solutions that make online selling seamless and profitable. Our expert services enhance customer reach, conversions, and sales growth",
     link: "/services/ecommerce-solutions",
