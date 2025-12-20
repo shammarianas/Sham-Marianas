@@ -650,14 +650,19 @@ const Login = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Login | Shammarianas</title>
-        <meta name="description" content="Login with Google or Apple" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Login | Shammarianas" />
-        <meta property="og:description" content="Login with Google or Apple" />
-        <meta property="og:url" content={window.location.href} />
-      </Helmet>
+   <Helmet>
+  <title>Login | Sham Marianas - Digital Marketing Agency</title>
+  <meta 
+    name="description" 
+    content="Log in to Sham Marianas dashboard. Continue with Apple, email, or work mail SSO login. Access digital marketing services, analytics, and client portal. Don't have an account? Sign up for our advertising services." 
+  />
+  <meta property="og:title" content="Login | Sham Marianas Advertising Agency" />
+  <meta 
+    property="og:description" 
+    content="Client login portal for Sham Marianas - Top advertising agency in Pakistan offering digital marketing and brand building services." 
+  />
+  <meta property="og:url" content={window.location.href} />
+</Helmet>
 
       <div className="login">
         {/* =================== LOGIN PAGE =================== */}
