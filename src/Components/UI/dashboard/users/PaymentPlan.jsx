@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   FiDollarSign,
   FiCreditCard,
@@ -26,21 +26,23 @@ import {
   FiAlertCircle,
   FiPieChart,
 } from "react-icons/fi";
+import { collection, getDocs, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
-import { exportPaymentsData } from "../../../../utils/exportUtils"; // Import the function
+import { exportPaymentsData } from "../../../../utils/exportUtils";
 
 const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const [subscriptionData, setSubscriptionData] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [planFilter, setPlanFilter] = useState("all");
-  const [billingCycle, setBillingCycle] = useState("monthly");
-  const [expandedSubscription, setExpandedSubscription] = useState(null);
+  const [billingCycle, setBillingCycle] = useState("all");
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Default format functions agar props mein nahi aaye
+  // Default format functions
   const defaultFormatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -58,99 +60,67 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
     });
   };
 
-  // Use provided functions or defaults
   const currencyFormatter = formatCurrency || defaultFormatCurrency;
   const dateFormatter = formatDate || defaultFormatDate;
 
-  // Mock subscription data - in real app, ye Firebase se aayega
-  const mockSubscriptions = [
-    {
-      id: "sub_001",
-      userId: "user1",
-      userName: "John Doe",
-      userEmail: "john@example.com",
-      plan: "Professional",
-      status: "active",
-      billingCycle: "Monthly",
-      price: 29.99,
-      nextBillingDate: "2024-01-15",
-      startDate: "2023-06-15",
-      paymentMethod: "Visa ending in 4242",
-      features: ["100 GB Storage", "Unlimited Projects", "Priority Support"],
-      joinDate: "2023-05-10",
-      lastLogin: "2024-01-10",
-      downloads: 45,
-      totalSpent: 179.94,
-      location: "New York, USA",
-    },
-    {
-      id: "sub_002",
-      userId: "user2",
-      userName: "Jane Smith",
-      userEmail: "jane@example.com",
-      plan: "Enterprise",
-      status: "active",
-      billingCycle: "Yearly",
-      price: 299.99,
-      nextBillingDate: "2024-06-15",
-      startDate: "2023-12-15",
-      paymentMethod: "Mastercard ending in 8888",
-      features: ["1 TB Storage", "Unlimited Projects", "24/7 Support"],
-      joinDate: "2023-11-20",
-      lastLogin: "2024-01-12",
-      downloads: 128,
-      totalSpent: 299.99,
-      location: "London, UK",
-    },
-    {
-      id: "sub_003",
-      userId: "user3",
-      userName: "Mike Johnson",
-      userEmail: "mike@example.com",
-      plan: "Starter",
-      status: "expired",
-      billingCycle: "Monthly",
-      price: 9.99,
-      nextBillingDate: "2023-11-15",
-      startDate: "2023-05-15",
-      paymentMethod: "PayPal",
-      features: ["10 GB Storage", "5 Projects", "Basic Support"],
-      joinDate: "2023-04-05",
-      lastLogin: "2023-11-10",
-      downloads: 8,
-      totalSpent: 59.94,
-      location: "Toronto, Canada",
-    },
-    {
-      id: "sub_004",
-      userId: "user4",
-      userName: "Sarah Wilson",
-      userEmail: "sarah@example.com",
-      plan: "Professional",
-      status: "pending",
-      billingCycle: "Monthly",
-      price: 29.99,
-      nextBillingDate: "2024-02-01",
-      startDate: "2024-01-01",
-      paymentMethod: "Amex ending in 1001",
-      features: ["100 GB Storage", "Unlimited Projects", "Priority Support"],
-      joinDate: "2023-12-28",
-      lastLogin: "2024-01-15",
-      downloads: 12,
-      totalSpent: 29.99,
-      location: "Sydney, Australia",
-    },
-  ];
-
-  // Initialize data
+  // 🔥 Firebase Data Fetching
   useEffect(() => {
-    setSubscriptionData(mockSubscriptions);
-    setFilteredUsers(users || []);
-  }, [users]);
+    const fetchSubscriptions = async () => {
+      setLoading(true);
+      try {
+        const subscriptionsRef = collection(db, "subscriptions");
+        const q = query(subscriptionsRef, orderBy("createdAt", "desc"));
 
-  // Filter subscriptions
-  useEffect(() => {
-    let filtered = mockSubscriptions;
+        // Real-time listener
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const subscriptions = [];
+          querySnapshot.forEach((doc) => {
+            subscriptions.push({ id: doc.id, ...doc.data() });
+          });
+          setSubscriptionData(subscriptions);
+          setLoading(false);
+          setError(null);
+        }, (error) => {
+          console.error("Firebase error:", error);
+          setError("Failed to load subscription data");
+          setLoading(false);
+        });
+
+        return () => unsubscribe();
+      } catch (err) {
+        console.error("Error fetching subscriptions:", err);
+        setError("Failed to load subscription data");
+        setLoading(false);
+      }
+    };
+
+    fetchSubscriptions();
+  }, []);
+
+  // Dynamic Stats Calculation
+  const stats = useMemo(() => {
+    const totalSubscriptions = subscriptionData.length;
+    const activeSubscriptions = subscriptionData.filter(
+      (sub) => sub.status === "active"
+    ).length;
+    const totalRevenue = subscriptionData
+      .filter((sub) => sub.status === "active")
+      .reduce((sum, sub) => sum + (sub.price || 0), 0);
+    const pendingSubscriptions = subscriptionData.filter(
+      (sub) => sub.status === "pending"
+    ).length;
+
+    return {
+      totalSubscriptions,
+      activeSubscriptions,
+      totalRevenue,
+      pendingSubscriptions,
+    };
+  }, [subscriptionData]);
+
+  // Dynamic Filtering
+  const filteredSubscriptions = useMemo(() => {
+    let filtered = subscriptionData;
 
     if (statusFilter !== "all") {
       filtered = filtered.filter((sub) => sub.status === statusFilter);
@@ -160,30 +130,40 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       filtered = filtered.filter((sub) => sub.plan === planFilter);
     }
 
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (sub) =>
-          sub.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          sub.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          sub.plan.toLowerCase().includes(searchTerm.toLowerCase())
+    if (billingCycle !== "all") {
+      filtered = filtered.filter((sub) =>
+        sub.billingCycle?.toLowerCase() === billingCycle.toLowerCase()
       );
     }
 
-    setSubscriptionData(filtered);
-  }, [searchTerm, statusFilter, planFilter]);
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (sub) =>
+          sub.userName?.toLowerCase().includes(term) ||
+          sub.userEmail?.toLowerCase().includes(term) ||
+          sub.plan?.toLowerCase().includes(term) ||
+          sub.location?.toLowerCase().includes(term)
+      );
+    }
 
-  // Stats calculation
-  const stats = {
-    totalSubscriptions: subscriptionData.length,
-    activeSubscriptions: subscriptionData.filter(
-      (sub) => sub.status === "active"
-    ).length,
-    totalRevenue: subscriptionData
-      .filter((sub) => sub.status === "active")
-      .reduce((sum, sub) => sum + sub.price, 0),
-    pendingSubscriptions: subscriptionData.filter(
-      (sub) => sub.status === "pending"
-    ).length,
+    return filtered;
+  }, [subscriptionData, statusFilter, planFilter, billingCycle, searchTerm]);
+
+  // ✅ FIXED: Prepare data for export function (was missing)
+  const prepareExportData = (subscriptions) => {
+    return subscriptions.map(sub => ({
+      userName: sub.userName || "Unknown User",
+      userEmail: sub.userEmail || "No email",
+      amount: sub.price || 0,
+      plan: sub.plan || "No Plan",
+      status: sub.status || "unknown",
+      paymentDate: sub.startDate || "N/A",
+      billingCycle: sub.billingCycle || "N/A",
+      nextBillingDate: sub.nextBillingDate || "N/A",
+      totalSpent: sub.totalSpent || 0,
+      location: sub.location || "N/A"
+    }));
   };
 
   // Get status icon
@@ -235,9 +215,40 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   };
 
   // Handle subscription actions
-  const handleSubscriptionAction = (action, subscriptionId) => {
-    console.log(`${action} subscription: ${subscriptionId}`);
-    alert(`${action} action triggered for subscription ${subscriptionId}`);
+  const handleSubscriptionAction = async (action, subscriptionId, subscription) => {
+    try {
+      console.log(`${action} subscription: ${subscriptionId}`);
+      
+      // Here you would add Firebase update logic
+      // Example:
+      // import { doc, updateDoc } from "firebase/firestore";
+      // const subscriptionRef = doc(db, "subscriptions", subscriptionId);
+      // await updateDoc(subscriptionRef, { status: "canceled" });
+      
+      alert(`${action} action triggered for subscription ${subscriptionId}`);
+      
+      // Update local state for immediate feedback
+      if (action === "cancel" || action === "expire") {
+        setSubscriptionData(prev => 
+          prev.map(sub => 
+            sub.id === subscriptionId 
+              ? { ...sub, status: action === "cancel" ? "canceled" : "expired" }
+              : sub
+          )
+        );
+      } else if (action === "activate") {
+        setSubscriptionData(prev => 
+          prev.map(sub => 
+            sub.id === subscriptionId 
+              ? { ...sub, status: "active" }
+              : sub
+          )
+        );
+      }
+    } catch (error) {
+      console.error(`Error performing ${action} action:`, error);
+      alert(`Error: ${error.message}`);
+    }
   };
 
   // Handle payment download
@@ -258,7 +269,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
     setSelectedSubscription(null);
   };
 
-  // Export handler with callbacks
+  // Export handlers
   const handleExportStart = () => {
     console.log("Export started...");
   };
@@ -275,33 +286,68 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
     console.error("Export error:", error);
   };
 
-  // Prepare data for export - WITHOUT ANY CHANGES to the export function
-  const prepareExportData = (subscriptions) => {
-    // Convert subscription data to payment data format that exportPaymentsData expects
-    return subscriptions.map(sub => ({
-      userName: sub.userName,
-      userEmail: sub.userEmail,
-      amount: sub.price,
-      plan: sub.plan,
-      status: sub.status,
-      paymentDate: sub.startDate
-    }));
+  // Refresh data
+  const handleRefreshData = async () => {
+    setLoading(true);
+    try {
+      const subscriptionsRef = collection(db, "subscriptions");
+      const q = query(subscriptionsRef, orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      const subscriptions = querySnapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      }));
+      setSubscriptionData(subscriptions);
+      setError(null);
+    } catch (err) {
+      console.error("Error refreshing data:", err);
+      setError("Failed to refresh data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset filters
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setPlanFilter("all");
+    setBillingCycle("all");
   };
 
   return (
     <div className="user-reports-dashboard">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading subscriptions...</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-content">
           <h2 className="header-title">
             <FiCreditCard className="header-icon" />
             Payment & Subscription Management
+            {loading && <span className="loading-badge">Loading...</span>}
           </h2>
           <p className="header-subtitle">
             Manage subscriptions, billing, and payment methods for all users
+            {error && <span className="error-text"> • {error}</span>}
           </p>
         </div>
         <div className="header-actions">
+          <button 
+            className="action-button secondary"
+            onClick={handleRefreshData}
+            disabled={loading}
+          >
+            
+          </button>
           <span className="user-badge-count">
             {stats.totalSubscriptions} total subscriptions
           </span>
@@ -410,8 +456,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
           </h3>
           <div className="filter-results">
             <span className="filter-text">
-              Showing {subscriptionData.length} of {mockSubscriptions.length}{" "}
-              subscriptions
+              Showing {filteredSubscriptions.length} of {subscriptionData.length} subscriptions
             </span>
           </div>
         </div>
@@ -455,7 +500,11 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
           </select>
 
           {/* Billing Cycle Filter */}
-          <select className="filter-select">
+          <select
+            className="filter-select"
+            value={billingCycle}
+            onChange={(e) => setBillingCycle(e.target.value)}
+          >
             <option value="all">All Cycles</option>
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
@@ -469,11 +518,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             </button>
             <button
               className="filter-button"
-              onClick={() => {
-                setSearchTerm("");
-                setStatusFilter("all");
-                setPlanFilter("all");
-              }}
+              onClick={handleResetFilters}
             >
               <FiRefreshCw />
               Reset
@@ -490,10 +535,10 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             Subscription Management
           </h3>
           <ExportButton
-            data={prepareExportData(subscriptionData.length > 0 ? subscriptionData : mockSubscriptions)}
+            data={prepareExportData(filteredSubscriptions.length > 0 ? filteredSubscriptions : subscriptionData)}
             filename="subscription-reports"
             onExport={(format) => exportPaymentsData(
-              prepareExportData(subscriptionData.length > 0 ? subscriptionData : mockSubscriptions), 
+              prepareExportData(filteredSubscriptions.length > 0 ? filteredSubscriptions : subscriptionData), 
               format
             )}
             variant="secondary"
@@ -516,22 +561,22 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               </tr>
             </thead>
             <tbody>
-              {subscriptionData.map((subscription) => (
+              {filteredSubscriptions.map((subscription) => (
                 <tr key={subscription.id}>
                   <td>
                     <div className="report-user">
                       <div className="report-user-avatar">
                         {subscription.userName
-                          .split(" ")
+                          ?.split(" ")
                           .map((n) => n[0])
-                          .join("")}
+                          .join("") || "U"}
                       </div>
                       <div className="report-user-info">
                         <div className="report-user-name">
-                          {subscription.userName}
+                          {subscription.userName || "Unknown User"}
                         </div>
                         <div className="report-user-email">
-                          {subscription.userEmail}
+                          {subscription.userEmail || "No email"}
                         </div>
                       </div>
                     </div>
@@ -546,13 +591,13 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                           : "spam"
                       }`}
                     >
-                      {subscription.plan}
+                      {subscription.plan || "No Plan"}
                     </span>
                   </td>
                   <td>
                     <div className="comp-dis">
-                      {currencyFormatter(subscription.price)}/
-                      {subscription.billingCycle}
+                      {currencyFormatter(subscription.price || 0)}/
+                      {subscription.billingCycle || "N/A"}
                     </div>
                   </td>
                   <td>
@@ -571,7 +616,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                   <td>{dateFormatter(subscription.nextBillingDate)}</td>
                   <td>
                     <div className="comp-dis">
-                      {currencyFormatter(subscription.totalSpent)}
+                      {currencyFormatter(subscription.totalSpent || 0)}
                     </div>
                   </td>
                   <td>
@@ -587,7 +632,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                         className="action-button small"
                         title="Manage Subscription"
                         onClick={() =>
-                          handleSubscriptionAction("manage", subscription.id)
+                          handleSubscriptionAction("manage", subscription.id, subscription)
                         }
                       >
                         <FiRefreshCw />
@@ -597,7 +642,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                           className="action-button danger small"
                           title="Cancel Subscription"
                           onClick={() =>
-                            handleSubscriptionAction("cancel", subscription.id)
+                            handleSubscriptionAction("cancel", subscription.id, subscription)
                           }
                         >
                           <FiXCircle />
@@ -610,21 +655,20 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             </tbody>
           </table>
 
-          {subscriptionData.length === 0 && (
+          {filteredSubscriptions.length === 0 && !loading && (
             <div className="empty-state">
               <FiUsers className="empty-icon" />
               <h3 className="empty-title">No subscriptions found</h3>
               <p className="empty-text">
-                {searchTerm || statusFilter !== "all" || planFilter !== "all"
+                {searchTerm || statusFilter !== "all" || planFilter !== "all" || billingCycle !== "all"
                   ? "Try adjusting your search filters"
-                  : "No subscriptions available"}
+                  : "No subscriptions available in the system"}
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Rest of your component remains exactly the same */}
       {/* Subscription Details Modal */}
       {showSubscriptionModal && selectedSubscription && (
         <div className="modal-overlay">
@@ -645,17 +689,17 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                 <div className="profile-avatar">
                   <div className="avatar-initials large">
                     {selectedSubscription.userName
-                      .split(" ")
+                      ?.split(" ")
                       .map((n) => n[0])
-                      .join("")}
+                      .join("") || "U"}
                   </div>
                 </div>
                 <div className="profile-info">
                   <h2 className="profile-name">
-                    {selectedSubscription.userName}
+                    {selectedSubscription.userName || "Unknown User"}
                   </h2>
                   <p className="profile-email">
-                    {selectedSubscription.userEmail}
+                    {selectedSubscription.userEmail || "No email"}
                   </p>
                   <div className="user-badges">
                     <span
@@ -678,7 +722,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               <div className="stats-grid">
                 <div className="stat-card">
                   <div className="stat-value currency">
-                    {currencyFormatter(selectedSubscription.totalSpent)}
+                    {currencyFormatter(selectedSubscription.totalSpent || 0)}
                   </div>
                   <div className="stat-label">
                     <FiDollarSign className="stat-icon" />
@@ -687,7 +731,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                 </div>
                 <div className="stat-card">
                   <div className="stat-value downloads">
-                    {selectedSubscription.downloads}
+                    {selectedSubscription.downloads || 0}
                   </div>
                   <div className="stat-label">
                     <FiDownload className="stat-icon" />
@@ -703,15 +747,15 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                     <span className="detail-label">Subscription Plan</span>
                     <span className="detail-value">
                       <FiPackage className="detail-icon" />
-                      {selectedSubscription.plan} •{" "}
-                      {selectedSubscription.billingCycle}
+                      {selectedSubscription.plan || "No Plan"} •{" "}
+                      {selectedSubscription.billingCycle || "N/A"}
                     </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Monthly Price</span>
                     <span className="detail-value">
                       <FiDollarSign className="detail-icon" />
-                      {currencyFormatter(selectedSubscription.price)}
+                      {currencyFormatter(selectedSubscription.price || 0)}
                     </span>
                   </div>
                   <div className="detail-item">
@@ -732,14 +776,14 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                     <span className="detail-label">Payment Method</span>
                     <span className="detail-value">
                       <FiCreditCard className="detail-icon" />
-                      {selectedSubscription.paymentMethod}
+                      {selectedSubscription.paymentMethod || "N/A"}
                     </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Location</span>
                     <span className="detail-value">
                       <FiMapPin className="detail-icon" />
-                      {selectedSubscription.location}
+                      {selectedSubscription.location || "N/A"}
                     </span>
                   </div>
                 </div>
@@ -752,7 +796,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                   Plan Features
                 </h4>
                 <div className="features-list-das">
-                  {selectedSubscription.features.map((feature, index) => (
+                  {(selectedSubscription.features || []).map((feature, index) => (
                     <span key={index} className="feature-tag">
                       {feature}
                     </span>
@@ -772,7 +816,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                 <button
                   className="action-button"
                   onClick={() =>
-                    handleSubscriptionAction("manage", selectedSubscription.id)
+                    handleSubscriptionAction("manage", selectedSubscription.id, selectedSubscription)
                   }
                 >
                   <FiRefreshCw className="button-icon" />
@@ -784,7 +828,8 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                     onClick={() => {
                       handleSubscriptionAction(
                         "cancel",
-                        selectedSubscription.id
+                        selectedSubscription.id,
+                        selectedSubscription
                       );
                       handleCloseModal();
                     }}
@@ -798,6 +843,17 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
           </div>
         </div>
       )}
+
+      {/* Add CSS for animations */}
+      <style jsx>{`
+       
+        
+        .error-text {
+          color: #ef4444;
+          margin-left: 1rem;
+          font-size: 0.875rem;
+        }
+      `}</style>
     </div>
   );
 };
