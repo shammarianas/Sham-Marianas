@@ -27,7 +27,7 @@ import { loginWithGoogle } from "./GoogleLogin";
 import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 
-// Country code data
+// Country code data (for phone)
 const countryCodes = [
   { code: "+1", country: "United States" },
   { code: "+44", country: "United Kingdom" },
@@ -72,134 +72,9 @@ const countryCodes = [
   { code: "+43", country: "Austria" },
 ];
 
-// Country list
-const countries = [
-  {
-    name: "United States",
-    code: "US",
-    cities: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"],
-  },
-  {
-    name: "United Kingdom",
-    code: "GB",
-    cities: ["London", "Manchester", "Birmingham", "Liverpool", "Glasgow"],
-  },
-  {
-    name: "India",
-    code: "IN",
-    cities: ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai"],
-  },
-  {
-    name: "Pakistan",
-    code: "PK",
-    cities: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad"],
-  },
-  {
-    name: "Canada",
-    code: "CA",
-    cities: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
-  },
-  {
-    name: "Australia",
-    code: "AU",
-    cities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
-  },
-  {
-    name: "Germany",
-    code: "DE",
-    cities: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"],
-  },
-  {
-    name: "France",
-    code: "FR",
-    cities: ["Paris", "Marseille", "Lyon", "Toulouse", "Nice"],
-  },
-  {
-    name: "Japan",
-    code: "JP",
-    cities: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Nagoya"],
-  },
-  {
-    name: "China",
-    code: "CN",
-    cities: ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu"],
-  },
-  {
-    name: "Brazil",
-    code: "BR",
-    cities: [
-      "São Paulo",
-      "Rio de Janeiro",
-      "Brasília",
-      "Salvador",
-      "Fortaleza",
-    ],
-  },
-  {
-    name: "South Africa",
-    code: "ZA",
-    cities: [
-      "Johannesburg",
-      "Cape Town",
-      "Durban",
-      "Pretoria",
-      "Port Elizabeth",
-    ],
-  },
-  {
-    name: "UAE",
-    code: "AE",
-    cities: ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman"],
-  },
-  {
-    name: "Saudi Arabia",
-    code: "SA",
-    cities: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"],
-  },
-  { name: "Singapore", code: "SG", cities: ["Singapore"] },
-  {
-    name: "Malaysia",
-    code: "MY",
-    cities: ["Kuala Lumpur", "Penang", "Johor Bahru", "Ipoh", "Malacca"],
-  },
-  {
-    name: "Turkey",
-    code: "TR",
-    cities: ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya"],
-  },
-  {
-    name: "Spain",
-    code: "ES",
-    cities: ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza"],
-  },
-  {
-    name: "Italy",
-    code: "IT",
-    cities: ["Rome", "Milan", "Naples", "Turin", "Palermo"],
-  },
-  {
-    name: "Russia",
-    code: "RU",
-    cities: [
-      "Moscow",
-      "Saint Petersburg",
-      "Novosibirsk",
-      "Yekaterinburg",
-      "Kazan",
-    ],
-  },
-  {
-    name: "Other Countries",
-    code: "RU",
-    cities: [
-      "other",
-    ],
-  },
-];
-
 const Login = () => {
   const [page, setPage] = useState("login");
-  const [currentStep, setCurrentStep] = useState(1); // 1: Signup form, 2: Email verification
+  const [currentStep, setCurrentStep] = useState(1);
   const passwordRef = useRef(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
@@ -225,12 +100,59 @@ const Login = () => {
   // ✅ CONTRIBUTOR SPECIFIC FIELDS
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
-  const [availableCities, setAvailableCities] = useState([]);
-  const [usernameStatus, setUsernameStatus] = useState(""); // "", "checking", "available", "taken"
+  const [allCountries, setAllCountries] = useState([]); // Changed from countries to allCountries
+  const [usernameStatus, setUsernameStatus] = useState("");
+  const [loadingCountries, setLoadingCountries] = useState(true); // Add loading state
 
   const location = useLocation();
   const navigate = useNavigate();
   const usernameTimeoutRef = useRef(null);
+
+  // ✅ FETCH COUNTRIES FROM API
+  useEffect(() => {
+    const fetchCountries = async () => {
+      setLoadingCountries(true);
+      try {
+        // Using the exact API URL you asked about
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Format countries data correctly
+        const formattedCountries = data.map(country => ({
+          name: country.name.common,
+          code: country.cca2
+        })).sort((a, b) => a.name.localeCompare(b.name));
+        
+        setAllCountries(formattedCountries); // Store in allCountries state
+        console.log(`Fetched ${formattedCountries.length} countries`);
+      } catch (error) {
+        console.error("Failed to fetch countries:", error);
+        // Fallback to basic countries if API fails
+        const fallbackCountries = [
+          { name: "United States", code: "US" },
+          { name: "United Kingdom", code: "GB" },
+          { name: "India", code: "IN" },
+          { name: "Pakistan", code: "PK" },
+          { name: "Canada", code: "CA" },
+          { name: "Australia", code: "AU" },
+          { name: "Germany", code: "DE" },
+          { name: "France", code: "FR" },
+          { name: "Japan", code: "JP" },
+          { name: "China", code: "CN" },
+        ];
+        setAllCountries(fallbackCountries);
+      } finally {
+        setLoadingCountries(false);
+      }
+    };
+
+    fetchCountries();
+  }, []);
 
   // Cleanup timeout on component unmount
   useEffect(() => {
@@ -245,12 +167,10 @@ const Login = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user && currentStep === 2) {
-        // Reload user to get updated email verification status
         await user.reload();
         if (user.emailVerified) {
           setIsEmailVerified(true);
           setSuccess("Email verified successfully!");
-          // Store the verified user
           setTempUser(user);
         }
       }
@@ -275,17 +195,14 @@ const Login = () => {
 
   // Username validation function
   const validateUsername = async (username) => {
-    // Rule 1: No spaces allowed
     if (/\s/.test(username)) {
       return "Username cannot contain spaces";
     }
 
-    // Rule 2: Only underscores allowed, no other special characters
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       return "Username can only contain letters, numbers and underscores (_)";
     }
 
-    // Rule 3: Minimum length
     if (username.length < 3) {
       return "Username must be at least 3 characters";
     }
@@ -294,9 +211,7 @@ const Login = () => {
       return "Username must be less than 20 characters";
     }
 
-    // Rule 4: Check if username already exists in Firestore
     try {
-      // Query Firestore to check if username exists in Profiles collection
       const querySnapshot = await getDocs(
         query(collection(db, "Profiles"), where("username", "==", username))
       );
@@ -309,7 +224,7 @@ const Login = () => {
       return "Error checking username availability";
     }
 
-    return null; // No error
+    return null;
   };
 
   const handlePasswordChange = (e) => {
@@ -324,7 +239,6 @@ const Login = () => {
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (value && !emailRegex.test(value)) {
       setError("Please enter a valid email address");
@@ -334,12 +248,9 @@ const Login = () => {
   };
 
   const handleUsernameChange = (e) => {
-    // Koi .toLowerCase() mat lagao yahan!
-    // Bas raw value lo aur state mein save karo
     const value = e.target.value.toLowerCase().replace(/\s/g, "").trim();
     setUsername(value);
 
-    // Baaki sab same rahega...
     if (usernameTimeoutRef.current) {
       clearTimeout(usernameTimeoutRef.current);
     }
@@ -351,14 +262,11 @@ const Login = () => {
       return;
     }
 
-    // ... baaki validation same
-
-    // Check karte waqt hi lowercase karo (sirf query ke liye)
     usernameTimeoutRef.current = setTimeout(async () => {
       try {
         const q = query(
           collection(db, "Profiles"),
-          where("username", "==", value.toLowerCase()) // ← Sirf yahan lowercase!
+          where("username", "==", value.toLowerCase())
         );
         const snapshot = await getDocs(q);
 
@@ -376,14 +284,16 @@ const Login = () => {
       }
     }, 600);
   };
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (usernameTimeoutRef.current) clearTimeout(usernameTimeoutRef.current);
     };
   }, []);
+
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+    const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 10) {
       setPhone(value);
       if (value.length !== 10) {
@@ -400,7 +310,7 @@ const Login = () => {
     const selectedDate = new Date(e.target.value);
     const today = new Date();
     const minAgeDate = new Date();
-    minAgeDate.setFullYear(today.getFullYear() - 13); // Minimum 13 years old
+    minAgeDate.setFullYear(today.getFullYear() - 13);
 
     if (selectedDate > minAgeDate) {
       setError("You must be at least 13 years old");
@@ -414,18 +324,7 @@ const Login = () => {
 
   // ✅ CONTRIBUTOR HANDLERS
   const handleCountryChange = (e) => {
-    const selectedCountry = e.target.value;
-    setCountry(selectedCountry);
-
-    // Country change hone par cities update karein
-    const countryData = countries.find((c) => c.name === selectedCountry);
-    if (countryData) {
-      setAvailableCities(countryData.cities);
-      setCity(countryData.cities[0] || "");
-    } else {
-      setAvailableCities([]);
-      setCity("");
-    }
+    setCountry(e.target.value);
   };
 
   const handleCityChange = (e) => {
@@ -448,25 +347,22 @@ const Login = () => {
     }
   }, [password, confirmPassword, page]);
 
-  // Send email verification (Firebase style - link bhejega)
+  // Send email verification
   const sendVerificationEmail = async () => {
     try {
       setError("");
       setSuccess("");
 
-      // Validate email first
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         setError("Please enter a valid email address");
         return;
       }
 
-      // Validate step 1
       if (!validateStep1()) {
         return;
       }
 
-      // Create temporary user
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -474,30 +370,22 @@ const Login = () => {
       );
       const user = userCredential.user;
 
-      // Update profile with name
       await updateProfile(user, {
         displayName: username,
       });
 
-      // Send verification email (Firebase will send a LINK, not code)
       await sendEmailVerification(user, {
-        url: window.location.origin + "/email-verified", // Redirect URL after verification
+        url: window.location.origin + "/email-verified",
         handleCodeInApp: false,
       });
 
-      // Store temp user reference
       setTempUser(user);
-
       setIsVerificationSent(true);
-      setResendTimer(60); // 60 seconds timer
-      setSuccess(
-        "Verification email sent! Check your inbox and click the link to verify."
-      );
+      setResendTimer(60);
+      setSuccess("Verification email sent! Check your inbox and click the link to verify.");
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {
-        setError(
-          "Email already registered. Please login or use a different email."
-        );
+        setError("Email already registered. Please login or use a different email.");
       } else if (err.code === "auth/too-many-requests") {
         setError("Too many attempts. Please try again later.");
       } else {
@@ -526,7 +414,6 @@ const Login = () => {
   const checkEmailVerification = async () => {
     try {
       if (tempUser) {
-        // Reload user to get latest verification status
         await tempUser.reload();
         const updatedUser = auth.currentUser;
 
@@ -534,9 +421,7 @@ const Login = () => {
           setIsEmailVerified(true);
           setSuccess("Email verified successfully!");
         } else {
-          setError(
-            "Email not verified yet. Please check your inbox and click the verification link."
-          );
+          setError("Email not verified yet. Please check your inbox and click the verification link.");
         }
       }
     } catch (err) {
@@ -570,9 +455,7 @@ const Login = () => {
     }
 
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError(
-        "Username can only contain letters, numbers and underscores (_)"
-      );
+      setError("Username can only contain letters, numbers and underscores (_)");
       return false;
     }
 
@@ -603,6 +486,7 @@ const Login = () => {
       setError("Password must be at least 6 characters");
       return false;
     }
+    
     if (
       usernameStatus === "taken" ||
       usernameStatus === "invalid" ||
@@ -631,7 +515,6 @@ const Login = () => {
     const isValid = validateStep1();
     if (!isValid) return;
 
-    // Move to email verification step
     setCurrentStep(2);
     await sendVerificationEmail();
   };
@@ -639,12 +522,10 @@ const Login = () => {
   // Complete signup after email verification
   const completeSignup = async () => {
     try {
-      // Use the already verified temp user or create new
       let user;
       if (tempUser && tempUser.emailVerified) {
         user = tempUser;
       } else {
-        // Create final user account
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           email,
@@ -652,10 +533,8 @@ const Login = () => {
         );
         user = userCredential.user;
 
-        // Update profile
         await updateProfile(user, { displayName: username });
 
-        // Send verification email if not verified
         if (!user.emailVerified) {
           await sendEmailVerification(user, {
             url: window.location.origin + "/email-verified",
@@ -665,7 +544,6 @@ const Login = () => {
         }
       }
 
-      // Create user profile in Firestore
       const userProfileRef = doc(db, "Profiles", user.uid);
       await setDoc(
         userProfileRef,
@@ -675,7 +553,6 @@ const Login = () => {
           profilePic: user.photoURL,
           uid: user.uid,
           role: "user",
-          // ✅ NEW FIELDS ADDED
           name: name,
           phone: `${countryCode} ${phone}`,
           emailVerified: true,
@@ -683,7 +560,6 @@ const Login = () => {
           countryCode: countryCode,
           country: country,
           city: city,
-          // ✅ JOIN DATE FIELDS
           createdAt: serverTimestamp(),
           joinDate: serverTimestamp(),
           lastLogin: serverTimestamp(),
@@ -693,7 +569,6 @@ const Login = () => {
 
       setSuccess("Sign-up successful! Redirecting...");
 
-      // Send welcome email
       await fetch(
         "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
         {
@@ -707,7 +582,7 @@ const Login = () => {
       );
 
       setTimeout(() => {
-        window.location.reload(); // Ya navigate("/", { replace: true })
+        window.location.reload();
       }, 3000);
     } catch (err) {
       setError("Sign-up failed: " + err.message);
@@ -717,7 +592,6 @@ const Login = () => {
   const loginWithEmailPassword = async (e) => {
     e.preventDefault();
     try {
-      // ✅ Step 1: Sign in the user
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
@@ -725,18 +599,14 @@ const Login = () => {
       );
       const user = userCredential.user;
 
-      // Check if email is verified
       if (!user.emailVerified) {
-        setError(
-          "Please verify your email first. Check your inbox for verification link."
-        );
+        setError("Please verify your email first. Check your inbox for verification link.");
         await signOut(auth);
         return;
       }
 
       setSuccess("Login successful!");
 
-      // ✅ Step 2: Call the cloud function to send login email
       await fetch(
         "https://us-central1-sham-marianas.cloudfunctions.net/sendLoginEmail",
         {
@@ -749,9 +619,8 @@ const Login = () => {
         }
       );
 
-      // ✅ Step 3: Redirect after 3 seconds
       setTimeout(() => {
-        window.location.reload(); // Ya navigate("/", { replace: true })
+        window.location.reload();
       }, 3000);
     } catch (err) {
       setError("Login failed: " + err.message);
@@ -939,17 +808,15 @@ const Login = () => {
                         value={username}
                         onChange={handleUsernameChange}
                         autoComplete="username"
-                        autoCapitalize="none" // Keyboard mein capital off
+                        autoCapitalize="none"
                         spellCheck={false}
                         style={{
-                          // Yeh sab hata do → textTransform, border etc
-                          // Sirf default input style rahega (email jaisa)
                           paddingRight:
-                            username && username.length >= 3 ? "90px" : "12px", // Status ke liye jagah
+                            username && username.length >= 3 ? "90px" : "12px",
                         }}
                       />
 
-                      {/* Yeh status indicator abhi bhi dikhega, bilkul email field ki tarah clean */}
+                      {/* Status indicator */}
                       {username && username.length >= 3 && (
                         <div
                           style={{
@@ -977,7 +844,7 @@ const Login = () => {
                       )}
                     </div>
 
-                    {/* Error/Success message same as before */}
+                    {/* Error/Success message */}
                     {username && username.length >= 3 && (
                       <small
                         style={{
@@ -1090,10 +957,16 @@ const Login = () => {
                   </div>
                 </div>
 
+                {/* ✅ COUNTRY & CITY IN ONE ROW - FIXED VERSION */}
                 <div className="form-row-1 mb-0">
                   <div className="width-50">
                     <label htmlFor="country" className="mb-2">
                       Country *
+                      {loadingCountries && (
+                        <small style={{ color: "#888", marginLeft: "8px" }}>
+                          (Loading...)
+                        </small>
+                      )}
                     </label>
                     <div className="input">
                       <select
@@ -1101,6 +974,7 @@ const Login = () => {
                         value={country}
                         onChange={handleCountryChange}
                         required
+                        disabled={loadingCountries}
                         style={{
                           width: "100%",
                           padding: "12px",
@@ -1109,28 +983,38 @@ const Login = () => {
                           backgroundColor: "#181818",
                           color: "#f5f5f5",
                           fontSize: "14px",
+                          opacity: loadingCountries ? 0.6 : 1,
                         }}
                       >
-                        <option value="">Select Country</option>
-                        {countries.map((country) => (
-                          <option key={country.code} value={country.name}>
-                            {country.name}
+                        <option value="">
+                          {loadingCountries ? "Loading countries..." : "Select Country"}
+                        </option>
+                        {allCountries.map((c) => (
+                          <option key={c.code} value={c.name}>
+                            {c.name}
                           </option>
                         ))}
                       </select>
                     </div>
+                    {!loadingCountries && (
+                      <small style={{ color: "#888", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                        {allCountries.length} countries available
+                      </small>
+                    )}
                   </div>
+
                   <div className="width-50">
                     <label htmlFor="city" className="mb-2">
                       City *
                     </label>
                     <div className="input">
-                      <select
+                      <input
+                        type="text"
                         id="city"
+                        placeholder="Enter your city"
                         value={city}
                         onChange={handleCityChange}
                         required
-                        disabled={!country}
                         style={{
                           width: "100%",
                           padding: "12px",
@@ -1139,19 +1023,12 @@ const Login = () => {
                           backgroundColor: "#181818",
                           color: "#f5f5f5",
                           fontSize: "14px",
-                          opacity: country ? 1 : 0.6,
                         }}
-                      >
-                        <option value="">
-                          {country ? "Select City" : "Select country first"}
-                        </option>
-                        {availableCities.map((cityName) => (
-                          <option key={cityName} value={cityName}>
-                            {cityName}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     </div>
+                    <small style={{ color: "#888", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                      Enter your city name
+                    </small>
                   </div>
                 </div>
 

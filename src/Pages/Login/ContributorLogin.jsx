@@ -27,7 +27,7 @@ import { loginWithGoogle } from "./GoogleLogin";
 import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 
-// Country code data-
+// Country code data (for phone)
 const countryCodes = [
   { code: "+1", country: "United States" },
   { code: "+44", country: "United Kingdom" },
@@ -71,134 +71,10 @@ const countryCodes = [
   { code: "+420", country: "Czech Republic" },
   { code: "+43", country: "Austria" },
 ];
-// Country code data (existing) ke neeche country list aur city list add karein
-const countries = [
-  {
-    name: "United States",
-    code: "US",
-    cities: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"],
-  },
-  {
-    name: "United Kingdom",
-    code: "GB",
-    cities: ["London", "Manchester", "Birmingham", "Liverpool", "Glasgow"],
-  },
-  {
-    name: "India",
-    code: "IN",
-    cities: ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai"],
-  },
-  {
-    name: "Pakistan",
-    code: "PK",
-    cities: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad"],
-  },
-  {
-    name: "Canada",
-    code: "CA",
-    cities: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
-  },
-  {
-    name: "Australia",
-    code: "AU",
-    cities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
-  },
-  {
-    name: "Germany",
-    code: "DE",
-    cities: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"],
-  },
-  {
-    name: "France",
-    code: "FR",
-    cities: ["Paris", "Marseille", "Lyon", "Toulouse", "Nice"],
-  },
-  {
-    name: "Japan",
-    code: "JP",
-    cities: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Nagoya"],
-  },
-  {
-    name: "China",
-    code: "CN",
-    cities: ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu"],
-  },
-  {
-    name: "Brazil",
-    code: "BR",
-    cities: [
-      "São Paulo",
-      "Rio de Janeiro",
-      "Brasília",
-      "Salvador",
-      "Fortaleza",
-    ],
-  },
-  {
-    name: "South Africa",
-    code: "ZA",
-    cities: [
-      "Johannesburg",
-      "Cape Town",
-      "Durban",
-      "Pretoria",
-      "Port Elizabeth",
-    ],
-  },
-  {
-    name: "UAE",
-    code: "AE",
-    cities: ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman"],
-  },
-  {
-    name: "Saudi Arabia",
-    code: "SA",
-    cities: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"],
-  },
-  { name: "Singapore", code: "SG", cities: ["Singapore"] },
-  {
-    name: "Malaysia",
-    code: "MY",
-    cities: ["Kuala Lumpur", "Penang", "Johor Bahru", "Ipoh", "Malacca"],
-  },
-  {
-    name: "Turkey",
-    code: "TR",
-    cities: ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya"],
-  },
-  {
-    name: "Spain",
-    code: "ES",
-    cities: ["Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza"],
-  },
-  {
-    name: "Italy",
-    code: "IT",
-    cities: ["Rome", "Milan", "Naples", "Turin", "Palermo"],
-  },
-  {
-    name: "Russia",
-    code: "RU",
-    cities: [
-      "Moscow",
-      "Saint Petersburg",
-      "Novosibirsk",
-      "Yekaterinburg",
-      "Kazan",
-    ],
-  },
-   {
-    name: "Other Countries",
-    code: "RU",
-    cities: [
-      "other",
-    ],
-  },
-];
 
 const ContributorLogin = () => {
   const [page, setPage] = useState("login");
-  const [currentStep, setCurrentStep] = useState(1); // 1: Personal, 2: Verify Email, 3: Portfolio, 4: Agreement, 5: Status
+  const [currentStep, setCurrentStep] = useState(1);
   const passwordRef = useRef(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
@@ -215,7 +91,7 @@ const ContributorLogin = () => {
 
   // ✅ CONTRIBUTOR SPECIFIC FIELDS
   const [fullName, setFullName] = useState("");
-  const [usernameStatus, setUsernameStatus] = useState(""); // "", "checking", "available", "taken"
+  const [usernameStatus, setUsernameStatus] = useState("");
   const [phone, setPhone] = useState("");
   const [birthday, setBirthday] = useState("");
   const [countryCode, setCountryCode] = useState("+1");
@@ -225,23 +101,65 @@ const ContributorLogin = () => {
   const [bio, setBio] = useState("");
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
-  const [availableCities, setAvailableCities] = useState([]);
+  const [allCountries, setAllCountries] = useState([]); // API se countries
+  const [loadingCountries, setLoadingCountries] = useState(true); // Loading state
   const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState("");
 
   const location = useLocation();
   const navigate = useNavigate();
 
+  // ✅ FETCH COUNTRIES FROM API
+  useEffect(() => {
+    const fetchCountries = async () => {
+      setLoadingCountries(true);
+      try {
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        const formattedCountries = data.map(country => ({
+          name: country.name.common,
+          code: country.cca2
+        })).sort((a, b) => a.name.localeCompare(b.name));
+        
+        setAllCountries(formattedCountries);
+        console.log(`Fetched ${formattedCountries.length} countries for Contributor`);
+      } catch (error) {
+        console.error("Failed to fetch countries:", error);
+        const fallbackCountries = [
+          { name: "United States", code: "US" },
+          { name: "United Kingdom", code: "GB" },
+          { name: "India", code: "IN" },
+          { name: "Pakistan", code: "PK" },
+          { name: "Canada", code: "CA" },
+          { name: "Australia", code: "AU" },
+          { name: "Germany", code: "DE" },
+          { name: "France", code: "FR" },
+          { name: "Japan", code: "JP" },
+          { name: "China", code: "CN" },
+        ];
+        setAllCountries(fallbackCountries);
+      } finally {
+        setLoadingCountries(false);
+      }
+    };
+
+    fetchCountries();
+  }, []);
+
   // Auth state listener for email verification
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user && currentStep === 2) {
-        // Reload user to get updated email verification status
         await user.reload();
         if (user.emailVerified) {
           setIsEmailVerified(true);
           setSuccess("Email verified successfully!");
-          // Store the verified user
           setTempUser(user);
         }
       }
@@ -276,7 +194,6 @@ const ContributorLogin = () => {
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (value && !emailRegex.test(value)) {
       setError("Please enter a valid email address");
@@ -291,21 +208,19 @@ const ContributorLogin = () => {
     const value = e.target.value.toLowerCase().replace(/\s/g, "").trim();
     setUsername(value);
 
-    // Clear previous timeout
     if (usernameTimeoutRef.current) {
       clearTimeout(usernameTimeoutRef.current);
     }
 
     if (value.length < 3) {
       setUsernameStatus("");
-      setError(""); // Clear previous error
+      setError("");
       return;
     }
 
     setUsernameStatus("checking");
-    setError(""); // Clear error while checking
+    setError("");
 
-    // 400ms delay — user type karna band kare to check karega
     usernameTimeoutRef.current = setTimeout(async () => {
       try {
         const q = query(
@@ -336,11 +251,12 @@ const ContributorLogin = () => {
       }
     };
   }, []);
+
   // ✅ CONTRIBUTOR HANDLERS
   const handleFullNameChange = (e) => setFullName(e.target.value);
 
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+    const value = e.target.value.replace(/\D/g, "");
     if (value.length <= 10) {
       setPhone(value);
       if (value.length !== 10) {
@@ -355,7 +271,7 @@ const ContributorLogin = () => {
     const selectedDate = new Date(e.target.value);
     const today = new Date();
     const minAgeDate = new Date();
-    minAgeDate.setFullYear(today.getFullYear() - 13); // Minimum 13 years old
+    minAgeDate.setFullYear(today.getFullYear() - 13);
 
     if (selectedDate > minAgeDate) {
       setError("You must be at least 13 years old");
@@ -371,21 +287,12 @@ const ContributorLogin = () => {
   const handleExperienceChange = (e) => setExperience(e.target.value);
   const handleBioChange = (e) => setBio(e.target.value);
 
+  // ✅ UPDATED COUNTRY HANDLER - Simple dropdown from API
   const handleCountryChange = (e) => {
-    const selectedCountry = e.target.value;
-    setCountry(selectedCountry);
-
-    // Country change hone par cities update karein
-    const countryData = countries.find((c) => c.name === selectedCountry);
-    if (countryData) {
-      setAvailableCities(countryData.cities);
-      setCity(countryData.cities[0] || "");
-    } else {
-      setAvailableCities([]);
-      setCity("");
-    }
+    setCountry(e.target.value);
   };
 
+  // ✅ UPDATED CITY HANDLER - Simple text input
   const handleCityChange = (e) => {
     setCity(e.target.value);
   };
@@ -441,7 +348,9 @@ const ContributorLogin = () => {
       !phone ||
       !birthday ||
       !password ||
-      !confirmPassword
+      !confirmPassword ||
+      !country ||
+      !city
     ) {
       setError("Please fill all required fields");
       return false;
@@ -466,6 +375,7 @@ const ContributorLogin = () => {
       setError("Password must be at least 6 characters");
       return false;
     }
+    
     if (usernameStatus === "taken") {
       setError("Please choose a different username");
       return false;
@@ -492,7 +402,6 @@ const ContributorLogin = () => {
     if (currentStep === 3 && !validateStep2()) return;
 
     if (currentStep === 1) {
-      // Step 1 se Step 2 jaane par verification email bhejein
       sendVerificationEmail();
     }
 
@@ -505,7 +414,7 @@ const ContributorLogin = () => {
     setError("");
   };
 
-  // Send email verification (Firebase style - link bhejega)
+  // Send email verification
   const sendVerificationEmail = async () => {
     try {
       setError("");
@@ -513,7 +422,6 @@ const ContributorLogin = () => {
 
       let user;
 
-      // 1️⃣ Pehle login try karo (existing user?)
       try {
         const signInResult = await signInWithEmailAndPassword(
           auth,
@@ -523,7 +431,6 @@ const ContributorLogin = () => {
         user = signInResult.user;
         setSuccess("Welcome back! Using your existing account...");
       } catch (loginError) {
-        // Agar user nahi mila → tab hi naya account banao
         if (loginError.code === "auth/user-not-found") {
           const createResult = await createUserWithEmailAndPassword(
             auth,
@@ -533,25 +440,21 @@ const ContributorLogin = () => {
           user = createResult.user;
           setSuccess("New account created! Sending verification email...");
         }
-        // Agar wrong password → error dikhao
         else if (loginError.code === "auth/wrong-password") {
           setError(
             "Incorrect password for this email. Please enter the correct password."
           );
           return;
         }
-        // Koi aur error → upar throw ho jayega
         else {
           throw loginError;
         }
       }
 
-      // 2️⃣ Display name set karo agar nahi hai
       if (!user.displayName) {
         await updateProfile(user, { displayName: fullName || username });
       }
 
-      // 3️⃣ Sirf naye users ya unverified password users ko verification bhejo
       if (
         !user.emailVerified &&
         user.providerData.some((p) => p.providerId === "password")
@@ -563,7 +466,6 @@ const ContributorLogin = () => {
         setResendTimer(60);
         setSuccess("Verification email sent! Please check your inbox.");
       } else {
-        // Already verified (Google/Apple ya pehle se verified)
         setIsEmailVerified(true);
         setSuccess("Email already verified! You can proceed.");
       }
@@ -571,8 +473,6 @@ const ContributorLogin = () => {
       setTempUser(user);
     } catch (err) {
       console.error("sendVerificationEmail error:", err);
-
-      // Yeh error ab kabhi nahi aayega kyunki hum pehle login try kar rahe hain
       if (err.code === "auth/email-already-in-use") {
         setError("This shouldn't happen. Please refresh and try again.");
       } else {
@@ -601,7 +501,6 @@ const ContributorLogin = () => {
   const checkEmailVerification = async () => {
     try {
       if (tempUser) {
-        // Reload user to get latest verification status
         await tempUser.reload();
         const updatedUser = auth.currentUser;
 
@@ -629,7 +528,6 @@ const ContributorLogin = () => {
       );
       const user = userCredential.user;
 
-      // Check if email is verified
       if (!user.emailVerified) {
         setError(
           "Please verify your email first. Check your inbox for verification link."
@@ -638,7 +536,6 @@ const ContributorLogin = () => {
         return;
       }
 
-      // Check contributor status in Firestore
       const contributorDoc = await getDoc(doc(db, "Contributors", user.uid));
 
       if (contributorDoc.exists()) {
@@ -695,7 +592,6 @@ const ContributorLogin = () => {
         return;
       }
 
-      // Check karo koi aur Contributor same username use to nahi kar raha
       const usernameQuery = query(
         collection(db, "Contributors"),
         where("username", "==", usernameLower)
@@ -707,7 +603,6 @@ const ContributorLogin = () => {
         return;
       }
 
-      // Agar unique hai → save kar do
       await updateProfile(user, { displayName: username });
 
       const contributorRef = doc(db, "Contributors", user.uid);
@@ -715,8 +610,8 @@ const ContributorLogin = () => {
       await setDoc(
         contributorRef,
         {
-          username: usernameLower, // lowercase save karo (search ke liye easy)
-          displayUsername: username, // original case (UI ke liye)
+          username: usernameLower,
+          displayUsername: username,
           fullName,
           email: user.email,
           emailVerified: user.emailVerified,
@@ -729,7 +624,7 @@ const ContributorLogin = () => {
           birthday,
           countryCode,
           country,
-          city,
+          city, // ✅ City as text input
           portfolio,
           skills,
           specialization,
@@ -767,7 +662,6 @@ const ContributorLogin = () => {
     try {
       let user;
 
-      // 1️⃣ Pehle try karo login (agar email already registered hai)
       try {
         const signInResult = await signInWithEmailAndPassword(
           auth,
@@ -777,9 +671,7 @@ const ContributorLogin = () => {
         user = signInResult.user;
         setSuccess("Welcome back! Upgrading you to Contributor role...");
       } catch (loginError) {
-        // Agar login fail hua (wrong password ya user not found)
         if (loginError.code === "auth/user-not-found") {
-          // Bilkul naya user → account create karo
           const createResult = await createUserWithEmailAndPassword(
             auth,
             email,
@@ -787,7 +679,6 @@ const ContributorLogin = () => {
           );
           user = createResult.user;
 
-          // Naye user ko verification email bhejo
           await sendEmailVerification(user, {
             url: window.location.origin + "/contributor/email-verified",
           });
@@ -804,7 +695,6 @@ const ContributorLogin = () => {
         }
       }
 
-      // 2️⃣ Agar user already logged in hai aur email verified nahi → verify karwao
       if (
         !user.emailVerified &&
         user.providerData[0]?.providerId === "password"
@@ -820,12 +710,10 @@ const ContributorLogin = () => {
         return;
       }
 
-      // 3️⃣ Display name update (agar nahi hai)
       if (!user.displayName || user.displayName !== (fullName || username)) {
         await updateProfile(user, { displayName: fullName || username });
       }
 
-      // 4️⃣ Final: Contributor profile bana do (same user ka)
       await handleContributorProfile(user);
     } catch (err) {
       console.error("Contributor signup error:", err);
@@ -1080,7 +968,7 @@ const ContributorLogin = () => {
                           id="username"
                           required
                           placeholder="johndoe"
-                          autoCapitalize="none" // Keyboard mein capital off
+                          autoCapitalize="none"
                           value={username}
                           onChange={handleUsernameChange}
                         />
@@ -1186,10 +1074,16 @@ const ContributorLogin = () => {
                     </div>
                   </div>
 
+                  {/* ✅ UPDATED COUNTRY & CITY FIELDS */}
                   <div className="form-row-1 mb-0">
                     <div className="width-50">
                       <label htmlFor="country" className="mb-2">
                         Country *
+                        {loadingCountries && (
+                          <small style={{ color: "#888", marginLeft: "8px" }}>
+                            (Loading...)
+                          </small>
+                        )}
                       </label>
                       <div className="input">
                         <select
@@ -1197,6 +1091,7 @@ const ContributorLogin = () => {
                           value={country}
                           onChange={handleCountryChange}
                           required
+                          disabled={loadingCountries}
                           style={{
                             width: "100%",
                             padding: "12px",
@@ -1205,28 +1100,37 @@ const ContributorLogin = () => {
                             backgroundColor: "#181818",
                             color: "#f5f5f5",
                             fontSize: "14px",
+                            opacity: loadingCountries ? 0.6 : 1,
                           }}
                         >
-                          <option value="">Select Country</option>
-                          {countries.map((country) => (
-                            <option key={country.code} value={country.name}>
-                              {country.name}
+                          <option value="">
+                            {loadingCountries ? "Loading countries..." : "Select Country"}
+                          </option>
+                          {allCountries.map((c) => (
+                            <option key={c.code} value={c.name}>
+                              {c.name}
                             </option>
                           ))}
                         </select>
                       </div>
+                      {!loadingCountries && (
+                        <small style={{ color: "#888", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                          {allCountries.length} countries available
+                        </small>
+                      )}
                     </div>
                     <div className="width-50">
                       <label htmlFor="city" className="mb-2">
                         City *
                       </label>
                       <div className="input">
-                        <select
+                        <input
+                          type="text"
                           id="city"
+                          placeholder="Enter your city"
                           value={city}
                           onChange={handleCityChange}
                           required
-                          disabled={!country}
                           style={{
                             width: "100%",
                             padding: "12px",
@@ -1235,19 +1139,12 @@ const ContributorLogin = () => {
                             backgroundColor: "#181818",
                             color: "#f5f5f5",
                             fontSize: "14px",
-                            opacity: country ? 1 : 0.6,
                           }}
-                        >
-                          <option value="">
-                            {country ? "Select City" : "Select country first"}
-                          </option>
-                          {availableCities.map((cityName) => (
-                            <option key={cityName} value={cityName}>
-                              {cityName}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </div>
+                      <small style={{ color: "#888", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                        Enter your city name
+                      </small>
                     </div>
                   </div>
 
@@ -1529,7 +1426,6 @@ const ContributorLogin = () => {
                         width: "100%",
                       }}
                     >
-                      {/* Skills tags inside input */}
                       {skills.map((skill, index) => (
                         <div
                           key={index}
@@ -1565,7 +1461,6 @@ const ContributorLogin = () => {
                         </div>
                       ))}
 
-                      {/* Input field */}
                       <input
                         type="text"
                         id="skills"
