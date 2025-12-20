@@ -22,6 +22,7 @@ import {
 import { collection, getDocs, query, where, orderBy, Timestamp } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import * as XLSX from 'xlsx';
+import ExportButton from "../../../ExportButton";
 
 const SellerReports = () => {
   const [reports, setReports] = useState([]);
@@ -32,6 +33,46 @@ const SellerReports = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(null);
+
+  // ✅ Export handler with callbacks
+  const handleExportStart = () => {
+    console.log("Export started...");
+  };
+
+  const handleExportComplete = (success) => {
+    if (success) {
+      console.log("Export completed successfully");
+    } else {
+      console.log("Export failed");
+    }
+  };
+
+  const handleExportError = (error) => {
+    console.error("Export error:", error);
+  };
+
+  // ✅ Prepare data for export
+  const prepareExportData = (reportsData) => {
+    return reportsData.map(report => ({
+      sellerName: report.sellerName || "Unknown Seller",
+      sellerEmail: report.sellerEmail || "No email",
+      reportType: report.reportType || "Unknown Type",
+      period: report.period || "N/A",
+      generatedDate: report.generatedDate || "N/A",
+      status: report.status || "unknown",
+      revenue: report.revenue || 0,
+      growth: report.growth || 0,
+      weeklyGrowth: report.weeklyGrowth || 0,
+      monthlyGrowth: report.monthlyGrowth || 0,
+      totalAssets: report.totalAssets || 0,
+      approvedAssets: report.approvedAssets || 0,
+      pendingAssets: report.pendingAssets || 0,
+      totalDownloads: report.totalDownloads || 0,
+      downloads: report.downloads || 0,
+      size: report.size || "0 MB",
+      format: report.format || "N/A"
+    }));
+  };
 
   // ✅ DYNAMIC DATA FETCHING - ENHANCED
   useEffect(() => {
@@ -590,19 +631,6 @@ const SellerReports = () => {
     console.log(`✅ All reports exported: ${fileName}`);
   };
 
-  // if (loading) {
-  //   return (
-  //     <div className="user-reports-dashboard">
-  //       <div className="loading-overlay">
-  //         <div className="loading-content">
-  //           <div className="loading-spinner"></div>
-  //           <p>Loading seller reports...</p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="user-reports-dashboard">
       {/* Loading Overlay */}
@@ -841,9 +869,14 @@ const SellerReports = () => {
           <h3 className="panel-title">
             <FiList className="panel-icon" /> Generated Reports
           </h3>
-          <button className="action-button secondary" onClick={exportAllReports}>
-            <FiDownload className="button-icon" /> Export All (Excel)
-          </button>
+          <ExportButton
+            data={prepareExportData(filteredReports.length > 0 ? filteredReports : reports)}
+            filename="seller-reports"
+            variant="secondary"
+            onExportStart={handleExportStart}
+            onExportComplete={handleExportComplete}
+            onExportError={handleExportError}
+          />
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
@@ -896,14 +929,6 @@ const SellerReports = () => {
                       </div>
                     </div>
                   </td>
-                  {/* <td>
-                    <div className="comp-dis">
-                      {report.downloads}
-                      <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                        {report.size} • {report.format}
-                      </div>
-                    </div>
-                  </td> */}
                   <td>
                     {getStatusBadge(report.status)}
                   </td>

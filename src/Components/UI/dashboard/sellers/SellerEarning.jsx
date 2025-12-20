@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   FiDollarSign, 
   FiTrendingUp, 
@@ -20,9 +20,9 @@ import {
   FiUser,
   FiFileText
 } from "react-icons/fi";
+import { collection, getDocs, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
-// import { reportsExportConfig } from "../../../../utils/exportUtils";
-
 
 const SellerEarning = () => {
   const [timeRange, setTimeRange] = useState("monthly");
@@ -31,74 +31,86 @@ const SellerEarning = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedSeller, setSelectedSeller] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-
-  const [sellersEarnings, setSellersEarnings] = useState([
-    {
-      id: 1,
-      name: "Ali Designs",
-      email: "ali.ahmed@example.com",
-      totalEarnings: 12500,
-      pendingPayout: 2500,
-      completedPayouts: 10000,
-      totalSales: 45,
-      avgOrderValue: 278,
-      growth: 15.2,
-      joinDate: "2023-05-15",
-      lastPayout: "2024-01-10",
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "Sara Creations",
-      email: "sara.khan@example.com",
-      totalEarnings: 8900,
-      pendingPayout: 1200,
-      completedPayouts: 7700,
-      totalSales: 32,
-      avgOrderValue: 278,
-      growth: 8.7,
-      joinDate: "2023-08-22",
-      lastPayout: "2024-01-08",
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "UR Designs",
-      email: "usman.riaz@example.com",
-      totalEarnings: 15600,
-      pendingPayout: 3100,
-      completedPayouts: 12500,
-      totalSales: 58,
-      avgOrderValue: 269,
-      growth: 22.1,
-      joinDate: "2023-03-10",
-      lastPayout: "2024-01-12",
-      status: "active"
-    },
-    {
-      id: 4,
-      name: "Digital Assets Co",
-      email: "fatima.noor@example.com",
-      totalEarnings: 7200,
-      pendingPayout: 800,
-      completedPayouts: 6400,
-      totalSales: 28,
-      avgOrderValue: 257,
-      growth: -5.3,
-      joinDate: "2023-11-05",
-      lastPayout: "2024-01-05",
-      status: "suspended"
-    }
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Dynamic data state
+  const [sellersEarnings, setSellersEarnings] = useState([]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount);
+    }).format(amount || 0);
   };
 
- // Export handler with callbacks
+  // 🔥 Fetch dynamic data from Firebase
+  useEffect(() => {
+    const fetchSellersEarnings = async () => {
+      setLoading(true);
+      try {
+        // Adjust this collection path based on your Firestore structure
+        const sellersRef = collection(db, "sellers");
+        const q = query(sellersRef, orderBy("totalEarnings", "desc"));
+        
+        // Real-time listener
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const sellers = [];
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            sellers.push({
+              id: doc.id,
+              name: data.name || "Unknown Seller",
+              email: data.email || "No email",
+              totalEarnings: data.totalEarnings || 0,
+              pendingPayout: data.pendingPayout || 0,
+              completedPayouts: data.completedPayouts || 0,
+              totalSales: data.totalSales || 0,
+              avgOrderValue: data.avgOrderValue || 0,
+              growth: data.growth || 0,
+              joinDate: data.joinDate || "N/A",
+              lastPayout: data.lastPayout || "N/A",
+              status: data.status || "pending"
+            });
+          });
+          setSellersEarnings(sellers);
+          setLoading(false);
+          setError(null);
+        }, (error) => {
+          console.error("Firebase error:", error);
+          setError("Failed to load sellers data");
+          setLoading(false);
+        });
+
+        return () => unsubscribe();
+      } catch (err) {
+        console.error("Error fetching sellers:", err);
+        setError("Failed to load sellers data");
+        setLoading(false);
+      }
+    };
+
+    fetchSellersEarnings();
+  }, []);
+
+  // Prepare export data function
+  const prepareExportData = (sellers) => {
+    return sellers.map(seller => ({
+      name: seller.name,
+      email: seller.email,
+      totalEarnings: seller.totalEarnings,
+      pendingPayout: seller.pendingPayout,
+      completedPayouts: seller.completedPayouts,
+      totalSales: seller.totalSales,
+      avgOrderValue: seller.avgOrderValue,
+      growth: seller.growth,
+      joinDate: seller.joinDate,
+      lastPayout: seller.lastPayout,
+      status: seller.status
+    }));
+  };
+
+  // Export handler with callbacks
   const handleExportStart = () => {
     console.log("Export started...");
   };
@@ -115,27 +127,38 @@ const SellerEarning = () => {
     console.error("Export error:", error);
   };
 
-  // Filter sellers based on search and filters
-  const filteredSellers = sellersEarnings.filter(seller => {
-    const matchesSearch = 
-      seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      seller.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || seller.status === statusFilter;
-    const matchesType = typeFilter === "all"; // You can add type filters if needed
-    
-    return matchesSearch && matchesStatus && matchesType;
-  });
+  // Dynamic statistics calculation
+  const stats = useMemo(() => {
+    const totalEarnings = sellersEarnings.reduce((sum, seller) => sum + (seller.totalEarnings || 0), 0);
+    const totalPending = sellersEarnings.reduce((sum, seller) => sum + (seller.pendingPayout || 0), 0);
+    const totalCompleted = sellersEarnings.reduce((sum, seller) => sum + (seller.completedPayouts || 0), 0);
+    const totalSales = sellersEarnings.reduce((sum, seller) => sum + (seller.totalSales || 0), 0);
+    const totalSellers = sellersEarnings.length;
+    const activeSellers = sellersEarnings.filter(s => s.status === "active").length;
 
-  // Statistics
-  const stats = {
-    totalEarnings: sellersEarnings.reduce((sum, seller) => sum + seller.totalEarnings, 0),
-    totalPending: sellersEarnings.reduce((sum, seller) => sum + seller.pendingPayout, 0),
-    totalCompleted: sellersEarnings.reduce((sum, seller) => sum + seller.completedPayouts, 0),
-    totalSales: sellersEarnings.reduce((sum, seller) => sum + seller.totalSales, 0),
-    totalSellers: sellersEarnings.length,
-    activeSellers: sellersEarnings.filter(s => s.status === "active").length
-  };
+    return {
+      totalEarnings,
+      totalPending,
+      totalCompleted,
+      totalSales,
+      totalSellers,
+      activeSellers
+    };
+  }, [sellersEarnings]);
+
+  // Filter sellers based on search and filters
+  const filteredSellers = useMemo(() => {
+    return sellersEarnings.filter(seller => {
+      const matchesSearch = 
+        seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        seller.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === "all" || seller.status === statusFilter;
+      const matchesType = typeFilter === "all";
+      
+      return matchesSearch && matchesStatus && matchesType;
+    });
+  }, [sellersEarnings, searchTerm, statusFilter, typeFilter]);
 
   // Status badge component
   const getStatusBadge = (status) => {
@@ -165,20 +188,74 @@ const SellerEarning = () => {
     setTypeFilter("all");
   };
 
+  // Refresh data
+  const handleRefreshData = async () => {
+    setLoading(true);
+    try {
+      const sellersRef = collection(db, "sellers");
+      const q = query(sellersRef, orderBy("totalEarnings", "desc"));
+      const querySnapshot = await getDocs(q);
+      const sellers = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name || "Unknown Seller",
+          email: data.email || "No email",
+          totalEarnings: data.totalEarnings || 0,
+          pendingPayout: data.pendingPayout || 0,
+          completedPayouts: data.completedPayouts || 0,
+          totalSales: data.totalSales || 0,
+          avgOrderValue: data.avgOrderValue || 0,
+          growth: data.growth || 0,
+          joinDate: data.joinDate || "N/A",
+          lastPayout: data.lastPayout || "N/A",
+          status: data.status || "pending"
+        };
+      });
+      setSellersEarnings(sellers);
+      setError(null);
+    } catch (err) {
+      console.error("Error refreshing data:", err);
+      setError("Failed to refresh data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="user-reports-dashboard">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading sellers data...</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-content">
           <h2 className="header-title">
             <FiDollarSign className="header-icon" />
             Seller Earnings Dashboard
+            {loading && <span className="loading-badge">Loading...</span>}
           </h2>
           <p className="header-subtitle">
             Monitor seller earnings, payouts, and revenue performance
+            {error && <span className="error-text"> • {error}</span>}
           </p>
         </div>
         <div className="header-actions">
+          <button 
+            className="action-button secondary"
+            onClick={handleRefreshData}
+            disabled={loading}
+          >
+            <FiRefreshCw className={loading ? "spin-animation" : ""} />
+            {loading ? "Refreshing..." : "Refresh Data"}
+          </button>
           <span className="user-badge-count">
             {stats.totalSellers} total sellers
           </span>
@@ -319,7 +396,6 @@ const SellerEarning = () => {
             <button className="filter-button" onClick={resetFilters}>
               <FiRefreshCw /> Reset
             </button>
-           
           </div>
         </div>
       </div>
@@ -331,9 +407,8 @@ const SellerEarning = () => {
             <FiList className="panel-icon" /> Seller Earnings Breakdown
           </h3>
           <ExportButton
-            data={filteredSellers.length > 0 ? filteredSellers : stats}
+            data={prepareExportData(filteredSellers.length > 0 ? filteredSellers : sellersEarnings)}
             filename="seller-earning-reports"
-            // exportConfig={reportsExportConfig}
             variant="secondary"
             onExportStart={handleExportStart}
             onExportComplete={handleExportComplete}
@@ -436,7 +511,7 @@ const SellerEarning = () => {
                 </tr>
               ))}
               
-              {filteredSellers.length === 0 && (
+              {filteredSellers.length === 0 && !loading && (
                 <tr>
                   <td colSpan="9" className="no-reports">
                     No sellers found matching your filters
