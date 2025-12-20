@@ -2022,7 +2022,7 @@ ul {
   }
 
   .asset-filters-grid {
-    grid-template-columns: 1fr;
+    /* grid-template-columns: 1fr; */
     gap: 0.75rem;
   }
 }
@@ -3114,7 +3114,6 @@ ul {
   justify-content: space-between;
   align-items: center;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
 }
 
@@ -3378,7 +3377,7 @@ ul {
 
 /* Bulk Actions */
 .bulk-actions-card {
-  background: #fef5e7;
+  /* background: #fef5e7; */
   border: 1px solid #52B0B4;
 }
 
