@@ -5937,7 +5937,7 @@ div>button.add_to_wishlist_btn.favorited {
 }
 
 .action-btn {
-  background: transparent;
+  /* background: transparent; */
   border: none;
   color: #888;
   cursor: pointer;

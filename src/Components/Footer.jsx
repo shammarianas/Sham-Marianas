@@ -80,14 +80,14 @@ function Footer() {
               <div className="col-lg-2">
                 <div className="column md-mb50">
                   <h6 className="sub-title mb-30">Contact</h6>
-                  <a href="#0" className="underline mb-1">
+                  <a href="tel:+971528036012" className=" ">
                     <span className="fz-18 main-color p-color fw-400 lh-base">
                       +971 52 803 6012
                     </span>
                   </a>
                   <h6 className="p-color fw-400 mb-15">Dubai, United Arab Emirates</h6>
 
-                   <a href="#0" className="underline mb-1">
+                   <a href="tel:+923116788423" className=" ">
                     <span className="fz-18 main-color p-color fw-400 lh-base">
                       +92 311 678 8423
                     </span>
