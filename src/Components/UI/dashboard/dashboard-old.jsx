@@ -1155,7 +1155,7 @@ const AdminDashboard = () => {
               <FiChevronDown style={{ fontSize: '1rem' }} />
             </button>
             {isDropdownOpen && (
-              <ul className="dropdown-menu">
+              <ul className="dropdown-menu p-3">
                 <li
                   style={{
                     padding: '0.75rem 1rem',
