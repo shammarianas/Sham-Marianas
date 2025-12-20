@@ -184,7 +184,7 @@ const Subscription = () => {
         JSON.stringify(subscriptionItem)
       );
 
-      navigate("/checkout", {
+      navigate("/Profile/:username", {
         state: {
           subscriptionItem: subscriptionItem,
           fromSubscription: true,
@@ -197,7 +197,7 @@ const Subscription = () => {
   };
 
   const handleFreeTrial = () => {
-    navigate("/checkout", {
+    navigate("/Profile/:username", {
       state: {
         freeTrial: true,
         plan: "individual",
