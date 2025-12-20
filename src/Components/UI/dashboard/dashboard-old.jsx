@@ -1575,21 +1575,21 @@ const AdminDashboard = () => {
               marginBottom: '2rem'
             }}>
               <h1 style={{ fontSize: '1.75rem', fontWeight: '600', color: 'white' }}>
-                {activeTab === 1 && selectedDashboard === "admin" && "User Information"}
-                {activeTab === 2 && "User Report"}
-                {activeTab === 3 && "Payment & Plan"}
-                {activeTab === 4 && "Seller Account Verify"}
-                {activeTab === 5 && "Asset Request"}
-                {activeTab === 6 && "Seller Earning"}
-                {activeTab === 7 && "Seller Report"}
-                {activeTab === 8 && "Seller Analytic"}
-                {activeTab === 9 && "Seller Complaints"}
-                {activeTab === 10 && "Downloads"}
-                {activeTab === 11 && "Earnings"}
-                {activeTab === 12 && "Analytics"}
-                {activeTab === 13 && "Asset Management"}
-                {activeTab === 1 && selectedDashboard === "company" && "Blogs"}
-                {activeTab === 2 && selectedDashboard === "company" && "Portfolio"}
+                {activeTab === 1 && selectedDashboard === "admin" && ""}
+                {activeTab === 2 && ""}
+                {activeTab === 3 && ""}
+                {activeTab === 4 && ""}
+                {activeTab === 5 && ""}
+                {activeTab === 6 && ""}
+                {activeTab === 7 && ""}
+                {activeTab === 8 && ""}
+                {activeTab === 9 && ""}
+                {activeTab === 10 && ""}
+                {activeTab === 11 && ""}
+                {activeTab === 12 && ""}
+                {activeTab === 13 && ""}
+                {activeTab === 1 && selectedDashboard === "company" && ""}
+                {activeTab === 2 && selectedDashboard === "company" && ""}
               </h1>
 
               {/* Desktop Notification Button */}
