@@ -850,7 +850,7 @@ const Earnings = () => {
         </div>
       )}
 
-      {/* Analytics Modal */}
+      {/* Analytics Modals */}
       {showAnalyticsModal && selectedAnalytics && (
         <div className="modal-overlay">
           <div className="modal enhanced-modal">
