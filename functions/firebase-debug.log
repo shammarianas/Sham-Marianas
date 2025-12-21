@@ -1,0 +1,130 @@
+[debug] [2025-12-21T18:50:06.719Z] ----------------------------------------------------------------------
+[debug] [2025-12-21T18:50:06.727Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Muhum\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions --force
+[debug] [2025-12-21T18:50:06.727Z] CLI Version:   15.0.0
+[debug] [2025-12-21T18:50:06.727Z] Platform:      win32
+[debug] [2025-12-21T18:50:06.727Z] Node Version:  v24.1.0
+[debug] [2025-12-21T18:50:06.727Z] Time:          Sun Dec 21 2025 23:50:06 GMT+0500 (Pakistan Standard Time)
+[debug] [2025-12-21T18:50:06.727Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-12-21T18:50:06.729Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2025-12-21T18:50:08.970Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-12-21T18:50:08.970Z] > authorizing via signed-in user (mshoaibsaeed09876@gmail.com)
+[debug] [2025-12-21T18:50:08.970Z] [iam] checking project sham-marianas for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2025-12-21T18:50:08.970Z] Checked if tokens are valid: false, expires at: 1766252586359
+[debug] [2025-12-21T18:50:08.970Z] Checked if tokens are valid: false, expires at: 1766252586359
+[debug] [2025-12-21T18:50:08.971Z] > refreshing access token with scopes: []
+[debug] [2025-12-21T18:50:08.972Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-12-21T18:50:08.972Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-21T18:50:09.416Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-12-21T18:50:09.416Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-12-21T18:50:09.422Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/sham-marianas:testIamPermissions [none]
+[debug] [2025-12-21T18:50:09.423Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/sham-marianas:testIamPermissions x-goog-quota-user=projects/sham-marianas
+[debug] [2025-12-21T18:50:09.423Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/sham-marianas:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-12-21T18:50:09.579Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2025-12-21T18:50:09.579Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2025-12-21T18:50:11.070Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/sham-marianas:testIamPermissions 200
+[debug] [2025-12-21T18:50:11.070Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/sham-marianas:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-12-21T18:50:11.071Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:11.071Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:11.071Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/sham-marianas/serviceAccounts/sham-marianas@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2025-12-21T18:50:11.071Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/sham-marianas/serviceAccounts/sham-marianas@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2025-12-21T18:50:12.786Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/sham-marianas/serviceAccounts/sham-marianas@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2025-12-21T18:50:12.786Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/sham-marianas/serviceAccounts/sham-marianas@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'sham-marianas'...
+[info] 
+[info] i  deploying functions 
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint
+[info] +  functions: Finished running predeploy script. 
+[debug] [2025-12-21T18:50:13.330Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:13.330Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:13.330Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/sham-marianas [none]
+[debug] [2025-12-21T18:50:13.659Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/sham-marianas 200
+[debug] [2025-12-21T18:50:13.659Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/sham-marianas {"projectNumber":"607689609153","projectId":"sham-marianas","lifecycleState":"ACTIVE","name":"Sham  Marianas","labels":{"firebase":"enabled","firebase-core":"disabled","generative-language":"enabled"},"createTime":"2025-03-03T16:51:05.538618Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2025-12-21T18:50:13.664Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:13.664Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:13.664Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/sham-marianas/adminSdkConfig [none]
+[debug] [2025-12-21T18:50:14.575Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/sham-marianas/adminSdkConfig 200
+[debug] [2025-12-21T18:50:14.575Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/sham-marianas/adminSdkConfig {"projectId":"sham-marianas","storageBucket":"sham-marianas.firebasestorage.app"}
+[debug] [2025-12-21T18:50:14.576Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:14.576Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:14.576Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs [none]
+[debug] [2025-12-21T18:50:15.329Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs 200
+[debug] [2025-12-21T18:50:15.330Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs {"configs":[{"name":"projects/sham-marianas/configs/gmail"},{"name":"projects/sham-marianas/configs/stripe"}]}
+[debug] [2025-12-21T18:50:15.330Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.330Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.330Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.330Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.330Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables [none]
+[debug] [2025-12-21T18:50:15.331Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables [none]
+[debug] [2025-12-21T18:50:15.682Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables 200
+[debug] [2025-12-21T18:50:15.683Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables {"variables":[{"name":"projects/sham-marianas/configs/gmail/variables/pass","updateTime":"2025-11-29T11:42:44.042065649Z"},{"name":"projects/sham-marianas/configs/gmail/variables/user","updateTime":"2025-11-29T11:42:42.532879080Z"}]}
+[debug] [2025-12-21T18:50:15.683Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.683Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.683Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.683Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.683Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables/pass [none]
+[debug] [2025-12-21T18:50:15.684Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables/user [none]
+[debug] [2025-12-21T18:50:15.873Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables 200
+[debug] [2025-12-21T18:50:15.873Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables {"variables":[{"name":"projects/sham-marianas/configs/stripe/variables/secret_key","updateTime":"2025-11-19T07:25:34.494415509Z"},{"name":"projects/sham-marianas/configs/stripe/variables/webhook_secret","updateTime":"2025-11-19T07:27:06.938166103Z"}]}
+[debug] [2025-12-21T18:50:15.873Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.873Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.873Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.873Z] Checked if tokens are valid: true, expires at: 1766346608416
+[debug] [2025-12-21T18:50:15.873Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables/secret_key [none]
+[debug] [2025-12-21T18:50:15.874Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables/webhook_secret [none]
+[debug] [2025-12-21T18:50:16.006Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables/pass 200
+[debug] [2025-12-21T18:50:16.006Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables/pass {"name":"projects/sham-marianas/configs/gmail/variables/pass","updateTime":"2025-11-29T11:42:44.042065649Z","text":"icaepjufdtnztiwt"}
+[debug] [2025-12-21T18:50:16.189Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables/secret_key 200
+[debug] [2025-12-21T18:50:16.189Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables/secret_key {"name":"projects/sham-marianas/configs/stripe/variables/secret_key","updateTime":"2025-11-19T07:25:34.494415509Z","text":"sk_test_51Qp2sLFRNVbhydxGxr0IaRNS1H47FfqwygpTHtmRtiMk4AnprxN9H3JrcLYZEir0RO7P1QeRc2ZR5PKrJmoP1aNq00cfBmJ9RW"}
+[debug] [2025-12-21T18:50:16.238Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables/user 200
+[debug] [2025-12-21T18:50:16.238Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/gmail/variables/user {"name":"projects/sham-marianas/configs/gmail/variables/user","updateTime":"2025-11-29T11:42:42.532879080Z","text":"shammarianas@gmail.com"}
+[debug] [2025-12-21T18:50:16.389Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables/webhook_secret 200
+[debug] [2025-12-21T18:50:16.389Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sham-marianas/configs/stripe/variables/webhook_secret {"name":"projects/sham-marianas/configs/stripe/variables/webhook_secret","updateTime":"2025-11-19T07:27:06.938166103Z","text":"whsec_UzYiV9t2ehjg2Lq3EqSsXJ16vvBSAFgb"}
+[debug] [2025-12-21T18:50:16.390Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[debug] [2025-12-21T18:50:17.417Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "echo \"Lint disabled on Windows\"",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.0",
+    "stripe": "^19.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-google": "^0.14.0"
+  },
+  "private": true
+}
+[debug] [2025-12-21T18:50:17.417Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2025-12-21T18:50:17.420Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-12-21T18:50:17.434Z] Found firebase-functions binary at 'D:\React\Sham-Marianas\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8476
+
+[info] [dotenv@17.2.3] injecting env (5) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[debug] [2025-12-21T18:50:18.704Z] Got response from /__/functions.yaml {"endpoints":{"createPaymentIntent":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"createPaymentIntent"},"stripeWebhook":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"stripeWebhook"},"sendLoginEmail":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"sendLoginEmail"},"sendContributorStatusEmail":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"sendContributorStatusEmail"},"generateDownloadUrl":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"generateDownloadUrl"},"addTeamMember":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"addTeamMember"},"resetDownloadsMonthly":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"0 0 1 * *","retryConfig":{"retryCount":3},"timeZone":"UTC"},"entryPoint":"resetDownloadsMonthly"},"getUserDashboard":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getUserDashboard"},"processPayout":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"processPayout"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[error] ^C

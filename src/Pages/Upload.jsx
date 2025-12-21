@@ -1431,8 +1431,12 @@ const Upload = ({
             size.blob,
             metadata
           );
+
+          // ✅ Get the download URL
+          const url = await getDownloadURL(uploadSnapshot.ref);
+
           return {
-            url: await getDownloadURL(uploadSnapshot.ref),
+            url: url, // ✅ Make sure this is included
             size: sizeName,
             width: size.width,
             height: size.height,
@@ -1441,10 +1445,21 @@ const Upload = ({
 
         const allSizes = await Promise.all(sizePromises);
 
+        // ✅ Find the primary size (800x800 or first)
+        const primarySize =
+          allSizes.find((s) => s.size === "800x800") || allSizes[0];
+
         return {
           originalName: file.name,
           sizes: allSizes,
-          primary: allSizes.find((s) => s.size === "800x800") || allSizes[0],
+          primary: {
+            url: primarySize.url, // ✅ ADD URL TO PRIMARY OBJECT
+            size: primarySize.size,
+            width: primarySize.width,
+            height: primarySize.height,
+          },
+          // ✅ ALSO ADD DIRECT URL FIELD FOR EASY ACCESS
+          url: primarySize.url,
         };
       });
 
@@ -1455,7 +1470,6 @@ const Upload = ({
       return [];
     }
   };
-
   // Generate multiple image sizes
   const generateImageSizes = async (file) => {
     const sizes = [
@@ -2011,6 +2025,195 @@ const Upload = ({
       } else if (editMode && assetToEdit.other && !formData.other) {
         docData.other = assetToEdit.other;
       }
+      console.log("🔍 Extracting download URL for asset type:", formData.type);
+
+      // Function to extract download URL
+      const extractDownloadInfo = () => {
+        switch (formData.type) {
+          case "images":
+            if (docData.images && docData.images.length > 0) {
+              const firstImage = docData.images[0];
+              console.log("🖼️ First image structure:", firstImage);
+
+              // Check for URL in primary field
+              if (firstImage.primary && firstImage.primary.url) {
+                console.log("✅ Found URL in images[0].primary.url");
+                return {
+                  url: firstImage.primary.url,
+                  fileName: firstImage.originalName || "image.webp",
+                };
+              }
+              // Check for URL in sizes array
+              else if (
+                firstImage.sizes &&
+                firstImage.sizes.length > 0 &&
+                firstImage.sizes[0].url
+              ) {
+                console.log("✅ Found URL in images[0].sizes[0].url");
+                return {
+                  url: firstImage.sizes[0].url,
+                  fileName: firstImage.originalName || "image.webp",
+                };
+              }
+            }
+            break;
+
+          case "videos":
+            if (docData.video && docData.video.url) {
+              console.log("✅ Found URL in video.url");
+              return {
+                url: docData.video.url,
+                fileName: docData.video.fileName || "video.mp4",
+              };
+            }
+            break;
+
+          case "models":
+            if (docData.model && docData.model.url) {
+              console.log("✅ Found URL in model.url");
+              return {
+                url: docData.model.url,
+                fileName: docData.model.fileName || "model.glb",
+              };
+            }
+            break;
+
+          case "scripts":
+            if (docData.script && docData.script.url) {
+              console.log("✅ Found URL in script.url");
+              return {
+                url: docData.script.url,
+                fileName: docData.script.fileName || "script.js",
+              };
+            }
+            break;
+
+          case "hdris":
+            if (docData.hdri && docData.hdri.url) {
+              console.log("✅ Found URL in hdri.url");
+              return {
+                url: docData.hdri.url,
+                fileName: docData.hdri.fileName || "hdri.hdr",
+              };
+            }
+            break;
+
+          case "graphics":
+            if (docData.graphicsTemplate && docData.graphicsTemplate.url) {
+              console.log("✅ Found URL in graphicsTemplate.url");
+              return {
+                url: docData.graphicsTemplate.url,
+                fileName: docData.graphicsTemplate.fileName || "template.psd",
+              };
+            }
+            break;
+
+          case "mockups":
+            if (docData.mockupFile && docData.mockupFile.url) {
+              console.log("✅ Found URL in mockupFile.url");
+              return {
+                url: docData.mockupFile.url,
+                fileName: docData.mockupFile.fileName || "mockup.psd",
+              };
+            }
+            break;
+
+          case "fonts":
+            if (docData.fontFile && docData.fontFile.url) {
+              console.log("✅ Found URL in fontFile.url");
+              return {
+                url: docData.fontFile.url,
+                fileName: docData.fontFile.fileName || "font.ttf",
+              };
+            }
+            break;
+
+          case "video-templates":
+            if (docData.videoTemplateFile && docData.videoTemplateFile.url) {
+              console.log("✅ Found URL in videoTemplateFile.url");
+              return {
+                url: docData.videoTemplateFile.url,
+                fileName: docData.videoTemplateFile.fileName || "template.mp4",
+              };
+            }
+            break;
+
+          case "icons":
+            if (
+              docData.icons &&
+              docData.icons.length > 0 &&
+              docData.icons[0].primary &&
+              docData.icons[0].primary.url
+            ) {
+              console.log("✅ Found URL in icons[0].primary.url");
+              return {
+                url: docData.icons[0].primary.url,
+                fileName: docData.icons[0].originalName || "icon.webp",
+              };
+            }
+            break;
+
+          case "textures":
+            if (
+              docData.textures &&
+              docData.textures.length > 0 &&
+              docData.textures[0].primary &&
+              docData.textures[0].primary.url
+            ) {
+              console.log("✅ Found URL in textures[0].primary.url");
+              return {
+                url: docData.textures[0].primary.url,
+                fileName: docData.textures[0].originalName || "texture.webp",
+              };
+            }
+            break;
+
+          case "other":
+            if (docData.other && docData.other.url) {
+              console.log("✅ Found URL in other.url");
+              return {
+                url: docData.other.url,
+                fileName: docData.other.fileName || "asset.file",
+              };
+            }
+            break;
+        }
+
+        console.log("⚠️ No download URL found for asset type:", formData.type);
+        return null;
+      };
+
+      // Extract and add download URL
+      const downloadInfo = extractDownloadInfo();
+      if (downloadInfo) {
+        // ✅ Add downloadUrl field (REQUIRED by Cloud Function)
+        docData.downloadUrl = downloadInfo.url;
+        docData.fileName = downloadInfo.fileName;
+
+        // ✅ For paid assets, add extra fields
+        if (formData.price === "paid") {
+          docData.paidDownloadUrl = downloadInfo.url;
+          docData.paidFileName = downloadInfo.fileName;
+          docData.isPaidAsset = true;
+          console.log("💰 Added paid asset download fields");
+        }
+
+        console.log("✅ Added downloadUrl to asset:", downloadInfo.url);
+      } else {
+        console.warn(
+          "⚠️ Warning: No download URL could be extracted for asset"
+        );
+      }
+
+      // ✅ Log final data for debugging
+      console.log("📦 Final asset data before saving:", {
+        type: formData.type,
+        price: formData.price,
+        hasDownloadUrl: !!docData.downloadUrl,
+        downloadUrl: docData.downloadUrl,
+        hasImages: !!docData.images,
+        imagesCount: docData.images?.length || 0,
+      });
 
       // ✅ Clean empty fields but preserve existing data in edit mode
       docData = Object.fromEntries(

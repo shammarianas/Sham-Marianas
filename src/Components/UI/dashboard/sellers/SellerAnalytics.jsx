@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { 
-  FiBarChart2, 
-  FiPieChart, 
+import {
+  FiBarChart2,
+  FiPieChart,
   FiTrendingUp,
-  FiTrendingDown, 
-  FiUsers, 
-  FiDollarSign, 
-  FiShoppingCart, 
-  FiEye, 
-  FiCalendar, 
+  FiTrendingDown,
+  FiUsers,
+  FiDollarSign,
+  FiShoppingCart,
+  FiEye,
+  FiCalendar,
   FiFilter,
   FiDownload,
   FiRefreshCw,
@@ -17,7 +17,7 @@ import {
   FiSearch,
   FiCheckCircle,
   FiStar,
-  FiXCircle
+  FiXCircle,
 } from "react-icons/fi";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../../../../firebase";
@@ -36,11 +36,11 @@ const SellerAnalytics = () => {
       activeSellers: 0,
       avgRevenuePerSeller: 0,
       growthRate: 15.2,
-      topCategories: []
+      topCategories: [],
     },
     performance: {
-      topPerformers: []
-    }
+      topPerformers: [],
+    },
   });
 
   // ✅ DYNAMIC DATA FETCHING
@@ -48,9 +48,11 @@ const SellerAnalytics = () => {
     const fetchAnalyticsData = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch all contributors
-        const contributorsSnapshot = await getDocs(collection(db, "Contributors"));
+        const contributorsSnapshot = await getDocs(
+          collection(db, "Contributors")
+        );
         const allContributors = [];
         let totalRevenue = 0;
         let activeSellers = 0;
@@ -59,7 +61,7 @@ const SellerAnalytics = () => {
           const contributorData = doc.data();
           allContributors.push({
             id: doc.id,
-            ...contributorData
+            ...contributorData,
           });
 
           // Count active sellers
@@ -70,7 +72,7 @@ const SellerAnalytics = () => {
 
         // Fetch assets for each contributor to calculate revenue
         const topPerformers = [];
-        
+
         for (const contributor of allContributors) {
           try {
             // Fetch contributor's assets
@@ -79,40 +81,51 @@ const SellerAnalytics = () => {
               where("ownerId", "==", contributor.id)
             );
             const assetsSnapshot = await getDocs(assetsQuery);
-            
+
             let contributorRevenue = 0;
             let contributorProducts = 0;
 
             assetsSnapshot.forEach((assetDoc) => {
               const assetData = assetDoc.data();
               contributorProducts++;
-              
+
               // Calculate revenue from approved/published assets
-              if (assetData.status === "approved" || assetData.status === "published") {
+              if (
+                assetData.status === "approved" ||
+                assetData.status === "published"
+              ) {
                 const price = parseFloat(assetData.price) || 0;
                 const downloads = parseInt(assetData.downloads) || 0;
                 contributorRevenue += price * downloads;
               }
             });
 
-            totalRevenue += contributorRevenue;
-
+            const actualEarnings = contributor.totalEarnings || 0;
+            totalRevenue += actualEarnings;
             // Only include contributors with revenue or products
             if (contributorRevenue > 0 || contributorProducts > 0) {
               topPerformers.push({
                 id: contributor.id,
-                name: contributor.businessName || contributor.username || contributor.displayName || "Unknown Seller",
+                name:
+                  contributor.businessName ||
+                  contributor.username ||
+                  contributor.displayName ||
+                  "Unknown Seller",
                 email: contributor.email || "No email",
-                revenue: contributorRevenue,
+                revenue: contributor.totalEarnings || 0, // ✅ ACTUAL EARNINGS USE KARO
                 growth: calculateRandomGrowth(),
                 products: contributorProducts,
                 rating: calculateRandomRating(),
                 joinDate: formatFirebaseDate(contributor.createdAt),
-                status: contributor.status === "verified" ? "active" : "inactive"
+                status:
+                  contributor.status === "verified" ? "active" : "inactive",
               });
             }
           } catch (error) {
-            console.error(`Error fetching assets for contributor ${contributor.id}:`, error);
+            console.error(
+              `Error fetching assets for contributor ${contributor.id}:`,
+              error
+            );
           }
         }
 
@@ -125,7 +138,7 @@ const SellerAnalytics = () => {
           { name: "Graphics", value: 25, growth: 8.3 },
           { name: "Templates", value: 20, growth: 15.7 },
           { name: "Fonts", value: 12, growth: -2.1 },
-          { name: "Others", value: 8, growth: 5.4 }
+          { name: "Others", value: 8, growth: 5.4 },
         ];
 
         // Update analytics data
@@ -134,15 +147,17 @@ const SellerAnalytics = () => {
             totalRevenue,
             totalSellers: allContributors.length,
             activeSellers,
-            avgRevenuePerSeller: allContributors.length > 0 ? totalRevenue / allContributors.length : 0,
+            avgRevenuePerSeller:
+              allContributors.length > 0
+                ? totalRevenue / allContributors.length
+                : 0,
             growthRate: 15.2,
-            topCategories
+            topCategories,
           },
           performance: {
-            topPerformers: topPerformers.slice(0, 10) // Top 10 performers
-          }
+            topPerformers: topPerformers.slice(0, 10), // Top 10 performers
+          },
         });
-
       } catch (error) {
         console.error("Error fetching analytics data:", error);
       } finally {
@@ -166,17 +181,17 @@ const SellerAnalytics = () => {
     if (!timestamp) return "N/A";
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toISOString().split('T')[0];
+      return date.toISOString().split("T")[0];
     } catch {
       return "N/A";
     }
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -185,21 +200,35 @@ const SellerAnalytics = () => {
     totalRevenue: analyticsData.overview.totalRevenue,
     totalSellers: analyticsData.overview.totalSellers,
     activeSellers: analyticsData.overview.activeSellers,
-    avgRevenuePerSeller: analyticsData.overview.avgRevenuePerSeller
+    avgRevenuePerSeller: analyticsData.overview.avgRevenuePerSeller,
   };
 
   const getGrowthBadge = (growth) => {
-    return growth >= 0 
-      ? <span className="report-stat-trend positive">+{growth}% <FiTrendingUp className="fi-pl" /></span>
-      : <span className="report-stat-trend negative">{growth}% <FiTrendingDown className="fi-pl" /></span>;
+    return growth >= 0 ? (
+      <span className="report-stat-trend positive">
+        +{growth}% <FiTrendingUp className="fi-pl" />
+      </span>
+    ) : (
+      <span className="report-stat-trend negative">
+        {growth}% <FiTrendingDown className="fi-pl" />
+      </span>
+    );
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "active":
-        return <span className="report-status-badge resolved"><FiCheckCircle /> Active</span>;
+        return (
+          <span className="report-status-badge resolved">
+            <FiCheckCircle /> Active
+          </span>
+        );
       case "inactive":
-        return <span className="report-status-badge in-progress"><FiXCircle /> Inactive</span>;
+        return (
+          <span className="report-status-badge in-progress">
+            <FiXCircle /> Inactive
+          </span>
+        );
       default:
         return <span className="report-status-badge pending">Unknown</span>;
     }
@@ -210,9 +239,10 @@ const SellerAnalytics = () => {
   };
 
   // Filter sellers based on search
-  const filteredSellers = analyticsData.performance.topPerformers.filter(seller =>
-    seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    seller.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSellers = analyticsData.performance.topPerformers.filter(
+    (seller) =>
+      seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      seller.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // if (loading) {
@@ -266,19 +296,21 @@ const SellerAnalytics = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Total Revenue</h3>
-              <div className="report-stat-value">{formatCurrency(stats.totalRevenue)}</div>
+              <div className="report-stat-value">
+                {formatCurrency(stats.totalRevenue)}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              All time revenue
+              Actual earnings from all sellers {/* Ye line change ki */}
             </div>
             <div className="report-stat-trend positive">
-              +{analyticsData.overview.growthRate}% <FiTrendingUp className="fi-pl" />
+              +{analyticsData.overview.growthRate}%{" "}
+              <FiTrendingUp className="fi-pl" />
             </div>
           </div>
         </div>
-
         <div className="report-stat-card success">
           <div className="report-stat-header">
             <div className="report-stat-icon">
@@ -290,9 +322,7 @@ const SellerAnalytics = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Registered sellers
-            </div>
+            <div className="report-stat-subtext">Registered sellers</div>
             <div className="report-stat-trend positive">
               +8.3% <FiTrendingUp className="fi-pl" />
             </div>
@@ -310,9 +340,7 @@ const SellerAnalytics = () => {
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Currently active
-            </div>
+            <div className="report-stat-subtext">Currently active</div>
             <div className="report-stat-trend positive">
               +12.1% <FiTrendingUp className="fi-pl" />
             </div>
@@ -326,13 +354,13 @@ const SellerAnalytics = () => {
             </div>
             <div>
               <h3 className="report-stat-title">Avg Revenue/Seller</h3>
-              <div className="report-stat-value">{formatCurrency(stats.avgRevenuePerSeller)}</div>
+              <div className="report-stat-value">
+                {formatCurrency(stats.avgRevenuePerSeller)}
+              </div>
             </div>
           </div>
           <div className="report-stat-content">
-            <div className="report-stat-subtext">
-              Average per seller
-            </div>
+            <div className="report-stat-subtext">Average per seller</div>
             <div className="report-stat-trend positive">
               +5.7% <FiTrendingUp className="fi-pl" />
             </div>
@@ -351,7 +379,7 @@ const SellerAnalytics = () => {
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
               className="filter-select"
-              style={{ width: 'auto' }}
+              style={{ width: "auto" }}
             >
               <option value="7d">Last 7 Days</option>
               <option value="30d">Last 30 Days</option>
@@ -362,30 +390,39 @@ const SellerAnalytics = () => {
         </div>
 
         <div className="filter-controls-grid">
-          <div className="analytics-tabs" style={{ display: 'flex', gap: '0.5rem', gridColumn: '1 / -1' }}>
-            <button 
-              className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
+          <div
+            className="analytics-tabs"
+            style={{ display: "flex", gap: "0.5rem", gridColumn: "1 / -1" }}
+          >
+            <button
+              className={`tab-button ${
+                activeTab === "overview" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("overview")}
             >
               <FiBarChart2 className="tab-icon" />
               Overview
             </button>
-            <button 
-              className={`tab-button ${activeTab === "performance" ? "active" : ""}`}
+            <button
+              className={`tab-button ${
+                activeTab === "performance" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("performance")}
             >
               <FiTrendingUp className="tab-icon" />
               Performance
             </button>
-            <button 
+            <button
               className={`tab-button ${activeTab === "growth" ? "active" : ""}`}
               onClick={() => setActiveTab("growth")}
             >
               <FiUsers className="tab-icon" />
               Growth
             </button>
-            <button 
-              className={`tab-button ${activeTab === "insights" ? "active" : ""}`}
+            <button
+              className={`tab-button ${
+                activeTab === "insights" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("insights")}
             >
               <FiEye className="tab-icon" />
@@ -412,7 +449,17 @@ const SellerAnalytics = () => {
                 </button>
               </div>
               <div className="reports-chart-body">
-                <div className="chart-placeholder" style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                <div
+                  className="chart-placeholder"
+                  style={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--text-secondary)",
+                  }}
+                >
                   <FiBarChart2 className="placeholder-icon large" />
                   <p>Total Revenue: {formatCurrency(stats.totalRevenue)}</p>
                   <p>Active Sellers: {stats.activeSellers}</p>
@@ -430,23 +477,39 @@ const SellerAnalytics = () => {
               </div>
               <div className="reports-categories-body">
                 <div className="category-progress">
-                  {analyticsData.overview.topCategories.map((category, index) => (
-                    <div key={index} className="category-progress" style={{ marginBottom: '1rem' }}>
-                      <div className="category-header">
-                        <div className="category-name">{category.name}</div>
-                        <div className="category-count">{category.value}%</div>
+                  {analyticsData.overview.topCategories.map(
+                    (category, index) => (
+                      <div
+                        key={index}
+                        className="category-progress"
+                        style={{ marginBottom: "1rem" }}
+                      >
+                        <div className="category-header">
+                          <div className="category-name">{category.name}</div>
+                          <div className="category-count">
+                            {category.value}%
+                          </div>
+                        </div>
+                        <div className="category-progress-bar">
+                          <div
+                            className={`category-progress-fill ${
+                              category.growth >= 0 ? "excellent" : "poor"
+                            }`}
+                            style={{ width: `${category.value}%` }}
+                          ></div>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--text-secondary)",
+                            marginTop: "0.25rem",
+                          }}
+                        >
+                          {getGrowthBadge(category.growth)}
+                        </div>
                       </div>
-                      <div className="category-progress-bar">
-                        <div 
-                          className={`category-progress-fill ${category.growth >= 0 ? 'excellent' : 'poor'}`}
-                          style={{ width: `${category.value}%` }}
-                        ></div>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                        {getGrowthBadge(category.growth)}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -458,7 +521,10 @@ const SellerAnalytics = () => {
               <h3 className="panel-title">
                 <FiList className="panel-icon" /> Top Performing Sellers
               </h3>
-              <div className="filter-controls-grid" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <div
+                className="filter-controls-grid"
+                style={{ display: "flex", gap: "1rem", alignItems: "center" }}
+              >
                 <div className="filter-search-wrapper">
                   <FiSearch className="filter-search-icon" />
                   <input
@@ -467,7 +533,7 @@ const SellerAnalytics = () => {
                     placeholder="Search sellers..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{ width: '200px' }}
+                    style={{ width: "200px" }}
                   />
                 </div>
                 <button className="filter-button" onClick={resetFilters}>
@@ -496,29 +562,27 @@ const SellerAnalytics = () => {
                             {seller.name.charAt(0)}
                           </div>
                           <div className="report-user-info">
-                            <div className="report-user-name">{seller.name}</div>
-                            <div className="report-user-email">{seller.email}</div>
+                            <div className="report-user-name">
+                              {seller.name}
+                            </div>
+                            <div className="report-user-email">
+                              {seller.email}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div className="comp-dis">
-                          <FiDollarSign style={{ marginRight: '4px' }} />
+                          <FiDollarSign style={{ marginRight: "4px" }} />
                           {formatCurrency(seller.revenue)}
                         </div>
                       </td>
+                      <td>{getGrowthBadge(seller.growth)}</td>
                       <td>
-                        {getGrowthBadge(seller.growth)}
+                        <div className="comp-dis">{seller.products} Assets</div>
                       </td>
-                      <td>
-                        <div className="comp-dis">
-                          {seller.products} Assets
-                        </div>
-                      </td>
-                      
-                      <td>
-                        {getStatusBadge(seller.status)}
-                      </td>
+
+                      <td>{getStatusBadge(seller.status)}</td>
                       <td>
                         <div className="report-actions">
                           <button
@@ -534,7 +598,9 @@ const SellerAnalytics = () => {
                           <button
                             className="action-button small"
                             title="View Analytics"
-                            onClick={() => alert(`Viewing analytics for ${seller.name}`)}
+                            onClick={() =>
+                              alert(`Viewing analytics for ${seller.name}`)
+                            }
                           >
                             <FiBarChart2 />
                           </button>
@@ -542,7 +608,7 @@ const SellerAnalytics = () => {
                       </td>
                     </tr>
                   ))}
-                  
+
                   {filteredSellers.length === 0 && (
                     <tr>
                       <td colSpan="7" className="no-reports">
@@ -565,7 +631,13 @@ const SellerAnalytics = () => {
               <h3 className="panel-title">Performance Analytics</h3>
             </div>
             <div className="recent-reports-body">
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <div
+                style={{
+                  padding: "2rem",
+                  textAlign: "center",
+                  color: "var(--text-secondary)",
+                }}
+              >
                 <FiTrendingUp className="placeholder-icon large" />
                 <p>Total Sellers: {stats.totalSellers}</p>
                 <p>Active Sellers: {stats.activeSellers}</p>
@@ -584,7 +656,13 @@ const SellerAnalytics = () => {
               <h3 className="panel-title">Growth Analytics</h3>
             </div>
             <div className="recent-reports-body">
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <div
+                style={{
+                  padding: "2rem",
+                  textAlign: "center",
+                  color: "var(--text-secondary)",
+                }}
+              >
                 <FiUsers className="placeholder-icon large" />
                 <p>Seller growth trends and acquisition metrics</p>
                 <p>Active Sellers: {stats.activeSellers}</p>
@@ -603,11 +681,23 @@ const SellerAnalytics = () => {
               <h3 className="panel-title">Business Insights</h3>
             </div>
             <div className="recent-reports-body">
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <div
+                style={{
+                  padding: "2rem",
+                  textAlign: "center",
+                  color: "var(--text-secondary)",
+                }}
+              >
                 <FiEye className="placeholder-icon large" />
                 <p>Total Revenue: {formatCurrency(stats.totalRevenue)}</p>
-                <p>Average per Seller: {formatCurrency(stats.avgRevenuePerSeller)}</p>
-                <p>Active Sellers: {stats.activeSellers} out of {stats.totalSellers}</p>
+                <p>
+                  Average per Seller:{" "}
+                  {formatCurrency(stats.avgRevenuePerSeller)}
+                </p>
+                <p>
+                  Active Sellers: {stats.activeSellers} out of{" "}
+                  {stats.totalSellers}
+                </p>
               </div>
             </div>
           </div>
@@ -616,15 +706,21 @@ const SellerAnalytics = () => {
 
       {/* Seller Details Modal */}
       {showDetailsModal && selectedSeller && (
-        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowDetailsModal(false)}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Seller Performance Details</h3>
-              <button className="modal-close" onClick={() => setShowDetailsModal(false)}>
+              <button
+                className="modal-close"
+                onClick={() => setShowDetailsModal(false)}
+              >
                 <FiX />
               </button>
             </div>
-            
+
             <div className="modal-body">
               <div className="report-detail-grid">
                 <div className="detail-section">
@@ -639,7 +735,9 @@ const SellerAnalytics = () => {
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Join Date:</span>
-                    <span className="detail-value">{selectedSeller.joinDate}</span>
+                    <span className="detail-value">
+                      {selectedSeller.joinDate}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Status:</span>
@@ -653,7 +751,9 @@ const SellerAnalytics = () => {
                   <h4>Performance Metrics</h4>
                   <div className="detail-item">
                     <span className="detail-label">Total Revenue:</span>
-                    <span className="detail-value">{formatCurrency(selectedSeller.revenue)}</span>
+                    <span className="detail-value">
+                      {formatCurrency(selectedSeller.revenue)}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Growth Rate:</span>
@@ -663,12 +763,16 @@ const SellerAnalytics = () => {
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Products:</span>
-                    <span className="detail-value">{selectedSeller.products}</span>
+                    <span className="detail-value">
+                      {selectedSeller.products}
+                    </span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Rating:</span>
                     <span className="detail-value">
-                      <FiStar style={{ color: '#fbbf24', marginRight: '4px' }} />
+                      <FiStar
+                        style={{ color: "#fbbf24", marginRight: "4px" }}
+                      />
                       {selectedSeller.rating}/5.0
                     </span>
                   </div>
@@ -677,28 +781,36 @@ const SellerAnalytics = () => {
                 <div className="detail-section full-width">
                   <h4>Performance Insights</h4>
                   <div className="detail-description">
-                    {selectedSeller.name} is performing {selectedSeller.growth >= 0 ? 'well' : 'below average'} with a {selectedSeller.growth}% growth rate. 
-                    Their product catalog of {selectedSeller.products} items is generating {formatCurrency(selectedSeller.revenue)} in revenue.
+                    {selectedSeller.name} is performing{" "}
+                    {selectedSeller.growth >= 0 ? "well" : "below average"} with
+                    a {selectedSeller.growth}% growth rate. Their product
+                    catalog of {selectedSeller.products} items is generating{" "}
+                    {formatCurrency(selectedSeller.revenue)} in revenue.
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="modal-footer">
-              <button className="action-button secondary" onClick={() => setShowDetailsModal(false)}>
+              <button
+                className="action-button secondary"
+                onClick={() => setShowDetailsModal(false)}
+              >
                 Close
               </button>
-              
+
               <button
                 className="action-button"
                 onClick={() => {
-                  alert(`Viewing detailed analytics for ${selectedSeller.name}`);
+                  alert(
+                    `Viewing detailed analytics for ${selectedSeller.name}`
+                  );
                   setShowDetailsModal(false);
                 }}
               >
                 <FiBarChart2 /> View Analytics
               </button>
-              
+
               <button
                 className="action-button warning"
                 onClick={() => {

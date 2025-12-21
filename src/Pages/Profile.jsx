@@ -191,21 +191,59 @@ const Profile = () => {
     try {
       setLoadingSubscription(true);
 
-      const subscriptionRef = doc(db, "UserSubscriptions", userId);
-      const subscriptionDoc = await getDoc(subscriptionRef);
+      // ✅ PROFILES COLLECTION SE SUBSCRIPTION DATA FETCH KARO
+      if (user?.subscription) {
+        const subscriptionData = user.subscription;
+        setSubscription({
+          ...subscriptionData,
+          // Additional fields for compatibility
+          subscriptionType:
+            subscriptionData.type || subscriptionData.plan || "individual",
+          billingCycle: subscriptionData.billingCycle || "monthly",
+          price: subscriptionData.price || 0,
+          status: subscriptionData.status || "active",
+          expiresAt: subscriptionData.expiresAt,
+          nextBillingDate:
+            subscriptionData.expiresAt || subscriptionData.nextBillingDate,
+          downloadLimit: subscriptionData.downloadLimit || 0,
+          downloadsUsed: subscriptionData.downloadsUsed || 0,
+          startDate: subscriptionData.startDate,
+          createdAt: subscriptionData.startDate,
+        });
 
-      if (subscriptionDoc.exists()) {
-        const subscriptionData = subscriptionDoc.data();
-        setSubscription(subscriptionData);
-
-        if (subscriptionData.subscriptionType === 'team' && subscriptionData.teamMembers > 1) {
+        if (
+          subscriptionData.type === "team" &&
+          subscriptionData.teamMembers > 1
+        ) {
           await fetchTeamMembers(userId);
         }
       } else {
-        setSubscription(null);
+        // Agar Profiles mein subscription nahi hai to UserSubscriptions check karo
+        try {
+          const subscriptionRef = doc(db, "UserSubscriptions", userId);
+          const subscriptionDoc = await getDoc(subscriptionRef);
+
+          if (subscriptionDoc.exists()) {
+            const subscriptionData = subscriptionDoc.data();
+            setSubscription(subscriptionData);
+
+            if (
+              subscriptionData.subscriptionType === "team" &&
+              subscriptionData.teamMembers > 1
+            ) {
+              await fetchTeamMembers(userId);
+            }
+          } else {
+            setSubscription(null);
+          }
+        } catch (error) {
+          console.log("UserSubscriptions not found, using free plan");
+          setSubscription(null);
+        }
       }
     } catch (error) {
       console.error("Error fetching subscription:", error);
+      setSubscription(null);
     } finally {
       setLoadingSubscription(false);
     }
@@ -221,7 +259,7 @@ const Profile = () => {
       querySnapshot.forEach((doc) => {
         members.push({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         });
       });
 
@@ -247,7 +285,7 @@ const Profile = () => {
       querySnapshot.forEach((doc) => {
         invites.push({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         });
       });
 
@@ -286,17 +324,19 @@ const Profile = () => {
         ownerEmail: currentUser.email,
         ownerName: `${firstName} ${lastName}`.trim() || currentUser.displayName,
         inviteEmail: inviteEmail,
-        subscriptionId: subscription.id || `sub_${subscription.subscriptionType}`,
+        subscriptionId:
+          subscription.id || `sub_${subscription.subscriptionType}`,
         subscriptionType: subscription.subscriptionType,
         status: "pending",
         invitedAt: Timestamp.now(),
-        expiresAt: Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
+        expiresAt: Timestamp.fromDate(
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        ),
       });
 
       alert(`Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       fetchPendingInvites();
-
     } catch (error) {
       console.error("Error inviting team member:", error);
       alert("Failed to send invitation. Please try again.");
@@ -318,20 +358,21 @@ const Profile = () => {
   };
 
   const removeTeamMember = async (memberId) => {
-    if (!window.confirm("Are you sure you want to remove this team member?")) return;
+    if (!window.confirm("Are you sure you want to remove this team member?"))
+      return;
 
     try {
       const memberRef = doc(db, "TeamMembers", memberId);
       await deleteDoc(memberRef);
 
-      setTeamMembers(prev => prev.filter(member => member.id !== memberId));
+      setTeamMembers((prev) => prev.filter((member) => member.id !== memberId));
       alert("Team member removed successfully");
 
       if (subscription) {
         const subscriptionRef = doc(db, "UserSubscriptions", userId);
         await updateDoc(subscriptionRef, {
           teamMembers: teamMembers.length - 1,
-          updatedAt: Timestamp.now()
+          updatedAt: Timestamp.now(),
         });
       }
     } catch (error) {
@@ -345,10 +386,12 @@ const Profile = () => {
       const inviteRef = doc(db, "TeamInvites", inviteId);
       await updateDoc(inviteRef, {
         status: "cancelled",
-        cancelledAt: Timestamp.now()
+        cancelledAt: Timestamp.now(),
       });
 
-      setPendingInvites(prev => prev.filter(invite => invite.id !== inviteId));
+      setPendingInvites((prev) =>
+        prev.filter((invite) => invite.id !== inviteId)
+      );
       alert("Invitation cancelled");
     } catch (error) {
       console.error("Error cancelling invite:", error);
@@ -357,70 +400,88 @@ const Profile = () => {
   };
 
   const formatSubscriptionStatus = (status) => {
-    switch (status) {
-      case 'active':
-        return { text: 'Active', class: 'active' };
-      case 'canceled':
-      case 'cancelled':
-        return { text: 'Cancelled', class: 'canceled' };
-      case 'past_due':
-        return { text: 'Past Due', class: 'past-due' };
-      case 'trialing':
-        return { text: 'Free Trial', class: 'trialing' };
-      case 'incomplete':
-        return { text: 'Incomplete', class: 'incomplete' };
+    if (!status) return { text: "Free Plan", class: "free" };
+
+    switch (status.toLowerCase()) {
+      case "active":
+        return { text: "Active", class: "active" };
+      case "canceled":
+      case "cancelled":
+        return { text: "Cancelled", class: "canceled" };
+      case "past_due":
+        return { text: "Past Due", class: "past-due" };
+      case "trialing":
+        return { text: "Free Trial", class: "trialing" };
+      case "incomplete":
+        return { text: "Incomplete", class: "incomplete" };
       default:
-        return { text: 'Inactive', class: 'inactive' };
+        return { text: "Inactive", class: "inactive" };
     }
   };
 
   const formatDate = (date) => {
-    if (!date) return 'N/A';
-    
+    if (!date) return "N/A";
+
     try {
       const timestamp = date.toDate ? date.toDate() : new Date(date);
-      return timestamp.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
+      return timestamp.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
     } catch (error) {
       console.error("Error formatting date:", error);
-      return 'Invalid Date';
+      return "Invalid Date";
     }
   };
 
   const getSubscriptionTypeDisplay = (type) => {
     switch (type) {
-      case 'individual':
-        return 'Individual';
-      case 'team':
-        return 'Team';
-      case 'enterprise':
-        return 'Enterprise';
+      case "individual":
+        return "Individual";
+      case "team":
+        return "Team";
+      case "enterprise":
+        return "Enterprise";
       default:
-        return 'Free';
+        return "Free";
     }
   };
 
   const cancelSubscription = async () => {
-    if (!subscription || !window.confirm(
-      "Are you sure you want to cancel your subscription?\n\n" +
-      "You will continue to have access until the end of your current billing period."
-    )) return;
+    if (
+      (!user?.subscription && !subscription) ||
+      !window.confirm(
+        "Are you sure you want to cancel your subscription?\n\n" +
+          "You will continue to have access until the end of your current billing period."
+      )
+    )
+      return;
 
     try {
-      const subscriptionRef = doc(db, "UserSubscriptions", userId);
-      await updateDoc(subscriptionRef, {
-        status: 'cancelled',
-        cancelledAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      });
+      // Profiles collection mein subscription update karo
+      const profileRef = doc(db, "Profiles", userId);
 
-      setSubscription(prev => ({
+      if (user?.subscription) {
+        await updateDoc(profileRef, {
+          "subscription.status": "cancelled",
+          "subscription.cancelledAt": Timestamp.now(),
+          updatedAt: Timestamp.now(),
+        });
+      } else if (subscription) {
+        // Agar UserSubscriptions mein hai to wahan update karo
+        const subscriptionRef = doc(db, "UserSubscriptions", userId);
+        await updateDoc(subscriptionRef, {
+          status: "cancelled",
+          cancelledAt: Timestamp.now(),
+          updatedAt: Timestamp.now(),
+        });
+      }
+
+      setSubscription((prev) => ({
         ...prev,
-        status: 'cancelled',
-        cancelledAt: Timestamp.now()
+        status: "cancelled",
+        cancelledAt: Timestamp.now(),
       }));
 
       alert("Subscription cancelled successfully");
@@ -492,6 +553,16 @@ const Profile = () => {
             setUsername(data.username || "");
             setPhoneNumber(data.phoneNumber || "");
             setBio(data.bio || "");
+            if (data.subscription) {
+              const subData = data.subscription;
+              setSubscription({
+                ...subData,
+                subscriptionType: subData.type || subData.plan || "individual",
+                billingCycle: subData.billingCycle || "monthly",
+                price: subData.price || 0,
+                status: subData.status || "active",
+              });
+            }
           }
 
           if (currentUser && currentUser.uid && data.followers) {
@@ -1442,6 +1513,7 @@ const Profile = () => {
               )}
 
               {/* Subscription Tab Content */}
+              {/* Subscription Tab Content */}
               {activeTab === "subscription" && (
                 <div className="tab-content">
                   {loadingSubscription ? (
@@ -1451,15 +1523,27 @@ const Profile = () => {
                       </div>
                       <p>Loading subscription details...</p>
                     </div>
-                  ) : subscription ? (
+                  ) : user?.subscription || subscription ? (
                     <div className="subscription-container">
                       {/* Current Subscription Card */}
                       <div className="subscription-card active">
                         <div className="subscription-header">
                           <div className="header-left">
                             <h2>Current Subscription</h2>
-                            <div className={`status-badge ${formatSubscriptionStatus(subscription.status).class}`}>
-                              {formatSubscriptionStatus(subscription.status).text}
+                            <div
+                              className={`status-badge ${
+                                formatSubscriptionStatus(
+                                  user?.subscription?.status ||
+                                    subscription?.status
+                                ).class
+                              }`}
+                            >
+                              {
+                                formatSubscriptionStatus(
+                                  user?.subscription?.status ||
+                                    subscription?.status
+                                ).text
+                              }
                             </div>
                           </div>
                           <div className="header-right">
@@ -1472,266 +1556,108 @@ const Profile = () => {
                             </Link>
                           </div>
                         </div>
-                        
+
                         <div className="subscription-info-grid">
                           <div className="info-item">
                             <span className="info-label">Plan Type:</span>
                             <span className="info-value">
-                              {getSubscriptionTypeDisplay(subscription.subscriptionType)}
+                              {getSubscriptionTypeDisplay(
+                                user?.subscription?.type ||
+                                  user?.subscription?.plan ||
+                                  subscription?.subscriptionType ||
+                                  "individual"
+                              )}
                             </span>
                           </div>
-                          
+
                           <div className="info-item">
                             <span className="info-label">Billing Cycle:</span>
                             <span className="info-value capitalize">
-                              {subscription.billingCycle || 'Monthly'}
+                              {user?.subscription?.billingCycle ||
+                                subscription?.billingCycle ||
+                                "Monthly"}
                             </span>
                           </div>
-                          
+
                           <div className="info-item">
                             <span className="info-label">Price:</span>
                             <span className="info-value">
-                              ${subscription.price || '0'}/{subscription.billingCycle === 'yearly' ? 'year' : 'month'}
+                              $
+                              {user?.subscription?.price ||
+                                subscription?.price ||
+                                "0"}
+                              /
+                              {(user?.subscription?.billingCycle ||
+                                subscription?.billingCycle ||
+                                "monthly") === "yearly"
+                                ? "year"
+                                : "month"}
                             </span>
                           </div>
-                          
+
                           <div className="info-item">
-                            <span className="info-label">Next Billing Date:</span>
+                            <span className="info-label">
+                              Next Billing Date:
+                            </span>
                             <span className="info-value">
-                              {formatDate(subscription.nextBillingDate) || formatDate(subscription.currentPeriodEnd) || 'N/A'}
+                              {formatDate(
+                                user?.subscription?.expiresAt ||
+                                  user?.subscription?.nextBillingDate ||
+                                  subscription?.nextBillingDate ||
+                                  subscription?.currentPeriodEnd
+                              ) || "N/A"}
                             </span>
                           </div>
-                          
-                          {subscription.subscriptionType === 'team' && (
-                            <>
-                              <div className="info-item">
-                                <span className="info-label">Team Members:</span>
-                                <span className="info-value">
-                                  {subscription.teamMembers || 1} members
-                                </span>
-                              </div>
-                              
-                              <div className="info-item">
-                                <span className="info-label">Price per Member:</span>
-                                <span className="info-value">
-                                  ${subscription.pricePerMember || subscription.price / (subscription.teamMembers || 1) || '0'}/member
-                                </span>
-                              </div>
-                            </>
-                          )}
-                          
+
+                          {/* Downloads Usage */}
                           <div className="info-item">
-                            <span className="info-label">Subscription Start:</span>
+                            <span className="info-label">Downloads Used:</span>
                             <span className="info-value">
-                              {formatDate(subscription.createdAt) || formatDate(subscription.startDate) || 'N/A'}
+                              {user?.subscription?.downloadsUsed || 0} /
+                              {user?.subscription?.downloadLimit ||
+                                subscription?.downloadLimit ||
+                                0}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">
+                              Subscription Start:
+                            </span>
+                            <span className="info-value">
+                              {formatDate(
+                                user?.subscription?.startDate ||
+                                  subscription?.createdAt ||
+                                  subscription?.startDate
+                              ) || "N/A"}
                             </span>
                           </div>
                         </div>
-                        
-                        {/* Payment Method Section */}
-                        <div className="payment-method-section">
-                          <h3>Payment Method</h3>
-                          <div className="payment-method">
-                            {subscription.paymentMethod ? (
-                              <div className="payment-card">
-                                <i className={`fab fa-cc-${subscription.paymentMethod.brand?.toLowerCase() || 'visa'} payment-icon`}></i>
-                                <div className="payment-details">
-                                  <span className="card-type">
-                                    {subscription.paymentMethod.brand || 'Card'} ending in {subscription.paymentMethod.last4 || '****'}
-                                  </span>
-                                  {subscription.paymentMethod.expMonth && subscription.paymentMethod.expYear && (
-                                    <span className="card-expiry">
-                                      Expires {subscription.paymentMethod.expMonth}/{subscription.paymentMethod.expYear}
-                                    </span>
-                                  )}
-                                </div>
-                                <button className="butn butn-sm butn-bord radius-5">
-                                  Update
-                                </button>
+
+                        {/* Cancel Subscription Option */}
+                        {(user?.subscription?.status === "active" ||
+                          subscription?.status === "active") && (
+                          <div className="cancel-subscription-section">
+                            <div className="cancel-warning">
+                              <i className="fas fa-exclamation-triangle"></i>
+                              <div>
+                                <h4>Cancel Subscription</h4>
+                                <p>
+                                  If you cancel, you'll lose access to premium
+                                  features at the end of your current billing
+                                  period.
+                                </p>
                               </div>
-                            ) : (
-                              <div className="no-payment-method">
-                                <p>No payment method on file</p>
-                                <button className="butn butn-sm butn-bg main-colorbg radius-5">
-                                  Add Payment Method
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Team Management Section (Only for Team Plans) */}
-                        {subscription.subscriptionType === 'team' && subscription.teamMembers > 1 && (
-                          <div className="team-management-section">
-                            <h3>Team Management</h3>
-                            
-                            {/* Invite New Member */}
-                            <div className="invite-member-form">
-                              <div className="form-group">
-                                <input
-                                  type="email"
-                                  value={inviteEmail}
-                                  onChange={(e) => setInviteEmail(e.target.value)}
-                                  placeholder="Enter email address to invite"
-                                  className="form-input"
-                                />
-                                <button
-                                  className="butn butn-sm butn-bg main-colorbg radius-5"
-                                  onClick={inviteTeamMember}
-                                  disabled={inviting || !inviteEmail}
-                                >
-                                  {inviting ? 'Sending...' : 'Invite Member'}
-                                </button>
-                              </div>
-                              <p className="form-note">
-                                Invited members will receive an email to join your team
-                              </p>
-                              
-                              {/* Pending Invites */}
-                              {pendingInvites.length > 0 && (
-                                <div className="pending-invites">
-                                  <h4>Pending Invites</h4>
-                                  <div className="invites-list">
-                                    {pendingInvites.map((invite) => (
-                                      <div key={invite.id} className="invite-item">
-                                        <div className="invite-info">
-                                          <span className="invite-email">{invite.inviteEmail}</span>
-                                          <span className="invite-date">
-                                            Sent on {formatDate(invite.invitedAt)}
-                                          </span>
-                                        </div>
-                                        <button
-                                          className="cancel-invite-btn"
-                                          onClick={() => cancelInvite(invite.id)}
-                                        >
-                                          Cancel
-                                        </button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
                             </div>
-                            
-                            {/* Team Members List */}
-                            <div className="team-members-list">
-                              <h4>Current Team Members</h4>
-                              {teamMembers.length > 0 ? (
-                                <div className="members-grid">
-                                  {teamMembers.map((member) => (
-                                    <div key={member.id} className="member-card">
-                                      <div className="member-avatar">
-                                        {member.profilePic ? (
-                                          <img src={member.profilePic} alt={member.name} />
-                                        ) : (
-                                          <div className="avatar-initials">
-                                            {member.name?.charAt(0) || member.email?.charAt(0) || 'U'}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="member-info">
-                                        <span className="member-name">
-                                          {member.name || member.email}
-                                        </span>
-                                        <span className="member-email">{member.email}</span>
-                                        <span className={`member-status ${member.status}`}>
-                                          {member.status}
-                                        </span>
-                                      </div>
-                                      {member.id !== userId && (
-                                        <div className="member-actions">
-                                          <button 
-                                            className="action-btn remove-btn" 
-                                            title="Remove member"
-                                            onClick={() => removeTeamMember(member.id)}
-                                          >
-                                            <i className="fas fa-times"></i>
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="no-members">No team members added yet</p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Billing History */}
-                        <div className="billing-history-section">
-                          <h3>Billing History</h3>
-                          <div className="billing-history">
-                            {subscription.invoices && subscription.invoices.length > 0 ? (
-                              <div className="invoices-table">
-                                <table>
-                                  <thead>
-                                    <tr>
-                                      <th>Date</th>
-                                      <th>Description</th>
-                                      <th>Amount</th>
-                                      <th>Status</th>
-                                      <th>Action</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {subscription.invoices.slice(0, 3).map((invoice, index) => (
-                                      <tr key={index}>
-                                        <td>{formatDate(invoice.date)}</td>
-                                        <td>{invoice.description || 'Subscription Payment'}</td>
-                                        <td>${invoice.amount || invoice.total || '0.00'}</td>
-                                        <td>
-                                          <span className={`invoice-status ${invoice.status || 'paid'}`}>
-                                            {invoice.status || 'Paid'}
-                                          </span>
-                                        </td>
-                                        <td>
-                                          <button className="download-invoice-btn">
-                                            <i className="fas fa-download"></i> Download
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            ) : (
-                              <div className="no-invoices">
-                                <i className="fas fa-file-invoice"></i>
-                                <p>No invoices yet</p>
-                              </div>
-                            )}
                             <button
-                              className="butn butn-sm butn-bord radius-5 view-all-btn"
-                              onClick={handleOpenBillingModal}
+                              className="butn butn-sm butn-danger radius-5"
+                              onClick={cancelSubscription}
                             >
-                              View All Invoices
+                              Cancel Subscription
                             </button>
                           </div>
-                        </div>
+                        )}
                       </div>
-                      
-                      {/* Cancel Subscription Option */}
-                      {subscription.status === 'active' && (
-                        <div className="cancel-subscription-section">
-                          <div className="cancel-warning">
-                            <i className="fas fa-exclamation-triangle"></i>
-                            <div>
-                              <h4>Cancel Subscription</h4>
-                              <p>
-                                If you cancel, you'll lose access to premium features at the end of your current billing period.
-                              </p>
-                            </div>
-                          </div>
-                          <button 
-                            className="butn butn-sm butn-danger radius-5"
-                            onClick={cancelSubscription}
-                          >
-                            Cancel Subscription
-                          </button>
-                        </div>
-                      )}
                     </div>
                   ) : (
                     /* No Subscription - Free Plan */
@@ -1740,12 +1666,15 @@ const Profile = () => {
                         <h2>Current Plan</h2>
                         <div className="status-badge free">Free Plan</div>
                       </div>
-                      
+
                       <div className="free-plan-content">
                         <div className="plan-details">
                           <h3>You're on the Free Plan</h3>
-                          <p>Upgrade to unlock premium features and unlimited access</p>
-                          
+                          <p>
+                            Upgrade to unlock premium features and unlimited
+                            access
+                          </p>
+
                           <div className="free-limitations">
                             <h4>Current Limitations:</h4>
                             <ul>
@@ -1757,18 +1686,23 @@ const Profile = () => {
                               <li>✗ No team collaboration</li>
                             </ul>
                           </div>
-                          
+
                           <div className="credits-info">
                             <h4>Credits Usage</h4>
                             <div className="credits-progress">
                               <div className="progress-bar">
-                                <div className="progress-fill" style={{ width: '50%' }}></div>
+                                <div
+                                  className="progress-fill"
+                                  style={{ width: "50%" }}
+                                ></div>
                               </div>
-                              <div className="credits-text">50/100 daily credits used</div>
+                              <div className="credits-text">
+                                50/100 daily credits used
+                              </div>
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="upgrade-cta">
                           <Link
                             to="/subscription"

@@ -26,10 +26,18 @@ import {
   FiAlertCircle,
   FiPieChart,
 } from "react-icons/fi";
-import { collection, getDocs, onSnapshot, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
+} from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
 import { exportPaymentsData } from "../../../../utils/exportUtils";
+import { doc, updateDoc } from "firebase/firestore";
 
 const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const [subscriptionData, setSubscriptionData] = useState([]);
@@ -64,27 +72,69 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const dateFormatter = formatDate || defaultFormatDate;
 
   // 🔥 Firebase Data Fetching
+  // 🔥 Firebase Data Fetching - Updated to use Profiles collection
   useEffect(() => {
     const fetchSubscriptions = async () => {
       setLoading(true);
       try {
-        const subscriptionsRef = collection(db, "subscriptions");
-        const q = query(subscriptionsRef, orderBy("createdAt", "desc"));
+        const profilesRef = collection(db, "Profiles");
+        const q = query(profilesRef, where("subscription", "!=", null));
 
         // Real-time listener
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-          const subscriptions = [];
-          querySnapshot.forEach((doc) => {
-            subscriptions.push({ id: doc.id, ...doc.data() });
-          });
-          setSubscriptionData(subscriptions);
-          setLoading(false);
-          setError(null);
-        }, (error) => {
-          console.error("Firebase error:", error);
-          setError("Failed to load subscription data");
-          setLoading(false);
-        });
+        const unsubscribe = onSnapshot(
+          q,
+          (querySnapshot) => {
+            const subscriptions = [];
+            querySnapshot.forEach((doc) => {
+              const profileData = doc.data();
+              const subscriptionData = profileData.subscription || {};
+
+              // Only add if subscription exists and has required fields
+              if (subscriptionData.plan && subscriptionData.status) {
+                subscriptions.push({
+                  id: doc.id,
+                  uid: profileData.uid,
+                  userName:
+                    profileData.username ||
+                    `${profileData.firstName || ""} ${
+                      profileData.lastName || ""
+                    }`.trim() ||
+                    "Unknown User",
+                  userEmail: profileData.email || "No email",
+                  plan: subscriptionData.plan || "No Plan",
+                  type: subscriptionData.type || "individual",
+                  status: subscriptionData.status || "active",
+                  price: subscriptionData.price || 0,
+                  billingCycle: subscriptionData.billingCycle || "monthly",
+                  startDate: subscriptionData.startDate
+                    ? subscriptionData.startDate.toDate
+                      ? subscriptionData.startDate.toDate().toISOString()
+                      : subscriptionData.startDate
+                    : new Date().toISOString(),
+                  nextBillingDate: subscriptionData.expiresAt
+                    ? subscriptionData.expiresAt.toDate
+                      ? subscriptionData.expiresAt.toDate().toISOString()
+                      : subscriptionData.expiresAt
+                    : "N/A",
+                  totalSpent: profileData.totalEarnings || 0,
+                  totalDownloads: profileData.totalDownloads || 0,
+                  downloadLimit: subscriptionData.downloadLimit || 0,
+                  downloadsUsed: subscriptionData.downloadsUsed || 0,
+                  location: "N/A", // You can add location field if available
+                  features: getPlanFeatures(subscriptionData.plan),
+                });
+              }
+            });
+            setSubscriptionData(subscriptions);
+            setLoading(false);
+            setError(null);
+          },
+          (error) => {
+            console.error("Firebase error:", error);
+            setError("Failed to load subscription data");
+            setLoading(false);
+          }
+        );
 
         return () => unsubscribe();
       } catch (err) {
@@ -96,7 +146,28 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
 
     fetchSubscriptions();
   }, []);
+  // Helper function to get plan features based on plan type
+  const getPlanFeatures = (planType) => {
+    const featuresMap = {
+      individual: ["200 Downloads/Month", "Basic Support", "Standard Quality"],
+      team: [
+        "500 Downloads/Month",
+        "Priority Support",
+        "HQ Quality",
+        "Team Management",
+      ],
+      enterprise: [
+        "Unlimited Downloads",
+        "24/7 Support",
+        "4K Quality",
+        "Advanced Analytics",
+        "Custom Solutions",
+      ],
+    };
 
+    return featuresMap[planType?.toLowerCase()] || ["Standard Features"];
+  };
+  // Dynamic Stats Calculation
   // Dynamic Stats Calculation
   const stats = useMemo(() => {
     const totalSubscriptions = subscriptionData.length;
@@ -110,11 +181,23 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       (sub) => sub.status === "pending"
     ).length;
 
+    // Calculate total downloads used vs limit
+    const totalDownloadsUsed = subscriptionData.reduce(
+      (sum, sub) => sum + (sub.downloadsUsed || 0),
+      0
+    );
+    const totalDownloadLimit = subscriptionData.reduce(
+      (sum, sub) => sum + (sub.downloadLimit || 0),
+      0
+    );
+
     return {
       totalSubscriptions,
       activeSubscriptions,
       totalRevenue,
       pendingSubscriptions,
+      totalDownloadsUsed,
+      totalDownloadLimit,
     };
   }, [subscriptionData]);
 
@@ -131,8 +214,8 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
     }
 
     if (billingCycle !== "all") {
-      filtered = filtered.filter((sub) =>
-        sub.billingCycle?.toLowerCase() === billingCycle.toLowerCase()
+      filtered = filtered.filter(
+        (sub) => sub.billingCycle?.toLowerCase() === billingCycle.toLowerCase()
       );
     }
 
@@ -152,7 +235,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
 
   // ✅ FIXED: Prepare data for export function (was missing)
   const prepareExportData = (subscriptions) => {
-    return subscriptions.map(sub => ({
+    return subscriptions.map((sub) => ({
       userName: sub.userName || "Unknown User",
       userEmail: sub.userEmail || "No email",
       amount: sub.price || 0,
@@ -162,7 +245,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       billingCycle: sub.billingCycle || "N/A",
       nextBillingDate: sub.nextBillingDate || "N/A",
       totalSpent: sub.totalSpent || 0,
-      location: sub.location || "N/A"
+      location: sub.location || "N/A",
     }));
   };
 
@@ -215,42 +298,56 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   };
 
   // Handle subscription actions
-  const handleSubscriptionAction = async (action, subscriptionId, subscription) => {
+  // Handle subscription actions
+  const handleSubscriptionAction = async (
+    action,
+    subscriptionId,
+    subscription
+  ) => {
     try {
-      console.log(`${action} subscription: ${subscriptionId}`);
-      
-      // Here you would add Firebase update logic
+      console.log(`${action} subscription for user: ${subscription.userName}`);
+
+      // Here you would add Firebase update logic for Profiles collection
       // Example:
       // import { doc, updateDoc } from "firebase/firestore";
-      // const subscriptionRef = doc(db, "subscriptions", subscriptionId);
-      // await updateDoc(subscriptionRef, { status: "canceled" });
-      
-      alert(`${action} action triggered for subscription ${subscriptionId}`);
-      
+      // const profileRef = doc(db, "Profiles", subscriptionId);
+      // const updateData = {};
+      //
+      // if (action === "cancel") {
+      //   updateData["subscription.status"] = "canceled";
+      // } else if (action === "activate") {
+      //   updateData["subscription.status"] = "active";
+      // }
+      //
+      // await updateDoc(profileRef, updateData);
+
+      alert(
+        `${action} action triggered for ${subscription.userName}'s subscription`
+      );
+
       // Update local state for immediate feedback
-      if (action === "cancel" || action === "expire") {
-        setSubscriptionData(prev => 
-          prev.map(sub => 
-            sub.id === subscriptionId 
-              ? { ...sub, status: action === "cancel" ? "canceled" : "expired" }
-              : sub
-          )
-        );
-      } else if (action === "activate") {
-        setSubscriptionData(prev => 
-          prev.map(sub => 
-            sub.id === subscriptionId 
-              ? { ...sub, status: "active" }
-              : sub
-          )
-        );
-      }
+      setSubscriptionData((prev) =>
+        prev.map((sub) =>
+          sub.id === subscriptionId
+            ? {
+                ...sub,
+                status:
+                  action === "cancel"
+                    ? "canceled"
+                    : action === "activate"
+                    ? "active"
+                    : action === "expire"
+                    ? "expired"
+                    : sub.status,
+              }
+            : sub
+        )
+      );
     } catch (error) {
       console.error(`Error performing ${action} action:`, error);
       alert(`Error: ${error.message}`);
     }
   };
-
   // Handle payment download
   const handleDownloadInvoice = (invoiceId) => {
     console.log(`Downloading invoice: ${invoiceId}`);
@@ -293,9 +390,9 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       const subscriptionsRef = collection(db, "subscriptions");
       const q = query(subscriptionsRef, orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(q);
-      const subscriptions = querySnapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
+      const subscriptions = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
       }));
       setSubscriptionData(subscriptions);
       setError(null);
@@ -341,13 +438,11 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
           </p>
         </div>
         <div className="header-actions">
-          <button 
+          <button
             className="action-button secondary"
             onClick={handleRefreshData}
             disabled={loading}
-          >
-            
-          </button>
+          ></button>
           <span className="user-badge-count">
             {stats.totalSubscriptions} total subscriptions
           </span>
@@ -456,7 +551,8 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
           </h3>
           <div className="filter-results">
             <span className="filter-text">
-              Showing {filteredSubscriptions.length} of {subscriptionData.length} subscriptions
+              Showing {filteredSubscriptions.length} of{" "}
+              {subscriptionData.length} subscriptions
             </span>
           </div>
         </div>
@@ -475,18 +571,17 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
           </div>
 
           {/* Status Filter */}
+          {/* Plan Filter */}
           <select
             className="filter-select"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            value={planFilter}
+            onChange={(e) => setPlanFilter(e.target.value)}
           >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="pending">Pending</option>
-            <option value="expired">Expired</option>
-            <option value="canceled">Canceled</option>
+            <option value="all">All Plans</option>
+            <option value="individual">Individual</option>
+            <option value="team">Team</option>
+            <option value="enterprise">Enterprise</option>
           </select>
-
           {/* Plan Filter */}
           <select
             className="filter-select"
@@ -516,10 +611,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               <FiFilter />
               Apply
             </button>
-            <button
-              className="filter-button"
-              onClick={handleResetFilters}
-            >
+            <button className="filter-button" onClick={handleResetFilters}>
               <FiRefreshCw />
               Reset
             </button>
@@ -535,12 +627,22 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             Subscription Management
           </h3>
           <ExportButton
-            data={prepareExportData(filteredSubscriptions.length > 0 ? filteredSubscriptions : subscriptionData)}
-            filename="subscription-reports"
-            onExport={(format) => exportPaymentsData(
-              prepareExportData(filteredSubscriptions.length > 0 ? filteredSubscriptions : subscriptionData), 
-              format
+            data={prepareExportData(
+              filteredSubscriptions.length > 0
+                ? filteredSubscriptions
+                : subscriptionData
             )}
+            filename="subscription-reports"
+            onExport={(format) =>
+              exportPaymentsData(
+                prepareExportData(
+                  filteredSubscriptions.length > 0
+                    ? filteredSubscriptions
+                    : subscriptionData
+                ),
+                format
+              )
+            }
             variant="secondary"
             onExportStart={handleExportStart}
             onExportComplete={handleExportComplete}
@@ -553,9 +655,10 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               <tr>
                 <th>User</th>
                 <th>Plan</th>
+                <th>Type</th>
                 <th>Billing</th>
                 <th>Status</th>
-                <th>Next Billing</th>
+                <th>Downloads Used</th>
                 <th>Total Spent</th>
                 <th>Actions</th>
               </tr>
@@ -581,12 +684,14 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                       </div>
                     </div>
                   </td>
+
+                  {/* Plan Column */}
                   <td>
                     <span
                       className={`report-category-badge ${
-                        subscription.plan === "Enterprise"
+                        subscription.plan === "enterprise"
                           ? "fraud"
-                          : subscription.plan === "Professional"
+                          : subscription.plan === "team"
                           ? "content"
                           : "spam"
                       }`}
@@ -594,6 +699,18 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                       {subscription.plan || "No Plan"}
                     </span>
                   </td>
+
+                  {/* Type Column (NEW) */}
+                  <td>
+                    <span
+                      className={`report-category-badge ${
+                        subscription.type === "team" ? "team" : "individual"
+                      }`}
+                    >
+                      {subscription.type || "individual"}
+                    </span>
+                  </td>
+
                   <td>
                     <div className="comp-dis">
                       {currencyFormatter(subscription.price || 0)}/
@@ -613,7 +730,35 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                       {getStatusText(subscription.status)}
                     </span>
                   </td>
-                  <td>{dateFormatter(subscription.nextBillingDate)}</td>
+
+                  {/* Downloads Used Column (NEW) - Next Billing ki jagah */}
+                  <td>
+                    <div className="downloads-usage">
+                      <div className="usage-bar">
+                        <div
+                          className={`usage-fill ${
+                            (subscription.downloadsUsed || 0) >=
+                            (subscription.downloadLimit || 1)
+                              ? "exceeded"
+                              : "normal"
+                          }`}
+                          style={{
+                            width: `${Math.min(
+                              ((subscription.downloadsUsed || 0) /
+                                (subscription.downloadLimit || 1)) *
+                                100,
+                              100
+                            )}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="usage-text">
+                        {subscription.downloadsUsed || 0} /{" "}
+                        {subscription.downloadLimit || 0}
+                      </div>
+                    </div>
+                  </td>
+
                   <td>
                     <div className="comp-dis">
                       {currencyFormatter(subscription.totalSpent || 0)}
@@ -632,7 +777,11 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                         className="action-button small"
                         title="Manage Subscription"
                         onClick={() =>
-                          handleSubscriptionAction("manage", subscription.id, subscription)
+                          handleSubscriptionAction(
+                            "manage",
+                            subscription.id,
+                            subscription
+                          )
                         }
                       >
                         <FiRefreshCw />
@@ -642,7 +791,11 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                           className="action-button danger small"
                           title="Cancel Subscription"
                           onClick={() =>
-                            handleSubscriptionAction("cancel", subscription.id, subscription)
+                            handleSubscriptionAction(
+                              "cancel",
+                              subscription.id,
+                              subscription
+                            )
                           }
                         >
                           <FiXCircle />
@@ -660,7 +813,10 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               <FiUsers className="empty-icon" />
               <h3 className="empty-title">No subscriptions found</h3>
               <p className="empty-text">
-                {searchTerm || statusFilter !== "all" || planFilter !== "all" || billingCycle !== "all"
+                {searchTerm ||
+                statusFilter !== "all" ||
+                planFilter !== "all" ||
+                billingCycle !== "all"
                   ? "Try adjusting your search filters"
                   : "No subscriptions available in the system"}
               </p>
@@ -796,11 +952,13 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                   Plan Features
                 </h4>
                 <div className="features-list-das">
-                  {(selectedSubscription.features || []).map((feature, index) => (
-                    <span key={index} className="feature-tag">
-                      {feature}
-                    </span>
-                  ))}
+                  {(selectedSubscription.features || []).map(
+                    (feature, index) => (
+                      <span key={index} className="feature-tag">
+                        {feature}
+                      </span>
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -816,7 +974,11 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                 <button
                   className="action-button"
                   onClick={() =>
-                    handleSubscriptionAction("manage", selectedSubscription.id, selectedSubscription)
+                    handleSubscriptionAction(
+                      "manage",
+                      selectedSubscription.id,
+                      selectedSubscription
+                    )
                   }
                 >
                   <FiRefreshCw className="button-icon" />
@@ -846,8 +1008,6 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
 
       {/* Add CSS for animations */}
       <style jsx>{`
-       
-        
         .error-text {
           color: #ef4444;
           margin-left: 1rem;
