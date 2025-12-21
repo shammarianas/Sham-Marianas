@@ -20,17 +20,70 @@ if (process.env.FUNCTIONS_EMULATOR === "true") {
   // This is the key line that fixes the "Login required" error
   process.env.FIREBASE_APP_CHECK_EMULATOR_TOKEN = "true";
 }
-// =============================
-// CONSTANTS
-// =============================
-const PER_DOWNLOAD_VALUE_INDIVIDUAL = 0.045;
-const SELLER_SHARE_INDIVIDUAL = 0.018;
-const COMPANY_SHARE_INDIVIDUAL = 0.027;
 
-const PER_DOWNLOAD_VALUE_TEAM = 0.035;
-const SELLER_SHARE_TEAM = 0.014;
-const COMPANY_SHARE_TEAM = 0.021;
+// 🔧 ADD THIS HELPER FUNCTION AT TOP (after imports, before stripeWebhook)
+// 🔧 UPDATED HELPER FUNCTION - MATCHES YOUR CONTRIBUTOR SCHEMA
+async function ensureContributorExists(db, ownerId) {
+  try {
+    const contributorRef = db.collection("Contributors").doc(ownerId);
+    const contributorDoc = await contributorRef.get();
 
+    if (!contributorDoc.exists) {
+      console.log(`🆕 Creating contributor document for: ${ownerId}`);
+
+      // Get profile data
+      const profileDoc = await db.collection("Profiles").doc(ownerId).get();
+      const profileData = profileDoc.exists ? profileDoc.data() : {};
+
+      // ✅ MATCHING YOUR EXACT CONTRIBUTOR SCHEMA
+      await contributorRef.set({
+        uid: ownerId,
+        username: profileData.username || "",
+        email: profileData.email || "",
+        fullName: profileData.fullName || "",
+        role: "contributor",
+        status: profileData.status || "verified",
+        specialization: profileData.specialization || "",
+        totalEarnings: 0,
+        pendingEarnings: 0,
+        approvedUploads: profileData.approvedUploads || 0,
+        totalUploads: profileData.totalUploads || 0,
+        rating: profileData.rating || 0,
+        reviews: profileData.reviews || 0,
+        createdAt:
+          profileData.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        // ✅ ADDING ALL OTHER FIELDS FROM YOUR SCHEMA
+        bio: profileData.bio || "",
+        birthday: profileData.birthday || "",
+        city: profileData.city || "",
+        country: profileData.country || "",
+        countryCode: profileData.countryCode || "",
+        emailVerified: profileData.emailVerified || false,
+        experience: profileData.experience || "beginner",
+        joinDate:
+          profileData.joinDate || admin.firestore.FieldValue.serverTimestamp(),
+        lastLogin:
+          profileData.lastLogin || admin.firestore.FieldValue.serverTimestamp(),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+        phone: profileData.phone || "",
+        portfolio: profileData.portfolio || "",
+        profilePic: profileData.profilePic || null,
+        skills: profileData.skills || [],
+      });
+
+      console.log(
+        `✅ Contributor document created with complete schema for: ${ownerId}`
+      );
+      return true;
+    }
+
+    return false; // Already exists
+  } catch (error) {
+    console.error(`❌ Error ensuring contributor exists: ${ownerId}`, error);
+    throw error;
+  }
+}
 // ============================
 // CREATE PAYMENT INTENT
 // =============================
@@ -60,7 +113,16 @@ exports.createPaymentIntent = functions.https.onRequest((req, res) => {
 
 // =============================
 // STRIPE WEBHOOK (ENHANCED)
-// =============================
+// ===========================
+
+const PER_DOWNLOAD_VALUE_INDIVIDUAL = 0.045; // $0.045 per download for individual plan
+const SELLER_SHARE_INDIVIDUAL = 0.018; // Seller gets $0.018 per download
+const COMPANY_SHARE_INDIVIDUAL = 0.027; // Platform gets $0.027 per download
+
+const PER_DOWNLOAD_VALUE_TEAM = 0.035; // $0.035 per download for team plan
+const SELLER_SHARE_TEAM = 0.014; // Seller gets $0.014 per download
+const COMPANY_SHARE_TEAM = 0.021; // Platform gets $0.021 per download
+
 exports.stripeWebhook = functions.https.onRequest(
   { rawBody: true },
   async (req, res) => {
@@ -97,7 +159,7 @@ exports.stripeWebhook = functions.https.onRequest(
       // Plan detection - priority order
       let plan = "individual"; // default
       if (metadata.plan) {
-        plan = metadata.plan.toLowerCase(); // "individual" یا "team"
+        plan = metadata.plan.toLowerCase(); // "individual" or "team"
       } else if (metadata.type) {
         plan = metadata.type.toLowerCase();
       } else if (
@@ -111,7 +173,214 @@ exports.stripeWebhook = functions.https.onRequest(
       const teamSize = parseInt(metadata.teamSize || "1", 10) || 1;
       const billingCycle = metadata.billingCycle || "monthly";
 
+      // 🆕 NEW: Detect download count and payment type
+      const downloadCount = parseInt(metadata.downloadCount || "1", 10);
+      const paymentType = metadata.paymentType || "subscription"; // "subscription" or "per_download"
+      const assetCategory = metadata.assetCategory || "uncategorized";
+
       try {
+        // ============ PER-DOWNLOAD PAYMENT HANDLING ============
+        if (paymentType === "per_download" && buyerId && assetId) {
+          console.log(
+            `💰 Per-download payment detected: ${downloadCount} download(s), ${plan} plan`
+          );
+
+          const assetRef = db.collection("Assets").doc(assetId);
+          const assetSnap = await assetRef.get();
+
+          if (!assetSnap.exists) {
+            console.error(`❌ Asset not found: ${assetId}`);
+            return res.json({ received: true });
+          }
+
+          const asset = assetSnap.data();
+          const ownerId = asset.ownerId;
+          const assetTitle = asset.title || "Untitled Asset";
+
+          // ✅ 1. Calculate revenue based on subscription type
+          let totalDownloadValue,
+            sellerEarningPerDownload,
+            companyEarningPerDownload;
+
+          if (plan.toLowerCase() === "team") {
+            totalDownloadValue = PER_DOWNLOAD_VALUE_TEAM * downloadCount;
+            sellerEarningPerDownload = SELLER_SHARE_TEAM;
+            companyEarningPerDownload = COMPANY_SHARE_TEAM;
+          } else {
+            totalDownloadValue = PER_DOWNLOAD_VALUE_INDIVIDUAL * downloadCount;
+            sellerEarningPerDownload = SELLER_SHARE_INDIVIDUAL;
+            companyEarningPerDownload = COMPANY_SHARE_INDIVIDUAL;
+          }
+
+          const sellerTotalEarning = sellerEarningPerDownload * downloadCount;
+          const companyTotalEarning = companyEarningPerDownload * downloadCount;
+
+          console.log(`📊 Revenue breakdown for ${downloadCount} download(s):`);
+          console.log(`   Total value: $${totalDownloadValue.toFixed(3)}`);
+          console.log(
+            `   Seller share: $${sellerTotalEarning.toFixed(
+              3
+            )} ($${sellerEarningPerDownload} each)`
+          );
+          console.log(
+            `   Platform share: $${companyTotalEarning.toFixed(
+              3
+            )} ($${companyEarningPerDownload} each)`
+          );
+
+          // ✅ 2. Get owner info (admin vs contributor)
+          const ownerProfileSnap = await db
+            .collection("Profiles")
+            .doc(ownerId)
+            .get();
+          const isAdmin =
+            ownerProfileSnap.exists && ownerProfileSnap.data().role === "admin";
+
+          // 🎯 Admin gets 100%, Contributor gets the calculated share
+          let finalSellerEarning, finalCompanyEarning;
+
+          if (isAdmin) {
+            finalSellerEarning = totalDownloadValue; // Admin gets everything
+            finalCompanyEarning = 0;
+          } else {
+            finalSellerEarning = sellerTotalEarning;
+            finalCompanyEarning = companyTotalEarning;
+          }
+
+          // ✅ 3. Create purchase record
+          await db
+            .collection("Purchases")
+            .doc()
+            .set({
+              assetId,
+              assetTitle,
+              assetCategory: asset.category || assetCategory,
+              buyerId,
+              ownerId,
+              sellerType: isAdmin ? "admin" : "contributor",
+              paymentType: "per_download",
+              subscriptionType: plan,
+              downloadCount: downloadCount,
+              amount: totalDownloadValue,
+              sellerEarning: finalSellerEarning,
+              companyEarning: finalCompanyEarning,
+              perDownloadValue:
+                plan === "team"
+                  ? PER_DOWNLOAD_VALUE_TEAM
+                  : PER_DOWNLOAD_VALUE_INDIVIDUAL,
+              sellerSharePerDownload: sellerEarningPerDownload,
+              companySharePerDownload: companyEarningPerDownload,
+              paymentIntentId: paymentIntent.id,
+              assetPrice: asset.price || totalDownloadValue,
+              isPaidAsset: true,
+              timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+          // ✅ 4. Update asset stats
+          await assetRef.update({
+            salesCount: admin.firestore.FieldValue.increment(downloadCount),
+            downloadRevenue:
+              admin.firestore.FieldValue.increment(totalDownloadValue),
+            lastPurchasedAt: admin.firestore.FieldValue.serverTimestamp(),
+            totalEarnings:
+              admin.firestore.FieldValue.increment(finalSellerEarning),
+          });
+
+          // ✅ 5. Credit seller earnings
+          const ownerUpdate = {
+            earnings: admin.firestore.FieldValue.increment(finalSellerEarning),
+            totalEarnings:
+              admin.firestore.FieldValue.increment(finalSellerEarning),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          };
+
+          // Update Profiles collection
+          await db
+            .collection("Profiles")
+            .doc(ownerId)
+            .set(ownerUpdate, { merge: true });
+
+          // 🆕 CRITICAL: Update Contributors collection for non-admin sellers
+          // 🎯 UPDATED: Match YOUR contributor fields
+          if (!isAdmin) {
+            try {
+              await ensureContributorExists(db, ownerId);
+
+              const contributorRef = db.collection("Contributors").doc(ownerId);
+
+              // ✅ ONLY UPDATE THESE TWO FIELDS
+              await contributorRef.update({
+                totalEarnings:
+                  admin.firestore.FieldValue.increment(finalSellerEarning),
+                pendingEarnings:
+                  admin.firestore.FieldValue.increment(finalSellerEarning),
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp(), // Optional timestamp
+              });
+
+              console.log(
+                `✅ Contributor ${ownerId} earnings updated: +$${finalSellerEarning.toFixed(
+                  3
+                )}`
+              );
+            } catch (contributorError) {
+              console.error(
+                `❌ Failed to update contributor ${ownerId}:`,
+                contributorError
+              );
+            }
+          }
+
+          // ✅ 6. Update platform stats with category breakdown
+          const finalAssetCategory = asset.category || assetCategory;
+
+          await db
+            .collection("PlatformStats")
+            .doc("revenue")
+            .set(
+              {
+                [`categoryBreakdown.${finalAssetCategory}`]:
+                  admin.firestore.FieldValue.increment(finalCompanyEarning),
+                [`downloadCountByCategory.${finalAssetCategory}`]:
+                  admin.firestore.FieldValue.increment(downloadCount),
+                perDownloadRevenue:
+                  admin.firestore.FieldValue.increment(finalCompanyEarning),
+                totalRevenue:
+                  admin.firestore.FieldValue.increment(finalCompanyEarning),
+                totalDownloads:
+                  admin.firestore.FieldValue.increment(downloadCount),
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+          // ✅ 7. Create transaction record
+          await db.collection("Transactions").doc().set({
+            type: "per_download_payment",
+            userId: buyerId,
+            subscriptionType: plan,
+            assetId: assetId,
+            assetTitle: assetTitle,
+            downloadCount: downloadCount,
+            amount: totalDownloadValue,
+            sellerEarning: finalSellerEarning,
+            companyEarning: finalCompanyEarning,
+            paymentIntentId: paymentIntent.id,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          console.log(
+            `✅ Per-download payment processed: ${downloadCount} download(s) of ${assetId}`
+          );
+          console.log(
+            `💰 Final split: Seller=$${finalSellerEarning.toFixed(
+              3
+            )}, Platform=$${finalCompanyEarning.toFixed(3)}`
+          );
+
+          // Return early since per-download payment is handled
+          return res.json({ received: true });
+        }
+
         // ============ SUBSCRIPTION HANDLING ============
         if (plan && buyerId && buyerId !== "guest") {
           const now = Date.now();
@@ -139,6 +408,7 @@ exports.stripeWebhook = functions.https.onRequest(
                       now + 30 * 24 * 60 * 60 * 1000
                     ).toISOString(),
                     price: 9, // $9/month
+                    perDownloadValue: PER_DOWNLOAD_VALUE_INDIVIDUAL, // 🆕 Added
                   },
                   updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                 },
@@ -178,6 +448,7 @@ exports.stripeWebhook = functions.https.onRequest(
                 downloadsPerMember: 200,
                 totalDownloadsUsed: 0,
                 totalMembers: teamSize,
+                perDownloadValue: PER_DOWNLOAD_VALUE_TEAM, // 🆕 Added
               });
 
             // Update owner's profile
@@ -200,6 +471,7 @@ exports.stripeWebhook = functions.https.onRequest(
                       now + 30 * 24 * 60 * 60 * 1000
                     ).toISOString(),
                     price: 7 * teamSize, // $7 × teamSize
+                    perDownloadValue: PER_DOWNLOAD_VALUE_TEAM, // 🆕 Added
                   },
                   updatedAt: admin.firestore.FieldValue.serverTimestamp(),
                 },
@@ -239,7 +511,7 @@ exports.stripeWebhook = functions.https.onRequest(
         }
 
         // ============ ASSET PURCHASE HANDLING ============
-        if (assetId && buyerId) {
+        if (assetId && buyerId && paymentType !== "per_download") {
           const assetRef = db.collection("Assets").doc(assetId);
           const assetSnap = await assetRef.get();
 
@@ -301,14 +573,14 @@ exports.stripeWebhook = functions.https.onRequest(
               ownerProfileSnap.exists &&
               ownerProfileSnap.data().role === "admin";
 
-            // 🆕 FIXED: Admin کو 100%, Contributor کو 40% commission
+            // 🆕 FIXED: Admin को 100%, Contributor को 40% commission
             let sellerEarning, companyEarning;
             if (isAdmin) {
-              sellerEarning = amount; // Admin کو پوری amount
-              companyEarning = 0; // Platform کو کچھ نہیں
+              sellerEarning = amount; // Admin को पूरी amount
+              companyEarning = 0; // Platform को कुछ नहीं
             } else {
-              sellerEarning = parseFloat((amount * 0.4).toFixed(6)); // Contributor کو 40%
-              companyEarning = parseFloat((amount * 0.6).toFixed(6)); // Platform کو 60%
+              sellerEarning = parseFloat((amount * 0.4).toFixed(6)); // Contributor को 40%
+              companyEarning = parseFloat((amount * 0.6).toFixed(6)); // Platform को 60%
             }
 
             // Create purchase record
@@ -345,20 +617,35 @@ exports.stripeWebhook = functions.https.onRequest(
               updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             };
 
-            // 🆕 اگر contributor ہے تو Contributors collection میں بھی update کریں
+            // 🆕 अगर contributor है तो Contributors collection में भी update करें
             if (!isAdmin) {
-              const contributorRef = db.collection("Contributors").doc(ownerId);
-              await contributorRef.set(
-                {
-                  pendingPayout:
-                    admin.firestore.FieldValue.increment(sellerEarning),
+              try {
+                await ensureContributorExists(db, ownerId);
+
+                const contributorRef = db
+                  .collection("Contributors")
+                  .doc(ownerId);
+
+                // ✅ ONLY UPDATE THESE TWO FIELDS
+                await contributorRef.update({
                   totalEarnings:
                     admin.firestore.FieldValue.increment(sellerEarning),
-                  lastSaleDate: admin.firestore.FieldValue.serverTimestamp(),
-                  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true }
-              );
+                  pendingEarnings:
+                    admin.firestore.FieldValue.increment(sellerEarning),
+                  lastUpdated: admin.firestore.FieldValue.serverTimestamp(), // Optional timestamp
+                });
+
+                console.log(
+                  `✅ Contributor ${ownerId} earnings updated: +$${sellerEarning.toFixed(
+                    3
+                  )}`
+                );
+              } catch (contributorError) {
+                console.error(
+                  `❌ Failed to update contributor ${ownerId}:`,
+                  contributorError
+                );
+              }
             }
 
             await db
@@ -498,236 +785,7 @@ exports.sendContributorStatusEmail = functions.https.onRequest((req, res) => {
 // =============================
 // GENERATE DOWNLOAD URL (ENHANCED)
 // =============================
-// exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
-//   // ✅ CORS headers
-//   res.set("Access-Control-Allow-Origin", "*");
-//   res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-//   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-//   if (req.method === "OPTIONS") {
-//     return res.status(204).send("");
-//   }
-
-//   if (req.method !== "POST") {
-//     return res.status(405).json({ error: "Method not allowed" });
-//   }
-
-//   try {
-//     // ✅ Authentication
-//     const authHeader = req.headers.authorization;
-//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//       return res.status(401).json({ error: "Login required" });
-//     }
-
-//     const token = authHeader.split("Bearer ")[1];
-//     const decodedToken = await admin.auth().verifyIdToken(token);
-//     const uid = decodedToken.uid;
-
-//     console.log(`✅ User authenticated: ${uid}`);
-
-//     // ✅ Get assetId
-//     const { assetId } = req.body;
-//     if (!assetId) {
-//       return res.status(400).json({ error: "assetId required" });
-//     }
-
-//     const db = admin.firestore();
-
-//     // ✅ **TRANSACTION**
-//     const transactionResult = await db.runTransaction(async (transaction) => {
-//       console.log("🔍 Starting transaction for asset:", assetId);
-
-//       // ============ READ PHASE ============
-//       const assetRef = db.collection("Assets").doc(assetId);
-//       const assetSnap = await transaction.get(assetRef);
-//       if (!assetSnap.exists) {
-//         throw new Error("Asset not found");
-//       }
-//       const asset = assetSnap.data();
-
-//       // ============ ✅ CRITICAL FIX: ADD DOWNLOAD TRACKING HERE ============
-
-//       // 1️⃣ Update ASSET download count (for both individual & team)
-//       transaction.update(assetRef, {
-//         downloadsCount: (asset.downloadsCount || 0) + 1,
-//         lastDownloadedAt: admin.firestore.FieldValue.serverTimestamp(),
-//         updatedAt: admin.firestore.FieldValue.serverTimestamp()
-//       });
-
-//       console.log(`📈 Asset download count incremented: ${(asset.downloadsCount || 0) + 1}`);
-
-//       // 2️⃣ Create download record in Downloads collection
-//       const downloadId = `${uid}_${assetId}_${Date.now()}`;
-//       const downloadRef = db.collection("Downloads").doc(downloadId);
-
-//       transaction.set(downloadRef, {
-//         id: downloadId,
-//         assetId: assetId,
-//         assetTitle: asset.title || "Untitled Asset",
-//         assetType: asset.type || "unknown",
-//         userId: uid,
-//         userEmail: decodedToken.email || null,
-//         userName: decodedToken.name || "User",
-//         downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
-//         timestamp: Date.now(),
-//         downloadMethod: "direct", // or "team_subscription"
-//         status: "completed"
-//       });
-
-//       console.log(`📝 Download record created: ${downloadId}`);
-
-//       // 3️⃣ Update USER'S Profile collection
-//       const userProfileRef = db.collection("Profiles").doc(uid);
-//       const userProfileSnap = await transaction.get(userProfileRef);
-
-//       if (userProfileSnap.exists) {
-//         const userProfile = userProfileSnap.data();
-//         const userTotalDownloads = userProfile.totalDownloads || 0;
-
-//         transaction.update(userProfileRef, {
-//           totalDownloads: userTotalDownloads + 1,
-//           lastDownloadAt: admin.firestore.FieldValue.serverTimestamp(),
-//           [`downloadHistory.${downloadId}`]: {
-//             assetId: assetId,
-//             assetTitle: asset.title || "Untitled",
-//             downloadedAt: admin.firestore.FieldValue.serverTimestamp()
-//           }
-//         });
-
-//         console.log(`👤 User profile updated. Total downloads: ${userTotalDownloads + 1}`);
-//       }
-
-//       // 4️⃣ CHECK IF THIS IS A TEAM DOWNLOAD & UPDATE TEAM COLLECTION
-//       // First, check if user has any active team subscription
-//       const userTeamsQuery = db.collection("Teams")
-//         .where("members", "array-contains", uid)
-//         .where("subscriptionStatus", "==", "active")
-//         .limit(1);
-
-//       const userTeamsSnap = await transaction.get(userTeamsQuery);
-
-//       if (!userTeamsSnap.empty) {
-//         // User is part of an active team
-//         const teamDoc = userTeamsSnap.docs[0];
-//         const teamId = teamDoc.id;
-//         const teamData = teamDoc.data();
-
-//         console.log(`👥 User ${uid} is part of active team: ${teamId}`);
-
-//         // Update Team collection - Team's download stats
-//         const teamRef = db.collection("Teams").doc(teamId);
-
-//         // Get current team downloads
-//         const currentTeamDownloads = teamData.totalDownloads || 0;
-
-//         transaction.update(teamRef, {
-//           totalDownloads: currentTeamDownloads + 1,
-//           lastDownloadAt: admin.firestore.FieldValue.serverTimestamp(),
-//           [`memberDownloads.${uid}`]: admin.firestore.FieldValue.increment(1),
-//           [`assetDownloads.${assetId}`]: admin.firestore.FieldValue.increment(1)
-//         });
-
-//         console.log(`🏢 Team ${teamId} download count: ${currentTeamDownloads + 1}`);
-
-//         // Create team-specific download record
-//         const teamDownloadRef = db.collection("Teams").doc(teamId)
-//           .collection("TeamDownloads").doc(downloadId);
-
-//         transaction.set(teamDownloadRef, {
-//           id: downloadId,
-//           assetId: assetId,
-//           assetTitle: asset.title || "Untitled",
-//           downloadedBy: uid,
-//           downloadedByEmail: decodedToken.email,
-//           downloadedByName: decodedToken.name || "Team Member",
-//           downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
-//           teamId: teamId,
-//           teamName: teamData.name || "Team"
-//         });
-
-//         console.log(`📊 Team download record created for team: ${teamId}`);
-
-//         // Also update the main download record with team info
-//         transaction.update(downloadRef, {
-//           teamId: teamId,
-//           teamName: teamData.name || "Team",
-//           downloadMethod: "team_subscription"
-//         });
-//       } else {
-//         console.log(`👤 User ${uid} is downloading as individual (no active team)`);
-//       }
-
-//       // ... [Keep all your existing purchase/subscription logic] ...
-//       // ... [Keep your URL extraction logic] ...
-
-//       return {
-//         foundUrl,
-//         filePath,
-//         assetType: asset.type,
-//         assetTitle: asset.title || "download",
-//         isFirebaseStorageUrl,
-//         // Return new counts for response
-//         newDownloadCount: (asset.downloadsCount || 0) + 1,
-//         isTeamDownload: !userTeamsSnap.empty
-//       };
-//     });
-
-//     // ✅ Extract the result
-//     const {
-//       foundUrl,
-//       filePath,
-//       assetType,
-//       assetTitle,
-//       isFirebaseStorageUrl,
-//       newDownloadCount,
-//       isTeamDownload
-//     } = transactionResult;
-
-//     let downloadUrl = foundUrl;
-
-//     // ✅ Generate signed URL if needed (keep your existing code)
-//     if (isFirebaseStorageUrl) {
-//       // ... [Your existing signed URL generation code] ...
-//     }
-
-//     // ✅ Set file name for response (keep your existing code)
-//     let fileName = (assetTitle || "download").replace(/[^\w\s.-]/gi, "_");
-//     // ... [Your existing file naming code] ...
-
-//     // ✅ Success response with team info
-//     console.log("✅ Transaction successful! File:", fileName);
-
-//     return res.status(200).json({
-//       success: true,
-//       url: downloadUrl,
-//       fileName: fileName,
-//       isPublicUrl: true,
-//       message: "Download ready",
-//       forceDownload: true,
-//       // Add tracking info
-//       downloadCount: newDownloadCount,
-//       isTeamDownload: isTeamDownload,
-//       tracked: true
-//     });
-
-//   } catch (err) {
-//     console.error("❌ Cloud Function error:", err);
-//     console.error("❌ Error stack:", err.stack);
-
-//     if (err.message.includes("Login required") || err.message.includes("token")) {
-//       return res.status(401).json({ error: "Login required" });
-//     } else if (err.message.includes("not found")) {
-//       return res.status(404).json({ error: err.message });
-//     } else if (err.message.includes("limit reached") || err.message.includes("permission")) {
-//       return res.status(403).json({ error: err.message });
-//     } else {
-//       return res.status(500).json({
-//         error: "Download failed: " + err.message,
-//         details: process.env.NODE_ENV === "development" ? err.stack : undefined,
-//       });
-//     }
-//   }
-// });
 exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
   // ✅ CORS headers
   res.set("Access-Control-Allow-Origin", "*");
@@ -779,20 +837,27 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
         throw new Error("Asset not found");
       }
       const asset = assetSnap.data();
+      const ownerId = asset.ownerId;
       console.log(`✅ Asset found: ${asset.title || assetId}`);
+      console.log(`👤 Asset owner: ${ownerId}`);
 
       // 2. Read User Profile data
       const userProfileRef = db.collection("Profiles").doc(uid);
       const userProfileSnap = await transaction.get(userProfileRef);
 
-      // 3. Read Team data (if any) - BEFORE ANY WRITES!
+      // 3. Read Asset Owner Profile data (for checking if admin or contributor)
+      const ownerProfileRef = db.collection("Profiles").doc(ownerId);
+      const ownerProfileSnap = await transaction.get(ownerProfileRef);
+
+      // 4. Read Team data (if any) - BEFORE ANY WRITES!
       let teamData = null;
       let teamId = null;
+      let userSubscriptionPlan = "individual"; // Default to individual
 
       const userTeamsQuery = db
         .collection("Teams")
         .where("members", "array-contains", uid)
-        .where("subscriptionStatus", "==", "active")
+        .where("active", "==", true)
         .limit(1);
 
       const userTeamsSnap = await transaction.get(userTeamsQuery);
@@ -801,11 +866,63 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
         const teamDoc = userTeamsSnap.docs[0];
         teamId = teamDoc.id;
         teamData = teamDoc.data();
+        userSubscriptionPlan = "team";
         console.log(`👥 User is in active team: ${teamId}`);
       }
 
-      // 4. Check purchase/subscription logic (READS ONLY)
-      // ... [Add your purchase validation reads here if any] ...
+      // 5. Check if user has subscription/download credits
+      let hasDownloadCredits = false;
+      let remainingCredits = 0;
+
+      if (userProfileSnap.exists) {
+        const userProfile = userProfileSnap.data();
+
+        if (
+          userProfile.subscription &&
+          userProfile.subscription.status === "active"
+        ) {
+          const subscription = userProfile.subscription;
+          const downloadsUsed = subscription.downloadsUsed || 0;
+          const downloadLimit = subscription.downloadLimit || 0;
+
+          // Check if subscription is expired
+          const now = new Date();
+          const expiresAt = subscription.expiresAt
+            ? new Date(
+                subscription.expiresAt.toDate
+                  ? subscription.expiresAt.toDate()
+                  : subscription.expiresAt
+              )
+            : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
+
+          if (expiresAt > now) {
+            hasDownloadCredits = downloadsUsed < downloadLimit;
+            remainingCredits = downloadLimit - downloadsUsed;
+            userSubscriptionPlan = subscription.plan || "individual";
+
+            console.log(
+              `📊 User has ${remainingCredits} download credits remaining (${downloadsUsed}/${downloadLimit} used)`
+            );
+          } else {
+            console.log(`⚠️ User subscription expired on ${expiresAt}`);
+          }
+        }
+      }
+
+      // 6. Check if user has already purchased this asset
+      const existingPurchaseQuery = db
+        .collection("Purchases")
+        .where("assetId", "==", assetId)
+        .where("buyerId", "==", uid)
+        .limit(1);
+
+      const existingPurchaseSnap = await transaction.get(existingPurchaseQuery);
+      const hasExistingPurchase = !existingPurchaseSnap.empty;
+
+      if (hasExistingPurchase) {
+        console.log(`✅ User already purchased this asset`);
+        hasDownloadCredits = true; // Allow download if already purchased
+      }
 
       // ============ PHASE 2: URL EXTRACTION (READ-ONLY) ============
       console.log("🔗 Phase 2: Extracting download URL...");
@@ -971,15 +1088,21 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
         assetId: assetId,
         assetTitle: asset.title || "Untitled Asset",
         assetType: asset.type || "unknown",
+        assetCategory: asset.category || "uncategorized",
         userId: uid,
         userEmail: userEmail,
         userName: userName,
+        ownerId: ownerId,
         downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
         timestamp: Date.now(),
-        downloadMethod: "direct",
+        downloadMethod: hasDownloadCredits
+          ? "subscription"
+          : "requires_payment",
         status: "completed",
         ipAddress: req.ip || req.headers["x-forwarded-for"] || "unknown",
         userAgent: req.headers["user-agent"] || "unknown",
+        requiresPayment: !hasDownloadCredits,
+        subscriptionPlan: userSubscriptionPlan,
       };
 
       // ✅ 3. Update USER Profile
@@ -987,7 +1110,7 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
         const userProfile = userProfileSnap.data();
         const userTotalDownloads = userProfile.totalDownloads || 0;
 
-        transaction.update(userProfileRef, {
+        const userUpdate = {
           totalDownloads: userTotalDownloads + 1,
           lastDownloadAt: admin.firestore.FieldValue.serverTimestamp(),
           [`downloadHistory.${downloadId}`]: {
@@ -995,7 +1118,19 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
             assetTitle: asset.title || "Untitled",
             downloadedAt: admin.firestore.FieldValue.serverTimestamp(),
           },
-        });
+        };
+
+        // If user has subscription credits, decrement them
+        if (
+          hasDownloadCredits &&
+          userProfile.subscription &&
+          userProfile.subscription.status === "active"
+        ) {
+          userUpdate[`subscription.downloadsUsed`] =
+            admin.firestore.FieldValue.increment(1);
+        }
+
+        transaction.update(userProfileRef, userUpdate);
 
         console.log(
           `👤 User profile updated. Total downloads: ${userTotalDownloads + 1}`
@@ -1045,6 +1180,97 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
         console.log(`📊 Team download record created`);
       }
 
+      // ✅ 5. CRITICAL: Calculate and record revenue for per-download
+      // This is where we handle the per-download earnings logic
+      if (hasDownloadCredits && !hasExistingPurchase) {
+        // User is using subscription credits for this download
+        // Calculate revenue for the asset owner (contributor)
+
+        // Check if owner is admin or contributor
+        const isAdmin =
+          ownerProfileSnap.exists && ownerProfileSnap.data().role === "admin";
+
+        // Calculate revenue based on subscription type
+        let perDownloadValue, sellerEarning, companyEarning;
+
+        if (userSubscriptionPlan === "team") {
+          perDownloadValue = PER_DOWNLOAD_VALUE_TEAM;
+          sellerEarning = SELLER_SHARE_TEAM;
+          companyEarning = COMPANY_SHARE_TEAM;
+        } else {
+          perDownloadValue = PER_DOWNLOAD_VALUE_INDIVIDUAL;
+          sellerEarning = SELLER_SHARE_INDIVIDUAL;
+          companyEarning = COMPANY_SHARE_INDIVIDUAL;
+        }
+
+        // Admin gets 100%, Contributor gets calculated share
+        let finalSellerEarning, finalCompanyEarning;
+
+        if (isAdmin) {
+          finalSellerEarning = perDownloadValue; // Admin gets everything
+          finalCompanyEarning = 0;
+        } else {
+          finalSellerEarning = sellerEarning;
+          finalCompanyEarning = companyEarning;
+        }
+
+        // Add revenue data to download record
+        downloadData.revenueGenerated = true;
+        downloadData.perDownloadValue = perDownloadValue;
+        downloadData.sellerEarning = finalSellerEarning;
+        downloadData.companyEarning = finalCompanyEarning;
+        downloadData.sellerType = isAdmin ? "admin" : "contributor";
+
+        console.log(`💰 Revenue calculated for download:`);
+        console.log(`   Subscription: ${userSubscriptionPlan}`);
+        console.log(`   Per download value: $${perDownloadValue}`);
+        console.log(`   Seller earning: $${finalSellerEarning}`);
+        console.log(`   Platform earning: $${finalCompanyEarning}`);
+
+        // ✅ Create a purchase record for this subscription-based download
+        const purchaseId = `purchase_${uid}_${assetId}_${Date.now()}`;
+        const purchaseRef = db.collection("Purchases").doc(purchaseId);
+
+        transaction.set(purchaseRef, {
+          id: purchaseId,
+          assetId: assetId,
+          assetTitle: asset.title || "Untitled Asset",
+          assetCategory: asset.category || "uncategorized",
+          buyerId: uid,
+          ownerId: ownerId,
+          sellerType: isAdmin ? "admin" : "contributor",
+          paymentType: "subscription_download",
+          subscriptionType: userSubscriptionPlan,
+          downloadCount: 1,
+          amount: perDownloadValue,
+          sellerEarning: finalSellerEarning,
+          companyEarning: finalCompanyEarning,
+          perDownloadValue: perDownloadValue,
+          sellerSharePerDownload: sellerEarning,
+          companySharePerDownload: companyEarning,
+          isPaidAsset: true,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // ✅ Update owner's earnings (if contributor)
+        if (!isAdmin) {
+          const contributorRef = db.collection("Contributors").doc(ownerId);
+
+          // We can't read and write the same document in a transaction
+          // So we'll update it after the transaction
+          downloadData.needsContributorUpdate = true;
+          downloadData.contributorEarning = finalSellerEarning;
+        }
+
+        // ✅ Update asset's total earnings
+        transaction.update(assetRef, {
+          totalEarnings:
+            admin.firestore.FieldValue.increment(finalSellerEarning),
+        });
+
+        console.log(`📝 Purchase record created for subscription download`);
+      }
+
       // Set the download record
       transaction.set(downloadRef, downloadData);
       console.log(`📝 Download record created: ${downloadId}`);
@@ -1054,11 +1280,59 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
         filePath,
         assetType: asset.type,
         assetTitle: asset.title || "download",
+        assetCategory: asset.category || "uncategorized",
         isFirebaseStorageUrl,
         newDownloadCount: (asset.downloadsCount || 0) + 1,
         isTeamDownload: !!(teamId && teamData),
+        requiresPayment: !hasDownloadCredits,
+        hasExistingPurchase: hasExistingPurchase,
+        subscriptionPlan: userSubscriptionPlan,
+        perDownloadValue:
+          userSubscriptionPlan === "team"
+            ? PER_DOWNLOAD_VALUE_TEAM
+            : PER_DOWNLOAD_VALUE_INDIVIDUAL,
+        hasDownloadCredits: hasDownloadCredits,
+        downloadData: downloadData, // Return for post-transaction updates
       };
     });
+
+    // ✅ POST-TRANSACTION UPDATES (Outside transaction)
+    // Update contributor earnings if needed
+    // ✅ POST-TRANSACTION UPDATES - MATCH YOUR FIELDS
+    // ✅ POST-TRANSACTION UPDATES - ONLY TWO FIELDS
+    if (
+      transactionResult.downloadData &&
+      transactionResult.downloadData.needsContributorUpdate
+    ) {
+      try {
+        const ownerId = transactionResult.downloadData.ownerId;
+        const contributorEarning =
+          transactionResult.downloadData.contributorEarning;
+
+        // 1. Ensure contributor exists
+        await ensureContributorExists(db, ownerId);
+
+        // 2. Update ONLY earnings fields
+        await db
+          .collection("Contributors")
+          .doc(ownerId)
+          .update({
+            totalEarnings:
+              admin.firestore.FieldValue.increment(contributorEarning),
+            pendingEarnings:
+              admin.firestore.FieldValue.increment(contributorEarning),
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(), // Optional
+          });
+
+        console.log(
+          `✅ Contributor ${ownerId} earnings updated: +$${contributorEarning.toFixed(
+            3
+          )}`
+        );
+      } catch (contributorError) {
+        console.error("❌ Error updating contributor:", contributorError);
+      }
+    }
 
     // ✅ Extract the result
     const {
@@ -1066,10 +1340,43 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
       filePath,
       assetType,
       assetTitle,
+      assetCategory,
       isFirebaseStorageUrl,
       newDownloadCount,
       isTeamDownload,
+      requiresPayment,
+      hasExistingPurchase,
+      subscriptionPlan,
+      perDownloadValue,
+      hasDownloadCredits,
     } = transactionResult;
+
+    // If download requires payment, return payment info instead of URL
+    if (requiresPayment && !hasExistingPurchase) {
+      console.log(`💰 Download requires payment. User has no credits.`);
+
+      return res.status(402).json({
+        success: false,
+        requiresPayment: true,
+        subscriptionPlan: subscriptionPlan,
+        perDownloadValue: perDownloadValue,
+        assetId: assetId,
+        assetTitle: assetTitle,
+        message: "Payment required for download",
+        paymentInfo: {
+          amount: perDownloadValue,
+          description: `Download: ${assetTitle}`,
+          metadata: {
+            paymentType: "per_download",
+            downloadCount: "1",
+            plan: subscriptionPlan,
+            assetId: assetId,
+            assetCategory: assetCategory,
+            userId: uid,
+          },
+        },
+      });
+    }
 
     let downloadUrl = foundUrl;
 
@@ -1257,20 +1564,29 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
     // ✅ Success response
     console.log("✅ Transaction successful! Download ready.");
 
-    return res.status(200).json({
+    const responseData = {
       success: true,
       url: downloadUrl,
       fileName: fileName,
       isPublicUrl: true,
       message: "Download ready",
-      forceDownload: true, // Frontend should use this to force download
+      forceDownload: true,
       downloadCount: newDownloadCount,
       isTeamDownload: isTeamDownload,
       tracked: true,
-      // ✅ Add instruction for frontend
       downloadInstructions:
         "Use this URL with download attribute or trigger download programmatically",
-    });
+    };
+
+    // Add payment info if this was a paid download
+    if (hasDownloadCredits && !hasExistingPurchase) {
+      responseData.paymentApplied = true;
+      responseData.subscriptionPlan = subscriptionPlan;
+      responseData.perDownloadValue = perDownloadValue;
+      responseData.creditsUsed = true;
+    }
+
+    return res.status(200).json(responseData);
   } catch (err) {
     console.error("❌ Cloud Function error:", err);
     console.error("❌ Error stack:", err.stack);
