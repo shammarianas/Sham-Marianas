@@ -1499,8 +1499,8 @@ figure {
   }
 
   100% {
-    -webkit-transform: translateX(-100%);
-    transform: translateX(-100%);
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
   }
 }
 
@@ -9869,7 +9869,7 @@ footer.clean-footer.crev .circle-blur {
 }
 
 .price {
-  font-size: 3rem;
+  font-size: 1rem !important;
   font-weight: 800;
   line-height: 1;
 }
@@ -9939,7 +9939,7 @@ footer.clean-footer.crev .circle-blur {
 }
 
 .feature-icon.included {
-  background: #3b82f6;
+  background: #52b0b4;
 }
 
 .feature-icon.not-included {
@@ -9973,8 +9973,6 @@ footer.clean-footer.crev .circle-blur {
 
 /* Buttons */
 .action-btn {
-  border: none;
-  border-radius: 12px;
   padding: 1rem 1.5rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -9986,6 +9984,7 @@ footer.clean-footer.crev .circle-blur {
   overflow: hidden;
   font-size: 0.875rem;
 }
+
 
 .action-btn::before {
   content: '';
@@ -10359,33 +10358,38 @@ footer.clean-footer.crev .circle-blur {
 
 .cta-btn {
   border: none;
-  border-radius: 12px;
+  border-radius: 0.5rem;
   padding: 1rem 2rem;
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 .cta-btn.primary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  background: #52b0b4;
   color: white;
+  border: none;
 }
 
 .cta-btn.primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 40px -10px rgba(139, 92, 246, 0.4);
+  background: transparent !important;
+  border: 1px solid #fff !important;
+  color: #fff !important;
 }
 
 .cta-btn.secondary {
-  background: transparent;
-  border: 1px solid #4b5563;
-  color: white;
+
+ border: 1px solid #fff;
+    background: transparent;
+    color: #fff;
+    transition: all 0.4s;
 }
 
 .cta-btn.secondary:hover {
-  border-color: #6b7280;
-  background: rgba(255, 255, 255, 0.05);
+background: #52b0b4;
+    color: #fff;
+    border-color: #52b0b4;
 }
 
 /* Responsive Design */

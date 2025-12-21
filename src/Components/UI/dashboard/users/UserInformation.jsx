@@ -418,7 +418,7 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
 
           {/* Bulk actions */}
           {selectedUsers.length > 0 && (
-            <div className="content-card bulk-actions-card">
+            <div className="content-card bulk-actions-card w-100">
               <div className="card-body">
                 <div className="bulk-actions">
                   <span className="bulk-selected">

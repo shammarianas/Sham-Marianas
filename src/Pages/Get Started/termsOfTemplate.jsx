@@ -471,7 +471,7 @@ const TermsandConditionTemplate = () => {
           Unless we say otherwise, we're not affiliated with these third-party services, we just use what helps us deliver our best to you.
         </p>
 
-        <h2 className="text-3xl fw-500 mb-2">Your info, your trust, our honor</h2>
+        <h2 className="text-3xl fw-500 mb-2">Your info, your trust, our Honor</h2>
         <p className="fotter-police-p p-color mb-8">
           We don't just collect data, we protect your digital trust like gold. Here's how we handle your info with heart, hustle, and high standards:
         </p>
@@ -506,7 +506,7 @@ const TermsandConditionTemplate = () => {
           And your privacy? It's always safe and always respected.
         </p>
 
-        <h2 className="text-3xl fw-500 mb-2">Your ideas matter. So Do Rights.</h2>
+        <h2 className="text-3xl fw-500 mb-2">Your ideas matter. So Do Rights</h2>
         <p className="fotter-police-p p-color mb-8">
           At <span className="text-bold underline main-color">Sham Marianas</span>, creativity is everything, and we make sure it's respected, protected, and celebrated. Here's how intellectual property works in our creative universe:
         </p>

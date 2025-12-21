@@ -5937,16 +5937,21 @@ div>button.add_to_wishlist_btn.favorited {
 }
 
 .action-btn {
-  background: transparent;
-  border: none;
-  color: #888;
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
+background: #52b0b4;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
   transition: all 0.3s;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.action-btn:hover {
+  background: transparent !important;
+  border: 1px solid #fff;
+  color: #fff !important;
 }
 
 .action-btn.remove-btn:hover {
@@ -7852,7 +7857,7 @@ div.hidden.none {
   }
 
   .trade_main .my_trades .items .trade_item_card .left .card_details .price,
-  .trade_main .my_trades .items .trade_item_card .right .card_details .price {
+  .trade_main .my_trades .items .trade_item_card .right .card_details {
     font-size: 0.7rem;
   }
 

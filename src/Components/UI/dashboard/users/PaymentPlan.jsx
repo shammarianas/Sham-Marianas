@@ -442,7 +442,13 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
             className="action-button secondary"
             onClick={handleRefreshData}
             disabled={loading}
+<<<<<<< HEAD
           ></button>
+=======
+          >
+            Refresh Data
+          </button>
+>>>>>>> 8dfe0c12ba0c8b36a63202c3f13473e19ba9e179
           <span className="user-badge-count">
             {stats.totalSubscriptions} total subscriptions
           </span>
