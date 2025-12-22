@@ -1,7 +1,11 @@
 import React from "react";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 const PricingAndFees = () => {
     return (
+       <>
+       <SEO {...SEO_CONFIG.pricesFees} />
         <div className="section-padding">
             <div className="container mx-size">
                 <h1 className="text-4xl fw-500 mb-8 text-center">Prices and Fees</h1>
@@ -78,6 +82,7 @@ const PricingAndFees = () => {
                 </p>
             </div>
         </div>
+       </>
     );
 };
 

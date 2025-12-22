@@ -1,7 +1,11 @@
 import React from "react";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";s
 
 const PrivacyPolicyTemplate = () => {
   return (
+   <>
+   <SEO {...SEO_CONFIG.privacyPolicyTemplate} />
     <div className="section-padding">
       <div className="container mx-size">
         <h1 className="text-4xl fw-500 mb-8 text-center">Privacy Policy Template's</h1>
@@ -242,6 +246,7 @@ const PrivacyPolicyTemplate = () => {
         </p>
       </div>
     </div>
+   </>
   );
 };
 

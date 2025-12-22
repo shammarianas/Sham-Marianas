@@ -8,12 +8,15 @@ import Marq2 from "../../Components/marq2";
 import Header from "../../Components/Ecommerce/Header";
 import Intro from "../../Components/Ecommerce/Intro";
 import EcommerceDev from "../../Components/Ecommerce/EcommerceDev";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 export default function PageServicesDetails() {
   const main = useRef();
 
   return (
     <>
+      <SEO seoData={SEO_CONFIG.ecommerce} />
       <body>
         <Cursor />
         <ProgressScroll />

@@ -1,4 +1,6 @@
 import React from "react";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 function openAccordion(event) {
     document.querySelectorAll(".accordion-info").forEach((element) => {
         element.classList.remove("active");
@@ -12,6 +14,7 @@ function openAccordion(event) {
 const SellerGuideline = () => {
     return (
         <>
+        <SEO {...SEO_CONFIG.sellerGuidlines} />
             <div className="section-padding">
                 <div className="container mx-size">
                     <h1 className="text-4xl fw-500 mb-8 text-center">Seller Guidelines</h1>

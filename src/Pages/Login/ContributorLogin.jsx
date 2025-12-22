@@ -116,18 +116,18 @@ const ContributorLogin = () => {
       setLoadingCountries(true);
       try {
         const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         const formattedCountries = data.map(country => ({
           name: country.name.common,
           code: country.cca2
         })).sort((a, b) => a.name.localeCompare(b.name));
-        
+
         setAllCountries(formattedCountries);
         console.log(`Fetched ${formattedCountries.length} countries for Contributor`);
       } catch (error) {
@@ -376,7 +376,7 @@ const ContributorLogin = () => {
       setError("Password must be at least 6 characters");
       return false;
     }
-    
+
     if (usernameStatus === "taken") {
       setError("Please choose a different username");
       return false;
@@ -793,7 +793,10 @@ const ContributorLogin = () => {
 
   return (
     <>
-      <SEO {...SEO_CONFIG.contributorLogin} />
+      {page === "login" && <SEO {...SEO_CONFIG.contributerLogin} />}
+      {page === "signup" && <SEO {...SEO_CONFIG.contributerSignup} />}
+      {page === "forgot" && <SEO {...SEO_CONFIG.contributerForgotPassword} />}
+
       <div className="login">
         {/* =================== LOGIN PAGE =================== */}
         {page === "login" && (
@@ -1728,9 +1731,8 @@ const ContributorLogin = () => {
                   ) : (
                     <button
                       type="submit"
-                      className={`login_btn ${
-                        !termsAccepted ? "disabled" : ""
-                      }`}
+                      className={`login_btn ${!termsAccepted ? "disabled" : ""
+                        }`}
                       disabled={!termsAccepted}
                       style={{ flex: 1 }}
                     >
