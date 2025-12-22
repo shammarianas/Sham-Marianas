@@ -85,8 +85,7 @@ const PrintMediaPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            we transform your brand vision into reality with print media
+            </span>, we transform your brand vision into reality with print media
             solutions that captivate and convert. Our design process blends bold
             creativity with strategic thinking to create print materials that
             not only look stunning but also drive business results. Whether you

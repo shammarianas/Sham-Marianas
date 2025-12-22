@@ -84,8 +84,7 @@ const VfxAndAdsPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            we turn imagination into impact, crafting cinematic visuals that
+            </span>, we turn imagination into impact, crafting cinematic visuals that
             not only dazzle the eye but also drive real results. Our VFX (visual
             effects) and CGI (computer-generated imagery) services merge
             storytelling with next-level design to create ads that demand

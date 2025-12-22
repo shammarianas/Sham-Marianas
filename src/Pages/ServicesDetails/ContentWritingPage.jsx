@@ -76,8 +76,7 @@ const ContentServicePage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            we turn words into experiences, crafting powerful, engaging content
+            </span>, we turn words into experiences, crafting powerful, engaging content
             that speaks your brand’s truth and connects with your audience. From
             attention-grabbing web copy to SEO-friendly blogs, we create content
             that builds trust, boosts traffic, and drives real results.

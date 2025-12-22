@@ -85,8 +85,7 @@ const WebDevelopmentPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            we create websites that do more than just look great they load fast,
+            </span>, we create websites that do more than just look great they load fast,
             run smoothly on all devices, and leave a strong first impression.
             With responsive layouts, clean code, and SEO-friendly structures,
             your site will not only look professional but also rank higher and

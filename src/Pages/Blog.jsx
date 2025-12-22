@@ -98,7 +98,7 @@ function Blogs() {
   return (
     <>
       <ProgressScroll />
-  <SEO {...SEO_CONFIG.blogHome} />
+      <SEO {...SEO_CONFIG.blogHome} />
       <div className="main-bgs">
         <header
           className="page-header bg-img section-padding valign"
