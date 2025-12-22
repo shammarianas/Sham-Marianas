@@ -19,13 +19,14 @@ import {
   getDocs,
   getDoc,
 } from "firebase/firestore";
-import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import eye_icon from "../../assets/Icons/eye.png";
 import { loginWithGoogle } from "./GoogleLogin";
 import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 // Country code data (for phone)
 const countryCodes = [
@@ -650,20 +651,10 @@ const Login = () => {
 
   return (
     <>
-   <Helmet>
-  <title>Login | Sham Marianas - Digital Marketing Agency</title>
-  <meta 
-    name="description" 
-    content="Log in to Sham Marianas dashboard. Continue with Apple, email, or work mail SSO login. Access digital marketing services, analytics, and client portal. Don't have an account? Sign up for our advertising services." 
-  />
-  <meta property="og:title" content="Login | Sham Marianas Advertising Agency" />
-  <meta 
-    property="og:description" 
-    content="Client login portal for Sham Marianas - Top advertising agency in Pakistan offering digital marketing and brand building services." 
-  />
-  <meta property="og:url" content={window.location.href} />
-</Helmet>
-
+      {page === "login" && <SEO {...SEO_CONFIG.login} />}
+      {page === "signup" && <SEO {...SEO_CONFIG.signup} />}
+      {page === "forgot" && <SEO {...SEO_CONFIG.forgotPassword} />}
+      
       <div className="login">
         {/* =================== LOGIN PAGE =================== */}
         {page === "login" && (

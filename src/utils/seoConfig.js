@@ -18,7 +18,7 @@ export const SEO_CONFIG = {
     keywords: "Digital Marketing Services, Web Development Services, SEO Services, Social Media Marketing, Branding Services",
     // canonical: "https://www.shammarianas.com/services"
   },
-  
+
   // BLOG PAGES SEO
   blogHome: {
     title: "Blog - Shammarianas | Digital Marketing Insights & Tips",
@@ -26,57 +26,56 @@ export const SEO_CONFIG = {
     keywords: "Digital Marketing Blog, SEO Tips, Marketing Strategies, Business Growth, Content Marketing, Social Media Tips",
     // canonical: "https://www.shammarianas.com/blogs"
   },
-  
+
   // DYNAMIC BLOG SEO TEMPLATE
-  // Yeh function har blog page ke liye dynamic SEO generate karega
   getBlogSEO: (blogData) => {
     if (!blogData) return null;
-    
+
     // Clean content se description create karo
     const getDescription = () => {
       if (blogData.excerpt && blogData.excerpt.trim()) {
         return blogData.excerpt;
       }
-      
+
       if (blogData.content) {
         // Remove HTML tags
         const plainText = blogData.content.replace(/<[^>]*>/g, "").trim();
         // Take first 160 characters
-        return plainText.length > 160 
+        return plainText.length > 160
           ? plainText.substring(0, 160) + "..."
           : plainText;
       }
-      
+
       return "Read this informative article on digital marketing, SEO, and business growth strategies.";
     };
-    
+
     // Keywords/Tags se create karo
     const getKeywords = () => {
       const baseKeywords = [""];
       let keywords = [...baseKeywords];
-      
+
       // Add category
       if (blogData.category) {
         const categoryMap = {
           "business": "Business Strategy",
           "technology": "Technology Trends",
-          "design": "Design Tips", 
+          "design": "Design Tips",
           "lifestyle": "Lifestyle",
           "ai": "Artificial Intelligence AI",
           "marketing": "Marketing Techniques"
         };
         keywords.push(categoryMap[blogData.category] || blogData.category);
       }
-      
+
       // Add tags if available
       if (blogData.tags && Array.isArray(blogData.tags) && blogData.tags.length > 0) {
         keywords = [...keywords, ...blogData.tags];
       }
-      
+
       // Remove duplicates and join
       return [...new Set(keywords)].slice(0, 15).join(", ");
     };
-    
+
     return {
       title: `${blogData.title} | Shammarianas Blog`,
       description: getDescription(),
@@ -92,7 +91,7 @@ export const SEO_CONFIG = {
       section: blogData.category || "Digital Marketing"
     };
   },
-  
+
   // BLOG CATEGORIES SEO
   blogCategories: {
     business: {
@@ -132,22 +131,22 @@ export const SEO_CONFIG = {
       // canonical: "https://www.shammarianas.com/blogs/category/marketing"
     }
   },
-  
+
   // MORE PAGES
   contact: {
     title: "Contact Us - Shammarianas | Get in Touch",
     description: "Get in touch with Shammarianas for digital marketing solutions, SEO services, and business growth strategies. Contact us today!",
     keywords: "Contact Shammarianas, Get Quote, Digital Marketing Consultation, Business Inquiry, Support",
-    canonical: "https://www.shammarianas.com/contact"
+    // canonical: "https://www.shammarianas.com/contact"
   },
-  
- portfolio: {
+
+  portfolio: {
     title: "Portfolio - Shammarianas | Our Projects & Work",
     description: "Explore Shammarianas portfolio of successful projects including web design, development, digital marketing, and branding solutions.",
     keywords: "Portfolio, Projects, Case Studies, Web Design, Development, Digital Marketing, Branding",
     // canonical auto-generated hoga
   },
-  
+
   // Portfolio category specific
   portfolioCategories: {
     design: {
@@ -171,13 +170,13 @@ export const SEO_CONFIG = {
       keywords: "Printing Portfolio, Brochure Design, Business Cards, Packaging Design, Print Materials"
     }
   },
-  
+
   // Dynamic project SEO
   getProjectSEO: (projectData) => {
     if (!projectData) return null;
-    
+
     const baseKeywords = ["Portfolio Project", "Case Study", "Shammarianas"];
-    
+
     // Category specific keywords
     const categoryKeywords = {
       design: ["UI/UX Design", "Graphic Design", "Visual Design"],
@@ -185,7 +184,7 @@ export const SEO_CONFIG = {
       marketing: ["Digital Marketing", "SEO", "Social Media"],
       printing: ["Print Design", "Printing", "Packaging"]
     };
-    
+
     const keywords = [
       ...baseKeywords,
       ...(categoryKeywords[projectData.category] || []),
@@ -193,12 +192,12 @@ export const SEO_CONFIG = {
       projectData.client,
       projectData.category.charAt(0).toUpperCase() + projectData.category.slice(1)
     ].filter(Boolean).slice(0, 10).join(", ");
-    
+
     // Create description
-    const description = projectData.challengeDescription 
+    const description = projectData.challengeDescription
       ? `${projectData.title} - ${projectData.challengeDescription.substring(0, 120)}...`
       : `${projectData.title} - A ${projectData.category} project${projectData.client ? ' for ' + projectData.client : ''} by Shammarianas.`;
-    
+
     return {
       title: `${projectData.title} - Shammarianas Portfolio`,
       description: description.length > 160 ? description.substring(0, 160) + '...' : description,
@@ -210,18 +209,102 @@ export const SEO_CONFIG = {
     };
   },
 
-  
+
+
   privacy: {
     title: "Privacy Policy - Shammarianas",
     description: "Read Shammarianas privacy policy to understand how we collect, use, and protect your personal information.",
     keywords: "Privacy Policy, Data Protection, Terms of Service, Legal, Compliance",
-    canonical: "https://www.shammarianas.com/privacy"
+    // canonical: "https://www.shammarianas.com/privacy"
   },
-  
+
   terms: {
     title: "Terms of Service - Shammarianas",
     description: "Terms and conditions for using Shammarianas website and services. Please read carefully.",
     keywords: "Terms of Service, Legal Terms, User Agreement, Conditions, Policy",
-    canonical: "https://www.shammarianas.com/terms"
-  }
+    // canonical: "https://www.shammarianas.com/terms"
+  },
+
+
+
+  // =========================================================
+  //   Template page SEO
+  // =========================================================
+
+ login: {
+    title: "Login | Shammarianas - Digital Marketing Platform",
+    description: "Login to your Shammarianas account to access digital marketing tools, portfolio management, and exclusive resources.",
+    keywords: "Login Shammarianas, Sign In, Account Access, Digital Marketing Login, Portfolio Dashboard",
+    robots: "noindex, follow" // ✅ Important
+  },
+  
+  signup: {
+    title: "Sign Up | Shammarianas - Create Account",
+    description: "Create your free Shammarianas account to access digital marketing tools, portfolio features, and exclusive resources.",
+    keywords: "Sign Up Shammarianas, Create Account, Register, Join Shammarianas, Digital Marketing Account",
+    robots: "noindex, follow" // ✅ Important
+  },
+  
+  forgotPassword: {
+    title: "Forgot Password | Shammarianas",
+    description: "Reset your Shammarianas account password. Enter your email to receive password reset instructions.",
+    keywords: "Forgot Password, Password Reset, Account Recovery, Reset Login",
+    robots: "noindex, nofollow" // ✅ Important
+  },
+
+  contributorLogin: {
+    title: "Contributor Login - Shammarianas | Access Your Contributor Account",
+    description: "Login to your Shammarianas contributor account to manage your articles, blogs, and content submissions.",
+    keywords: "Contributor Login, Content Submission, Blog Management, Article Contributor"
+  },
+
+  templates: {
+    title: "Website Templates - Shammarianas | Professional Designs",
+    description: "Browse professional website templates and designs from Shammarianas. Responsive templates for businesses, portfolios, and e-commerce.",
+    keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
+  },
+
+   // Dynamic category SEO generator
+  getCategorySEO: (categoryName, categorySlug) => {
+    const categoryMap = {
+      "videos": {
+        title: "Stock Videos | Shammarianas - HD & 4K Footage",
+        description: "Browse premium stock videos, HD and 4K footage for films, commercials, and social media.",
+        keywords: "Stock Videos, HD Footage, 4K Videos, Royalty-Free Videos, Video Clips",
+        ogImage: "/assets/imgs/categories/videos-og.jpg"
+      },
+      "models": {
+        title: "3D Models | Shammarianas - 3D Assets & CGI Models",
+        description: "High-quality 3D models for animation, gaming, and design. Ready-to-use assets.",
+        keywords: "3D Models, 3D Assets, CGI Models, Animation Models, Game Assets",
+        ogImage: "/assets/imgs/categories/3d-models-og.jpg"
+      },
+      "video-templates": {
+        title: "Video Templates | Shammarianas - Motion Graphics",
+        description: "Professional video templates for After Effects, Premiere Pro. Motion graphics and intros.",
+        keywords: "Video Templates, After Effects Templates, Motion Graphics, Social Media Templates",
+        ogImage: "/assets/imgs/categories/video-templates-og.jpg"
+      },
+      "images": {
+        title: "Stock Images | Shammarianas - High-Resolution Photos",
+        description: "Download stunning stock photos and images for websites, marketing, and creative projects.",
+        keywords: "Stock Photos, Royalty-Free Images, High-Resolution Photos, Background Images",
+        ogImage: "/assets/imgs/categories/images-og.jpg"
+      },
+      // ... add all other categories
+    };
+
+    const defaultSEO = {
+      title: `${categoryName} | Shammarianas - Digital Assets`,
+      description: `Browse through a wide range of ${categoryName} on Shammarianas. Premium digital assets.`,
+      keywords: `${categoryName}, Digital Assets, Creative Resources, Downloadable Files`,
+      ogImage: "/assets/imgs/categories/default-og.jpg"
+    };
+
+    return categoryMap[categorySlug] || defaultSEO;
+  },
+
+  
+
 };
+

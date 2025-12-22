@@ -19,13 +19,14 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import eye_icon from "../../assets/Icons/eye.png";
 import { loginWithGoogle } from "./GoogleLogin";
 import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 // Country code data (for phone)
 const countryCodes = [
@@ -792,24 +793,7 @@ const ContributorLogin = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Contributor Login | Your Platform Name</title>
-        <meta
-          name="description"
-          content="Login as contributor to upload and manage your content"
-        />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:title"
-          content="Contributor Login | Your Platform Name"
-        />
-        <meta
-          property="og:description"
-          content="Login as contributor to upload and manage your content"
-        />
-        <meta property="og:url" content={window.location.href} />
-      </Helmet>
-
+      <SEO {...SEO_CONFIG.contributorLogin} />
       <div className="login">
         {/* =================== LOGIN PAGE =================== */}
         {page === "login" && (

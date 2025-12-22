@@ -6,6 +6,8 @@ import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
 import MarqStock from "../Components/marqStock";
 import Header from "../Components/stock/Header";
+import SEO from "../common/SEO";
+import {SEO_CONFIG} from "../utils/seoConfig";
 
 export default function StockPage() {
   const main = useRef();
@@ -20,6 +22,7 @@ export default function StockPage() {
 
   return (
     <>
+      <SEO {...SEO_CONFIG.templates} />
       <Cursor />
       <ProgressScroll />
       <Lines />
