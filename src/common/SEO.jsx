@@ -1,23 +1,39 @@
-// components/common/SEO.jsx
-import React, { useEffect } from 'react'; 
+// components/common/SEO.jsx - CORRECTED
+import React from 'react'; 
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom'; // ✅ USE THIS
 
 const SEO = ({ 
-  title = "Shammarianas", // ✅ Added default value
+  title = "Shammarianas",
   description = "Sham Marianas is a top advertising agency that helps businesses grow with digital marketing, brand building, and ROI-focused advertising. We employ tried-and-true marketing techniques to increase our internet presence, draw in new clients, and provide tangible outcomes. Let's grow your company to new heights!", 
   keywords = "Web development, Digital Marketing, SEO, Social Media Marketing, Branding, Advertising Agency", 
-  canonical = "https://www.shammarianas.com", 
-  ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.webp" ,
+  canonical, 
+  ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.webp",
   ogType = "website",
   twitterCard = "summary_large_image"
 }) => {
+  const location = useLocation(); // ✅ Get current URL path
+  const siteUrl = "https://www.shammarianas.com";
+  
+  // ✅ DYNAMIC CANONICAL URL
+  const getCanonicalUrl = () => {
+    // If canonical prop provided from page, use it
+    if (canonical) return canonical;
+    
+    // Otherwise, generate from current path
+    const path = location.pathname;
+    return `${siteUrl}${path}`;
+  };
+  
+  const canonicalUrl = getCanonicalUrl();
   const siteTitle = "Shammarianas";
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
-  const siteUrl = "https://www.shammarianas.com";
 
-  // ✅ Debug console log - remove in production
-  console.log("SEO Component - Title:", title);
-  console.log("SEO Component - Full Title:", fullTitle);
+  // ✅ Debug console log
+  console.log("SEO Component Debug:");
+  console.log("  - Title:", title);
+  console.log("  - Current Path:", location.pathname);
+  console.log("  - Canonical URL:", canonicalUrl);
 
   return (
     <Helmet>
@@ -25,12 +41,14 @@ const SEO = ({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
-      <link rel="canonical" href={canonical} />
+      
+      {/* ✅ DYNAMIC CANONICAL LINK */}
+      <link rel="canonical" href={canonicalUrl} />
       
       {/* Open Graph Tags (Facebook, LinkedIn) */}
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
-      <meta property="og:url" content={canonical} />
+      <meta property="og:url" content={canonicalUrl} /> {/* ✅ Same canonical */}
       <meta property="og:type" content={ogType} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:site_name" content={siteTitle} />
@@ -43,12 +61,11 @@ const SEO = ({
       
       {/* Additional Tags */}
       <meta name="robots" content="index, follow" />
-      
       <meta name="language" content="English" />
       <meta name="revisit-after" content="7 days" />
       <meta name="author" content="Shammarianas" />
       
-      {/* Structured Data (JSON-LD) - Optional but recommended for SEO */}
+      {/* Structured Data */}
       <script type="application/ld+json">
         {JSON.stringify({
           "@context": "https://schema.org",

@@ -104,6 +104,7 @@ const PortfolioList = ({
   const [selectedPortfolio, setSelectedPortfolio] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [portfolioToEdit, setPortfolioToEdit] = useState(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   // Edit Icon Component
   const EditIcon = () => (
@@ -137,11 +138,21 @@ const PortfolioList = ({
     }
   };
 
+  // YEH FUNCTION UPDATE KARO:
   const handleCreateNew = () => {
     setPortfolioToEdit(null); // Ensure it's in create mode
+    setIsCreateModalOpen(true); // YEH LINE ADD KARO
+    
+    // Optional: If parent component wants to handle this
     if (typeof onCreate === 'function') {
       onCreate();
     }
+  };
+
+   // YEH FUNCTION ADD KARO:
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
+    setPortfolioToEdit(null);
   };
 
   const uniqueCategories = Array.from(
@@ -401,7 +412,13 @@ const PortfolioList = ({
         />
       )}
 
-      {/* Create Portfolio Modal - Parent component se control hoga */}
+      {isCreateModalOpen && (
+        <ProjectModal
+          isOpen={isCreateModalOpen}
+          onClose={handleCloseCreateModal}
+          projectToEdit={null} // Null means create new
+        />
+      )}
     </div>
   );
 };

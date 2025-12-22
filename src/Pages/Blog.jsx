@@ -12,6 +12,8 @@ import {
 } from "firebase/firestore";
 import loadBackgroudImages from "../common/loadBackgroudImages";
 import ProgressScroll from "../common/ProgressScroll";
+import { SEO_CONFIG } from "../utils/seoConfig";
+import SEO from "../common/SEO";
 
 function Blogs() {
   const [blogs, setBlogs] = useState([]);
@@ -96,7 +98,7 @@ function Blogs() {
   return (
     <>
       <ProgressScroll />
-
+  <SEO {...SEO_CONFIG.blogHome} />
       <div className="main-bgs">
         <header
           className="page-header bg-img section-padding valign"
