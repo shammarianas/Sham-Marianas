@@ -1,7 +1,11 @@
 import React from "react";
+import SEO from "../../common/SEO"; 
+import { SEO_CONFIG } from "../../utils/seoConfig"; 
 
 const TermsandCondition = () => {
   return (
+   <>
+   <SEO {...SEO_CONFIG.terms} />
     <div className="section-padding">
       <div className="container mx-size">
         <h1 className="text-4xl fw-500 mb-8 text-center">Terms & Conditions</h1>
@@ -101,6 +105,7 @@ const TermsandCondition = () => {
         </p>
       </div>
     </div>
+   </>
   );
 };
 

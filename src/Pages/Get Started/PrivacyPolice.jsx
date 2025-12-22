@@ -1,7 +1,13 @@
 import React from "react";
+import SEO from "../../common/SEO"; 
+import { SEO_CONFIG } from "../../utils/seoConfig"; 
+
 
 const PrivacyPolicy = () => {
   return (
+   <>
+   <SEO {...SEO_CONFIG.privacy} />
+      
     <div className="section-padding">
       <div className="container mx-size">
         <h1 className="text-4xl fw-400 mb-6 text-center">Privacy Policy</h1>
@@ -41,6 +47,7 @@ const PrivacyPolicy = () => {
        </ul>
       </div>
     </div>
+   </>
   );
 };
 

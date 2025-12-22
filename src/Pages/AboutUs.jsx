@@ -7,9 +7,12 @@ import Clients from "./../Components/about-us/Clients";
 import Blog from "./../Components/about-us/Blog";
 import Marq2 from "./../Components/marq2";
 import Testimonials from "../Components/services/Testimonials";
+import SEO from "../common/SEO";
+import { SEO_CONFIG } from "../utils/seoConfig";
 function AboutUs() {
   return (
     <>
+      <SEO {...SEO_CONFIG.about} />
       <Header />
       <Intro />
       <Numbers />
