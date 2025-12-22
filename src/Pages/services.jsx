@@ -10,6 +10,7 @@ import Header from "../Components/services/Header";
 import Intro2 from "../Components/services/Intro2";
 // import Services from "../Components/landing/Services";
 import Services from "./../Components/services/Services";
+import Contact from "../Components/landing/Contact";
 import Testimonials from "../Components/services/Testimonials";
 import WhatsAppButton from "../Components/whatsappButton";
 import { SEO_CONFIG } from "../utils/seoConfig";
@@ -39,6 +40,7 @@ export default function PageServices() {
           <Intro2 />
           {/* <Numbers /> */}
           <Testimonials />
+          <Contact />
           <Marq2 />
         </main>
       </div>
