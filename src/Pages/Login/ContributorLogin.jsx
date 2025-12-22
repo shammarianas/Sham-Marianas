@@ -116,6 +116,9 @@ const ContributorLogin = () => {
       setLoadingCountries(true);
       try {
         const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+        const response = await fetch(
+          "https://restcountries.com/v3.1/all?fields=name,cca2"
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -127,9 +130,17 @@ const ContributorLogin = () => {
           name: country.name.common,
           code: country.cca2
         })).sort((a, b) => a.name.localeCompare(b.name));
+        const formattedCountries = data
+          .map((country) => ({
+            name: country.name.common,
+            code: country.cca2,
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
 
         setAllCountries(formattedCountries);
-        console.log(`Fetched ${formattedCountries.length} countries for Contributor`);
+        console.log(
+          `Fetched ${formattedCountries.length} countries for Contributor`
+        );
       } catch (error) {
         console.error("Failed to fetch countries:", error);
         const fallbackCountries = [
@@ -398,16 +409,42 @@ const ContributorLogin = () => {
     return true;
   };
 
-  const nextStep = () => {
-    if (currentStep === 1 && !validateStep1()) return;
-    if (currentStep === 3 && !validateStep2()) return;
+  const nextStep = async () => {
+    console.log("🔄 nextStep called. Current step:", currentStep);
 
     if (currentStep === 1) {
-      sendVerificationEmail();
+      console.log("  → Validating step 1...");
+      if (!validateStep1()) {
+        console.error("❌ Step 1 validation failed");
+        return;
+      }
+      console.log("✅ Step 1 validation passed");
+
+      // Call sendVerificationEmail and wait for it to complete
+      console.log("  → Calling sendVerificationEmail...");
+      await sendVerificationEmail();
+
+      // Only proceed if email verification was sent or user already verified
+      if (!isVerificationSent && !isEmailVerified) {
+        console.error(
+          "❌ Email verification not sent, stopping step progression"
+        );
+        return;
+      }
+    }
+
+    if (currentStep === 3) {
+      console.log("  → Validating step 2...");
+      if (!validateStep2()) {
+        console.error("❌ Step 2 validation failed");
+        return;
+      }
+      console.log("✅ Step 2 validation passed");
     }
 
     setCurrentStep(currentStep + 1);
     setError("");
+    console.log("  → Moved to step:", currentStep + 1);
   };
 
   const prevStep = () => {
@@ -421,64 +458,144 @@ const ContributorLogin = () => {
       setError("");
       setSuccess("");
 
+      // 🔍 DEBUG 1: Log current state values
+      console.log("📋 DEBUG - Current state values:");
+      console.log("  Email:", email);
+      console.log("  Password length:", password?.length || 0);
+      console.log("  FullName:", fullName);
+      console.log("  Current Step:", currentStep);
+
+      // ✅ Input validation before any Firebase call
+      if (!email || !password) {
+        const errorMsg = !email ? "Email is required" : "Password is required";
+        console.error("❌ Validation failed:", errorMsg);
+        setError(errorMsg);
+        return false; // Return false to indicate failure
+      }
+
+      if (password.length < 6) {
+        console.error("❌ Password too short:", password.length, "characters");
+        setError("Password must be at least 6 characters");
+        return false;
+      }
+
       let user;
+      console.log("🔑 Attempting Firebase authentication...");
+
+      // For new registration, we should CREATE the user, not try to sign in first
+      console.log(
+        "  → Creating new user with createUserWithEmailAndPassword..."
+      );
 
       try {
-        const signInResult = await signInWithEmailAndPassword(
+        const createResult = await createUserWithEmailAndPassword(
           auth,
           email,
           password
         );
-        user = signInResult.user;
-        setSuccess("Welcome back! Using your existing account...");
-      } catch (loginError) {
-        if (loginError.code === "auth/user-not-found") {
-          const createResult = await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-          );
-          user = createResult.user;
-          setSuccess("New account created! Sending verification email...");
+        user = createResult.user;
+        console.log("✅ New user created:", user.uid);
+        console.log("   Email:", user.email);
+
+        // Update profile with full name
+        if (fullName) {
+          console.log("  → Updating profile with display name:", fullName);
+          await updateProfile(user, { displayName: fullName });
         }
-        else if (loginError.code === "auth/wrong-password") {
+
+        setSuccess("Account created! Sending verification email...");
+      } catch (createError) {
+        console.error("❌ User creation failed:", createError.code);
+        console.error("   Error message:", createError.message);
+
+        if (createError.code === "auth/email-already-in-use") {
+          console.log("  → Email already exists, trying to sign in instead...");
+
+          // Try to sign in with existing user
+          try {
+            const signInResult = await signInWithEmailAndPassword(
+              auth,
+              email,
+              password
+            );
+            user = signInResult.user;
+            console.log("✅ Existing user signed in:", user.uid);
+            setSuccess("Welcome back! Using your existing account...");
+          } catch (signInError) {
+            if (signInError.code === "auth/wrong-password") {
+              setError(
+                "This email is already registered. Please enter the correct password to continue."
+              );
+            } else {
+              setError(
+                "Account exists but login failed: " + signInError.message
+              );
+            }
+            return false;
+          }
+        } else {
+          setError("Registration failed: " + createError.message);
+          return false;
+        }
+      }
+
+      // Send verification email
+      console.log("📧 Email verification check:");
+      console.log("   Email verified?", user.emailVerified);
+      console.log("   User email:", user.email);
+
+      if (!user.emailVerified) {
+        console.log("  → Sending verification email...");
+        try {
+          await sendEmailVerification(user, {
+            url: window.location.origin + "/contributor/email-verified",
+          });
+          setIsVerificationSent(true);
+          setResendTimer(60);
+          setSuccess("Verification email sent! Please check your inbox.");
+          console.log("✅ Verification email sent");
+
+          // Store temp user for verification checking
+          setTempUser(user);
+          return true; // Return true to indicate success
+        } catch (verificationError) {
+          console.error(
+            "❌ Failed to send verification email:",
+            verificationError
+          );
           setError(
-            "Incorrect password for this email. Please enter the correct password."
+            "Account created but verification email failed: " +
+              verificationError.message
           );
-          return;
+          return true; // Still allow proceeding since account was created
         }
-        else {
-          throw loginError;
-        }
-      }
-
-      if (!user.displayName) {
-        await updateProfile(user, { displayName: fullName || username });
-      }
-
-      if (
-        !user.emailVerified &&
-        user.providerData.some((p) => p.providerId === "password")
-      ) {
-        await sendEmailVerification(user, {
-          url: window.location.origin + "/contributor/email-verified",
-        });
-        setIsVerificationSent(true);
-        setResendTimer(60);
-        setSuccess("Verification email sent! Please check your inbox.");
       } else {
+        console.log("✅ Email already verified");
         setIsEmailVerified(true);
         setSuccess("Email already verified! You can proceed.");
+        setTempUser(user);
+        return true;
       }
-
-      setTempUser(user);
     } catch (err) {
-      console.error("sendVerificationEmail error:", err);
+      console.error("🔥 FATAL ERROR in sendVerificationEmail:");
+      console.error("  Error code:", err.code);
+      console.error("  Error message:", err.message);
+      console.error("  Full error object:", err);
+
       if (err.code === "auth/email-already-in-use") {
-        setError("This shouldn't happen. Please refresh and try again.");
+        setError(
+          "This email is already registered. Please try logging in instead."
+        );
+      } else if (err.code === "auth/operation-not-allowed") {
+        setError(
+          "Email/password registration is not enabled. Please contact support."
+        );
+      } else if (err.code === "auth/network-request-failed") {
+        setError("Network error. Please check your internet connection.");
       } else {
-        setError("Failed to proceed: " + (err.message || "Unknown error"));
+        setError("Registration failed: " + (err.message || "Unknown error"));
       }
+      return false;
     }
   };
 
@@ -1091,7 +1208,9 @@ const ContributorLogin = () => {
                           }}
                         >
                           <option value="">
-                            {loadingCountries ? "Loading countries..." : "Select Country"}
+                            {loadingCountries
+                              ? "Loading countries..."
+                              : "Select Country"}
                           </option>
                           {allCountries.map((c) => (
                             <option key={c.code} value={c.name}>
@@ -1101,7 +1220,14 @@ const ContributorLogin = () => {
                         </select>
                       </div>
                       {!loadingCountries && (
-                        <small style={{ color: "#888", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                        <small
+                          style={{
+                            color: "#888",
+                            fontSize: "0.8rem",
+                            marginTop: "4px",
+                            display: "block",
+                          }}
+                        >
                           {allCountries.length} countries available
                         </small>
                       )}
@@ -1129,7 +1255,14 @@ const ContributorLogin = () => {
                           }}
                         />
                       </div>
-                      <small style={{ color: "#888", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                      <small
+                        style={{
+                          color: "#888",
+                          fontSize: "0.8rem",
+                          marginTop: "4px",
+                          display: "block",
+                        }}
+                      >
                         Enter your city name
                       </small>
                     </div>
