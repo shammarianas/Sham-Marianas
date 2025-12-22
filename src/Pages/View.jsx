@@ -136,7 +136,7 @@ const View = () => {
 
   return (
     <>
-     <Cursor />
+      <Cursor />
       <Helmet>
         <title>{`${item.title} | shammarianas`} </title>
         <meta name="description" content={item.description} />
@@ -175,12 +175,12 @@ const View = () => {
             />
 
             <Breadcrumbs
-  links={[
-    { title: "Home", path: "/templates" },
-    { title: item.type, path: `/category/${item.type}` }, // ✅ Fixed: Added '/category/' prefix
-    { title: item.title, path: `/View/${item.slug}` },
-  ]}
-/>
+              links={[
+                { title: "Home", path: "/templates" },
+                { title: item.type, path: `/category/${item.type}` }, 
+                { title: item.title, path: `/View/${item.slug}` },
+              ]}
+            />
             <div className="content">
               <div>
                 <div className="left">
