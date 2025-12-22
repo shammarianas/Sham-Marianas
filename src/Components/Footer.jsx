@@ -77,7 +77,7 @@ function Footer() {
 
             {/* Conditionally render contact details */}
             {!isTemplatePage && (
-              <div className="col-lg-2">
+              <div className="col-lg-3">
                 <div className="column md-mb50">
                   <h6 className="sub-title mb-30">Contact</h6>
                   <a href="tel:+971528036012" className=" ">

@@ -34,7 +34,7 @@ function Testimonials() {
     },
   };
   return (
-    <section className="testim-modern section-padding sub-bg bord-top-grd bord-bottom-grd">
+    <section className="testim-modern section-padding sub-bg bord-top-grd bord-bottom-grd mb-100">
       <div className="container">
         <div className="sec-head mb-80">
           <div className="d-flex align-items-center">
