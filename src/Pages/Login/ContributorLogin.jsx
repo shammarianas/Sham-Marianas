@@ -115,34 +115,19 @@ const ContributorLogin = () => {
     const fetchCountries = async () => {
       setLoadingCountries(true);
       try {
-<<<<<<<<< Temporary merge branch 1
-        const response = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,cca2"
-        );
-=========
         const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
->>>>>>>>> Temporary merge branch 2
-
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-
-<<<<<<<<< Temporary merge branch 1
-        const formattedCountries = data
-          .map((country) => ({
-            name: country.name.common,
-            code: country.cca2,
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-=========
+        
         const formattedCountries = data.map(country => ({
           name: country.name.common,
           code: country.cca2
         })).sort((a, b) => a.name.localeCompare(b.name));
->>>>>>>>> Temporary merge branch 2
-
+        
         setAllCountries(formattedCountries);
         console.log(
           `Fetched ${formattedCountries.length} countries for Contributor`
