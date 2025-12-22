@@ -19,6 +19,8 @@ import Cursor from "../common/cusor";
 import Next from "../Components/blog-classic/Next";
 import Marq2 from "../Components/marq2";
 import sanitizeHtml from "sanitize-html";
+import { SEO_CONFIG } from "../utils/seoConfig";
+import SEO from "../common/SEO";
 
 function BlogDetails() {
   const { id } = useParams();
@@ -28,7 +30,7 @@ function BlogDetails() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Updated to match BlogEditorModal
   const [categoryCounts, setCategoryCounts] = useState({
     all: 0,
@@ -283,6 +285,14 @@ function BlogDetails() {
           color: inherit !important;
         }
       `}</style>
+
+      {blog && (
+        <SEO
+          title={`${blog.title} | Shammarianas Blog`}
+          description={blog.excerpt || "Blog description"}
+          keywords={blog.tags?.join(', ') || blog.category}
+        />
+      )}
 
       <Cursor />
       <ProgressScroll />

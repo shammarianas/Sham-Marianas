@@ -7,11 +7,9 @@ import { Buffer } from "buffer";
 window.Buffer = Buffer;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
     <HelmetProvider>
       <UserProvider>
         <App />
       </UserProvider>
     </HelmetProvider>
-  </React.StrictMode>
 );

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import { getDoc, doc } from "firebase/firestore";
@@ -6,11 +6,15 @@ import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
 import Marq2 from "../Components/marq2";
 import Next from "../Components/portfolio-details/Next";
+import { Helmet } from "react-helmet-async";
+import SEO from "../common/SEO.jsx";
+import { SEO_CONFIG } from "../utils/seoConfig.js";
 
 export default function ProjectDetails() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
+   const location = useLocation(); // ✅ Import useLocation
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -31,24 +35,45 @@ export default function ProjectDetails() {
     fetchPortfolio();
   }, [id]);
 
+    // ✅ Loading state mein bhi SEO rakhein
   if (loading) {
     return (
-      <div className="loading-container text-center py-20">
-        <p className="text-lg text-white">Loading...</p>
-      </div>
+      <>
+        <SEO 
+          title="Loading Project | Shammarianas Portfolio"
+          description="Loading project details from Shammarianas portfolio..."
+          keywords="Portfolio, Projects, Loading"
+        />
+        <div className="loading-container text-center py-20">
+          <p className="text-lg text-white">Loading project details...</p>
+        </div>
+      </>
     );
   }
 
+  // ✅ Project not found mein bhi SEO
   if (!project) {
     return (
-      <div className="error-container text-center py-20">
-        <p className="text-lg text-red-600">Project not found</p>
-      </div>
+      <>
+        <SEO 
+          title="Project Not Found | Shammarianas"
+          description="The requested project was not found in Shammarianas portfolio."
+          keywords="Project Not Found, Portfolio, Shammarianas"
+        />
+        <div className="error-container text-center py-20">
+          <p className="text-lg text-red-600">Project not found</p>
+        </div>
+      </>
     );
   }
+
+  // ✅ Project milne par dynamic SEO
+  const projectSEO = SEO_CONFIG.getProjectSEO(project);
 
   return (
     <>
+ {projectSEO && <SEO {...projectSEO} />}
+
       <style>{`
         .header-project {
           min-height: 600px;
@@ -174,6 +199,7 @@ export default function ProjectDetails() {
           }
         }
       `}</style>
+
       <Cursor />
       <ProgressScroll />
       <header className="header-project bg-img d-flex align-items-end" data-background={project.featureImgUrl || "/assets/imgs/background/bg4.jpg"} data-overlay-dark="9">

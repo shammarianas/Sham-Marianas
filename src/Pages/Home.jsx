@@ -12,6 +12,8 @@ import Contact from "../Components/landing/Contact";
 import Marq2 from "../Components/marq2";
 import WhatsAppButton from "../Components/whatsappButton";
 import LoadingScreen from "../common/loader";
+import { SEO_CONFIG } from "../utils/seoConfig";
+import SEO from "../common/SEO.jsx";
 
 const Home = () => {
   const main = useRef();
@@ -26,6 +28,7 @@ const Home = () => {
 
   return (
     <>
+    <SEO {...SEO_CONFIG.home} />
       <LoadingScreen />
       <Cursor />  
       <ProgressScroll />

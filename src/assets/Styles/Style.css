@@ -1540,9 +1540,7 @@ a {
   position: sticky;
   top: 4rem;
   z-index: 9;
-  /* From https://css.glass */
   background: rgba(26, 26, 26, 0.52);
-  box-shadow: 0 4px 30px rgba(32, 32, 32, 0.1);
   backdrop-filter: blur(9.7px);
   -webkit-backdrop-filter: blur(9.7px);
   min-height: 3.5rem;
@@ -1868,7 +1866,6 @@ a {
 .bottom-bar .navbar .dropdown-menu {
   background-color: #181818;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 30px rgba(32, 32, 32, 0.1);
   border-radius: 0.5rem;
   padding: 0.3rem 0 !important;
 }
