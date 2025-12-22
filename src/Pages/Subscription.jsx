@@ -274,7 +274,7 @@ const Subscription = () => {
                 )}
 
                 <div className="plan-header text-center mb-8">
-                  <h3 className="plan-name mb-4">{plans.individual.name}</h3>
+                  <h3 className="plan-name">{plans.individual.name}</h3>
                   <div className="price-from">From</div>
                   <div className="price-display mb-2">
                     <span className="price text-white">
@@ -337,7 +337,7 @@ const Subscription = () => {
                 )}
 
                 <div className="plan-header text-center mb-8">
-                  <h3 className="plan-name mb-4">{plans.team.name}</h3>
+                  <h3 className="plan-name">{plans.team.name}</h3>
                   <div className="price-from">From</div>
                   <div className="price-display mb-2">
                     <span className="price team-price">{plans.team.price}</span>
@@ -437,7 +437,7 @@ const Subscription = () => {
                 <div className="value-badge">ENTERPRISE GRADE</div>
 
                 <div className="plan-header text-center mb-8">
-                  <h3 className="plan-name mb-4">{plans.enterprise.name}</h3>
+                  <h3 className="plan-name ">{plans.enterprise.name}</h3>
                   {plans.enterprise.isCustom ? (
                     <div className="custom-price-display">
                       <span className="custom-price">Custom Pricing</span>
