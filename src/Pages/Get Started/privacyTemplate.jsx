@@ -1,6 +1,6 @@
 import React from "react";
 import SEO from "../../common/SEO";
-import { SEO_CONFIG } from "../../utils/seoConfig";s
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 const PrivacyPolicyTemplate = () => {
   return (

@@ -51,7 +51,7 @@ const PricingAndFees = () => {
                     <strong>Pricing & Licensing</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-8">
-                    <span className="text-bold underline main-color">Sham Marianas</span> retains sole discretion to set the final retail price for all assets on the platform. We employ dynamic pricing strategies based on market demand, license type, file size, and other factors to maximize sales potential for your portfolio.
+                    <span className="text-bold underline main-color">Sham Marianas</span>, retains sole discretion to set the final retail price for all assets on the platform. We employ dynamic pricing strategies based on market demand, license type, file size, and other factors to maximize sales potential for your portfolio.
                 </p>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
@@ -64,7 +64,7 @@ const PricingAndFees = () => {
 
                 <h4 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1"><strong>Taxes</strong></h4>
                 <p className="fotter-police-p p-color mb-8">
-                    You are solely responsible for declaring and paying any personal income, value-added (VAT), or other taxes applicable to your earnings in your country of residence. <span className="text-bold underline main-color">Sham Marianas</span> may be required to collect tax identification information or withhold taxes as mandated by law.
+                    You are solely responsible for declaring and paying any personal income, value-added (VAT), or other taxes applicable to your earnings in your country of residence. <span className="text-bold underline main-color">Sham Marianas</span>, may be required to collect tax identification information or withhold taxes as mandated by law.
                 </p>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
@@ -78,7 +78,7 @@ const PricingAndFees = () => {
                     <strong>Policy Updates</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-8">
-                    <span className="text-bold underline main-color">Sham Marianas</span> reserves the right to modify this Pricing and Withdrawal Policy, including commission rates and the payout threshold, with 30 days' prior notice to contributors via email and platform announcements. Continued use of the platform after changes take effect constitutes your acceptance of the new terms.
+                    <span className="text-bold underline main-color">Sham Marianas</span>, reserves the right to modify this Pricing and Withdrawal Policy, including commission rates and the payout threshold, with 30 days' prior notice to contributors via email and platform announcements. Continued use of the platform after changes take effect constitutes your acceptance of the new terms.
                 </p>
             </div>
         </div>

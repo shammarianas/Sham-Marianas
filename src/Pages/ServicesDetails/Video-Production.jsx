@@ -84,8 +84,7 @@ const VideoProductionPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            photography & video production is where storytelling meets strategy, capturing emotion, building connection, and elevating your brand.
+            </span>, photography & video production is where storytelling meets strategy, capturing emotion, building connection, and elevating your brand.
             From stunning product shoots to cinematic brand videos, we create
             visuals that your audience won’t forget.
           </>,

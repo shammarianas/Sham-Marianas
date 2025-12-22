@@ -29,8 +29,7 @@ const AiAutomationPage = () => {
       </>,
       "From the first consultation to final deployment, we focus on business impact, user experience, and measurable ROI. Every automation solution is built with your industry needs in mind, ensuring that it is not only a fit for today but also a foundation for future growth.",
        <>
-        With <span className="text-bold underline main-color">Sham Marianas</span>{" "}
-       AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
+        With <span className="text-bold underline main-color">Sham Marianas</span>, AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
       </>,
     ],
     image: "/assets/imgs/AiAutomation/AI2.png",
@@ -82,8 +81,7 @@ const AiAutomationPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            we do more than just automate tasks. We build AI-powered systems that think, adapt, and deliver results. Whether it is streamlining your business operations or creating intelligent workflows, we transform your processes into smart, efficient, and scalable solutions that work flawlessly.
+            </span>, we do more than just automate tasks. We build AI-powered systems that think, adapt, and deliver results. Whether it is streamlining your business operations or creating intelligent workflows, we transform your processes into smart, efficient, and scalable solutions that work flawlessly.
 
           </>,
           "From concept to execution, our automation solutions are crafted with precision, performance, and people in mind. We blend advanced artificial intelligence with practical business logic to create systems that save time and elevate your customer experience.",
