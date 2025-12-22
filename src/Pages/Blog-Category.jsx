@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
+import { SEO_CONFIG } from "../utils/seoConfig";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
@@ -139,6 +140,13 @@ const BlogCategory = () => {
   }
 
   return (
+    <>
+     {SEO_CONFIG.blogCategories[category] ? (
+        <SEO {...SEO_CONFIG.blogCategories[category]} />
+      ) : (
+        <SEO {...SEO_CONFIG.blogHome} />
+      )}
+      
     <section className="blog-main section-padding">
       <div className="container">
         <h2 className="fz-30 fw-600 mb-40">{categoryTitle}</h2>
@@ -251,6 +259,7 @@ const BlogCategory = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 
