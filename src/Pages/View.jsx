@@ -16,7 +16,6 @@ import {
 import ModelViewer from "../Components/ModelViewer";
 import UserCard from "../Components/UI/UserCard";
 import ToastAlert from "../Components/UI/ToastAlert";
-import { Helmet } from "react-helmet-async";
 import { useUser } from "../Context/UserProvider";
 import ReactMarkdown from "react-markdown";
 import "@google/model-viewer";
@@ -31,10 +30,12 @@ import ContentViewer from "../Components/ContentViewer";
 import AssetFullScreen from "../Components/AssetFullScreen";
 import RelatedItems from "../Components/RelatedItems";
 import Cursor from "../common/cusor";
+import SEO from "../common/SEO";
 
 const View = () => {
   const { currentUser, userProfile } = useUser();
   const { slug } = useParams();
+  const [seoData, setSeoData] = useState(null);
 
   const [is3d, setIs3d] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -45,6 +46,7 @@ const View = () => {
   const [group, setGroup] = useState(null);
   const [markdown, setMarkdown] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  
 
   // Get price display text - UPDATED FOR FREE/PAID STRINGS
   const getPriceDisplay = (asset) => {
@@ -99,8 +101,8 @@ const View = () => {
         return;
       }
 
-      const docData = snap.docs[0].data();
-      const docId = snap.docs[0].id;
+     const docData = snap.docs[0].data();
+      const docId = snap.docs[0].id; // ✅ Defined here
 
       // Only approved assets
       if (docData.status !== "approved") {
@@ -108,10 +110,20 @@ const View = () => {
         return;
       }
 
-      setItem({ id: docId, ...docData });
-      setMarkdown(docData.description);
-      setIs3d(docData.is3d);
-    };
+      // ✅ Create the item data object
+      const fetchedItemData = { id: docId, ...docData };
+      
+      // ✅ Set the item state
+      setItem(fetchedItemData);
+      setMarkdown(docData.description || "");
+      setIs3d(docData.is3d || false);
+      
+      // ✅ Generate SEO data using the fetched data
+      const seo = getAssetSEO(fetchedItemData);
+      setSeoData(seo);
+      
+    } 
+  
 
     fetchItem();
   }, [slug]);
@@ -134,30 +146,33 @@ const View = () => {
     console.log("Download from fullscreen:", item);
   };
 
+// ✅ SEO FUNCTION
+  const getAssetSEO = (assetData) => {
+    if (!assetData || !assetData.title) return null;
+    
+    return {
+      title: `${assetData.title} | Shammarianas`,
+      description: assetData.description 
+        ? assetData.description.substring(0, 160) + "..."
+        : `Download ${assetData.title} from Shammarianas`,
+      keywords: assetData.tags ? assetData.tags.join(", ") : "",
+      ogImage: assetData.thumbnail || "/assets/imgs/default.jpg"
+    };
+  };
+  
+  // ✅ LOADING SEO FUNCTION
+  const getLoadingSEO = () => ({
+    title: "Loading Asset | Shammarianas",
+    description: "Loading digital asset details...",
+    keywords: "loading, digital assets"
+  });
+
   return (
     <>
       <Cursor />
-      <Helmet>
-        <title>{`${item.title} | shammarianas`} </title>
-        <meta name="description" content={item.description} />
-        <meta property="og:title" content={`${item.title} | shammarianas`} />
-        <meta property="og:description" content={item.description} />
-        <meta property="og:image" content={item.thumbnail} />
-        <meta
-          property="twitter:title"
-          content={`${item.title} | shammarianas`}
-        />
-        <meta property="twitter:description" content={item.description} />
-        <meta property="twitter:image" content={item.thumbnail} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={window.location.href} />
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={window.location.href} />
-        <meta property="twitter:site" content="@shammarianas" />
-        <meta property="twitter:creator" content="@shammarianas" />
-        <meta property="og:site_name" content="shammarianas" />
-        <meta property="og:locale" content="en_US" />
-      </Helmet>
+
+    {/* ✅ Dynamic SEO for Asset Page */}
+      {seoData ? <SEO {...seoData} /> : <SEO {...getLoadingSEO()} />}
 
       <div className="page_content">
         {item.id ? (

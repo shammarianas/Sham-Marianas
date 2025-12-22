@@ -1,7 +1,11 @@
 import React from "react";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 const ContributorPolicies = () => {
     return (
+       <>
+       <SEO {...SEO_CONFIG.contributerPolices} />
         <div className="section-padding">
             <div className="container mx-size">
                 <h1 className="text-4xl fw-500 mb-8 text-center">Contributors Policies</h1>
@@ -124,6 +128,7 @@ const ContributorPolicies = () => {
                 </p>
             </div>
         </div>
+       </>
     );
 };
 

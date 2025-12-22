@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Helmet } from "react-helmet-async";
 import { useUser } from "../Context/UserProvider";
 import { db } from "../../firebase";
 import {
@@ -16,6 +15,8 @@ import {
 import PageTitle from "../Components/UI/PageTitle";
 import plus_icon from "../assets/Icons/upload.jpg";
 import DescriptionBox from "../Components/DescriptionBox";
+import SEO from "../common/SEO";
+import { SEO_CONFIG } from "../utils/seoConfig";
 
 const Support = () => {
   const { currentUser } = useUser();
@@ -245,14 +246,7 @@ const Support = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Support | Shammarianas</title>
-        <meta
-          name="description"
-          content="Get support and report issues to Shammarianas"
-        />
-      </Helmet>
-
+     <SEO {...SEO_CONFIG.helpCenter} />
       {currentUser ? (
         <div className="page_content support-page">
           <div className="support_section">
