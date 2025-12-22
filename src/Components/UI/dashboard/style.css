@@ -4397,7 +4397,13 @@ ul {
   color: #8b5cf6;
 }
 
-.report-status-badge.content {
+.report-status-badge{
+      padding: 4px 8px !important;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.report-status-badge.content,.report-category-badge.content {
   background: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
 }
@@ -4410,12 +4416,6 @@ ul {
   overflow-wrap: break-word;
 }
 
-.report-status-badge {
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-}
 
 .report-status-badge.pending {
   background: rgba(245, 158, 11, 0.1);
