@@ -155,7 +155,7 @@ function Footer() {
                       <li className="mb-15"><a href="/services">Services</a></li>
                       <li className="mb-15"><a href="/portfolio">Portfolio</a></li>
                       <li className="mb-15"><Link to="/templates">Templates</Link></li>
-                      <li className="mb-15"><a href="/about">About</a></li>
+                      <li className="mb-15"><a href="/about">About us</a></li>
                       <li className="mb-15"><a href="/blog">Blog</a></li>
                       <li><a href="/contact">Contact us</a></li>
                     </ul>

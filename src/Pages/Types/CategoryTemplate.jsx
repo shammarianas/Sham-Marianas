@@ -2,8 +2,9 @@ import { useLocation } from "react-router-dom";
 import PageTitle from "../../Components/UI/PageTitle";
 import ListingSidebar from "../../Components/ListingSidebar";
 import ItemsListing from "../../Components/ItemsListing";
-import { Helmet } from "react-helmet-async";
 import Cursor from "../../common/cusor";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SEO from "../../common/SEO";
 
 const CategoryTemplate = () => {
   const location = useLocation();
@@ -64,42 +65,14 @@ const CategoryTemplate = () => {
     );
   }
 
-  // Function to get meta description based on category
-  const getMetaDescription = () => {
-    const descriptions = {
-      "Videos": "Browse and download premium stock videos for your projects",
-      "3D Models": "Explore high-quality 3D models for animation, gaming, and design",
-      "Video Templates": "Professional video templates for After Effects, Premiere Pro",
-      "Images": "Download stunning stock photos and images",
-      "Graphic Templates": "Creative graphic templates for Photoshop, Illustrator",
-      "Mockups": "Realistic product mockups for branding and presentation",
-      "Fonts": "Beautiful typography and font collections",
-      "Icons": "Icon sets for UI/UX design and applications",
-      "Textures": "High-resolution textures for 3D modeling and design",
-      "Scripts": "Useful scripts and plugins for creative software",
-      "HDRIs": "HDRI environments for realistic 3D rendering",
-      "More": "Additional creative assets and resources",
-      "Hot": "Trending and popular assets on Shammarianas"
-    };
-    
-    return descriptions[categoryTitle] || `Browse through a wide range of ${categoryTitle} on Shammarianas.`;
-  };
+ 
 
-  const metaDescription = getMetaDescription();
+  const categorySEO = SEO_CONFIG.getCategorySEO(categoryTitle, category);
 
   return (
     <>
       <Cursor />
-      <Helmet>
-        <title>{categoryTitle} | Shammarianas</title>
-        <meta name="description" content={metaDescription} />
-        <meta property="og:title" content={`${categoryTitle} | Shammarianas`} />
-        <meta property="og:description" content={metaDescription} />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:title" content={`${categoryTitle} | Shammarianas`} />
-        <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:card" content="summary_large_image" />
-      </Helmet>
+    <SEO {...categorySEO} />
 
       <div className="page_content">
         <PageTitle title={categoryTitle} />

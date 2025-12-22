@@ -1,19 +1,22 @@
 import React from "react";
 import WhatsAppButton from "../Components/whatsappButton";
 import ProgressScroll from "../common/ProgressScroll";
+import SEO from "../common/SEO.jsx"; // ✅ Import SEO component
+import { SEO_CONFIG } from "../utils/seoConfig"; // ✅ Import SEO config
 
 function Contact() {
   return (
     <>
-    <ProgressScroll />
+      <ProgressScroll />
+      <SEO {...SEO_CONFIG.contact} />
       <section className="contact section-padding">
         <div className="container">
           <div className="row">
             <div className="col-lg-4 valign">
               <div className="sec-head info-box full-width md-mb80">
-                  <div className="phone fz-22 fw-600  main-color">
-                    <a href="tel:+971528036012">+971 52 803 6012 </a>
-                  </div>
+                <div className="phone fz-22 fw-600  main-color">
+                  <a href="tel:+971528036012">+971 52 803 6012 </a>
+                </div>
                 <div className="morinfo mt-5 pb-30 bord-thin-bottom">
                   <p>Dubai, United Arab Emirates</p>
                 </div>
@@ -29,41 +32,41 @@ function Contact() {
                 </div>
                 <div className=" Contact-socialIcons mt-50">
                   {/* Social icon */}
- 
-              <div className="social-list">
-  <a href="https://www.facebook.com/shammarianas/" className="hover-this">
-    <div className="hover-anim">
-      <i className="fab fa-facebook-f"></i>
-    </div>
-  </a>
-  <a href="https://twitter.com/shammarianas" className="hover-this">
-    <div className="hover-anim">
-      <i className="fab fa-twitter"></i>
-    </div>
-  </a>
-  <a href="https://www.linkedin.com/in/shammarianas/" className="hover-this">
-    <div className="hover-anim">
-      <i className="fab fa-linkedin-in"></i>
-    </div>
-  </a>
-  <a href="https://www.instagram.com/sham_marianas/" className="hover-this">
-    <div className="hover-anim">
-      <i className="fab fa-instagram"></i>
-    </div>
-  </a>
-  <a href="https://www.behance.net/shammarianas" className="hover-this">
-    <div className="hover-anim">
-      <i className="fab fa-behance"></i>
-    </div>
-  </a>
-  <a href="https://www.pinterest.com/shammarianas" className="hover-this">
-    <div className="hover-anim">
-      <i className="fa-brands fa-pinterest"></i>
-    </div>
-  </a>
-</div>
 
-<style jsx>{`
+                  <div className="social-list">
+                    <a href="https://www.facebook.com/shammarianas/" className="hover-this">
+                      <div className="hover-anim">
+                        <i className="fab fa-facebook-f"></i>
+                      </div>
+                    </a>
+                    <a href="https://twitter.com/shammarianas" className="hover-this">
+                      <div className="hover-anim">
+                        <i className="fab fa-twitter"></i>
+                      </div>
+                    </a>
+                    <a href="https://www.linkedin.com/in/shammarianas/" className="hover-this">
+                      <div className="hover-anim">
+                        <i className="fab fa-linkedin-in"></i>
+                      </div>
+                    </a>
+                    <a href="https://www.instagram.com/sham_marianas/" className="hover-this">
+                      <div className="hover-anim">
+                        <i className="fab fa-instagram"></i>
+                      </div>
+                    </a>
+                    <a href="https://www.behance.net/shammarianas" className="hover-this">
+                      <div className="hover-anim">
+                        <i className="fab fa-behance"></i>
+                      </div>
+                    </a>
+                    <a href="https://www.pinterest.com/shammarianas" className="hover-this">
+                      <div className="hover-anim">
+                        <i className="fa-brands fa-pinterest"></i>
+                      </div>
+                    </a>
+                  </div>
+
+                  <style jsx>{`
   .social-list {
     display: flex;
     gap: 8px;
