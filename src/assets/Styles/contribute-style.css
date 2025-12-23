@@ -1529,18 +1529,3 @@
   position: relative;
 }
 
-.notification-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #ff4757;
-  color: white;
-  font-size: 0.7rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 50%;
-  min-width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
