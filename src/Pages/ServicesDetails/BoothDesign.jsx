@@ -48,7 +48,7 @@ const BoothDesignPage = () => {
     {
       question: "How long does it take to complete a project?",
       answer:
-        "Most booth designs take around 3/6 weeks, depending on the size, theme, and complexity of the setup.",
+        "Most booth designs take around 3-6 weeks, depending on the size, theme, and complexity of the setup.",
     },
     {
       question: "What makes your booth designs stand out?",

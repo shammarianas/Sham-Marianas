@@ -2,7 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap");
 
 :root {
-  --primary: #4361ee;
+  --primary: #52b0b4;
   --primary-light: #4895ef;
   --secondary: #3f37c9;
   --dark: #121212;
@@ -882,7 +882,7 @@ ul {
   position: absolute;
   top: -6px;
   right: -6px;
-  background: var(--danger);
+  background: var(--primary);
   color: #fff;
   border-radius: 999px;
   font-size: 10px;
@@ -3119,7 +3119,7 @@ ul {
 
 .header-actions .user-badge-count {
   background: #eef2ff;
-  color: #4c51bf;
+  color: #52b0b4;
   font-weight: 600;
   padding: 0.5rem 1rem;
   border-radius: 2rem;
@@ -3214,7 +3214,7 @@ ul {
 }
 
 .panel-icon {
-  color: #4c51bf;
+  color: #52b0b4;
   font-size: 1.3rem;
 }
 
@@ -3875,6 +3875,7 @@ ul {
   grid-template-columns: 2fr 1fr;
   gap: 24px;
   margin-bottom: 24px;
+  height: 320px;
 }
 
 .reports-chart-card,
@@ -3895,12 +3896,14 @@ ul {
 
 .reports-chart-body {
   padding: 20px 24px;
-  height: 300px;
-  overflow-y: scroll;
+      overflow-y: scroll;
+    height: 260px;
 }
 
 .reports-categories-body {
   padding: 20px 24px;
+      overflow-y: scroll;
+    height: 260px;
 }
 
 /* Category Progress */
@@ -4242,9 +4245,9 @@ ul {
 }
 
 .filter-button.primary {
-  background: #3b82f6;
+  background: #52b0b4;
   color: white;
-  border-color: #3b82f6;
+  border-color: #52b0b4;
 }
 
 .filter-button.primary:hover {
@@ -4375,7 +4378,7 @@ ul {
 }
 
 .report-category-badge {
-  /* padding: 4px 8px; */
+  padding: 4px 8px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
@@ -5375,11 +5378,11 @@ ul {
   position: absolute;
   top: -5px;
   right: -5px;
-  background: var(--danger);
+  background: var(--primary);
   color: white;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   font-size: 10px;
   display: flex;
   align-items: center;
