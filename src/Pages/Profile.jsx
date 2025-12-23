@@ -1458,7 +1458,7 @@ const Profile = () => {
   return (
     <>
       {/* ✅ SEO Component - Replace Helmet */}
-      {seoData ? <SEO {...seoData} /> : <SEO {...getLoadingSEO()} />}
+      {/* {seoData ? <SEO {...seoData} /> : <SEO {...getLoadingSEO()} />} */}
 
       {/* <Helmet>
         <title>{getDisplayName()} | shammarianas</title>
@@ -1901,23 +1901,26 @@ const Profile = () => {
                       </div>
                       <p>Loading subscription details...</p>
                     </div>
-                  ) : user?.subscription?.type === "team" ||
-                    subscription?.subscriptionType === "team" ? (
-                    // Team Plan - Show team management
+                  ) : user?.subscription || subscription ? (
                     <div className="subscription-container">
+                      {/* Current Subscription Card */}
                       <div className="subscription-card active">
                         <div className="subscription-header">
                           <div className="header-left">
-                            <h2>Team Subscription</h2>
+                            <h2>Current Subscription</h2>
                             <div
                               className={`status-badge ${
-                                formatSubscriptionStatus(subscription?.status)
-                                  .class
+                                formatSubscriptionStatus(
+                                  user?.subscription?.status ||
+                                    subscription?.status
+                                ).class
                               }`}
                             >
                               {
-                                formatSubscriptionStatus(subscription?.status)
-                                  .text
+                                formatSubscriptionStatus(
+                                  user?.subscription?.status ||
+                                    subscription?.status
+                                ).text
                               }
                             </div>
                           </div>
@@ -1935,17 +1938,16 @@ const Profile = () => {
                         <div className="subscription-info-grid">
                           <div className="info-item">
                             <span className="info-label">Plan Type:</span>
-                            <span className="info-value">Team</span>
-                          </div>
-
-                          <div className="info-item">
-                            <span className="info-label">Billing Cycle:</span>
-                            <span className="info-value capitalize">
-                              {user?.subscription?.billingCycle ||
-                                subscription?.billingCycle ||
-                                "Monthly"}
+                            <span className="info-value">
+                              {getSubscriptionTypeDisplay(
+                                user?.subscription?.type ||
+                                  user?.subscription?.plan ||
+                                  subscription?.subscriptionType ||
+                                  "individual"
+                              )}
                             </span>
                           </div>
+
                           <div className="info-item">
                             <span className="info-label">Billing Cycle:</span>
                             <span className="info-value capitalize">
@@ -1968,274 +1970,241 @@ const Profile = () => {
                                 "monthly") === "yearly"
                                 ? "year"
                                 : "month"}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">Team Members:</span>
+                            <span className="info-value">
+                              {user?.subscription?.teamMembers ||
+                                subscription?.teamMembers ||
+                                1}{" "}
+                              members
                             </span>
                           </div>
 
                           <div className="info-item">
                             <span className="info-label">
-                              Your Downloads Used:
+                              Next Billing Date:
                             </span>
-                            <span className="info-value">
-                              {user?.subscription?.downloadsUsed ||
-                                subscription?.downloadsUsed ||
-                                0}{" "}
-                              /
-                              {user?.subscription?.downloadLimit ||
-                                subscription?.downloadLimit ||
-                                200}
-                            </span>
-                          </div>
-
-                          <div className="info-item">
-                            <span className="info-label">Renews:</span>
                             <span className="info-value">
                               {formatDate(
                                 user?.subscription?.expiresAt ||
-                                  subscription?.expiresAt
+                                  user?.subscription?.nextBillingDate ||
+                                  subscription?.nextBillingDate ||
+                                  subscription?.currentPeriodEnd
                               ) || "N/A"}
                             </span>
                           </div>
-                        </div>
 
-                        {/* Team Management Section */}
-                        <div className="team-management-section">
-                          <div className="section-header">
-                            <h3>Team Management</h3>
-                            <div className="member-count">
-                              <i className="fas fa-users"></i>
-                              <span>
-                                {teamMembers.length} /{" "}
-                                {subscription?.memberLimit || 2} members
-                                <span className="available-slots">
-                                  (
-                                  {Math.max(
-                                    0,
-                                    (subscription?.memberLimit || 2) -
-                                      teamMembers.length
-                                  )}{" "}
-                                  slots available)
-                                </span>
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Invite Team Member */}
-                          <div className="invite-member-form">
-                            <h4>Add Team Member</h4>
-                            <p className="form-description">
-                              Invite team members by email. They'll receive an
-                              invitation to join your team.
-                            </p>
-
-                            <div className="input-with-button">
-                              <input
-                                type="email"
-                                placeholder="Enter email address"
-                                value={inviteEmail}
-                                onChange={(e) => setInviteEmail(e.target.value)}
-                                className="invite-email-input"
-                              />
-                              <button
-                                className="butn butn-sm butn-bg main-colorbg color-white radius-5"
-                                onClick={inviteTeamMember}
-                                disabled={inviting || !inviteEmail}
-                              >
-                                <i className="icon fas fa-paper-plane pr-3"></i>
-                                <span>
-                                  {inviting ? "Sending..." : "Invite"}
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Current Team Members */}
-                          {teamMembers.length > 0 && (
-                            <div className="team-members-list">
-                              <h4>Team Members</h4>
-                              <div className="members-grid">
-                                {teamMembers.map((member) => (
-                                  <div key={member.id} className="member-card">
-                                    <div className="member-info">
-                                      <div className="member-avatar">
-                                        {member.profilePic ? (
-                                          <img
-                                            loading="lazy"
-                                            src={member.profilePic}
-                                            alt={member.email}
-                                          />
-                                        ) : (
-                                          <div className="avatar-initials">
-                                            {member.email
-                                              ?.charAt(0)
-                                              .toUpperCase()}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="member-details">
-                                        <div className="member-email">
-                                          {member.email}
-                                        </div>
-                                        <div className="member-role">
-                                          <span className="role-badge">
-                                            {member.role || "Member"}
-                                          </span>
-                                        </div>
-                                        <div className="member-joined">
-                                          Joined: {formatDate(member.joinedAt)}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Pending Invites */}
-                          {pendingInvites.length > 0 && (
-                            <div className="pending-invites">
-                              <h4>Pending Invitations</h4>
-                              <div className="invites-list">
-                                {pendingInvites.map((invite) => (
-                                  <div key={invite.id} className="invite-item">
-                                    <div className="invite-info">
-                                      <i className="fas fa-envelope"></i>
-                                      <span className="invite-email">
-                                        {invite.inviteEmail}
-                                      </span>
-                                      <span className="invite-status pending">
-                                        Pending
-                                      </span>
-                                      <span className="invite-sent">
-                                        Sent: {formatDate(invite.invitedAt)}
-                                      </span>
-                                    </div>
-                                    <div className="invite-actions">
-                                      <button
-                                        className="cancel-invite-btn"
-                                        onClick={() => cancelInvite(invite.id)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Cancel Subscription Option */}
-                        {subscription?.status === "active" && (
-                          <div className="cancel-subscription-section">
-                            <div className="cancel-warning">
-                              <i className="fas fa-exclamation-triangle"></i>
-                              <div>
-                                <h4>Cancel Subscription</h4>
-                                <p>
-                                  If you cancel, you'll lose access to premium
-                                  features at the end of your current billing
-                                  period.
-                                </p>
-                              </div>
-                            </div>
-                            <button
-                              className="butn butn-sm butn-danger radius-5"
-                              onClick={cancelSubscription}
-                            >
-                              Cancel Subscription
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : user?.subscription?.type === "individual" ||
-                    subscription?.subscriptionType === "individual" ? (
-                    // Individual Paid Plan
-                    <div className="subscription-container">
-                      <div className="subscription-card active">
-                        <div className="subscription-header">
-                          <div className="header-left">
-                            <h2>Premium Subscription</h2>
-                            <div
-                              className={`status-badge ${
-                                formatSubscriptionStatus(subscription?.status)
-                                  .class
-                              }`}
-                            >
-                              {
-                                formatSubscriptionStatus(subscription?.status)
-                                  .text
-                              }
-                            </div>
-                          </div>
-                          <div className="header-right">
-                            <Link
-                              to="/subscription"
-                              className="butn butn-sm butn-bg main-colorbg radius-5"
-                            >
-                              <i className="icon fas fa-sync-alt"></i>
-                              <span>Change Plan</span>
-                            </Link>
-                          </div>
-                        </div>
-
-                        <div className="subscription-info-grid">
-                          <div className="info-item">
-                            <span className="info-label">Plan Type:</span>
-                            <span className="info-value">Premium</span>
-                          </div>
-
-                          <div className="info-item">
-                            <span className="info-label">Billing Cycle:</span>
-                            <span className="info-value capitalize">
-                              {user?.subscription?.billingCycle ||
-                                subscription?.billingCycle ||
-                                "Monthly"}
-                            </span>
-                          </div>
-
-                          <div className="info-item">
-                            <span className="info-label">Price:</span>
-                            <span className="info-value">
-                              $
-                              {user?.subscription?.price ||
-                                subscription?.price ||
-                                "0"}
-                              /
-                              {(user?.subscription?.billingCycle ||
-                                subscription?.billingCycle ||
-                                "monthly") === "yearly"
-                                ? "year"
-                                : "month"}
-                            </span>
-                          </div>
-
+                          {/* Downloads Usage */}
                           <div className="info-item">
                             <span className="info-label">Downloads Used:</span>
                             <span className="info-value">
-                              {user?.subscription?.downloadsUsed ||
-                                subscription?.downloadsUsed ||
-                                0}{" "}
-                              /
+                              {user?.subscription?.downloadsUsed || 0} /
                               {user?.subscription?.downloadLimit ||
                                 subscription?.downloadLimit ||
-                                200}
+                                0}
                             </span>
                           </div>
 
                           <div className="info-item">
-                            <span className="info-label">Renews:</span>
+                            <span className="info-label">
+                              Subscription Start:
+                            </span>
                             <span className="info-value">
                               {formatDate(
-                                user?.subscription?.expiresAt ||
-                                  subscription?.expiresAt
+                                user?.subscription?.startDate ||
+                                  subscription?.createdAt ||
+                                  subscription?.startDate
                               ) || "N/A"}
                             </span>
                           </div>
                         </div>
 
-                        {subscription?.status === "active" && (
+                        {/* Team Management Section - Only show for team plans */}
+                        {(user?.subscription?.type === "team" ||
+                          subscription?.subscriptionType === "team" ||
+                          user?.subscription?.plan === "team") && (
+                          <div className="team-management-section">
+                            <div className="section-header">
+                              <h3>Team Management</h3>
+                              <div className="member-count">
+                                <i className="fas fa-users"></i>
+                                <span>
+                                  {teamMembers.length} /{" "}
+                                  {user?.subscription?.teamMembers ||
+                                    subscription?.teamMembers ||
+                                    1}{" "}
+                                  members
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Invite Team Member */}
+                            <div className="invite-member-form">
+                              <h4>Add Team Member</h4>
+                              <p className="form-description">
+                                Invite team members by email. They'll receive an
+                                invitation to join your team.
+                              </p>
+
+                              <div className="input-with-button">
+                                <input
+                                  type="email"
+                                  placeholder="Enter email address"
+                                  value={inviteEmail}
+                                  onChange={(e) =>
+                                    setInviteEmail(e.target.value)
+                                  }
+                                  className="invite-email-input"
+                                />
+                                <button
+                                  className="butn butn-sm butn-bg main-colorbg color-white radius-5"
+                                  onClick={inviteTeamMember}
+                                  disabled={inviting || !inviteEmail}
+                                >
+                                  <i className="icon fas fa-paper-plane pr-3"></i>
+                                  <span>
+                                    {inviting ? "Sending..." : "Invite"}
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Current Team Members */}
+                            {teamMembers.length > 0 && (
+                              <div className="team-members-list">
+                                <h4>Team Members</h4>
+                                <div className="members-grid">
+                                  {teamMembers.map((member) => (
+                                    <div
+                                      key={member.id}
+                                      className="member-card"
+                                    >
+                                      <div className="member-info">
+                                        <div className="member-avatar">
+                                          {member.profilePic ? (
+                                            <img
+                                              src={member.profilePic}
+                                              alt={member.email}
+                                            />
+                                          ) : (
+                                            <div className="avatar-initials">
+                                              {member.email
+                                                ?.charAt(0)
+                                                .toUpperCase()}
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="member-details">
+                                          <div className="member-email">
+                                            {member.email}
+                                          </div>
+                                          <div className="member-role">
+                                            <span className="role-badge">
+                                              {member.role || "Member"}
+                                            </span>
+                                          </div>
+                                          <div className="member-joined">
+                                            Joined:{" "}
+                                            {formatDate(member.joinedAt)}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="member-actions">
+                                        <button
+                                          className="remove-member-btn"
+                                          onClick={() =>
+                                            removeTeamMember(member.id)
+                                          }
+                                          title="Remove member"
+                                        >
+                                          <i className="fas fa-trash"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Pending Invites */}
+                            {pendingInvites.length > 0 && (
+                              <div className="pending-invites">
+                                <h4>Pending Invitations</h4>
+                                <div className="invites-list">
+                                  {pendingInvites.map((invite) => (
+                                    <div
+                                      key={invite.id}
+                                      className="invite-item"
+                                    >
+                                      <div className="invite-info">
+                                        <i className="fas fa-envelope"></i>
+                                        <span className="invite-email">
+                                          {invite.inviteEmail}
+                                        </span>
+                                        <span className="invite-status pending">
+                                          Pending
+                                        </span>
+                                        <span className="invite-sent">
+                                          Sent: {formatDate(invite.invitedAt)}
+                                        </span>
+                                      </div>
+                                      <div className="invite-actions">
+                                        <button
+                                          className="cancel-invite-btn"
+                                          onClick={() =>
+                                            cancelInvite(invite.id)
+                                          }
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Team Usage Stats */}
+                            <div className="team-usage-stats">
+                              <h4>Team Usage</h4>
+                              <div className="stats-grid">
+                                <div className="stat-item">
+                                  <div className="stat-label">
+                                    Total Downloads
+                                  </div>
+                                  <div className="stat-value">
+                                    {subscription?.downloadsUsed || 0}
+                                  </div>
+                                </div>
+                                <div className="stat-item">
+                                  <div className="stat-label">
+                                    Downloads Limit
+                                  </div>
+                                  <div className="stat-value">
+                                    {subscription?.downloadLimit || 0}
+                                  </div>
+                                </div>
+                                <div className="stat-item">
+                                  <div className="stat-label">
+                                    Available Slots
+                                  </div>
+                                  <div className="stat-value">
+                                    {(user?.subscription?.teamMembers ||
+                                      subscription?.teamMembers ||
+                                      1) - teamMembers.length}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Cancel Subscription Option */}
+                        {(user?.subscription?.status === "active" ||
+                          subscription?.status === "active") && (
                           <div className="cancel-subscription-section">
                             <div className="cancel-warning">
                               <i className="fas fa-exclamation-triangle"></i>
@@ -2259,220 +2228,60 @@ const Profile = () => {
                       </div>
                     </div>
                   ) : (
-                    /* Free Plan - User is not subscribed */
-                    <div className="free-plan-container">
-                      {/* Header */}
-                      <div className="free-plan-header">
-                        <h2>Your Current Plan</h2>
-                        <div className="status-badge free">Free</div>
+                    /* No Subscription - Free Plan */
+                    <div className="subscription-card free-plan">
+                      <div className="subscription-header">
+                        <h2>Current Plan</h2>
+                        <div className="status-badge free">Free Plan</div>
                       </div>
 
-                      {/* Current Plan Info */}
-                      <div className="current-plan-card">
-                        <div className="plan-icon">
-                          <i className="fas fa-user-circle"></i>
-                        </div>
+                      <div className="free-plan-content">
                         <div className="plan-details">
-                          <h3>Free Plan</h3>
-                          <p className="plan-price">$0/month</p>
-                          <p className="plan-description">
-                            Basic access to our platform with limited features
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Limitations Section */}
-                      <div className="limitations-section">
-                        <h4>What's included:</h4>
-                        <div className="features-list">
-                          <div className="feature-item included">
-                            <i className="fas fa-check-circle"></i>
-                            <span>Access to basic templates</span>
-                          </div>
-                          <div className="feature-item included">
-                            <i className="fas fa-check-circle"></i>
-                            <span>5 downloads per month</span>
-                          </div>
-                          <div className="feature-item included">
-                            <i className="fas fa-check-circle"></i>
-                            <span>Standard quality downloads</span>
-                          </div>
-                          <div className="feature-item not-included">
-                            <i className="fas fa-times-circle"></i>
-                            <span>Unlimited downloads</span>
-                          </div>
-                          <div className="feature-item not-included">
-                            <i className="fas fa-times-circle"></i>
-                            <span>HD quality downloads</span>
-                          </div>
-                          <div className="feature-item not-included">
-                            <i className="fas fa-times-circle"></i>
-                            <span>AI-powered features</span>
-                          </div>
-                          <div className="feature-item not-included">
-                            <i className="fas fa-times-circle"></i>
-                            <span>Team collaboration</span>
-                          </div>
-                          <div className="feature-item not-included">
-                            <i className="fas fa-times-circle"></i>
-                            <span>Commercial license</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Usage Stats */}
-                      <div className="usage-stats-section">
-                        <h4>Your Usage This Month</h4>
-                        <div className="stats-grid">
-                          <div className="stat-card">
-                            <div className="stat-icon">
-                              <i className="fas fa-download"></i>
-                            </div>
-                            <div className="stat-content">
-                              <div className="stat-value">
-                                {user?.subscription?.downloadsUsed || 0}/5
-                              </div>
-                              <div className="stat-label">Downloads Used</div>
-                              <div className="progress-bar">
-                                <div
-                                  className="progress-fill"
-                                  style={{
-                                    width: `${Math.min(
-                                      100,
-                                      ((user?.subscription?.downloadsUsed ||
-                                        0) /
-                                        5) *
-                                        100
-                                    )}%`,
-                                  }}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="stat-card">
-                            <div className="stat-icon">
-                              <i className="fas fa-calendar"></i>
-                            </div>
-                            <div className="stat-content">
-                              <div className="stat-value">
-                                {new Date().getDate()}/30
-                              </div>
-                              <div className="stat-label">Days Remaining</div>
-                              <div className="progress-bar">
-                                <div
-                                  className="progress-fill"
-                                  style={{
-                                    width: `${
-                                      (new Date().getDate() / 30) * 100
-                                    }%`,
-                                  }}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Upgrade CTA */}
-                      <div className="upgrade-cta-section">
-                        <div className="upgrade-content">
-                          <h3>Ready for more?</h3>
+                          <h3>You're on the Free Plan</h3>
                           <p>
-                            Upgrade to unlock unlimited downloads, premium
-                            features, and team collaboration capabilities.
+                            Upgrade to unlock premium features and unlimited
+                            access
                           </p>
-                          <div className="upgrade-benefits">
-                            <div className="benefit-item">
-                              <i className="fas fa-infinity"></i>
-                              <span>Unlimited Downloads</span>
-                            </div>
-                            <div className="benefit-item">
-                              <i className="fas fa-users"></i>
-                              <span>Team Collaboration</span>
-                            </div>
-                            <div className="benefit-item">
-                              <i className="fas fa-robot"></i>
-                              <span>AI Features</span>
-                            </div>
-                            <div className="benefit-item">
-                              <i className="fas fa-crown"></i>
-                              <span>Priority Support</span>
+
+                          <div className="free-limitations">
+                            <h4>Current Limitations:</h4>
+                            <ul>
+                              <li>✓ Basic access to platform</li>
+                              <li>✓ Limited daily uploads (5 per day)</li>
+                              <li>✓ Standard resolution downloads only</li>
+                              <li>✗ No AI tools access</li>
+                              <li>✗ No commercial license</li>
+                              <li>✗ No team collaboration</li>
+                            </ul>
+                          </div>
+
+                          <div className="credits-info">
+                            <h4>Credits Usage</h4>
+                            <div className="credits-progress">
+                              <div className="progress-bar">
+                                <div
+                                  className="progress-fill"
+                                  style={{ width: "50%" }}
+                                ></div>
+                              </div>
+                              <div className="credits-text">
+                                50/100 daily credits used
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="upgrade-actions">
+
+                        <div className="upgrade-cta">
                           <Link
                             to="/subscription"
                             className="butn butn-lg butn-bg main-colorbg radius-5 upgrade-btn"
                           >
                             <i className="icon fas fa-arrow-up"></i>
-                            <span>Upgrade Now</span>
+                            <span>Upgrade to Premium</span>
                           </Link>
                           <p className="upgrade-note">
-                            Start your 7-day free trial with any paid plan
+                            Choose from Individual, Team, or Enterprise plans
                           </p>
-                        </div>
-                      </div>
-
-                      {/* Compare Plans */}
-                      <div className="compare-plans-section">
-                        <h4>Compare Plans</h4>
-                        <div className="plans-comparison">
-                          <div className="plan-column free">
-                            <div className="plan-header">
-                              <h5>Free</h5>
-                              <div className="plan-price">$0/mo</div>
-                            </div>
-                            <ul className="plan-features">
-                              <li>✓ 5 downloads/month</li>
-                              <li>✓ Basic templates</li>
-                              <li>✗ HD quality</li>
-                              <li>✗ AI features</li>
-                              <li>✗ Team features</li>
-                              <li>✗ Commercial license</li>
-                            </ul>
-                          </div>
-                          <div className="plan-column popular">
-                            <div className="plan-header">
-                              <h5>Premium</h5>
-                              <div className="plan-price">$9/mo</div>
-                              <div className="popular-badge">Most Popular</div>
-                            </div>
-                            <ul className="plan-features">
-                              <li>✓ 200 downloads/month</li>
-                              <li>✓ All templates</li>
-                              <li>✓ HD quality</li>
-                              <li>✓ Basic AI features</li>
-                              <li>✗ Team features</li>
-                              <li>✓ Personal license</li>
-                            </ul>
-                            <Link
-                              to="/subscription"
-                              className="butn butn-sm butn-bg main-colorbg radius-5"
-                            >
-                              Choose Premium
-                            </Link>
-                          </div>
-                          <div className="plan-column team">
-                            <div className="plan-header">
-                              <h5>Team</h5>
-                              <div className="plan-price">$16/mo</div>
-                            </div>
-                            <ul className="plan-features">
-                              <li>✓ 200 downloads/user</li>
-                              <li>✓ All templates</li>
-                              <li>✓ 4K quality</li>
-                              <li>✓ Advanced AI features</li>
-                              <li>✓ Team collaboration</li>
-                              <li>✓ Commercial license</li>
-                            </ul>
-                            <Link
-                              to="/subscription"
-                              className="butn butn-sm butn-bord radius-5"
-                            >
-                              Choose Team
-                            </Link>
-                          </div>
                         </div>
                       </div>
                     </div>
