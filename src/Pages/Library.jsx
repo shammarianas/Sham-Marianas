@@ -84,7 +84,7 @@ const Library = () => {
                         </span>
                       </div>
                     ) : null}
-                    <img src={asset.thumbnail} alt="placeholder" />
+                    <img  loading="lazy"  src={asset.thumbnail} alt="placeholder" />
                   </div>
 
                   <div className="card_content">

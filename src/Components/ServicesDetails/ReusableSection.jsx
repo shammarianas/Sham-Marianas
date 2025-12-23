@@ -38,7 +38,7 @@ function ReusableSection({
             </div>
             <div className="col-lg-6">
               <div className="services-images">
-                <img src={sectionOne.image} alt="section one" />
+                <img  loading="lazy"  src={sectionOne.image} alt="section one" />
               </div>
             </div>
           </div>
@@ -51,7 +51,7 @@ function ReusableSection({
           <div className="row xlg-marg">
             <div className="col-lg-6">
               <div className="services-images">
-                <img src={sectionTwo.image} alt="section two" />
+                <img  loading="lazy"  src={sectionTwo.image} alt="section two" />
               </div>
             </div>
             <div className="col-lg-6 valign">
@@ -108,7 +108,7 @@ function ReusableSection({
             </div>
             <div className="col-lg-6">
               <div className="img md-mb50">
-                <img src={faqImage} alt="FAQ" />
+                <img  loading="lazy"  src={faqImage} alt="FAQ" />
               </div>
             </div>
           </div>

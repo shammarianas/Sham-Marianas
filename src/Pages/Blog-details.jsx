@@ -456,7 +456,7 @@ function BlogDetails() {
                         <div>
                           <div className="img">
                             <Link to={`/blog/${post.slug || post.id}`}>
-                              <img src={post.coverImageUrl} alt={post.title} />
+                              <img  loading="lazy"  src={post.coverImageUrl} alt={post.title} />
                               {post.publishedAt && (
                                 <span className="date">
                                   <span>

@@ -257,7 +257,7 @@ const Favorites = () => {
                                 </div>
                               );
                             }
-                            return <img src={src} alt="placeholder" />;
+                            return <img  loading="lazy"  src={src} alt="placeholder" />;
                           })()
                         )}
                       </Link>

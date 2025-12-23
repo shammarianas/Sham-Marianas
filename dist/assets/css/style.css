@@ -10293,7 +10293,7 @@ footer.clean-footer.crev .circle-blur {
 /* Team plan specific styles */
 .team-plan {
   position: relative;
-  border: 2px solid #09f;
+  border: 2px solid #52b0b4;
   transform: scale(1.02);
   z-index: 1;
 }

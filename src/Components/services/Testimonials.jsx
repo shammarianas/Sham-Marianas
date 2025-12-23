@@ -86,7 +86,7 @@ function Testimonials() {
                   <div className="d-flex align-items-center">
                     <div>
                 <div className="img fit-img-new ">
-                        <img src="/assets/imgs/testim/t2.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/testim/t2.jpg" alt="" />
                       </div>
                     </div>
                     <div className="ml-20">
@@ -117,7 +117,7 @@ function Testimonials() {
                   <div className="d-flex align-items-center">
                     <div>
                 <div className="img fit-img-new">
-                        <img src="/assets/imgs/testim/t3.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/testim/t3.jpg" alt="" />
                       </div>
                     </div>
                     <div className="ml-20">
@@ -149,7 +149,7 @@ function Testimonials() {
                   <div className="d-flex align-items-center">
                     <div>
                 <div className="img fit-img-new">
-                        <img src="/assets/imgs/testim/t4.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/testim/t4.jpg" alt="" />
                       </div>
                     </div>
                     <div className="ml-20">
@@ -179,7 +179,7 @@ function Testimonials() {
                   <div className="d-flex align-items-center">
                     <div>
                 <div className="img fit-img-new">
-                        <img src="/assets/imgs/testim/t5.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/testim/t5.jpg" alt="" />
                       </div>
                     </div>
                     <div className="ml-20">
@@ -211,7 +211,7 @@ function Testimonials() {
                   <div className="d-flex align-items-center">
                     <div>
                 <div className="img fit-img-new ">
-                        <img src="/assets/imgs/testim/t6.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/testim/t6.jpg" alt="" />
                       </div>
                     </div>
                     <div className="ml-20">
@@ -244,7 +244,7 @@ function Testimonials() {
                   <div className="d-flex align-items-center">
                     <div>
                    <div className="img fit-img-new ">
-                        <img src="/assets/imgs/testim/t7.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/testim/t7.jpg" alt="" />
                       </div>
                     </div>
                     <div className="ml-20">
@@ -275,7 +275,7 @@ function Testimonials() {
                   <div className="d-flex align-items-center">
                     <div>
                 <div className="img fit-img-new">
-                        <img src="/assets/imgs/testim/1.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/testim/1.jpg" alt="" />
                       </div>
                     </div>
                     <div className="ml-20">
@@ -305,7 +305,7 @@ function Testimonials() {
                   <div className="d-flex align-items-center">
                     <div>
                    <div className="img fit-img-new ">
-                        <img src="/assets/imgs/testim/t1.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/testim/t1.jpg" alt="" />
                       </div>
                     </div>
                     <div className="ml-20">

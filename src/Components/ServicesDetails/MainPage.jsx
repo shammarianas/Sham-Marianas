@@ -57,7 +57,7 @@ function MainPage() {
             </div>
             <div className="col-lg-6">
               <div className="services-images">
-                <img src="/assets/imgs/Asset_img.png" alt="services" />
+                <img  loading="lazy"  src="/assets/imgs/Asset_img.png" alt="services" />
               </div>
             </div>
           </div>
@@ -69,7 +69,7 @@ function MainPage() {
         <div className="container ontop">
           <div className="row xlg-marg">
             <div className="col-lg-6">
-              <img src="/assets/imgs/Asset_img.png" alt="services" />
+              <img  loading="lazy"  src="/assets/imgs/Asset_img.png" alt="services" />
             </div>
             <div className="col-lg-6 valign">
               <div className="sec-head mb-50 text-left">
@@ -129,7 +129,7 @@ function MainPage() {
             </div>
 
             <div className="col-lg-6">
-              <img src="/assets/imgs/FAQ.png" alt="FAQ" />
+              <img  loading="lazy"  src="/assets/imgs/FAQ.png" alt="FAQ" />
             </div>
           </div>
         </div>
