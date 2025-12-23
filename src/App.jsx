@@ -123,7 +123,10 @@ export const AppRoutes = () => (
     <Route path="/services/ecommerce-solutions" element={<EcommercePage />} />
     <Route path="/services/content-writing" element={<ContentWritingPage />} />
     <Route path="/services/product-design" element={<ProductDesignPage />} />
-    <Route path="/services/social-media-digital-marketing" element={<DigitalMaketerPage />} />
+    <Route
+      path="/services/social-media-digital-marketing"
+      element={<DigitalMaketerPage />}
+    />
     <Route path="/services/video-production" element={<VideoProduction />} />
     <Route path="/services/vfx-and-cgi-ads" element={<VfxAndAds />} />
     <Route path="/services/print-media-solutions" element={<PrintMedia />} />
@@ -138,7 +141,10 @@ export const AppRoutes = () => (
       element={<PrivacyPolicyTemplate />}
     />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
-    <Route path="/terms-condition-template" element={<TermsandConditionTemplate />} />
+    <Route
+      path="/terms-condition-template"
+      element={<TermsandConditionTemplate />}
+    />
     <Route path="/seller-guideline" element={<SellerGuideline />} />
     <Route path="/pricing-and-fees" element={<PricingAndFees />} />
     <Route path="/contributor-policies" element={<ContributorPolicies />} />
@@ -170,7 +176,7 @@ export const AppRoutes = () => (
     <Route path="/category/hdris" element={<CategoryTemplate />} />
     <Route path="/category/textures" element={<CategoryTemplate />} />
     <Route path="/category/more" element={<CategoryTemplate />} />
-    
+
     {/* if you have this */}
     <Route path="*" element={<Error />} />
   </Routes>

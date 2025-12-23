@@ -27,6 +27,8 @@ import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 import SEO from "../../common/SEO";
 import { SEO_CONFIG } from "../../utils/seoConfig";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { functions } from "../../../firebase"; // Make sure you export functions from firebase.js
 
 // Country code data (for phone)
 const countryCodes = [
@@ -115,20 +117,24 @@ const Login = () => {
       setLoadingCountries(true);
       try {
         // Using the exact API URL you asked about
-        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
-        
+        const response = await fetch(
+          "https://restcountries.com/v3.1/all?fields=name,cca2"
+        );
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         // Format countries data correctly
-        const formattedCountries = data.map(country => ({
-          name: country.name.common,
-          code: country.cca2
-        })).sort((a, b) => a.name.localeCompare(b.name));
-        
+        const formattedCountries = data
+          .map((country) => ({
+            name: country.name.common,
+            code: country.cca2,
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
         setAllCountries(formattedCountries); // Store in allCountries state
         console.log(`Fetched ${formattedCountries.length} countries`);
       } catch (error) {
@@ -154,7 +160,24 @@ const Login = () => {
 
     fetchCountries();
   }, []);
+  // Add this useEffect after your existing useEffect for countries
+  useEffect(() => {
+    // Handle invitation codes from URL
+    const searchParams = new URLSearchParams(location.search);
+    const inviteCode = searchParams.get("inviteCode");
+    const inviteEmail = searchParams.get("email");
 
+    if (inviteEmail) {
+      setEmail(inviteEmail);
+    }
+
+    // Store invitation code for later use in completeSignup
+    if (inviteCode) {
+      localStorage.setItem("inviteCode", inviteCode);
+    }
+
+    console.log("Invitation params:", { inviteCode, inviteEmail });
+  }, [location]);
   // Cleanup timeout on component unmount
   useEffect(() => {
     return () => {
@@ -383,10 +406,14 @@ const Login = () => {
       setTempUser(user);
       setIsVerificationSent(true);
       setResendTimer(60);
-      setSuccess("Verification email sent! Check your inbox and click the link to verify.");
+      setSuccess(
+        "Verification email sent! Check your inbox and click the link to verify."
+      );
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {
-        setError("Email already registered. Please login or use a different email.");
+        setError(
+          "Email already registered. Please login or use a different email."
+        );
       } else if (err.code === "auth/too-many-requests") {
         setError("Too many attempts. Please try again later.");
       } else {
@@ -422,7 +449,9 @@ const Login = () => {
           setIsEmailVerified(true);
           setSuccess("Email verified successfully!");
         } else {
-          setError("Email not verified yet. Please check your inbox and click the verification link.");
+          setError(
+            "Email not verified yet. Please check your inbox and click the verification link."
+          );
         }
       }
     } catch (err) {
@@ -456,7 +485,9 @@ const Login = () => {
     }
 
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError("Username can only contain letters, numbers and underscores (_)");
+      setError(
+        "Username can only contain letters, numbers and underscores (_)"
+      );
       return false;
     }
 
@@ -487,7 +518,7 @@ const Login = () => {
       setError("Password must be at least 6 characters");
       return false;
     }
-    
+
     if (
       usernameStatus === "taken" ||
       usernameStatus === "invalid" ||
@@ -521,72 +552,162 @@ const Login = () => {
   };
 
   // Complete signup after email verification
+  // Complete signup after email verification
   const completeSignup = async () => {
     try {
       let user;
+
+      // Check if user is already logged in (tempUser)
       if (tempUser && tempUser.emailVerified) {
         user = tempUser;
+
+        // Reload user to get latest email verification status
+        await user.reload();
+        user = auth.currentUser;
       } else {
-        const userCredential = await createUserWithEmailAndPassword(
+        // If no tempUser, try to sign in
+        const userCredential = await signInWithEmailAndPassword(
           auth,
           email,
           password
         );
         user = userCredential.user;
+      }
 
-        await updateProfile(user, { displayName: username });
+      // Double check email verification
+      if (!user.emailVerified) {
+        setError("Please verify your email first. Check your inbox.");
+        return;
+      }
 
-        if (!user.emailVerified) {
-          await sendEmailVerification(user, {
-            url: window.location.origin + "/email-verified",
-          });
-          setError("Please verify your email first. Check your inbox.");
-          return;
+      // Update profile with username
+      await updateProfile(user, {
+        displayName: username,
+      });
+
+      // Create profile in Firestore
+      const userProfileRef = doc(db, "Profiles", user.uid);
+
+      // Prepare profile data
+      const profileData = {
+        username: username,
+        email: user.email,
+        profilePic: user.photoURL || "",
+        uid: user.uid,
+        role: "user",
+        name: name,
+        phone: `${countryCode} ${phone}`,
+        emailVerified: true,
+        birthday: birthday,
+        countryCode: countryCode,
+        country: country,
+        city: city,
+        createdAt: serverTimestamp(),
+        joinDate: serverTimestamp(),
+        lastLogin: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      console.log("Saving profile data:", profileData); // Debug log
+
+      // Save to Firestore
+      await setDoc(userProfileRef, profileData, { merge: true });
+
+      // Verify the data was saved
+      const savedDoc = await getDoc(userProfileRef);
+      if (savedDoc.exists()) {
+        console.log(
+          "Profile successfully saved to Firestore:",
+          savedDoc.data()
+        );
+      } else {
+        console.error("Profile document not found after saving!");
+      }
+      await checkAndAcceptInvitations(user);
+
+      const inviteCode = localStorage.getItem("inviteCode");
+      if (inviteCode) {
+        try {
+          const response = await fetch(
+            "https://us-central1-sham-marianas.cloudfunctions.net/autoAcceptTeamInvitation",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                inviteCode: inviteCode,
+                userId: user.uid,
+                userEmail: user.email,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            console.log("Auto-accepted team invitation from URL");
+            // Clear the stored invite code
+            localStorage.removeItem("inviteCode");
+          } else {
+            console.error("Failed to accept invitation from URL");
+          }
+        } catch (inviteError) {
+          console.error("Error accepting invitation from URL:", inviteError);
         }
       }
 
-      const userProfileRef = doc(db, "Profiles", user.uid);
-      await setDoc(
-        userProfileRef,
-        {
-          username: user.displayName,
-          email: user.email,
-          profilePic: user.photoURL,
-          uid: user.uid,
-          role: "user",
-          name: name,
-          phone: `${countryCode} ${phone}`,
-          emailVerified: true,
-          birthday: birthday,
-          countryCode: countryCode,
-          country: country,
-          city: city,
-          createdAt: serverTimestamp(),
-          joinDate: serverTimestamp(),
-          lastLogin: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      // Send welcome email
+      try {
+        await fetch(
+          "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: email,
+              name: name || username,
+            }),
+          }
+        );
+      } catch (emailErr) {
+        console.error("Failed to send welcome email:", emailErr);
+        // Continue even if email fails
+      }
 
-      setSuccess("Sign-up successful! Redirecting...");
+      setSuccess("Sign-up successful! Redirecting to dashboard...");
 
-      await fetch(
-        "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email,
-            name: name || username,
-          }),
-        }
-      );
-
+      // Redirect after a short delay
       setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+        navigate("/templates", { replace: true });
+      }, 2000);
     } catch (err) {
-      setError("Sign-up failed: " + err.message);
+      console.error("Sign-up error details:", err);
+
+      if (err.code === "auth/user-not-found") {
+        setError("User not found. Please try signing up again.");
+      } else if (err.code === "auth/wrong-password") {
+        setError("Incorrect password. Please try again.");
+      } else if (err.code === "auth/too-many-requests") {
+        setError("Too many attempts. Please try again later.");
+      } else {
+        setError("Sign-up failed: " + err.message);
+      }
+    }
+  };
+  // Add this function after other functions like completeSignup
+  const checkAndAcceptInvitations = async (user) => {
+    if (!user || !user.email) return;
+
+    try {
+      const checkInvitations = httpsCallable(functions, "checkUserInvitations");
+      const result = await checkInvitations();
+
+      if (result.data.success && result.data.acceptedInvites.length > 0) {
+        console.log("Auto-joined teams:", result.data.acceptedInvites);
+        // Optional: Show a notification to user
+        // alert(`Welcome! You've been added to ${result.data.acceptedInvites.length} team(s)`);
+      }
+    } catch (error) {
+      console.error("Error checking invitations:", error);
     }
   };
 
@@ -601,12 +722,16 @@ const Login = () => {
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        setError("Please verify your email first. Check your inbox for verification link.");
+        setError(
+          "Please verify your email first. Check your inbox for verification link."
+        );
         await signOut(auth);
         return;
       }
 
       setSuccess("Login successful!");
+
+      await checkAndAcceptInvitations(user);
 
       await fetch(
         "https://us-central1-sham-marianas.cloudfunctions.net/sendLoginEmail",
@@ -620,13 +745,44 @@ const Login = () => {
         }
       );
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+      setTimeout(() => navigate("/templates", { replace: true }), 3000);
     } catch (err) {
       setError("Login failed: " + err.message);
     }
   };
+
+  // Add this useEffect after your existing useEffects
+  useEffect(() => {
+    const autoCompleteSignup = async () => {
+      if (
+        isEmailVerified &&
+        currentStep === 2 &&
+        !success.includes("Redirecting")
+      ) {
+        // Wait 2 seconds then automatically complete signup
+        setTimeout(async () => {
+          await completeSignup();
+        }, 2000);
+      }
+    };
+
+    autoCompleteSignup();
+  }, [isEmailVerified, currentStep, success]);
+
+  // Add this useEffect to clear invitation codes on logout
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Clean up invitation codes if user leaves the page
+      localStorage.removeItem("inviteCode");
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      localStorage.removeItem("inviteCode");
+    };
+  }, []);
 
   const handlePasswordReset = async (e) => {
     e.preventDefault();
@@ -654,7 +810,7 @@ const Login = () => {
       {page === "login" && <SEO {...SEO_CONFIG.login} />}
       {page === "signup" && <SEO {...SEO_CONFIG.signup} />}
       {page === "forgot" && <SEO {...SEO_CONFIG.forgotPassword} />}
-      
+
       <div className="login">
         {/* =================== LOGIN PAGE =================== */}
         {page === "login" && (
@@ -983,7 +1139,9 @@ const Login = () => {
                         }}
                       >
                         <option value="">
-                          {loadingCountries ? "Loading countries..." : "Select Country"}
+                          {loadingCountries
+                            ? "Loading countries..."
+                            : "Select Country"}
                         </option>
                         {allCountries.map((c) => (
                           <option key={c.code} value={c.name}>
@@ -993,7 +1151,14 @@ const Login = () => {
                       </select>
                     </div>
                     {!loadingCountries && (
-                      <small style={{ color: "#888", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                      <small
+                        style={{
+                          color: "#888",
+                          fontSize: "0.8rem",
+                          marginTop: "4px",
+                          display: "block",
+                        }}
+                      >
                         {allCountries.length} countries available
                       </small>
                     )}
@@ -1022,7 +1187,14 @@ const Login = () => {
                         }}
                       />
                     </div>
-                    <small style={{ color: "#888", fontSize: "0.8rem", marginTop: "4px", display: "block" }}>
+                    <small
+                      style={{
+                        color: "#888",
+                        fontSize: "0.8rem",
+                        marginTop: "4px",
+                        display: "block",
+                      }}
+                    >
                       Enter your city name
                     </small>
                   </div>

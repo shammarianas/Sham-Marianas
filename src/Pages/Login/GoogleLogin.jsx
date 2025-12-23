@@ -2,14 +2,12 @@ import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { db } from "../../../firebase";
 import { auth } from "../../../firebase";
 import { doc, setDoc } from "firebase/firestore";
-
-
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 export const loginWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(auth, provider)
     .then(async (result) => {
-
       // Check if the user's profile already exists in the Firestore collection
       const userProfileRef = doc(db, "Profiles", result.user.uid);
 

@@ -25,7 +25,21 @@ import { db, auth } from "../../firebase";
 import { useUser } from "../Context/UserProvider";
 import ListedItemCard from "../Components/UI/ListedItemCard";
 import { Helmet } from "react-helmet-async";
-
+// Add these URLs at the top of your Profile.js or in a config file
+const CLOUD_FUNCTIONS = {
+  addTeamMember: "https://addteammember-xc6vtzxljq-uc.a.run.app",
+  autoAcceptTeamInvitation:
+    "https://us-central1-sham-marianas.cloudfunctions.net/autoAcceptTeamInvitation",
+  getTeamDetails:
+    "https://us-central1-sham-marianas.cloudfunctions.net/getTeamDetails",
+  getPendingInvitations:
+    "https://us-central1-sham-marianas.cloudfunctions.net/getPendingInvitations",
+  cancelTeamInvite:
+    "https://us-central1-sham-marianas.cloudfunctions.net/cancelTeamInvite",
+  removeTeamMember:
+    "https://us-central1-sham-marianas.cloudfunctions.net/removeTeamMember",
+  checkUserInvitations: "checkUserInvitations", // Callable function
+};
 const Profile = () => {
   const { username: urlUsername } = useParams();
   const { currentUser } = useUser();
@@ -34,6 +48,7 @@ const Profile = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
   const [userId, setUserId] = useState(null);
 
   const [firstName, setFirstName] = useState("");
@@ -42,6 +57,9 @@ const Profile = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Add these to your state declarations (around line 60)
+  const [usernameAvailable, setUsernameAvailable] = useState(true);
+  const [checkingUsername, setCheckingUsername] = useState(false);
   const [saving, setSaving] = useState(false);
   const [bio, setBio] = useState("");
 
@@ -180,92 +198,233 @@ const Profile = () => {
   // Fetch subscription data
   useEffect(() => {
     if (isOwnProfile && userId) {
-      fetchSubscription();
-      fetchPendingInvites();
+      fetchTeamDetails();
     }
   }, [isOwnProfile, userId]);
 
-  const fetchSubscription = async () => {
-    if (!isOwnProfile) return;
+  const fetchTeamDetails = async () => {
+    if (!isOwnProfile || !userId) return;
 
     try {
       setLoadingSubscription(true);
 
-      // ✅ PROFILES COLLECTION SE SUBSCRIPTION DATA FETCH KARO
-      if (user?.subscription) {
-        const subscriptionData = user.subscription;
+      // First, get the user's profile to check subscription
+      const profileRef = doc(db, "Profiles", userId);
+      const profileSnap = await getDoc(profileRef);
+
+      if (!profileSnap.exists()) {
+        console.log("❌ User profile not found");
+        setSubscription(null);
+        return;
+      }
+
+      const profileData = profileSnap.data();
+      const userSubscription = profileData.subscription || {};
+
+      console.log("📄 User subscription from Profile:", userSubscription);
+
+      // If user is not on a team plan, just show individual subscription
+      if (userSubscription.type !== "team") {
+        console.log("ℹ️ User is on individual plan");
         setSubscription({
-          ...subscriptionData,
-          // Additional fields for compatibility
-          subscriptionType:
-            subscriptionData.type || subscriptionData.plan || "individual",
-          billingCycle: subscriptionData.billingCycle || "monthly",
-          price: subscriptionData.price || 0,
-          status: subscriptionData.status || "active",
-          expiresAt: subscriptionData.expiresAt,
-          nextBillingDate:
-            subscriptionData.expiresAt || subscriptionData.nextBillingDate,
-          downloadLimit: subscriptionData.downloadLimit || 0,
-          downloadsUsed: subscriptionData.downloadsUsed || 0,
-          startDate: subscriptionData.startDate,
-          createdAt: subscriptionData.startDate,
+          ...userSubscription,
+          subscriptionType: userSubscription.type || "individual",
+          billingCycle: userSubscription.billingCycle || "monthly",
+          plan: userSubscription.plan || "individual",
+          status: userSubscription.status || "inactive",
+          price: userSubscription.price || 0,
+          expiresAt: userSubscription.expiresAt,
+          startDate: userSubscription.startDate,
+          downloadLimit: userSubscription.downloadLimit || 200,
+          downloadsUsed: userSubscription.downloadsUsed || 0,
         });
+        setTeamMembers([]);
+        setPendingInvites([]);
+        return;
+      }
 
-        if (
-          subscriptionData.type === "team" &&
-          subscriptionData.teamMembers > 1
-        ) {
-          await fetchTeamMembers(userId);
-        }
-      } else {
-        // Agar Profiles mein subscription nahi hai to UserSubscriptions check karo
+      // If user is on team plan, fetch team details
+      if (userSubscription.teamId) {
+        // Try to get team details from Cloud Function first
         try {
-          const subscriptionRef = doc(db, "UserSubscriptions", userId);
-          const subscriptionDoc = await getDoc(subscriptionRef);
+          const idToken = await auth.currentUser.getIdToken();
+          console.log(
+            "🔍 Fetching team details for team:",
+            userSubscription.teamId
+          );
 
-          if (subscriptionDoc.exists()) {
-            const subscriptionData = subscriptionDoc.data();
-            setSubscription(subscriptionData);
+          const response = await fetch(CLOUD_FUNCTIONS.getTeamDetails, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+            },
+          });
 
-            if (
-              subscriptionData.subscriptionType === "team" &&
-              subscriptionData.teamMembers > 1
-            ) {
-              await fetchTeamMembers(userId);
+          console.log("📊 Cloud Function response status:", response.status);
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log("✅ Cloud Function result:", result);
+
+            if (result.success) {
+              // Combine user subscription with team data
+              const combinedSubscription = {
+                // User's personal subscription data
+                ...userSubscription,
+                subscriptionType: userSubscription.type || "team",
+                billingCycle: userSubscription.billingCycle || "monthly",
+                plan: userSubscription.plan || "team",
+                status: userSubscription.status || "active",
+                price: userSubscription.price || 0,
+                expiresAt: userSubscription.expiresAt,
+                startDate: userSubscription.startDate,
+                downloadLimit: userSubscription.downloadLimit || 200,
+                downloadsUsed: userSubscription.downloadsUsed || 0,
+                totalDownloads: userSubscription.totalDownloads || 0,
+                teamId: userSubscription.teamId,
+                monthlyReset: userSubscription.monthlyReset,
+
+                // Team data from Cloud Function
+                team: result.team,
+                members: result.members || [],
+                pendingInvites: result.pendingInvites || [],
+                userRole: result.userRole || "member",
+
+                // Calculated fields
+                availableSlots: result.team?.availableSlots || 0,
+                memberLimit: result.team?.memberLimit || 2,
+                currentMembers: result.members?.length || 1,
+                perMemberPrice: result.team?.perMemberPrice || 7,
+                downloadsPerMember: result.team?.downloadsPerMember || 200,
+                totalTeamDownloads: result.team?.totalDownloads || 0,
+                totalDownloadsUsed: result.team?.totalDownloadsUsed || 0,
+              };
+
+              console.log(
+                "📊 Combined subscription data:",
+                combinedSubscription
+              );
+              setSubscription(combinedSubscription);
+              setTeamMembers(result.members || []);
+              setPendingInvites(result.pendingInvites || []);
+              return;
             }
           } else {
-            setSubscription(null);
+            console.warn(
+              "⚠️ Cloud Function failed, falling back to direct Firestore"
+            );
           }
-        } catch (error) {
-          console.log("UserSubscriptions not found, using free plan");
-          setSubscription(null);
+        } catch (cloudError) {
+          console.error("❌ Cloud Function error:", cloudError);
+        }
+
+        // Fallback: Get team data directly from Firestore
+        console.log("🔄 Falling back to direct Firestore team data");
+        const teamRef = doc(db, "Teams", userSubscription.teamId);
+        const teamSnap = await getDoc(teamRef);
+
+        if (teamSnap.exists()) {
+          const teamData = teamSnap.data();
+          console.log("🏢 Team data from Firestore:", teamData);
+
+          // Get all team members' profiles
+          const memberPromises = (teamData.members || []).map(
+            async (memberId) => {
+              const memberProfileRef = doc(db, "Profiles", memberId);
+              const memberProfileSnap = await getDoc(memberProfileRef);
+              if (memberProfileSnap.exists()) {
+                const memberProfile = memberProfileSnap.data();
+                return {
+                  id: memberId,
+                  email: memberProfile.email,
+                  name:
+                    memberProfile.name ||
+                    `${memberProfile.firstName || ""} ${
+                      memberProfile.lastName || ""
+                    }`.trim(),
+                  role: memberId === teamData.ownerId ? "owner" : "member",
+                  joinedAt: memberProfile.joinDate || memberProfile.createdAt,
+                  profilePic: memberProfile.profilePic,
+                  downloadsUsed: teamData.memberDownloads?.[memberId] || 0,
+                  downloadLimit: teamData.downloadsPerMember || 200,
+                };
+              }
+              return null;
+            }
+          );
+
+          const members = (await Promise.all(memberPromises)).filter(Boolean);
+
+          // Get pending invites
+          const invitesQuery = await getDocs(
+            query(
+              collection(db, "TeamInvites"),
+              where("teamId", "==", userSubscription.teamId),
+              where("status", "==", "pending")
+            )
+          );
+
+          const invites = [];
+          invitesQuery.forEach((doc) => {
+            invites.push({
+              id: doc.id,
+              ...doc.data(),
+            });
+          });
+
+          // Calculate available slots (memberLimit - 1 for owner)
+          const maxInvitableMembers = teamData.memberLimit - 1;
+          const availableSlots = Math.max(
+            0,
+            maxInvitableMembers - (members.length - 1)
+          );
+
+          const combinedSubscription = {
+            // User's personal subscription data
+            ...userSubscription,
+            subscriptionType: userSubscription.type || "team",
+            billingCycle: userSubscription.billingCycle || "monthly",
+            plan: userSubscription.plan || "team",
+            status: userSubscription.status || "active",
+            price: userSubscription.price || 0,
+            expiresAt: userSubscription.expiresAt,
+            startDate: userSubscription.startDate,
+            downloadLimit: userSubscription.downloadLimit || 200,
+            downloadsUsed: userSubscription.downloadsUsed || 0,
+            totalDownloads: userSubscription.totalDownloads || 0,
+            teamId: userSubscription.teamId,
+            monthlyReset: userSubscription.monthlyReset,
+
+            // Team data
+            team: teamData,
+            members: members,
+            pendingInvites: invites,
+            userRole: teamData.ownerId === userId ? "owner" : "member",
+
+            // Calculated fields
+            availableSlots: availableSlots,
+            memberLimit: teamData.memberLimit || 2,
+            currentMembers: members.length,
+            perMemberPrice: teamData.perMemberPrice || 7,
+            downloadsPerMember: teamData.downloadsPerMember || 200,
+            totalTeamDownloads: teamData.totalDownloads || 0,
+            totalDownloadsUsed: teamData.totalDownloadsUsed || 0,
+          };
+
+          console.log(
+            "📊 Combined subscription data (fallback):",
+            combinedSubscription
+          );
+          setSubscription(combinedSubscription);
+          setTeamMembers(members);
+          setPendingInvites(invites);
         }
       }
     } catch (error) {
-      console.error("Error fetching subscription:", error);
+      console.error("❌ Error fetching team details:", error);
       setSubscription(null);
     } finally {
       setLoadingSubscription(false);
-    }
-  };
-
-  const fetchTeamMembers = async (ownerId) => {
-    try {
-      const teamRef = collection(db, "TeamMembers");
-      const q = query(teamRef, where("ownerId", "==", ownerId));
-      const querySnapshot = await getDocs(q);
-
-      const members = [];
-      querySnapshot.forEach((doc) => {
-        members.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-
-      setTeamMembers(members);
-    } catch (error) {
-      console.error("Error fetching team members:", error);
     }
   };
 
@@ -296,7 +455,7 @@ const Profile = () => {
   };
 
   const inviteTeamMember = async () => {
-    if (!inviteEmail || !subscription || !userId) return;
+    if (!inviteEmail || !userId) return;
 
     try {
       setInviting(true);
@@ -312,49 +471,50 @@ const Profile = () => {
         return;
       }
 
-      const existingInvite = await checkExistingInvite(inviteEmail, userId);
-      if (existingInvite) {
-        alert("This email has already been invited");
-        return;
-      }
+      // Get the current user's token
+      const idToken = await auth.currentUser.getIdToken();
 
-      const invitesRef = collection(db, "TeamInvites");
-      await addDoc(invitesRef, {
-        ownerId: userId,
-        ownerEmail: currentUser.email,
-        ownerName: `${firstName} ${lastName}`.trim() || currentUser.displayName,
-        inviteEmail: inviteEmail,
-        subscriptionId:
-          subscription.id || `sub_${subscription.subscriptionType}`,
-        subscriptionType: subscription.subscriptionType,
-        status: "pending",
-        invitedAt: Timestamp.now(),
-        expiresAt: Timestamp.fromDate(
-          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        ),
+      // Call the Cloud Function with only memberEmail
+      const response = await fetch(CLOUD_FUNCTIONS.addTeamMember, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          memberEmail: inviteEmail, // Only send memberEmail, not teamId
+        }),
       });
 
-      alert(`Invitation sent to ${inviteEmail}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error?.message || "Failed to add team member");
+      }
+
+      // For local testing - show direct link
+      if (process.env.NODE_ENV === "development" || result.directLink) {
+        console.log(
+          "📧 Local Testing - Direct Invite Link:",
+          result.directLink
+        );
+        alert(
+          `For local testing, use this direct link:\n${result.directLink}\n\nOr invitation code: ${result.inviteCode}`
+        );
+      } else {
+        alert(`Invitation sent to ${inviteEmail}`);
+      }
+
       setInviteEmail("");
-      fetchPendingInvites();
+
+      // Refresh data
+      fetchTeamDetails();
     } catch (error) {
       console.error("Error inviting team member:", error);
-      alert("Failed to send invitation. Please try again.");
+      alert(error.message || "Failed to send invitation");
     } finally {
       setInviting(false);
     }
-  };
-
-  const checkExistingInvite = async (email, ownerId) => {
-    const invitesRef = collection(db, "TeamInvites");
-    const q = query(
-      invitesRef,
-      where("inviteEmail", "==", email),
-      where("ownerId", "==", ownerId),
-      where("status", "==", "pending")
-    );
-    const querySnapshot = await getDocs(q);
-    return !querySnapshot.empty;
   };
 
   const removeTeamMember = async (memberId) => {
@@ -362,37 +522,63 @@ const Profile = () => {
       return;
 
     try {
-      const memberRef = doc(db, "TeamMembers", memberId);
-      await deleteDoc(memberRef);
+      const idToken = await auth.currentUser.getIdToken();
 
-      setTeamMembers((prev) => prev.filter((member) => member.id !== memberId));
-      alert("Team member removed successfully");
+      const response = await fetch(CLOUD_FUNCTIONS.removeTeamMember, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          teamId: subscription.teamId,
+          memberId: memberId,
+        }),
+      });
 
-      if (subscription) {
-        const subscriptionRef = doc(db, "UserSubscriptions", userId);
-        await updateDoc(subscriptionRef, {
-          teamMembers: teamMembers.length - 1,
-          updatedAt: Timestamp.now(),
-        });
+      const result = await response.json();
+
+      if (response.ok) {
+        setTeamMembers((prev) =>
+          prev.filter((member) => member.id !== memberId)
+        );
+        alert("Team member removed successfully");
+      } else {
+        throw new Error(
+          result.error?.message || "Failed to remove team member"
+        );
       }
     } catch (error) {
       console.error("Error removing team member:", error);
-      alert("Failed to remove team member");
+      alert(error.message || "Failed to remove team member");
     }
   };
 
   const cancelInvite = async (inviteId) => {
     try {
-      const inviteRef = doc(db, "TeamInvites", inviteId);
-      await updateDoc(inviteRef, {
-        status: "cancelled",
-        cancelledAt: Timestamp.now(),
+      const idToken = await auth.currentUser.getIdToken();
+
+      const response = await fetch(CLOUD_FUNCTIONS.cancelTeamInvite, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          inviteId: inviteId,
+        }),
       });
 
-      setPendingInvites((prev) =>
-        prev.filter((invite) => invite.id !== inviteId)
-      );
-      alert("Invitation cancelled");
+      const result = await response.json();
+
+      if (response.ok) {
+        setPendingInvites((prev) =>
+          prev.filter((invite) => invite.id !== inviteId)
+        );
+        alert("Invitation cancelled");
+      } else {
+        throw new Error(result.error?.message || "Failed to cancel invitation");
+      }
     } catch (error) {
       console.error("Error cancelling invite:", error);
       alert("Failed to cancel invitation");
@@ -450,7 +636,7 @@ const Profile = () => {
 
   const cancelSubscription = async () => {
     if (
-      (!user?.subscription && !subscription) ||
+      !subscription ||
       !window.confirm(
         "Are you sure you want to cancel your subscription?\n\n" +
           "You will continue to have access until the end of your current billing period."
@@ -459,24 +645,13 @@ const Profile = () => {
       return;
 
     try {
-      // Profiles collection mein subscription update karo
       const profileRef = doc(db, "Profiles", userId);
 
-      if (user?.subscription) {
-        await updateDoc(profileRef, {
-          "subscription.status": "cancelled",
-          "subscription.cancelledAt": Timestamp.now(),
-          updatedAt: Timestamp.now(),
-        });
-      } else if (subscription) {
-        // Agar UserSubscriptions mein hai to wahan update karo
-        const subscriptionRef = doc(db, "UserSubscriptions", userId);
-        await updateDoc(subscriptionRef, {
-          status: "cancelled",
-          cancelledAt: Timestamp.now(),
-          updatedAt: Timestamp.now(),
-        });
-      }
+      await updateDoc(profileRef, {
+        "subscription.status": "cancelled",
+        "subscription.cancelledAt": Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      });
 
       setSubscription((prev) => ({
         ...prev,
@@ -608,9 +783,6 @@ const Profile = () => {
 
     fetchItems();
   }, [userId]);
-
-  const [usernameAvailable, setUsernameAvailable] = useState(true);
-  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const getDisplayName = () => {
     if (!user) return "User";
@@ -1513,363 +1685,585 @@ const Profile = () => {
               )}
 
               {/* Subscription Tab Content */}
-             {activeTab === "subscription" && (
-  <div className="tab-content">
-    {loadingSubscription ? (
-      <div className="subscription-loading">
-        <div className="loading-spinner">
-          <i className="fas fa-spinner fa-spin"></i>
-        </div>
-        <p>Loading subscription details...</p>
-      </div>
-    ) : user?.subscription || subscription ? (
-      <div className="subscription-container">
-        {/* Current Subscription Card */}
-        <div className="subscription-card active">
-          <div className="subscription-header">
-            <div className="header-left">
-              <h2>Current Subscription</h2>
-              <div
-                className={`status-badge ${
-                  formatSubscriptionStatus(
-                    user?.subscription?.status ||
-                      subscription?.status
-                  ).class
-                }`}
-              >
-                {
-                  formatSubscriptionStatus(
-                    user?.subscription?.status ||
-                      subscription?.status
-                  ).text
-                }
-              </div>
-            </div>
-            <div className="header-right">
-              <Link
-                to="/subscription"
-                className="butn butn-sm butn-bg main-colorbg radius-5"
-              >
-                <i className="icon fas fa-sync-alt"></i>
-                <span>Change Plan</span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="subscription-info-grid">
-            <div className="info-item">
-              <span className="info-label">Plan Type:</span>
-              <span className="info-value">
-                {getSubscriptionTypeDisplay(
-                  user?.subscription?.type ||
-                    user?.subscription?.plan ||
-                    subscription?.subscriptionType ||
-                    "individual"
-                )}
-              </span>
-            </div>
-
-            <div className="info-item">
-              <span className="info-label">Billing Cycle:</span>
-              <span className="info-value capitalize">
-                {user?.subscription?.billingCycle ||
-                  subscription?.billingCycle ||
-                  "Monthly"}
-              </span>
-            </div>
-
-            <div className="info-item">
-              <span className="info-label">Price:</span>
-              <span className="info-value">
-                $
-                {user?.subscription?.price ||
-                  subscription?.price ||
-                  "0"}
-                /
-                {(user?.subscription?.billingCycle ||
-                  subscription?.billingCycle ||
-                  "monthly") === "yearly"
-                  ? "year"
-                  : "month"}
-              </span>
-            </div>
-
-            <div className="info-item">
-              <span className="info-label">Team Members:</span>
-              <span className="info-value">
-                {user?.subscription?.teamMembers ||
-                  subscription?.teamMembers ||
-                  1}{" "}
-                members
-              </span>
-            </div>
-
-            <div className="info-item">
-              <span className="info-label">
-                Next Billing Date:
-              </span>
-              <span className="info-value">
-                {formatDate(
-                  user?.subscription?.expiresAt ||
-                    user?.subscription?.nextBillingDate ||
-                    subscription?.nextBillingDate ||
-                    subscription?.currentPeriodEnd
-                ) || "N/A"}
-              </span>
-            </div>
-
-            {/* Downloads Usage */}
-            <div className="info-item">
-              <span className="info-label">Downloads Used:</span>
-              <span className="info-value">
-                {user?.subscription?.downloadsUsed || 0} /
-                {user?.subscription?.downloadLimit ||
-                  subscription?.downloadLimit ||
-                  0}
-              </span>
-            </div>
-
-            <div className="info-item">
-              <span className="info-label">
-                Subscription Start:
-              </span>
-              <span className="info-value">
-                {formatDate(
-                  user?.subscription?.startDate ||
-                    subscription?.createdAt ||
-                    subscription?.startDate
-                ) || "N/A"}
-              </span>
-            </div>
-          </div>
-
-          {/* Team Management Section - Only show for team plans */}
-          {(user?.subscription?.type === "team" || 
-            subscription?.subscriptionType === "team" || 
-            user?.subscription?.plan === "team") && (
-            <div className="team-management-section">
-              <div className="section-header">
-                <h3>Team Management</h3>
-                <div className="member-count">
-                  <i className="fas fa-users"></i>
-                  <span>
-                    {teamMembers.length} / {user?.subscription?.teamMembers || subscription?.teamMembers || 1} members
-                  </span>
-                </div>
-              </div>
-
-              {/* Invite Team Member */}
-              <div className="invite-member-form">
-                <h4>Add Team Member</h4>
-                <p className="form-description">
-                  Invite team members by email. They'll receive an invitation to join your team.
-                </p>
-                
-                <div className="input-with-button">
-                  <input
-                    type="email"
-                    placeholder="Enter email address"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="invite-email-input"
-                  />
-                  <button
-                    className="butn butn-sm butn-bg main-colorbg color-white radius-5"
-                    onClick={inviteTeamMember}
-                    disabled={inviting || !inviteEmail}
-                  >
-                    <i className="icon fas fa-paper-plane pr-3"></i>
-                    <span>{inviting ? "Sending..." : "Invite"}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Current Team Members */}
-              {teamMembers.length > 0 && (
-                <div className="team-members-list">
-                  <h4>Team Members</h4>
-                  <div className="members-grid">
-                    {teamMembers.map((member) => (
-                      <div key={member.id} className="member-card">
-                        <div className="member-info">
-                          <div className="member-avatar">
-                            {member.profilePic ? (
-                              <img src={member.profilePic} alt={member.email} />
-                            ) : (
-                              <div className="avatar-initials">
-                                {member.email?.charAt(0).toUpperCase()}
-                              </div>
-                            )}
+              {activeTab === "subscription" && (
+                <div className="tab-content">
+                  {loadingSubscription ? (
+                    <div className="subscription-loading">
+                      <div className="loading-spinner">
+                        <i className="fas fa-spinner fa-spin"></i>
+                      </div>
+                      <p>Loading subscription details...</p>
+                    </div>
+                  ) : user?.subscription?.type === "team" ||
+                    subscription?.subscriptionType === "team" ? (
+                    // Team Plan - Show team management
+                    <div className="subscription-container">
+                      <div className="subscription-card active">
+                        <div className="subscription-header">
+                          <div className="header-left">
+                            <h2>Team Subscription</h2>
+                            <div
+                              className={`status-badge ${
+                                formatSubscriptionStatus(subscription?.status)
+                                  .class
+                              }`}
+                            >
+                              {
+                                formatSubscriptionStatus(subscription?.status)
+                                  .text
+                              }
+                            </div>
                           </div>
-                          <div className="member-details">
-                            <div className="member-email">{member.email}</div>
-                            <div className="member-role">
-                              <span className="role-badge">
-                                {member.role || "Member"}
+                          <div className="header-right">
+                            <Link
+                              to="/subscription"
+                              className="butn butn-sm butn-bg main-colorbg radius-5"
+                            >
+                              <i className="icon fas fa-sync-alt"></i>
+                              <span>Change Plan</span>
+                            </Link>
+                          </div>
+                        </div>
+
+                        <div className="subscription-info-grid">
+                          <div className="info-item">
+                            <span className="info-label">Plan Type:</span>
+                            <span className="info-value">Team</span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">Billing Cycle:</span>
+                            <span className="info-value capitalize">
+                              {user?.subscription?.billingCycle ||
+                                subscription?.billingCycle ||
+                                "Monthly"}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">Price:</span>
+                            <span className="info-value">
+                              $
+                              {user?.subscription?.price ||
+                                subscription?.price ||
+                                "0"}
+                              /
+                              {(user?.subscription?.billingCycle ||
+                                subscription?.billingCycle ||
+                                "monthly") === "yearly"
+                                ? "year"
+                                : "month"}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">
+                              Your Downloads Used:
+                            </span>
+                            <span className="info-value">
+                              {user?.subscription?.downloadsUsed ||
+                                subscription?.downloadsUsed ||
+                                0}{" "}
+                              /
+                              {user?.subscription?.downloadLimit ||
+                                subscription?.downloadLimit ||
+                                200}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">Renews:</span>
+                            <span className="info-value">
+                              {formatDate(
+                                user?.subscription?.expiresAt ||
+                                  subscription?.expiresAt
+                              ) || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Team Management Section */}
+                        <div className="team-management-section">
+                          <div className="section-header">
+                            <h3>Team Management</h3>
+                            <div className="member-count">
+                              <i className="fas fa-users"></i>
+                              <span>
+                                {teamMembers.length} /{" "}
+                                {subscription?.memberLimit || 2} members
+                                <span className="available-slots">
+                                  (
+                                  {Math.max(
+                                    0,
+                                    (subscription?.memberLimit || 2) -
+                                      teamMembers.length
+                                  )}{" "}
+                                  slots available)
+                                </span>
                               </span>
                             </div>
-                            <div className="member-joined">
-                              Joined: {formatDate(member.joinedAt)}
+                          </div>
+
+                          {/* Invite Team Member */}
+                          <div className="invite-member-form">
+                            <h4>Add Team Member</h4>
+                            <p className="form-description">
+                              Invite team members by email. They'll receive an
+                              invitation to join your team.
+                            </p>
+
+                            <div className="input-with-button">
+                              <input
+                                type="email"
+                                placeholder="Enter email address"
+                                value={inviteEmail}
+                                onChange={(e) => setInviteEmail(e.target.value)}
+                                className="invite-email-input"
+                              />
+                              <button
+                                className="butn butn-sm butn-bg main-colorbg color-white radius-5"
+                                onClick={inviteTeamMember}
+                                disabled={inviting || !inviteEmail}
+                              >
+                                <i className="icon fas fa-paper-plane pr-3"></i>
+                                <span>
+                                  {inviting ? "Sending..." : "Invite"}
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Current Team Members */}
+                          {teamMembers.length > 0 && (
+                            <div className="team-members-list">
+                              <h4>Team Members</h4>
+                              <div className="members-grid">
+                                {teamMembers.map((member) => (
+                                  <div key={member.id} className="member-card">
+                                    <div className="member-info">
+                                      <div className="member-avatar">
+                                        {member.profilePic ? (
+                                          <img
+                                            loading="lazy"
+                                            src={member.profilePic}
+                                            alt={member.email}
+                                          />
+                                        ) : (
+                                          <div className="avatar-initials">
+                                            {member.email
+                                              ?.charAt(0)
+                                              .toUpperCase()}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="member-details">
+                                        <div className="member-email">
+                                          {member.email}
+                                        </div>
+                                        <div className="member-role">
+                                          <span className="role-badge">
+                                            {member.role || "Member"}
+                                          </span>
+                                        </div>
+                                        <div className="member-joined">
+                                          Joined: {formatDate(member.joinedAt)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Pending Invites */}
+                          {pendingInvites.length > 0 && (
+                            <div className="pending-invites">
+                              <h4>Pending Invitations</h4>
+                              <div className="invites-list">
+                                {pendingInvites.map((invite) => (
+                                  <div key={invite.id} className="invite-item">
+                                    <div className="invite-info">
+                                      <i className="fas fa-envelope"></i>
+                                      <span className="invite-email">
+                                        {invite.inviteEmail}
+                                      </span>
+                                      <span className="invite-status pending">
+                                        Pending
+                                      </span>
+                                      <span className="invite-sent">
+                                        Sent: {formatDate(invite.invitedAt)}
+                                      </span>
+                                    </div>
+                                    <div className="invite-actions">
+                                      <button
+                                        className="cancel-invite-btn"
+                                        onClick={() => cancelInvite(invite.id)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Cancel Subscription Option */}
+                        {subscription?.status === "active" && (
+                          <div className="cancel-subscription-section">
+                            <div className="cancel-warning">
+                              <i className="fas fa-exclamation-triangle"></i>
+                              <div>
+                                <h4>Cancel Subscription</h4>
+                                <p>
+                                  If you cancel, you'll lose access to premium
+                                  features at the end of your current billing
+                                  period.
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              className="butn butn-sm butn-danger radius-5"
+                              onClick={cancelSubscription}
+                            >
+                              Cancel Subscription
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : user?.subscription?.type === "individual" ||
+                    subscription?.subscriptionType === "individual" ? (
+                    // Individual Paid Plan
+                    <div className="subscription-container">
+                      <div className="subscription-card active">
+                        <div className="subscription-header">
+                          <div className="header-left">
+                            <h2>Premium Subscription</h2>
+                            <div
+                              className={`status-badge ${
+                                formatSubscriptionStatus(subscription?.status)
+                                  .class
+                              }`}
+                            >
+                              {
+                                formatSubscriptionStatus(subscription?.status)
+                                  .text
+                              }
+                            </div>
+                          </div>
+                          <div className="header-right">
+                            <Link
+                              to="/subscription"
+                              className="butn butn-sm butn-bg main-colorbg radius-5"
+                            >
+                              <i className="icon fas fa-sync-alt"></i>
+                              <span>Change Plan</span>
+                            </Link>
+                          </div>
+                        </div>
+
+                        <div className="subscription-info-grid">
+                          <div className="info-item">
+                            <span className="info-label">Plan Type:</span>
+                            <span className="info-value">Premium</span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">Billing Cycle:</span>
+                            <span className="info-value capitalize">
+                              {user?.subscription?.billingCycle ||
+                                subscription?.billingCycle ||
+                                "Monthly"}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">Price:</span>
+                            <span className="info-value">
+                              $
+                              {user?.subscription?.price ||
+                                subscription?.price ||
+                                "0"}
+                              /
+                              {(user?.subscription?.billingCycle ||
+                                subscription?.billingCycle ||
+                                "monthly") === "yearly"
+                                ? "year"
+                                : "month"}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">Downloads Used:</span>
+                            <span className="info-value">
+                              {user?.subscription?.downloadsUsed ||
+                                subscription?.downloadsUsed ||
+                                0}{" "}
+                              /
+                              {user?.subscription?.downloadLimit ||
+                                subscription?.downloadLimit ||
+                                200}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">Renews:</span>
+                            <span className="info-value">
+                              {formatDate(
+                                user?.subscription?.expiresAt ||
+                                  subscription?.expiresAt
+                              ) || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {subscription?.status === "active" && (
+                          <div className="cancel-subscription-section">
+                            <div className="cancel-warning">
+                              <i className="fas fa-exclamation-triangle"></i>
+                              <div>
+                                <h4>Cancel Subscription</h4>
+                                <p>
+                                  If you cancel, you'll lose access to premium
+                                  features at the end of your current billing
+                                  period.
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              className="butn butn-sm butn-danger radius-5"
+                              onClick={cancelSubscription}
+                            >
+                              Cancel Subscription
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Free Plan - User is not subscribed */
+                    <div className="free-plan-container">
+                      {/* Header */}
+                      <div className="free-plan-header">
+                        <h2>Your Current Plan</h2>
+                        <div className="status-badge free">Free</div>
+                      </div>
+
+                      {/* Current Plan Info */}
+                      <div className="current-plan-card">
+                        <div className="plan-icon">
+                          <i className="fas fa-user-circle"></i>
+                        </div>
+                        <div className="plan-details">
+                          <h3>Free Plan</h3>
+                          <p className="plan-price">$0/month</p>
+                          <p className="plan-description">
+                            Basic access to our platform with limited features
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Limitations Section */}
+                      <div className="limitations-section">
+                        <h4>What's included:</h4>
+                        <div className="features-list">
+                          <div className="feature-item included">
+                            <i className="fas fa-check-circle"></i>
+                            <span>Access to basic templates</span>
+                          </div>
+                          <div className="feature-item included">
+                            <i className="fas fa-check-circle"></i>
+                            <span>5 downloads per month</span>
+                          </div>
+                          <div className="feature-item included">
+                            <i className="fas fa-check-circle"></i>
+                            <span>Standard quality downloads</span>
+                          </div>
+                          <div className="feature-item not-included">
+                            <i className="fas fa-times-circle"></i>
+                            <span>Unlimited downloads</span>
+                          </div>
+                          <div className="feature-item not-included">
+                            <i className="fas fa-times-circle"></i>
+                            <span>HD quality downloads</span>
+                          </div>
+                          <div className="feature-item not-included">
+                            <i className="fas fa-times-circle"></i>
+                            <span>AI-powered features</span>
+                          </div>
+                          <div className="feature-item not-included">
+                            <i className="fas fa-times-circle"></i>
+                            <span>Team collaboration</span>
+                          </div>
+                          <div className="feature-item not-included">
+                            <i className="fas fa-times-circle"></i>
+                            <span>Commercial license</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Usage Stats */}
+                      <div className="usage-stats-section">
+                        <h4>Your Usage This Month</h4>
+                        <div className="stats-grid">
+                          <div className="stat-card">
+                            <div className="stat-icon">
+                              <i className="fas fa-download"></i>
+                            </div>
+                            <div className="stat-content">
+                              <div className="stat-value">
+                                {user?.subscription?.downloadsUsed || 0}/5
+                              </div>
+                              <div className="stat-label">Downloads Used</div>
+                              <div className="progress-bar">
+                                <div
+                                  className="progress-fill"
+                                  style={{
+                                    width: `${Math.min(
+                                      100,
+                                      ((user?.subscription?.downloadsUsed ||
+                                        0) /
+                                        5) *
+                                        100
+                                    )}%`,
+                                  }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="stat-card">
+                            <div className="stat-icon">
+                              <i className="fas fa-calendar"></i>
+                            </div>
+                            <div className="stat-content">
+                              <div className="stat-value">
+                                {new Date().getDate()}/30
+                              </div>
+                              <div className="stat-label">Days Remaining</div>
+                              <div className="progress-bar">
+                                <div
+                                  className="progress-fill"
+                                  style={{
+                                    width: `${
+                                      (new Date().getDate() / 30) * 100
+                                    }%`,
+                                  }}
+                                ></div>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="member-actions">
-                          <button
-                            className="remove-member-btn"
-                            onClick={() => removeTeamMember(member.id)}
-                            title="Remove member"
+                      </div>
+
+                      {/* Upgrade CTA */}
+                      <div className="upgrade-cta-section">
+                        <div className="upgrade-content">
+                          <h3>Ready for more?</h3>
+                          <p>
+                            Upgrade to unlock unlimited downloads, premium
+                            features, and team collaboration capabilities.
+                          </p>
+                          <div className="upgrade-benefits">
+                            <div className="benefit-item">
+                              <i className="fas fa-infinity"></i>
+                              <span>Unlimited Downloads</span>
+                            </div>
+                            <div className="benefit-item">
+                              <i className="fas fa-users"></i>
+                              <span>Team Collaboration</span>
+                            </div>
+                            <div className="benefit-item">
+                              <i className="fas fa-robot"></i>
+                              <span>AI Features</span>
+                            </div>
+                            <div className="benefit-item">
+                              <i className="fas fa-crown"></i>
+                              <span>Priority Support</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="upgrade-actions">
+                          <Link
+                            to="/subscription"
+                            className="butn butn-lg butn-bg main-colorbg radius-5 upgrade-btn"
                           >
-                            <i className="fas fa-trash"></i>
-                          </button>
+                            <i className="icon fas fa-arrow-up"></i>
+                            <span>Upgrade Now</span>
+                          </Link>
+                          <p className="upgrade-note">
+                            Start your 7-day free trial with any paid plan
+                          </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Pending Invites */}
-              {pendingInvites.length > 0 && (
-                <div className="pending-invites">
-                  <h4>Pending Invitations</h4>
-                  <div className="invites-list">
-                    {pendingInvites.map((invite) => (
-                      <div key={invite.id} className="invite-item">
-                        <div className="invite-info">
-                          <i className="fas fa-envelope"></i>
-                          <span className="invite-email">{invite.inviteEmail}</span>
-                          <span className="invite-status pending">Pending</span>
-                          <span className="invite-sent">
-                            Sent: {formatDate(invite.invitedAt)}
-                          </span>
-                        </div>
-                        <div className="invite-actions">
-                          <button
-                            className="cancel-invite-btn"
-                            onClick={() => cancelInvite(invite.id)}
-                          >
-                            Cancel
-                          </button>
+                      {/* Compare Plans */}
+                      <div className="compare-plans-section">
+                        <h4>Compare Plans</h4>
+                        <div className="plans-comparison">
+                          <div className="plan-column free">
+                            <div className="plan-header">
+                              <h5>Free</h5>
+                              <div className="plan-price">$0/mo</div>
+                            </div>
+                            <ul className="plan-features">
+                              <li>✓ 5 downloads/month</li>
+                              <li>✓ Basic templates</li>
+                              <li>✗ HD quality</li>
+                              <li>✗ AI features</li>
+                              <li>✗ Team features</li>
+                              <li>✗ Commercial license</li>
+                            </ul>
+                          </div>
+                          <div className="plan-column popular">
+                            <div className="plan-header">
+                              <h5>Premium</h5>
+                              <div className="plan-price">$9/mo</div>
+                              <div className="popular-badge">Most Popular</div>
+                            </div>
+                            <ul className="plan-features">
+                              <li>✓ 200 downloads/month</li>
+                              <li>✓ All templates</li>
+                              <li>✓ HD quality</li>
+                              <li>✓ Basic AI features</li>
+                              <li>✗ Team features</li>
+                              <li>✓ Personal license</li>
+                            </ul>
+                            <Link
+                              to="/subscription"
+                              className="butn butn-sm butn-bg main-colorbg radius-5"
+                            >
+                              Choose Premium
+                            </Link>
+                          </div>
+                          <div className="plan-column team">
+                            <div className="plan-header">
+                              <h5>Team</h5>
+                              <div className="plan-price">$16/mo</div>
+                            </div>
+                            <ul className="plan-features">
+                              <li>✓ 200 downloads/user</li>
+                              <li>✓ All templates</li>
+                              <li>✓ 4K quality</li>
+                              <li>✓ Advanced AI features</li>
+                              <li>✓ Team collaboration</li>
+                              <li>✓ Commercial license</li>
+                            </ul>
+                            <Link
+                              to="/subscription"
+                              className="butn butn-sm butn-bord radius-5"
+                            >
+                              Choose Team
+                            </Link>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
-
-              {/* Team Usage Stats */}
-              <div className="team-usage-stats">
-                <h4>Team Usage</h4>
-                <div className="stats-grid">
-                  <div className="stat-item">
-                    <div className="stat-label">Total Downloads</div>
-                    <div className="stat-value">
-                      {subscription?.downloadsUsed || 0}
-                    </div>
-                  </div>
-                  <div className="stat-item">
-                    <div className="stat-label">Downloads Limit</div>
-                    <div className="stat-value">
-                      {subscription?.downloadLimit || 0}
-                    </div>
-                  </div>
-                  <div className="stat-item">
-                    <div className="stat-label">Available Slots</div>
-                    <div className="stat-value">
-                      {(user?.subscription?.teamMembers || subscription?.teamMembers || 1) - teamMembers.length}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Cancel Subscription Option */}
-          {(user?.subscription?.status === "active" ||
-            subscription?.status === "active") && (
-            <div className="cancel-subscription-section">
-              <div className="cancel-warning">
-                <i className="fas fa-exclamation-triangle"></i>
-                <div>
-                  <h4>Cancel Subscription</h4>
-                  <p>
-                    If you cancel, you'll lose access to premium
-                    features at the end of your current billing
-                    period.
-                  </p>
-                </div>
-              </div>
-              <button
-                className="butn butn-sm butn-danger radius-5"
-                onClick={cancelSubscription}
-              >
-                Cancel Subscription
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    ) : (
-      /* No Subscription - Free Plan */
-      <div className="subscription-card free-plan">
-        <div className="subscription-header">
-          <h2>Current Plan</h2>
-          <div className="status-badge free">Free Plan</div>
-        </div>
-
-        <div className="free-plan-content">
-          <div className="plan-details">
-            <h3>You're on the Free Plan</h3>
-            <p>
-              Upgrade to unlock premium features and unlimited
-              access
-            </p>
-
-            <div className="free-limitations">
-              <h4>Current Limitations:</h4>
-              <ul>
-                <li>✓ Basic access to platform</li>
-                <li>✓ Limited daily uploads (5 per day)</li>
-                <li>✓ Standard resolution downloads only</li>
-                <li>✗ No AI tools access</li>
-                <li>✗ No commercial license</li>
-                <li>✗ No team collaboration</li>
-              </ul>
-            </div>
-
-            <div className="credits-info">
-              <h4>Credits Usage</h4>
-              <div className="credits-progress">
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: "50%" }}
-                  ></div>
-                </div>
-                <div className="credits-text">
-                  50/100 daily credits used
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="upgrade-cta">
-            <Link
-              to="/subscription"
-              className="butn butn-lg butn-bg main-colorbg radius-5 upgrade-btn"
-            >
-              <i className="icon fas fa-arrow-up"></i>
-              <span>Upgrade to Premium</span>
-            </Link>
-            <p className="upgrade-note">
-              Choose from Individual, Team, or Enterprise plans
-            </p>
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-)}
             </>
           )}
 
