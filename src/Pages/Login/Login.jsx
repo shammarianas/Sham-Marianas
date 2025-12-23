@@ -1183,16 +1183,16 @@ const Login = () => {
                       }}
                     >
                       <button
-                        type="button"
                         className="login_btn"
+                        type="button"
                         onClick={checkEmailVerification}
                         style={{ flex: 1 }}
                       >
                         {isEmailVerified ? "✓ Verified" : "I've Verified"}
                       </button>
                       <button
-                        type="button"
                         className="login_btn"
+                        type="button"
                         onClick={resendVerificationEmail}
                         disabled={resendTimer > 0}
                         style={{
