@@ -143,7 +143,7 @@ export const AppRoutes = () => (
       element={<TermsandConditionTemplate />}
     />
     <Route path="/seller-guideline" element={<SellerGuideline />} />
-    <Route path="/pricing-and-fees" element={<PricingAndFees />} />
+    <Route path="/prices-and-fees" element={<PricingAndFees />} />
     <Route path="/contributor-policies" element={<ContributorPolicies />} />
     <Route path="/comming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
