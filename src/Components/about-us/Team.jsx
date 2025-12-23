@@ -22,7 +22,7 @@ function Team() {
               <div className="item mb-50">
                 <div className="bg-blur">
                   <div className="img">
-                    <img src={item.img} alt="" />
+                    <img  loading="lazy"  src={item.img} alt="" />
                     {/* <div className="social">
                       <div className="links">
                         <a
@@ -41,7 +41,7 @@ function Team() {
                     </div> */}
                   </div>
                   <div className="circle-blur">
-                    <img src="/assets/imgs/patterns/blur1.png" alt="" />
+                    <img  loading="lazy"  src="/assets/imgs/patterns/blur1.png" alt="" />
                   </div>
                 </div>
                 <div className="cont pt-30">
@@ -69,7 +69,7 @@ function Team() {
         </div>
       </div>
       <div className="circle-blur">
-        <img src="/assets/imgs/patterns/blur1.png" alt="" />
+        <img  loading="lazy"  src="/assets/imgs/patterns/blur1.png" alt="" />
       </div>
     </section>
   );

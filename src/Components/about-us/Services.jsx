@@ -48,7 +48,7 @@ function Services() {
             </div>
             <div className="col-lg-4">
               <div className="img fit-img">
-                <img src="/assets/imgs/serv-img/1.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/serv-img/1.jpg" alt="" />
                 <a href="#page-services-details">
                   <span className="ti-arrow-top-right"></span>
                 </a>
@@ -79,7 +79,7 @@ function Services() {
             </div>
             <div className="col-lg-4">
               <div className="img fit-img">
-                <img src="/assets/imgs/serv-img/2.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/serv-img/2.jpg" alt="" />
                 <a href="#page-services-details">
                   <span className="ti-arrow-top-right"></span>
                 </a>
@@ -110,7 +110,7 @@ function Services() {
             </div>
             <div className="col-lg-4">
               <div className="img fit-img">
-                <img src="/assets/imgs/serv-img/3.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/serv-img/3.jpg" alt="" />
                 <a href="#page-services-details">
                   <span className="ti-arrow-top-right"></span>
                 </a>

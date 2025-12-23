@@ -624,7 +624,7 @@ const UserCard = ({
         <div className="user-card-header">
           <div className="user-avatar">
             {user.photoURL ? (
-              <img src={user.photoURL} alt={name} className="avatar-img" />
+              <img  loading="lazy"  src={user.photoURL} alt={name} className="avatar-img" />
             ) : (
               <div className="avatar-initials">
                 {(name[0] || "").toUpperCase()}

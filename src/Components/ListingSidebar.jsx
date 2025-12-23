@@ -344,7 +344,7 @@ const ListingSidebar = () => {
                     <label className={filters[filterKey]?.includes(option) ? "active" : ""}>
                       <input type="checkbox" value={option} checked={filters[filterKey]?.includes(option) || false} onChange={(event) => handleFilterChange(filterKey, option, event.target.checked)} />
                       {option}
-                      {filters[filterKey]?.includes(option) && <img className="checkmark" src={checkmark} alt="" />}
+                      {filters[filterKey]?.includes(option) && <img  loading="lazy"  className="checkmark" src={checkmark} alt="" />}
                     </label>
                   </li>
                 ))}

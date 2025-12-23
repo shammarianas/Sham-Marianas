@@ -83,7 +83,7 @@
 //                   <div className="d-flex align-items-center">
 //                     <div>
 //                       <div className="img fit-img">
-//                         <img src="/assets/imgs/testim/t1.jpg" alt="" />
+//                         <img  loading="lazy"  src="/assets/imgs/testim/t1.jpg" alt="" />
 //                       </div>
 //                     </div>
 //                     <div className="ml-20">
@@ -112,7 +112,7 @@
 //                   <div className="d-flex align-items-center">
 //                     <div>
 //                       <div className="img fit-img">
-//                         <img src="/assets/imgs/testim/t2.jpg" alt="" />
+//                         <img  loading="lazy"  src="/assets/imgs/testim/t2.jpg" alt="" />
 //                       </div>
 //                     </div>
 //                     <div className="ml-20">
@@ -141,7 +141,7 @@
 //                   <div className="d-flex align-items-center">
 //                     <div>
 //                       <div className="img fit-img">
-//                         <img src="/assets/imgs/testim/t3.jpg" alt="" />
+//                         <img  loading="lazy"  src="/assets/imgs/testim/t3.jpg" alt="" />
 //                       </div>
 //                     </div>
 //                     <div className="ml-20">

@@ -29,7 +29,7 @@ function Blog() {
           <div className="col-lg-6">
             <div className="item md-mb50">
               <div className="img fit-img">
-                <img src="/assets/imgs/blog/1.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/blog/1.jpg" alt="" />
               </div>
               <div className="cont pt-40">
                 <div className="info sub-title p-color d-flex align-items-center mb-15">
@@ -58,7 +58,7 @@ function Blog() {
           <div className="col-lg-6">
             <div className="item">
               <div className="img fit-img">
-                <img src="/assets/imgs/blog/2.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/blog/2.jpg" alt="" />
               </div>
               <div className="cont pt-40">
                 <div className="info sub-title p-color d-flex align-items-center mb-15">
