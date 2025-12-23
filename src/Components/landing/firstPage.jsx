@@ -30,7 +30,7 @@ function FirstPage() {
         <div className="row mt-80">
           <div className="col-lg-6 order-md-2">
             <div className="icon-img">
-              <img src="/assets/imgs/icon-img/arrow-down-big.png" alt="" />
+              <img  loading="lazy"  src="/assets/imgs/icon-img/arrow-down-big.png" alt="" />
             </div>
           </div>
           <div className="col-lg-6 d-flex justify-content-end order-md-1">

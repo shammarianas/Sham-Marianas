@@ -50,6 +50,8 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const [userId, setUserId] = useState(null);
+  // ✅ SEO State
+  const [seoData, setSeoData] = useState(null);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -81,6 +83,195 @@ const Profile = () => {
   const [pendingInvites, setPendingInvites] = useState([]);
 
   const isOwnProfile = currentUser?.uid === userId;
+
+  // ✅ SEO Function - Optimized
+  const getProfileSEO = (userData, userItems = []) => {
+    if (!userData) return null;
+
+    // Helper function to get display name
+    const getDisplayName = () => {
+      const firstName = userData.firstName || userData.firstname || "";
+      const lastName = userData.lastName || userData.lastname || "";
+
+      if (firstName && lastName) {
+        return `${firstName} ${lastName}`.trim();
+      } else if (firstName) {
+        return firstName.trim();
+      } else if (lastName) {
+        return lastName.trim();
+      }
+
+      if (userData.fullName && userData.fullName.trim()) {
+        return userData.fullName.trim();
+      }
+
+      if (userData.username && userData.username.trim()) {
+        return userData.username.trim();
+      }
+
+      if (userData.displayName && userData.displayName.trim()) {
+        return userData.displayName.trim();
+      }
+
+      if (userData.email) {
+        const emailName = userData.email.split("@")[0];
+        return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+      }
+
+      return "User";
+    };
+
+    const displayName = getDisplayName();
+    const username = userData.username || "";
+    const userBio = userData.bio || userData.about || "";
+
+    // Generate SEO title
+    const getTitle = () => {
+      if (username) {
+        return `${displayName}`;
+      }
+      return `${displayName}`;
+    };
+
+    // Generate SEO description
+    const getDescription = () => {
+      if (userBio && userBio.trim()) {
+        const plainText = userBio
+          .replace(/<[^>]*>/g, "")
+          .replace(/\n/g, " ")
+          .trim();
+
+        if (plainText.length > 150) {
+          return plainText.substring(0, 150) + "...";
+        }
+        return plainText;
+      }
+
+      // Default description based on user stats
+      const itemsCount = userItems.length;
+      const followerCount = userData.followersCount || 0;
+
+      let baseDescription = `${displayName}'s profile`;
+
+      if (itemsCount > 0) {
+        baseDescription += ` with ${itemsCount} digital assets`;
+      }
+
+      if (followerCount > 0) {
+        baseDescription += ` | ${followerCount} followers`;
+      }
+
+      return `${baseDescription} on Shammarianas. View portfolio, 3D models, videos, and creative resources.`;
+    };
+
+    // Generate SEO keywords
+    const getKeywords = () => {
+      const baseKeywords = [
+        displayName,
+        "Shammarianas",
+        "Digital Portfolio",
+        "Creative Profile",
+      ];
+
+      // Add username if available
+      if (username) {
+        baseKeywords.push(`@${username}`);
+      }
+
+      // Add user skills
+      if (userData.skills && Array.isArray(userData.skills)) {
+        baseKeywords.push(...userData.skills.slice(0, 3));
+      }
+
+      // Add user role/specialization
+      if (userData.role) {
+        baseKeywords.push(userData.role);
+      }
+
+      if (userData.specialization) {
+        baseKeywords.push(userData.specialization);
+      }
+
+      // Add categories from user's items
+      if (userItems.length > 0) {
+        const categories = [...new Set(userItems.map((item) => item.type))];
+        categories.slice(0, 3).forEach((category) => {
+          baseKeywords.push(`${category} creator`);
+        });
+      }
+
+      // Add location if available
+      if (userData.location) {
+        baseKeywords.push(userData.location);
+      }
+
+      // Remove empty keywords and limit to 15
+      return [...new Set(baseKeywords.filter((k) => k && k.trim()))]
+        .slice(0, 15)
+        .join(", ");
+    };
+
+    // Get profile image URL
+    const getProfileImage = () => {
+      if (userData.profilePic) return userData.profilePic;
+      if (userData.avatar) return userData.avatar;
+      return "/assets/imgs/default-profile.jpg";
+    };
+
+    // Get canonical URL
+    const getCanonicalUrl = () => {
+      if (username) {
+        return `https://www.shammarianas.com/profile/${username}`;
+      }
+      if (userData.id) {
+        return `https://www.shammarianas.com/profile/${userData.id}`;
+      }
+      return `https://www.shammarianas.com/profile`;
+    };
+
+    return {
+      title: getTitle(),
+      description: getDescription(),
+      keywords: getKeywords(),
+      canonical: getCanonicalUrl(),
+      ogImage: getProfileImage(),
+      twitterImage: getProfileImage(),
+      ogType: "profile",
+      twitterCard: "summary_large_image",
+      // Additional structured data for profiles
+      profile: {
+        firstName: userData.firstName || "",
+        lastName: userData.lastName || "",
+        username: username,
+        gender: userData.gender || "",
+        location: userData.location || "",
+        jobTitle: userData.role || "",
+        worksFor: userData.company || "",
+        joinedDate: userData.createdAt
+          ? userData.createdAt.toDate
+            ? userData.createdAt.toDate().toISOString()
+            : userData.createdAt
+          : new Date().toISOString(),
+      },
+    };
+  };
+
+  // ✅ Loading SEO for initial state
+  const getLoadingSEO = () => ({
+    title: "Loading Profile | Shammarianas",
+    description: "Loading user profile information...",
+    keywords: "profile, user, loading, Shammarianas",
+    ogImage: "/assets/imgs/default-profile.jpg",
+    twitterImage: "/assets/imgs/default-profile.jpg",
+  });
+
+  // ✅ Update SEO when user data or items change
+  useEffect(() => {
+    if (user) {
+      const seo = getProfileSEO(user, items);
+      setSeoData(seo);
+    }
+  }, [user, items]);
 
   useEffect(() => {
     const findUserByUsername = async () => {
@@ -722,6 +913,10 @@ const Profile = () => {
             ...data,
           }));
 
+          // ✅ Update SEO when user data changes
+          const seo = getProfileSEO({ ...data, id: userId }, items);
+          setSeoData(seo);
+
           if (currentUser && currentUser.uid === userId) {
             setFirstName(data.firstName || "");
             setLastName(data.lastName || "");
@@ -775,6 +970,11 @@ const Profile = () => {
         }));
         setItems(itemsData);
         setLoading(false);
+        // ✅ Update SEO with new items
+        if (user) {
+          const seo = getProfileSEO(user, itemsData);
+          setSeoData(seo);
+        }
       } catch (error) {
         console.error("Error fetching items:", error);
         setLoading("error");
@@ -1257,7 +1457,10 @@ const Profile = () => {
 
   return (
     <>
-      <Helmet>
+      {/* ✅ SEO Component - Replace Helmet */}
+      {seoData ? <SEO {...seoData} /> : <SEO {...getLoadingSEO()} />}
+
+      {/* <Helmet>
         <title>{getDisplayName()} | shammarianas</title>
         <meta
           name="description"
@@ -1302,7 +1505,7 @@ const Profile = () => {
           rel="canonical"
           href={`https://shammarianas.me/#/${user?.username}`}
         />
-      </Helmet>
+      </Helmet> */}
 
       {/* Billing History Modal */}
       {showBillingModal && (
@@ -1362,7 +1565,7 @@ const Profile = () => {
               <div className="image-upload-preview">
                 {imagePreview && (
                   <div className="preview-image">
-                    <img src={imagePreview} alt="Preview" />
+                    <img loading="lazy" src={imagePreview} alt="Preview" />
                   </div>
                 )}
                 <div className="upload-actions">
@@ -1410,7 +1613,11 @@ const Profile = () => {
                 <div className="profile_image_container">
                   <div className="profile_image">
                     {user?.profilePic ? (
-                      <img src={user.profilePic} alt={getDisplayName()} />
+                      <img
+                        loading="lazy"
+                        src={user.profilePic}
+                        alt={getDisplayName()}
+                      />
                     ) : (
                       <div className="profile-initials">{getInitials()}</div>
                     )}
@@ -1731,6 +1938,14 @@ const Profile = () => {
                             <span className="info-value">Team</span>
                           </div>
 
+                          <div className="info-item">
+                            <span className="info-label">Billing Cycle:</span>
+                            <span className="info-value capitalize">
+                              {user?.subscription?.billingCycle ||
+                                subscription?.billingCycle ||
+                                "Monthly"}
+                            </span>
+                          </div>
                           <div className="info-item">
                             <span className="info-label">Billing Cycle:</span>
                             <span className="info-value capitalize">

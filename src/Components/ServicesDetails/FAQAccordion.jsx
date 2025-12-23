@@ -44,7 +44,7 @@ const FAQAccordion = ({ title, faqs = [], imageSrc = "" }) => {
           {imageSrc && (
             <div className="col-lg-6">
               <div className="img md-mb50">
-                <img src={imageSrc} alt="FAQ illustration" />
+                <img  loading="lazy"  src={imageSrc} alt="FAQ illustration" />
               </div>
             </div>
           )}

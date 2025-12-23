@@ -87,7 +87,7 @@ const View = () => {
       );
     },
     image({ node, ...props }) {
-      return <img className="markdown-image" alt={props.alt} {...props} />;
+      return <img  loading="lazy"  className="markdown-image" alt={props.alt} {...props} />;
     },
   };
 

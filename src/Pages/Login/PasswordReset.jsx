@@ -98,7 +98,7 @@ const PasswordReset = () => {
                   onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                   className="view_btn"
                 >
-                  <img src={eye_icon} alt="view" />
+                  <img  loading="lazy"  src={eye_icon} alt="view" />
                 </button>
               )}
             </div>
@@ -120,7 +120,7 @@ const PasswordReset = () => {
                   onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                   className="view_btn"
                 >
-                  <img src={eye_icon} alt="view" />
+                  <img  loading="lazy"  src={eye_icon} alt="view" />
                 </button>
               )}
             </div>

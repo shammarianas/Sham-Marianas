@@ -10,7 +10,7 @@ function Intro() {
             <div className="row lg-marg align-items-center">
               <div className="col-md-6">
                 <div className="img1 sm-mb50">
-                  <img src="/assets/imgs/intro/04.webp" alt="" />
+                  <img  loading="lazy"  src="/assets/imgs/intro/04.webp" alt="" />
                 </div>
               </div>
               <div className="col-md-6">
@@ -55,7 +55,7 @@ function Intro() {
                     </div>
                     <div className="ml-auto">
                       <div className="icon-img-40">
-                        <img src="/assets/imgs/arrow-image.webp" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/arrow-image.webp" alt="" />
                       </div>
                     </div>
                   </div>
@@ -68,7 +68,7 @@ function Intro() {
                     </div>
                     <div className="ml-auto">
                       <div className="icon-img-40">
-                        <img src="/assets/imgs/arrow-image.webp" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/arrow-image.webp" alt="" />
                       </div>
                     </div>
                   </div>
@@ -78,7 +78,7 @@ function Intro() {
           </div>
           <div className="col-lg-4">
             <div className="img-full fit-img">
-              <img src="/assets/imgs/intro/04.jpg" alt="" />
+              <img  loading="lazy"  src="/assets/imgs/intro/04.jpg" alt="" />
             </div>
           </div>
         </div>

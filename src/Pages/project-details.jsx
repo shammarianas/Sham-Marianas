@@ -266,7 +266,7 @@ export default function ProjectDetails() {
                   />
                 ))
               ) : (
-                <img src="/assets/imgs/works/2/1.jpg" alt={`${project.title} fallback`} className=" fallback" />
+                <img  loading="lazy"  src="/assets/imgs/works/2/1.jpg" alt={`${project.title} fallback`} className=" fallback" />
               )}
             </div>
           </div>

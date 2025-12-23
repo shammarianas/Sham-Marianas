@@ -98,7 +98,7 @@ const Cart = () => {
                   <div className="cart_item" key={item.id}>
                     <Link to={`/View/${item.id}`} key={item.id}>
                       <div className="image">
-                        <img src={item.thumbnail} alt="item" />
+                        <img  loading="lazy"  src={item.thumbnail} alt="item" />
                       </div>
                       <div className="item_details">
                         <div className="item_title">{item.title}</div>
