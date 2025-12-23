@@ -56,35 +56,35 @@ function Clients() {
             <SwiperSlide>
               <div className="item">
                 <div className="img icon-img-100">
-                  <img src="/assets/imgs/brands/05.png" alt="" />
+                  <img  loading="lazy"  src="/assets/imgs/brands/05.png" alt="" />
                 </div>
               </div>
             </SwiperSlide>
             <SwiperSlide>
               <div className="item">
                 <div className="img icon-img-100">
-                  <img src="/assets/imgs/brands/b7.png" alt="" />
+                  <img  loading="lazy"  src="/assets/imgs/brands/b7.png" alt="" />
                 </div>
               </div>
             </SwiperSlide>
             <SwiperSlide>
               <div className="item">
                 <div className="img icon-img-100">
-                  <img src="/assets/imgs/brands/b3.png" alt="" />
+                  <img  loading="lazy"  src="/assets/imgs/brands/b3.png" alt="" />
                 </div>
               </div>
             </SwiperSlide>
             <SwiperSlide>
               <div className="item">
                 <div className="img icon-img-100">
-                  <img src="/assets/imgs/brands/b4.png" alt="" />
+                  <img  loading="lazy"  src="/assets/imgs/brands/b4.png" alt="" />
                 </div>
               </div>
             </SwiperSlide>
             <SwiperSlide>
               <div className="item">
                 <div className="img icon-img-100">
-                  <img src="/assets/imgs/brands/01.png" alt="" />
+                  <img  loading="lazy"  src="/assets/imgs/brands/01.png" alt="" />
                 </div>
               </div>
             </SwiperSlide>

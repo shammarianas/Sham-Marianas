@@ -165,7 +165,7 @@ const BlogCategory = () => {
                     {post.coverImage && (
                       <div className="img">
                         <Link to={`/blog/${post.slug}`}>
-                          <img
+                          <img  loading="lazy"  
                             className="gallery-image blog-cover-img"
                             src={post.coverImage}
                             alt={post.title}

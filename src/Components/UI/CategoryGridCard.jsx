@@ -23,7 +23,7 @@ const CategoryGridCard = (props) => {
   return (
     <div className="card">
       <div className="card_image">
-        <img src={image_map[props.image]} alt="placeholder" />
+        <img  loading="lazy"  src={image_map[props.image]} alt="placeholder" />
       </div>
 
       <div className="card_title">

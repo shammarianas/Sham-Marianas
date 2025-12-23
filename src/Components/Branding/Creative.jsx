@@ -41,7 +41,7 @@ function Creativity() {
             </div>
             <div className="col-lg-6">
               <div className="services-images">
-                <img src="/assets/imgs/Asset_img.png" alt="services images" />
+                <img  loading="lazy"  src="/assets/imgs/Asset_img.png" alt="services images" />
               </div>
             </div>
           </div>
@@ -52,7 +52,7 @@ function Creativity() {
           <div className="row xlg-marg">
             <div className="col-lg-6">
               <div className="services-images">
-                <img src="/assets/imgs/Asset_img.png" alt="services images" />
+                <img  loading="lazy"  src="/assets/imgs/Asset_img.png" alt="services images" />
               </div>
             </div>
             <div className="col-lg-6 valign">
@@ -191,7 +191,7 @@ function Creativity() {
             </div>
             <div className="col-lg-6">
               <div className="img md-mb50">
-                <img src="/assets/imgs/FAQ.png" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/FAQ.png" alt="" />
               </div>
               <div></div>
             </div>

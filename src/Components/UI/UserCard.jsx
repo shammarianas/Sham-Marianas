@@ -167,7 +167,7 @@ const UserCard = ({ userId }) => {
     <div className="user">
       <div className="user_image">
         {user?.profilePic ? (
-          <img src={user.profilePic} alt={getDisplayName()} />
+          <img  loading="lazy"  src={user.profilePic} alt={getDisplayName()} />
         ) : (
           <div className="profile-initials">{getInitials()}</div>
         )}

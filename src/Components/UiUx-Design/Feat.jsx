@@ -27,7 +27,7 @@ function Feat() {
           <div className="col-lg-3 col-md-6">
             <div className="item-box radius-15 md-mb50">
               <div className="icon-img-70 mb-40 opacity-3">
-                <img src="/assets/imgs/serv-icons/3.png" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/serv-icons/3.png" alt="" />
               </div>
               <span className="mb-30 p-color">01 .</span>
               <h6 className="mb-20">Digital Product Design</h6>
@@ -39,7 +39,7 @@ function Feat() {
           <div className="col-lg-3 col-md-6">
             <div className="item-box radius-15 md-mb50">
               <div className="icon-img-70 mb-40 opacity-3">
-                <img src="/assets/imgs/serv-icons/4.png" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/serv-icons/4.png" alt="" />
               </div>
               <span className="mb-30 p-color">02 .</span>
               <h6 className="mb-20">Web Developments</h6>
@@ -51,7 +51,7 @@ function Feat() {
           <div className="col-lg-3 col-md-6">
             <div className="item-box radius-15 sm-mb50">
               <div className="icon-img-70 mb-40 opacity-3">
-                <img src="/assets/imgs/serv-icons/5.png" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/serv-icons/5.png" alt="" />
               </div>
               <span className="mb-30 p-color">03 .</span>
               <h6 className="mb-20">Branding Design</h6>
@@ -63,7 +63,7 @@ function Feat() {
           <div className="col-lg-3 col-md-6">
             <div className="item-box radius-15">
               <div className="icon-img-70 mb-40 opacity-3">
-                <img src="/assets/imgs/serv-icons/6.png" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/serv-icons/6.png" alt="" />
               </div>
               <span className="mb-30 p-color">04 .</span>
               <h6 className="mb-20">UI/UX Web Design</h6>

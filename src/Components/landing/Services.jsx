@@ -153,7 +153,7 @@ function Services() {
               <SwiperSlide key={i}>
                 <div className="item-box item-box-new">
                   <div className="icon mb-40 opacity-5">
-                    <img src={item.img} alt="" />
+                    <img  loading="lazy"  src={item.img} alt="" />
                   </div>
                   <h5 className="mb-15">{item.title}</h5>
                   <p className="align-text">{item.desc}</p>

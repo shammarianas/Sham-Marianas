@@ -1,63 +1,273 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://meshables.me/#/</loc>
+    <loc>https://shammarianas.com/</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Login</loc>
+    <loc>https://shammarianas.com/login</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Profile/{id}</loc>
+    <loc>https://shammarianas.com/cart</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Cart</loc>
+    <loc>https://shammarianas.com/upload</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Hot</loc>
+    <loc>https://shammarianas.com/checkout</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Models</loc>
+    <loc>https://shammarianas.com/blog</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Printable</loc>
+    <loc>https://shammarianas.com/portfolio</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Textures</loc>
+    <loc>https://shammarianas.com/contact</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Scripts</loc>
+    <loc>https://shammarianas.com/about</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Shaders</loc>
+    <loc>https://shammarianas.com/services</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/HDRIs</loc>
+    <loc>https://shammarianas.com/templates</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Plugins</loc>
+    <loc>https://shammarianas.com/category/fonts</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/View/{id}</loc>
+    <loc>https://shammarianas.com/category/video-templates</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Upload</loc>
+    <loc>https://shammarianas.com/category/icons</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://meshables.me/#/Checkout</loc>
+    <loc>https://shammarianas.com/category/models</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/category/mockups</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/category/graphics</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/category/videos</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/category/images</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/category/scripts</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/category/hdri</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/category/textures</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/category/more</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/view/model-1</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/view/model-2</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/view/template-1</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/view/texture-1</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/blog/post-1</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/blog/post-2</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/blog/post-3</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/blog/post-4</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/project-details/project-1</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/project-details/project-2</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/project-details/project-3</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/blog-category/technology</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/blog-category/design</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/blog-category/marketing</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/profile/john</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/profile/jane</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/profile/alex</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/profile/admin</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/john</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/jane</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/alex</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shammarianas.com/admin</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>
