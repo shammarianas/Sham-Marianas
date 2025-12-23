@@ -96,8 +96,8 @@ const ProductDesignPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            we do more than product design,  we bring bold ideas to life.
+            </span>, 
+            we do more than product design, we bring bold ideas to life.
             Whether it’s a sleek gadget or a smart everyday solution, we turn
             your vision into a tangible product that looks incredible, feels
             right, and works flawlessly.

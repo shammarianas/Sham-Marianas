@@ -97,8 +97,7 @@ const DigitalMaketerPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            we elevate social media management into an art,  creating digital
+            </span>, we elevate social media management into an art,  creating digital
             experiences that grab attention, spark conversations, and drive real
             business growth.
           </>,

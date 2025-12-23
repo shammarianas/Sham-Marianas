@@ -657,7 +657,6 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
               <tr>
                 <th>User</th>
                 <th>Plan</th>
-                <th>Type</th>
                 <th>Billing</th>
                 <th>Status</th>
                 <th>Downloads Used</th>
@@ -687,22 +686,9 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                     </div>
                   </td>
 
-                  {/* Plan Column */}
-                  <td>
-                    <span
-                      className={`report-category-badge ${
-                        subscription.plan === "enterprise"
-                          ? "fraud"
-                          : subscription.plan === "team"
-                          ? "content"
-                          : "spam"
-                      }`}
-                    >
-                      {subscription.plan || "No Plan"}
-                    </span>
-                  </td>
+                 
 
-                  {/* Type Column (NEW) */}
+                  {/* Plan Column (NEW) */}
                   <td>
                     <span
                       className={`report-category-badge ${

@@ -1513,213 +1513,363 @@ const Profile = () => {
               )}
 
               {/* Subscription Tab Content */}
-              {/* Subscription Tab Content */}
-              {activeTab === "subscription" && (
-                <div className="tab-content">
-                  {loadingSubscription ? (
-                    <div className="subscription-loading">
-                      <div className="loading-spinner">
-                        <i className="fas fa-spinner fa-spin"></i>
-                      </div>
-                      <p>Loading subscription details...</p>
-                    </div>
-                  ) : user?.subscription || subscription ? (
-                    <div className="subscription-container">
-                      {/* Current Subscription Card */}
-                      <div className="subscription-card active">
-                        <div className="subscription-header">
-                          <div className="header-left">
-                            <h2>Current Subscription</h2>
-                            <div
-                              className={`status-badge ${
-                                formatSubscriptionStatus(
-                                  user?.subscription?.status ||
-                                    subscription?.status
-                                ).class
-                              }`}
-                            >
-                              {
-                                formatSubscriptionStatus(
-                                  user?.subscription?.status ||
-                                    subscription?.status
-                                ).text
-                              }
+             {activeTab === "subscription" && (
+  <div className="tab-content">
+    {loadingSubscription ? (
+      <div className="subscription-loading">
+        <div className="loading-spinner">
+          <i className="fas fa-spinner fa-spin"></i>
+        </div>
+        <p>Loading subscription details...</p>
+      </div>
+    ) : user?.subscription || subscription ? (
+      <div className="subscription-container">
+        {/* Current Subscription Card */}
+        <div className="subscription-card active">
+          <div className="subscription-header">
+            <div className="header-left">
+              <h2>Current Subscription</h2>
+              <div
+                className={`status-badge ${
+                  formatSubscriptionStatus(
+                    user?.subscription?.status ||
+                      subscription?.status
+                  ).class
+                }`}
+              >
+                {
+                  formatSubscriptionStatus(
+                    user?.subscription?.status ||
+                      subscription?.status
+                  ).text
+                }
+              </div>
+            </div>
+            <div className="header-right">
+              <Link
+                to="/subscription"
+                className="butn butn-sm butn-bg main-colorbg radius-5"
+              >
+                <i className="icon fas fa-sync-alt"></i>
+                <span>Change Plan</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="subscription-info-grid">
+            <div className="info-item">
+              <span className="info-label">Plan Type:</span>
+              <span className="info-value">
+                {getSubscriptionTypeDisplay(
+                  user?.subscription?.type ||
+                    user?.subscription?.plan ||
+                    subscription?.subscriptionType ||
+                    "individual"
+                )}
+              </span>
+            </div>
+
+            <div className="info-item">
+              <span className="info-label">Billing Cycle:</span>
+              <span className="info-value capitalize">
+                {user?.subscription?.billingCycle ||
+                  subscription?.billingCycle ||
+                  "Monthly"}
+              </span>
+            </div>
+
+            <div className="info-item">
+              <span className="info-label">Price:</span>
+              <span className="info-value">
+                $
+                {user?.subscription?.price ||
+                  subscription?.price ||
+                  "0"}
+                /
+                {(user?.subscription?.billingCycle ||
+                  subscription?.billingCycle ||
+                  "monthly") === "yearly"
+                  ? "year"
+                  : "month"}
+              </span>
+            </div>
+
+            <div className="info-item">
+              <span className="info-label">Team Members:</span>
+              <span className="info-value">
+                {user?.subscription?.teamMembers ||
+                  subscription?.teamMembers ||
+                  1}{" "}
+                members
+              </span>
+            </div>
+
+            <div className="info-item">
+              <span className="info-label">
+                Next Billing Date:
+              </span>
+              <span className="info-value">
+                {formatDate(
+                  user?.subscription?.expiresAt ||
+                    user?.subscription?.nextBillingDate ||
+                    subscription?.nextBillingDate ||
+                    subscription?.currentPeriodEnd
+                ) || "N/A"}
+              </span>
+            </div>
+
+            {/* Downloads Usage */}
+            <div className="info-item">
+              <span className="info-label">Downloads Used:</span>
+              <span className="info-value">
+                {user?.subscription?.downloadsUsed || 0} /
+                {user?.subscription?.downloadLimit ||
+                  subscription?.downloadLimit ||
+                  0}
+              </span>
+            </div>
+
+            <div className="info-item">
+              <span className="info-label">
+                Subscription Start:
+              </span>
+              <span className="info-value">
+                {formatDate(
+                  user?.subscription?.startDate ||
+                    subscription?.createdAt ||
+                    subscription?.startDate
+                ) || "N/A"}
+              </span>
+            </div>
+          </div>
+
+          {/* Team Management Section - Only show for team plans */}
+          {(user?.subscription?.type === "team" || 
+            subscription?.subscriptionType === "team" || 
+            user?.subscription?.plan === "team") && (
+            <div className="team-management-section">
+              <div className="section-header">
+                <h3>Team Management</h3>
+                <div className="member-count">
+                  <i className="fas fa-users"></i>
+                  <span>
+                    {teamMembers.length} / {user?.subscription?.teamMembers || subscription?.teamMembers || 1} members
+                  </span>
+                </div>
+              </div>
+
+              {/* Invite Team Member */}
+              <div className="invite-member-form">
+                <h4>Add Team Member</h4>
+                <p className="form-description">
+                  Invite team members by email. They'll receive an invitation to join your team.
+                </p>
+                
+                <div className="input-with-button">
+                  <input
+                    type="email"
+                    placeholder="Enter email address"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="invite-email-input"
+                  />
+                  <button
+                    className="butn butn-sm butn-bg main-colorbg color-white radius-5"
+                    onClick={inviteTeamMember}
+                    disabled={inviting || !inviteEmail}
+                  >
+                    <i className="icon fas fa-paper-plane pr-3"></i>
+                    <span>{inviting ? "Sending..." : "Invite"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Current Team Members */}
+              {teamMembers.length > 0 && (
+                <div className="team-members-list">
+                  <h4>Team Members</h4>
+                  <div className="members-grid">
+                    {teamMembers.map((member) => (
+                      <div key={member.id} className="member-card">
+                        <div className="member-info">
+                          <div className="member-avatar">
+                            {member.profilePic ? (
+                              <img src={member.profilePic} alt={member.email} />
+                            ) : (
+                              <div className="avatar-initials">
+                                {member.email?.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <div className="member-details">
+                            <div className="member-email">{member.email}</div>
+                            <div className="member-role">
+                              <span className="role-badge">
+                                {member.role || "Member"}
+                              </span>
+                            </div>
+                            <div className="member-joined">
+                              Joined: {formatDate(member.joinedAt)}
                             </div>
                           </div>
-                          <div className="header-right">
-                            <Link
-                              to="/subscription"
-                              className="butn butn-sm butn-bg main-colorbg radius-5"
-                            >
-                              <i className="icon fas fa-sync-alt"></i>
-                              <span>Change Plan</span>
-                            </Link>
-                          </div>
                         </div>
-
-                        <div className="subscription-info-grid">
-                          <div className="info-item">
-                            <span className="info-label">Plan Type:</span>
-                            <span className="info-value">
-                              {getSubscriptionTypeDisplay(
-                                user?.subscription?.type ||
-                                  user?.subscription?.plan ||
-                                  subscription?.subscriptionType ||
-                                  "individual"
-                              )}
-                            </span>
-                          </div>
-
-                          <div className="info-item">
-                            <span className="info-label">Billing Cycle:</span>
-                            <span className="info-value capitalize">
-                              {user?.subscription?.billingCycle ||
-                                subscription?.billingCycle ||
-                                "Monthly"}
-                            </span>
-                          </div>
-
-                          <div className="info-item">
-                            <span className="info-label">Price:</span>
-                            <span className="info-value">
-                              $
-                              {user?.subscription?.price ||
-                                subscription?.price ||
-                                "0"}
-                              /
-                              {(user?.subscription?.billingCycle ||
-                                subscription?.billingCycle ||
-                                "monthly") === "yearly"
-                                ? "year"
-                                : "month"}
-                            </span>
-                          </div>
-
-                          <div className="info-item">
-                            <span className="info-label">
-                              Next Billing Date:
-                            </span>
-                            <span className="info-value">
-                              {formatDate(
-                                user?.subscription?.expiresAt ||
-                                  user?.subscription?.nextBillingDate ||
-                                  subscription?.nextBillingDate ||
-                                  subscription?.currentPeriodEnd
-                              ) || "N/A"}
-                            </span>
-                          </div>
-
-                          {/* Downloads Usage */}
-                          <div className="info-item">
-                            <span className="info-label">Downloads Used:</span>
-                            <span className="info-value">
-                              {user?.subscription?.downloadsUsed || 0} /
-                              {user?.subscription?.downloadLimit ||
-                                subscription?.downloadLimit ||
-                                0}
-                            </span>
-                          </div>
-
-                          <div className="info-item">
-                            <span className="info-label">
-                              Subscription Start:
-                            </span>
-                            <span className="info-value">
-                              {formatDate(
-                                user?.subscription?.startDate ||
-                                  subscription?.createdAt ||
-                                  subscription?.startDate
-                              ) || "N/A"}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Cancel Subscription Option */}
-                        {(user?.subscription?.status === "active" ||
-                          subscription?.status === "active") && (
-                          <div className="cancel-subscription-section">
-                            <div className="cancel-warning">
-                              <i className="fas fa-exclamation-triangle"></i>
-                              <div>
-                                <h4>Cancel Subscription</h4>
-                                <p>
-                                  If you cancel, you'll lose access to premium
-                                  features at the end of your current billing
-                                  period.
-                                </p>
-                              </div>
-                            </div>
-                            <button
-                              className="butn butn-sm butn-danger radius-5"
-                              onClick={cancelSubscription}
-                            >
-                              Cancel Subscription
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    /* No Subscription - Free Plan */
-                    <div className="subscription-card free-plan">
-                      <div className="subscription-header">
-                        <h2>Current Plan</h2>
-                        <div className="status-badge free">Free Plan</div>
-                      </div>
-
-                      <div className="free-plan-content">
-                        <div className="plan-details">
-                          <h3>You're on the Free Plan</h3>
-                          <p>
-                            Upgrade to unlock premium features and unlimited
-                            access
-                          </p>
-
-                          <div className="free-limitations">
-                            <h4>Current Limitations:</h4>
-                            <ul>
-                              <li>✓ Basic access to platform</li>
-                              <li>✓ Limited daily uploads (5 per day)</li>
-                              <li>✓ Standard resolution downloads only</li>
-                              <li>✗ No AI tools access</li>
-                              <li>✗ No commercial license</li>
-                              <li>✗ No team collaboration</li>
-                            </ul>
-                          </div>
-
-                          <div className="credits-info">
-                            <h4>Credits Usage</h4>
-                            <div className="credits-progress">
-                              <div className="progress-bar">
-                                <div
-                                  className="progress-fill"
-                                  style={{ width: "50%" }}
-                                ></div>
-                              </div>
-                              <div className="credits-text">
-                                50/100 daily credits used
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="upgrade-cta">
-                          <Link
-                            to="/subscription"
-                            className="butn butn-lg butn-bg main-colorbg radius-5 upgrade-btn"
+                        <div className="member-actions">
+                          <button
+                            className="remove-member-btn"
+                            onClick={() => removeTeamMember(member.id)}
+                            title="Remove member"
                           >
-                            <i className="icon fas fa-arrow-up"></i>
-                            <span>Upgrade to Premium</span>
-                          </Link>
-                          <p className="upgrade-note">
-                            Choose from Individual, Team, or Enterprise plans
-                          </p>
+                            <i className="fas fa-trash"></i>
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* Pending Invites */}
+              {pendingInvites.length > 0 && (
+                <div className="pending-invites">
+                  <h4>Pending Invitations</h4>
+                  <div className="invites-list">
+                    {pendingInvites.map((invite) => (
+                      <div key={invite.id} className="invite-item">
+                        <div className="invite-info">
+                          <i className="fas fa-envelope"></i>
+                          <span className="invite-email">{invite.inviteEmail}</span>
+                          <span className="invite-status pending">Pending</span>
+                          <span className="invite-sent">
+                            Sent: {formatDate(invite.invitedAt)}
+                          </span>
+                        </div>
+                        <div className="invite-actions">
+                          <button
+                            className="cancel-invite-btn"
+                            onClick={() => cancelInvite(invite.id)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Team Usage Stats */}
+              <div className="team-usage-stats">
+                <h4>Team Usage</h4>
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <div className="stat-label">Total Downloads</div>
+                    <div className="stat-value">
+                      {subscription?.downloadsUsed || 0}
+                    </div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-label">Downloads Limit</div>
+                    <div className="stat-value">
+                      {subscription?.downloadLimit || 0}
+                    </div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-label">Available Slots</div>
+                    <div className="stat-value">
+                      {(user?.subscription?.teamMembers || subscription?.teamMembers || 1) - teamMembers.length}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cancel Subscription Option */}
+          {(user?.subscription?.status === "active" ||
+            subscription?.status === "active") && (
+            <div className="cancel-subscription-section">
+              <div className="cancel-warning">
+                <i className="fas fa-exclamation-triangle"></i>
+                <div>
+                  <h4>Cancel Subscription</h4>
+                  <p>
+                    If you cancel, you'll lose access to premium
+                    features at the end of your current billing
+                    period.
+                  </p>
+                </div>
+              </div>
+              <button
+                className="butn butn-sm butn-danger radius-5"
+                onClick={cancelSubscription}
+              >
+                Cancel Subscription
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    ) : (
+      /* No Subscription - Free Plan */
+      <div className="subscription-card free-plan">
+        <div className="subscription-header">
+          <h2>Current Plan</h2>
+          <div className="status-badge free">Free Plan</div>
+        </div>
+
+        <div className="free-plan-content">
+          <div className="plan-details">
+            <h3>You're on the Free Plan</h3>
+            <p>
+              Upgrade to unlock premium features and unlimited
+              access
+            </p>
+
+            <div className="free-limitations">
+              <h4>Current Limitations:</h4>
+              <ul>
+                <li>✓ Basic access to platform</li>
+                <li>✓ Limited daily uploads (5 per day)</li>
+                <li>✓ Standard resolution downloads only</li>
+                <li>✗ No AI tools access</li>
+                <li>✗ No commercial license</li>
+                <li>✗ No team collaboration</li>
+              </ul>
+            </div>
+
+            <div className="credits-info">
+              <h4>Credits Usage</h4>
+              <div className="credits-progress">
+                <div className="progress-bar">
+                  <div
+                    className="progress-fill"
+                    style={{ width: "50%" }}
+                  ></div>
+                </div>
+                <div className="credits-text">
+                  50/100 daily credits used
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="upgrade-cta">
+            <Link
+              to="/subscription"
+              className="butn butn-lg butn-bg main-colorbg radius-5 upgrade-btn"
+            >
+              <i className="icon fas fa-arrow-up"></i>
+              <span>Upgrade to Premium</span>
+            </Link>
+            <p className="upgrade-note">
+              Choose from Individual, Team, or Enterprise plans
+            </p>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+)}
             </>
           )}
 

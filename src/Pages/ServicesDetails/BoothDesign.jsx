@@ -48,7 +48,7 @@ const BoothDesignPage = () => {
     {
       question: "How long does it take to complete a project?",
       answer:
-        "Most booth designs take around 3 to 6 weeks, depending on the size, theme, and complexity of the setup.",
+        "Most booth designs take around 3/6 weeks, depending on the size, theme, and complexity of the setup.",
     },
     {
       question: "What makes your booth designs stand out?",
@@ -59,7 +59,7 @@ const BoothDesignPage = () => {
       question: "How can I get started?",
       answer:
       <>
-        Simply contact  <span className="text-bold underline main-color">Sham Marianas</span> through our website or message our team directly. We’ll schedule a quick consultation to understand your vision and start designing your booth.
+        Simply contact  <span className="text-bold underline main-color">Sham Marianas</span>, through our website or message our team directly. We’ll schedule a quick consultation to understand your vision and start designing your booth.
    </>
       },
   ];
@@ -81,8 +81,7 @@ const BoothDesignPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-           we believe your exhibition booth should do more than just look good, it should speak for your brand. Every event is an opportunity to make people stop, notice, and remember who you are. That’s exactly what we help you do.
+            </span>, we believe your exhibition booth should do more than just look good, it should speak for your brand. Every event is an opportunity to make people stop, notice, and remember who you are. That’s exactly what we help you do.
 
           </>,
           "Whether you’re a new brand stepping into the spotlight or an established business preparing for your next big event, we create exhibition booth designs that make your presence unforgettable. From concept and structure to lighting and visuals, every detail is designed to draw attention and tell your brand’s story with confidence and style."

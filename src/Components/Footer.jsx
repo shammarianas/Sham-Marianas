@@ -77,7 +77,7 @@ function Footer() {
 
             {/* Conditionally render contact details */}
             {!isTemplatePage && (
-              <div className="col-lg-2">
+              <div className="col-lg-3">
                 <div className="column md-mb50">
                   <h6 className="sub-title mb-30">Contact</h6>
                   <a href="tel:+971528036012" className=" ">
@@ -151,13 +151,13 @@ function Footer() {
                   <div className="column md-mb50">
                     <h6 className="sub-title mb-30">Company</h6>
                     <ul className="rest fz-14 opacity-7">
-                      <li className="mb-15"><a href="/">Home</a></li>
-                      <li className="mb-15"><a href="/services">Services</a></li>
-                      <li className="mb-15"><a href="/portfolio">Portfolio</a></li>
+                      <li className="mb-15"><Link to="/">Home</Link></li>
+                      <li className="mb-15"><Link to="/services">Services</Link></li>
+                      <li className="mb-15"><Link to="/portfolio">Portfolio</Link></li>
                       <li className="mb-15"><Link to="/templates">Templates</Link></li>
-                      <li className="mb-15"><a href="/about">About us</a></li>
-                      <li className="mb-15"><a href="/blog">Blog</a></li>
-                      <li><a href="/contact">Contact us</a></li>
+                      <li className="mb-15"><Link to="/about">About us</Link></li>
+                      <li className="mb-15"><Link to="/blog">Blog</Link></li>
+                      <li><Link to="/contact">Contact us</Link></li>
                     </ul>
                   </div>
 

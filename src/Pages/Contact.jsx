@@ -1,14 +1,36 @@
-import React from "react";
+import React, { useEffect, useLayoutEffect } from "react";
 import WhatsAppButton from "../Components/whatsappButton";
 import ProgressScroll from "../common/ProgressScroll";
 import SEO from "../common/SEO.jsx"; // ✅ Import SEO component
 import { SEO_CONFIG } from "../utils/seoConfig"; // ✅ Import SEO config
+import loadBackgroudImages from "../common/loadBackgroudImages.js";
+
 
 function Contact() {
+  useEffect(() => {
+    loadBackgroudImages();
+  }, []);
   return (
     <>
       <ProgressScroll />
       <SEO {...SEO_CONFIG.contact} />
+      <header
+      className=" page-header bg-img section-padding valign"
+      data-background="/assets/imgs/background/bg4.jpg"
+      data-overlay-dark="8"
+    >
+      <div className="container pt-80">
+        <div className="row">
+          <div className="col-12">
+            <div className="text-center">
+              <h1 className="text-u ls1 fz-80">
+                Contact <span className="fw-200">US</span>
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
       <section className="contact section-padding">
         <div className="container">
           <div className="row">
