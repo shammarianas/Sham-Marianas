@@ -346,7 +346,7 @@ const MyDownloads = () => {
                                     </div>
                                   );
                                 }
-                                return <img src={src} alt={asset.title} className="preview-media" />;
+                                return <img  loading="lazy"  src={src} alt={asset.title} className="preview-media" />;
                               })()}
                             </Link>
 

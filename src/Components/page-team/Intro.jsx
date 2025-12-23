@@ -51,13 +51,13 @@ function Intro() {
           <div className="col-lg-6">
             <div className="imgs">
               <div className="img1">
-                <img src="/assets/imgs/intro/2.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/intro/2.jpg" alt="" />
               </div>
               <div className="img2">
-                <img src="/assets/imgs/intro/03.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/intro/03.jpg" alt="" />
               </div>
               <div className="img3">
-                <img src="/assets/imgs/intro/04.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/intro/04.jpg" alt="" />
               </div>
             </div>
           </div>

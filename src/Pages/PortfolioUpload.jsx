@@ -601,7 +601,7 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
                 <div className="mt-2">
                   <div className="image-preview-container">
                     <div className="image-preview">
-                      <img 
+                      <img  loading="lazy"  
                         src={projectData.coverImgUrl} 
                         alt="Cover preview" 
                       />
@@ -638,7 +638,7 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
                 <div className="mt-2">
                   <div className="image-preview-container">
                     <div className="image-preview">
-                      <img 
+                      <img  loading="lazy"  
                         src={projectData.featureImgUrl} 
                         alt="Feature preview" 
                       />
@@ -680,7 +680,7 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
                   <div className="image-preview-container">
                     {projectData.descriptionImgUrls.map((imgUrl, index) => (
                       <div key={index} className="image-preview">
-                        <img src={imgUrl} alt={`Description ${index}`} />
+                        <img  loading="lazy"  src={imgUrl} alt={`Description ${index}`} />
                         <button 
                           type="button" 
                           onClick={() => removeExistingDescriptionImage(index)} 
@@ -702,7 +702,7 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
                   <div className="image-preview-container">
                     {projectData.descriptionImages.map((image, index) => (
                       <div key={index} className="image-preview">
-                        <img src={image.preview} alt={`Preview ${index}`} />
+                        <img  loading="lazy"  src={image.preview} alt={`Preview ${index}`} />
                         <button type="button" onClick={() => removeDescriptionImage(index)} className="remove-image-btn" title="Remove image">
                           ×
                         </button>

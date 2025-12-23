@@ -29,7 +29,7 @@ const ViewItemImages = (props) => {
             return (
               <div key={index} className="image">
                 <span className="label">{label}</span>
-                <img src={src} alt={`Image ${index}`} />
+                <img  loading="lazy"  src={src} alt={`Image ${index}`} />
               </div>
             );
           })}
