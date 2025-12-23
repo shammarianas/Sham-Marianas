@@ -23,4 +23,4 @@ Use the right api configuration
 npm install pdfmake, pdfmake@0.2.12
 
 npm i react-helmet
-
+npm install react-lazy-load-image-component

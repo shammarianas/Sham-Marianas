@@ -661,7 +661,7 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
               }
 
               // ✅ Image fallback (normal case)
-              return <img src={src} alt="placeholder" />;
+              return <img  loading="lazy"  src={src} alt="placeholder" />;
             })()}
           </Link>
         </div>

@@ -728,7 +728,7 @@ const DashboardOverview = ({
           <div className="row justify-content-between">
             {/* <div className="col-lg-2">
               <div className="logo icon-img-100 md-mb80">
-                <img src="/assets/imgs/logo.png" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/logo.png" alt="" />
               </div>
             </div> */}
 
@@ -820,7 +820,7 @@ const DashboardOverview = ({
         </div>
 
         <div className="circle-blur">
-          <img src="\assets\imgs\patterns\blur1.png" alt="" />
+          <img  loading="lazy"  src="\assets\imgs\patterns\blur1.png" alt="" />
         </div>
       </footer>
 

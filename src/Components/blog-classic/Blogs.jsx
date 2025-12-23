@@ -75,7 +75,7 @@ function Blogs() {
                   <div className="item mb-80" key={blog.id}>
                     {blog.imageUrl && (
                       <div className="img">
-                        <img src={blog.imageUrl} alt={blog.title} />
+                        <img  loading="lazy"  src={blog.imageUrl} alt={blog.title} />
                       </div>
                     )}
                     <div className="content">
@@ -185,7 +185,7 @@ function Blogs() {
                   <div>
                     <div className="img">
                       <a href="/blog-grid-sidebar">
-                        <img src="/assets/imgs/blog/c1.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/blog/c1.jpg" alt="" />
                         <span className="date">
                           <span>
                             14 / <br /> sep
@@ -209,7 +209,7 @@ function Blogs() {
                   <div>
                     <div className="img">
                       <a href="/blog-grid-sidebar">
-                        <img src="/assets/imgs/blog/c2.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/blog/c2.jpg" alt="" />
                         <span className="date">
                           <span>
                             14 / <br /> sep
@@ -233,7 +233,7 @@ function Blogs() {
                   <div>
                     <div className="img">
                       <a href="/blog-grid-sidebar">
-                        <img src="/assets/imgs/blog/c3.jpg" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/blog/c3.jpg" alt="" />
                         <span className="date">
                           <span>
                             14 / <br /> sep

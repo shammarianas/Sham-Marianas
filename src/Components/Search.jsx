@@ -113,7 +113,7 @@
 //               >
 //                 <div className="result" key={result.id}>
 //                   <div className="image">
-//                     <img src={result.thumbnail} alt={result.title} />
+//                     <img  loading="lazy"  src={result.thumbnail} alt={result.title} />
 //                   </div>
 //                   <div className="details">
 //                     <h3 className="title">{result.title}</h3>

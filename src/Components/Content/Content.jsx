@@ -40,7 +40,7 @@ function Content() {
           <div className="row xlg-marg">
             <div className="col-lg-6">
               <div className="img md-mb50">
-                <img src="/assets/imgs/arw2.png" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/arw2.png" alt="" />
               </div>
             </div>
             <div className="col-lg-6 valign">

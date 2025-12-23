@@ -774,7 +774,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
               {blogData.featureImgUrl && !blogData.featuredImage && (
                 <p className="current-image-note">Current featured image will be retained</p>
               )}
-              {featuredImagePreview && <img src={featuredImagePreview} alt="Preview" className="blog-image-preview" />}
+              {featuredImagePreview && <img  loading="lazy"  src={featuredImagePreview} alt="Preview" className="blog-image-preview" />}
             </div>
 
             <div className="blog-form-group">
@@ -784,7 +784,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
               {blogData.coverImageUrl && !blogData.coverImage && (
                 <p className="current-image-note">Current cover image will be retained</p>
               )}
-              {coverImagePreview && <img src={coverImagePreview} alt="Preview" className="blog-image-preview" />}
+              {coverImagePreview && <img  loading="lazy"  src={coverImagePreview} alt="Preview" className="blog-image-preview" />}
             </div>
 
             <div className="blog-form-group">

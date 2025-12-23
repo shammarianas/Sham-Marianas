@@ -36,7 +36,7 @@ const ViewItemMedia = ({ media }) => {
                     Your browser does not support the video tag.
                   </video>
                 ) : (
-                  <img src={src} alt={`Media ${index}`} />
+                  <img  loading="lazy"  src={src} alt={`Media ${index}`} />
                 )}
               </div>
             );

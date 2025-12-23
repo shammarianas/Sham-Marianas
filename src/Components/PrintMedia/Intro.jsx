@@ -70,7 +70,7 @@ function Intro() {
                     </div>
                     <div className="ml-auto">
                       <div className="icon-img-40">
-                        <img src="/assets/imgs/arw0.png" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/arw0.png" alt="" />
                       </div>
                     </div>
                   </div>
@@ -83,7 +83,7 @@ function Intro() {
                     </div>
                     <div className="ml-auto">
                       <div className="icon-img-40">
-                        <img src="/assets/imgs/arw0.png" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/arw0.png" alt="" />
                       </div>
                     </div>
                   </div>
@@ -93,7 +93,7 @@ function Intro() {
           </div>
           <div className="col-lg-4">
             <div className="img-full fit-img">
-              <img src="/assets/imgs/intro/2.jpg" alt="" />
+              <img  loading="lazy"  src="/assets/imgs/intro/2.jpg" alt="" />
             </div>
           </div>
         </div>

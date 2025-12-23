@@ -156,7 +156,7 @@ function Services() {
               </div>
               <div className="col-lg-4">
                 <div className="img">
-                  <img src={service.img} alt={service.category} />
+                  <img  loading="lazy"  src={service.img} alt={service.category} />
                   <Link to={`/services/${service.slug}`}>
                     <span className="ti-arrow-top-right"></span>
                   </Link>
