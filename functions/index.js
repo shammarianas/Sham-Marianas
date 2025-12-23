@@ -1624,50 +1624,39 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
 // MONTHLY RESET FUNCTION
 // =============================
 
-// =============================
-// NEW: ADD TEAM MEMBER
-// =============================
 exports.addTeamMember = functions.https.onRequest(async (req, res) => {
   // CORS headers
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  // Handle preflight requests
   if (req.method === "OPTIONS") {
     return res.status(204).send("");
   }
 
-  // Only allow POST requests
   if (req.method !== "POST") {
     return res.status(405).send({ error: "Method Not Allowed" });
   }
 
   try {
-    // Extract Authorization token
+    // Authentication
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        error: {
-          message: "Login required",
-          code: "unauthenticated",
-        },
+        error: { message: "Login required", code: "unauthenticated" },
       });
     }
 
     const idToken = authHeader.split("Bearer ")[1];
-
-    // Verify Firebase ID token
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const adminId = decodedToken.uid;
 
-    const { teamId, memberEmail } = req.body;
+    const { memberEmail } = req.body;
 
-    // Validate request body
-    if (!teamId || !memberEmail) {
+    if (!memberEmail) {
       return res.status(400).json({
         error: {
-          message: "Missing required fields: teamId and memberEmail",
+          message: "Missing memberEmail",
           code: "invalid-argument",
         },
       });
@@ -1675,22 +1664,40 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
 
     const db = admin.firestore();
 
-    // Get team info
+    // Get admin profile to get teamId
+    const adminProfileRef = db.collection("Profiles").doc(adminId);
+    const adminProfileSnap = await adminProfileRef.get();
+
+    if (!adminProfileSnap.exists) {
+      return res.status(404).json({
+        error: { message: "Admin profile not found", code: "not-found" },
+      });
+    }
+
+    const adminProfile = adminProfileSnap.data();
+    const adminSubscription = adminProfile.subscription || {};
+
+    if (adminSubscription.type !== "team" || !adminSubscription.teamId) {
+      return res.status(400).json({
+        error: { message: "You are not in a team", code: "not-in-team" },
+      });
+    }
+
+    const teamId = adminSubscription.teamId;
+
+    // Get team
     const teamRef = db.collection("Teams").doc(teamId);
     const teamSnap = await teamRef.get();
 
     if (!teamSnap.exists) {
       return res.status(404).json({
-        error: {
-          message: "Team not found",
-          code: "not-found",
-        },
+        error: { message: "Team not found", code: "not-found" },
       });
     }
 
     const team = teamSnap.data();
 
-    // Verify admin is team owner
+    // Check if admin owns team
     if (team.ownerId !== adminId) {
       return res.status(403).json({
         error: {
@@ -1700,114 +1707,166 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       });
     }
 
-    // Check member limit
-    if (team.members.length >= team.memberLimit) {
+    // Get current team members from the team document
+    const currentMembers = team.members || [];
+    const currentMemberCount = currentMembers.length;
+
+    // Calculate available slots: memberLimit - 1 (for owner/admin themselves)
+    const maxInvitableMembers = team.memberLimit - 1;
+    const availableSlots = Math.max(
+      0,
+      maxInvitableMembers - (currentMemberCount - 1)
+    );
+
+    // Check member limit (excluding owner)
+    if (availableSlots <= 0) {
       return res.status(403).json({
         error: {
-          message: "Team member limit reached",
+          message: `Team member limit reached. You can invite up to ${maxInvitableMembers} member(s).`,
           code: "resource-exhausted",
         },
       });
     }
 
-    // Find user by email
-    const usersQuery = await db
+    // Check if email already exists in any profile
+    const existingUserQuery = await db
       .collection("Profiles")
       .where("email", "==", memberEmail)
       .limit(1)
       .get();
 
-    if (usersQuery.empty) {
-      return res.status(404).json({
-        error: {
-          message: "User not found",
-          code: "not-found",
-        },
-      });
+    if (!existingUserQuery.empty) {
+      const existingUser = existingUserQuery.docs[0].data();
+      const existingUserSubscription = existingUser.subscription || {};
+
+      // Check if user is already in a team
+      if (existingUserSubscription.teamId === teamId) {
+        return res.status(400).json({
+          error: {
+            message: "This user is already a member of your team",
+            code: "already-member",
+          },
+        });
+      } else if (existingUserSubscription.teamId) {
+        return res.status(400).json({
+          error: {
+            message: "This user is already in another team",
+            code: "in-other-team",
+          },
+        });
+      }
     }
 
-    const memberDoc = usersQuery.docs[0];
-    const memberId = memberDoc.id;
+    // Generate invite code
+    const inviteCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+    const inviteId = `invite_${Date.now()}_${inviteCode}`;
 
-    // Check if already a member
-    if (team.members.includes(memberId)) {
-      return res.status(409).json({
-        error: {
-          message: "User is already a team member",
-          code: "already-exists",
-        },
-      });
-    }
+    // For local testing - create direct link
+    const isLocal = process.env.FUNCTIONS_EMULATOR === "true";
+    const baseUrl = isLocal
+      ? `http://localhost:5001/${process.env.GCLOUD_PROJECT}/us-central1`
+      : "https://us-central1-sham-marianas.cloudfunctions.net";
 
-    // Add member to team
-    await teamRef.update({
-      members: admin.firestore.FieldValue.arrayUnion(memberId),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    // Create invitation
+    const inviteRef = db.collection("TeamInvites").doc(inviteId);
+    await inviteRef.set({
+      inviteId,
+      inviteCode,
+      teamId,
+      adminId,
+      adminEmail: adminProfile.email,
+      adminName: `${adminProfile.firstName || ""} ${
+        adminProfile.lastName || ""
+      }`.trim(),
+      inviteEmail: memberEmail,
+      status: "pending",
+      invitedAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: admin.firestore.Timestamp.fromDate(
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+      ),
+      plan: "team",
+      downloadLimit: team.downloadsPerMember || 200,
+      memberLimit: team.memberLimit,
     });
 
-    // Update member's profile
-    await db
-      .collection("Profiles")
-      .doc(memberId)
-      .update({
-        subscription: {
-          status: "active",
-          plan: "team",
-          type: "team",
-          teamId,
-          startDate: admin.firestore.FieldValue.serverTimestamp(),
-          downloadsUsed: 0,
-          downloadLimit: 200,
-        },
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+    // For local testing - return direct link
+    if (isLocal) {
+      const directLink = `${baseUrl}/autoAcceptTeamInvitation?inviteCode=${inviteCode}`;
 
-    // Send invitation email
+      return res.status(200).json({
+        success: true,
+        inviteId,
+        inviteCode,
+        directLink: directLink,
+        message: "For local testing - use the direct link below",
+        testData: {
+          teamId,
+          adminEmail: adminProfile.email,
+          inviteEmail: memberEmail,
+          currentMemberCount,
+          maxInvitableMembers,
+          availableSlots,
+          team: {
+            memberLimit: team.memberLimit,
+            downloadsPerMember: team.downloadsPerMember,
+          },
+        },
+      });
+    }
+
+    // For production - send email
     await mailTransport.sendMail({
       from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
       to: memberEmail,
-      subject: "You've been added to a team",
+      subject: "Team Invitation - Sham Marianas",
       html: `
-        <h2>Team Invitation</h2>
-        <p>You have been added to team <strong>${teamId}</strong>.</p>
-        <p>You now have access to 200 downloads per month as part of this team subscription.</p>
+        <h2>You're Invited! 🎉</h2>
+        <p>You've been invited by <strong>${adminProfile.firstName || ""} ${
+        adminProfile.lastName || ""
+      }</strong> to join their team.</p>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Click to Join:</h3>
+          <p>
+              <a href="https://us-central1-sham-marianas.cloudfunctions.net/autoAcceptTeamInvitation?inviteCode=${inviteCode}" 
+       style="display: inline-block; padding: 15px 30px; background: #4CAF50; color: white; 
+              text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold;">
+      Accept Team Invitation
+    </a>
+          </p>
+        </div>
+        
+        <h3>Benefits:</h3>
+        <ul>
+          <li>✅ ${team.downloadsPerMember || 200} downloads/month</li>
+          <li>✅ Premium assets access</li>
+          <li>✅ Team collaboration</li>
+        </ul>
+        
+        <p><strong>Expires in 7 days</strong></p>
         <br/>
-        <strong>Sham Marianas Team</strong>
+        <p>Best regards,<br/><strong>Sham Marianas Team</strong></p>
       `,
     });
 
     return res.status(200).json({
       success: true,
-      teamId,
-      memberId,
-      message: "Member added successfully",
+      inviteId,
+      inviteCode,
+      message: "Invitation sent successfully",
     });
   } catch (err) {
     console.error("Add team member error:", err);
 
-    // Handle Firebase Auth errors
-    if (err.code === "auth/id-token-expired") {
-      return res.status(401).json({
-        error: {
-          message: "Token expired",
-          code: "unauthenticated",
-        },
-      });
-    }
-
     if (
-      err.code === "auth/id-token-revoked" ||
+      err.code === "auth/id-token-expired" ||
       err.code === "auth/invalid-id-token"
     ) {
       return res.status(401).json({
-        error: {
-          message: "Invalid token",
-          code: "unauthenticated",
-        },
+        error: { message: "Invalid token", code: "unauthenticated" },
       });
     }
 
-    // For other errors
     return res.status(500).json({
       error: {
         message: err.message || "Internal server error",
@@ -1816,6 +1875,784 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
     });
   }
 });
+
+// =============================
+// 2. AUTO ACCEPT TEAM INVITATION (NEW)
+// =============================
+
+exports.autoAcceptTeamInvitation = functions.https.onRequest(
+  async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") return res.status(204).send("");
+    if (req.method !== "GET" && req.method !== "POST") {
+      return res.status(405).send({ error: "Method Not Allowed" });
+    }
+
+    try {
+      const inviteCode =
+        req.method === "GET" ? req.query.inviteCode : req.body.inviteCode;
+
+      if (!inviteCode) {
+        return res.status(400).send(`
+        <!DOCTYPE html>
+        <html><head><title>Invalid Invitation</title><meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>body{font-family:Arial;text-align:center;padding:50px;}</style>
+        </head><body>
+        <h1 style="color:red;">❌ Invalid Invitation</h1>
+        <p>No invitation code provided.</p>
+        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
+        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
+        </body></html>
+      `);
+      }
+
+      const db = admin.firestore();
+
+      // Find invitation
+      const invitesQuery = await db
+        .collection("TeamInvites")
+        .where("inviteCode", "==", inviteCode)
+        .limit(1)
+        .get();
+
+      if (invitesQuery.empty) {
+        return res.status(404).send(`
+        <!DOCTYPE html><html><head><title>Invalid Invitation</title></head><body>
+        <h1 style="color:red;">❌ Invalid Invitation</h1>
+        <p>Invitation not found or already used.</p>
+        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
+        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
+        </body></html>
+      `);
+      }
+
+      const inviteDoc = invitesQuery.docs[0];
+      const inviteData = inviteDoc.data();
+
+      // Check status
+      if (inviteData.status !== "pending") {
+        return res.status(400).send(`
+        <!DOCTYPE html><html><head><title>Invitation ${inviteData.status}</title></head><body>
+        <h1 style="color:orange;">ℹ️ Invitation ${inviteData.status}</h1>
+        <p>This invitation has already been ${inviteData.status}.</p>
+        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
+        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
+        </body></html>
+      `);
+      }
+
+      // Check expiration
+      const expiresAt = inviteData.expiresAt.toDate();
+      if (new Date() > expiresAt) {
+        await inviteDoc.ref.update({ status: "expired" });
+        return res.status(410).send(`
+        <!DOCTYPE html><html><head><title>Expired</title></head><body>
+        <h1 style="color:red;">⌛ Expired</h1>
+        <p>This invitation has expired.</p>
+        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
+        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
+        </body></html>
+      `);
+      }
+
+      // Get team
+      const teamRef = db.collection("Teams").doc(inviteData.teamId);
+      const teamSnap = await teamRef.get();
+
+      if (!teamSnap.exists) {
+        return res.status(404).send(`
+        <!DOCTYPE html><html><head><title>Team Not Found</title></head><body>
+        <h1 style="color:red;">❌ Team Not Found</h1>
+        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
+        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
+        </body></html>
+      `);
+      }
+
+      const team = teamSnap.data();
+
+      // Check if team full (excluding owner)
+      const currentMembers = team.members || [];
+      const maxInvitableMembers = team.memberLimit - 1;
+
+      if (currentMembers.length - 1 >= maxInvitableMembers) {
+        return res.status(403).send(`
+        <!DOCTYPE html><html><head><title>Team Full</title></head><body>
+        <h1 style="color:red;">👥 Team Full</h1>
+        <p>Team has reached member limit.</p>
+        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
+        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
+        </body></html>
+      `);
+      }
+
+      // If user logged in via query params
+      const userId = req.query.userId;
+      const userEmail = req.query.userEmail;
+
+      if (!userId) {
+        // User not logged in - show signup page
+        await inviteDoc.ref.update({
+          status: "clicked",
+          clickedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        return res.send(`
+        <!DOCTYPE html><html><head><title>Join Team</title></head><body>
+        <h1 style="color:#2196F3;">👋 Team Invitation</h1>
+        <p>You've been invited by <strong>${inviteData.adminName}</strong></p>
+        <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;">
+          <p>✅ ${team.downloadsPerMember || 200} downloads/month</p>
+          <p>✅ Team collaboration</p>
+          <p>✅ Premium assets</p>
+        </div>
+        <p>Sign up or log in to accept:</p>
+        <div>
+          <a href="https://shammarianas.vercel.app/signup?inviteCode=${inviteCode}&email=${encodeURIComponent(
+          inviteData.inviteEmail
+        )}" 
+             style="display:inline-block;padding:12px 24px;background:#4CAF50;color:white;
+             text-decoration:none;border-radius:5px;margin:10px;">Create Account</a>
+          <a href="https://shammarianas.vercel.app/login?inviteCode=${inviteCode}&email=${encodeURIComponent(
+          inviteData.inviteEmail
+        )}" 
+             style="display:inline-block;padding:12px 24px;background:#2196F3;color:white;
+             text-decoration:none;border-radius:5px;margin:10px;">Login</a>
+        </div>
+        <p style="margin-top:30px;color:#666;">Sent to: ${
+          inviteData.inviteEmail
+        }</p>
+        </body></html>
+      `);
+      }
+
+      // User logged in - check email
+      if (userEmail !== inviteData.inviteEmail) {
+        return res.status(403).send(`
+        <!DOCTYPE html><html><head><title>Email Mismatch</title></head><body>
+        <h1 style="color:red;">✉️ Email Mismatch</h1>
+        <p>Invitation sent to: <strong>${inviteData.inviteEmail}</strong></p>
+        <p>You are: <strong>${userEmail}</strong></p>
+        <a href="https://shammarianas.vercel.app/logout?redirect=/login?inviteCode=${inviteCode}" 
+           style="display:inline-block;padding:12px 24px;background:#2196F3;color:white;
+           text-decoration:none;border-radius:5px;">Switch Account</a>
+        </body></html>
+      `);
+      }
+
+      // Add user to team
+      const userProfileRef = db.collection("Profiles").doc(userId);
+      const userProfileSnap = await userProfileRef.get();
+
+      if (!userProfileSnap.exists) {
+        return res.status(404).send(`
+        <!DOCTYPE html><html><head><title>Error</title></head><body>
+        <h1 style="color:red;">❌ Account Error</h1>
+        <a href="https://shammarianas.vercel.app/signup?inviteCode=${inviteCode}" 
+           style="display:inline-block;padding:12px 24px;background:#4CAF50;color:white;
+           text-decoration:none;border-radius:5px;">Create Account</a>
+        </body></html>
+      `);
+      }
+
+      await db.runTransaction(async (transaction) => {
+        // Update invitation status
+        transaction.update(inviteDoc.ref, {
+          status: "accepted",
+          acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+          acceptedBy: userId,
+        });
+
+        // Get fresh team data within transaction
+        const freshTeamSnap = await transaction.get(teamRef);
+        const freshTeam = freshTeamSnap.data();
+
+        // Add user to members array
+        const updatedMembersArray = [...(freshTeam.members || []), userId];
+
+        // Initialize memberDownloads for new member
+        const updatedMemberDownloads = {
+          ...(freshTeam.memberDownloads || {}),
+        };
+        updatedMemberDownloads[userId] = 0;
+
+        // Update team document
+        transaction.update(teamRef, {
+          members: updatedMembersArray,
+          totalMembers: updatedMembersArray.length,
+          memberDownloads: updatedMemberDownloads,
+        });
+
+        // Update user profile with team subscription
+        transaction.update(userProfileRef, {
+          subscription: {
+            status: "active",
+            plan: "team",
+            type: "team",
+            teamId: inviteData.teamId,
+            downloadLimit: team.downloadsPerMember || 200,
+            downloadsUsed: 0,
+            startDate: admin.firestore.FieldValue.serverTimestamp(),
+            expiresAt: team.expiresAt,
+            billingCycle: "monthly",
+            price: team.perMemberPrice || 7,
+          },
+        });
+      });
+
+      // Send notification to admin
+      const adminProfileRef = db.collection("Profiles").doc(inviteData.adminId);
+      const adminProfileSnap = await adminProfileRef.get();
+
+      if (adminProfileSnap.exists) {
+        const adminProfile = adminProfileSnap.data();
+
+        // For local testing - log instead of sending email
+        if (process.env.FUNCTIONS_EMULATOR === "true") {
+          console.log(
+            "LOCAL TEST: Would send email to admin:",
+            adminProfile.email
+          );
+          console.log("Subject: Team Invitation Accepted");
+          console.log("Message:", `${userEmail} joined your team.`);
+        } else {
+          await mailTransport.sendMail({
+            from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
+            to: adminProfile.email,
+            subject: "Team Invitation Accepted",
+            html: `<h2>🎉 Invitation Accepted!</h2><p>${userEmail} joined your team.</p>`,
+          });
+        }
+      }
+
+      return res.send(`
+      <!DOCTYPE html><html><head><title>Welcome!</title></head><body>
+      <h1 style="color:#4CAF50;">✅ Welcome to the Team!</h1>
+      <p>You've joined <strong>${inviteData.adminName}</strong>'s team.</p>
+      <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;">
+        <p>✅ ${team.downloadsPerMember || 200} downloads/month</p>
+        <p>✅ Team features unlocked</p>
+        <p>✅ ${currentMembers.length + 1} of ${
+        team.memberLimit
+      } team members</p>
+      </div>
+      <a href="https://shammarianas.vercel.app/dashboard" 
+         style="display:inline-block;padding:12px 24px;background:#4CAF50;color:white;
+         text-decoration:none;border-radius:5px;">Go to Dashboard</a>
+      </body></html>
+    `);
+    } catch (err) {
+      console.error("Auto-accept error:", err);
+      return res.status(500).send(`
+      <!DOCTYPE html><html><head><title>Error</title></head><body>
+      <h1 style="color:red;">⚠️ Server Error</h1>
+      <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
+      background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
+      </body></html>
+    `);
+    }
+  }
+);
+
+exports.getTeamDetails = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  if (req.method !== "GET")
+    return res.status(405).send({ error: "Method Not Allowed" });
+
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: { message: "Login required" } });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const userId = decodedToken.uid;
+
+    const db = admin.firestore();
+
+    // Get user profile
+    const userProfileRef = db.collection("Profiles").doc(userId);
+    const userProfileSnap = await userProfileRef.get();
+
+    if (!userProfileSnap.exists) {
+      return res.status(404).json({ error: { message: "User not found" } });
+    }
+
+    const userProfile = userProfileSnap.data();
+    const subscription = userProfile.subscription || {};
+
+    if (subscription.type !== "team" || !subscription.teamId) {
+      return res.status(404).json({ error: { message: "Not in a team" } });
+    }
+
+    const teamId = subscription.teamId;
+
+    // Get team
+    const teamRef = db.collection("Teams").doc(teamId);
+    const teamSnap = await teamRef.get();
+
+    if (!teamSnap.exists) {
+      return res.status(404).json({ error: { message: "Team not found" } });
+    }
+
+    const team = teamSnap.data();
+
+    // Get all team members' profiles
+    const members = [];
+    const teamMembers = team.members || [];
+    const memberDownloads = team.memberDownloads || {};
+    let totalTeamDownloadsUsed = 0;
+
+    for (const memberId of teamMembers) {
+      if (memberId) {
+        const memberProfileRef = db.collection("Profiles").doc(memberId);
+        const memberProfileSnap = await memberProfileRef.get();
+
+        if (memberProfileSnap.exists) {
+          const memberProfile = memberProfileSnap.data();
+          const downloadsUsed = memberDownloads[memberId] || 0;
+          totalTeamDownloadsUsed += downloadsUsed;
+
+          members.push({
+            id: memberId,
+            email: memberProfile.email,
+            name:
+              memberProfile.name ||
+              `${memberProfile.firstName || ""} ${
+                memberProfile.lastName || ""
+              }`.trim(),
+            role: memberId === team.ownerId ? "owner" : "member",
+            joinedAt: memberProfile.joinDate || memberProfile.createdAt,
+            profilePic: memberProfile.profilePic,
+            downloadsUsed: downloadsUsed,
+            downloadLimit: team.downloadsPerMember || 200,
+            isOwner: memberId === team.ownerId,
+          });
+        }
+      }
+    }
+
+    // Get pending invites
+    const pendingInvitesQuery = await db
+      .collection("TeamInvites")
+      .where("teamId", "==", teamId)
+      .where("status", "==", "pending")
+      .get();
+
+    const pendingInvites = pendingInvitesQuery.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Calculate available slots correctly (memberLimit - 1 for owner)
+    const currentMemberCount = members.length;
+    const maxInvitableMembers = team.memberLimit - 1;
+    const availableSlots = Math.max(
+      0,
+      maxInvitableMembers - (currentMemberCount - 1)
+    );
+
+    // Calculate total team downloads
+    const totalTeamDownloadsAllowed =
+      team.downloadsPerMember * team.memberLimit;
+
+    return res.status(200).json({
+      success: true,
+      team: {
+        id: teamSnap.id,
+        name: "Team", // Add team name field if you have it
+        ownerId: team.ownerId,
+        memberLimit: team.memberLimit || 2,
+        downloadsPerMember: team.downloadsPerMember || 200,
+        plan: team.plan || "team",
+        startDate: team.startDate,
+        expiresAt: team.expiresAt,
+        active: team.active || true,
+        perMemberPrice: team.perMemberPrice || 7,
+        totalDownloadsUsed: totalTeamDownloadsUsed,
+        totalDownloadsAllowed: totalTeamDownloadsAllowed,
+        remainingTeamDownloads: Math.max(
+          0,
+          totalTeamDownloadsAllowed - totalTeamDownloadsUsed
+        ),
+        memberDownloads: team.memberDownloads || {},
+        availableSlots: availableSlots,
+        totalMembers: currentMemberCount,
+        maxInvitableMembers: maxInvitableMembers,
+      },
+      members,
+      pendingInvites,
+      userRole: team.ownerId === userId ? "owner" : "member",
+    });
+  } catch (err) {
+    console.error("Get team details error:", err);
+    return res.status(500).json({
+      error: { message: err.message || "Internal server error" },
+    });
+  }
+});
+
+// =============================
+// 3. CHECK USER INVITATIONS (NEW)
+// =============================
+exports.checkUserInvitations = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Login required");
+  }
+
+  const userId = context.auth.uid;
+  const userEmail = context.auth.token.email;
+  const db = admin.firestore();
+
+  try {
+    // Check for pending invitations
+    const invitesQuery = await db
+      .collection("TeamInvites")
+      .where("inviteEmail", "==", userEmail)
+      .where("status", "in", ["pending", "clicked"])
+      .get();
+
+    const acceptedTeams = [];
+
+    for (const doc of invitesQuery.docs) {
+      const invite = doc.data();
+      const teamRef = db.collection("Teams").doc(invite.teamId);
+      const teamSnap = await teamRef.get();
+
+      if (teamSnap.exists) {
+        const team = teamSnap.data();
+
+        // Auto-accept
+        await db.runTransaction(async (transaction) => {
+          transaction.update(doc.ref, {
+            status: "accepted",
+            acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+            acceptedBy: userId,
+          });
+
+          transaction.update(teamRef, {
+            members: admin.firestore.FieldValue.arrayUnion(userId),
+            totalMembers: team.totalMembers + 1,
+          });
+
+          const userProfileRef = db.collection("Profiles").doc(userId);
+          transaction.update(userProfileRef, {
+            subscription: {
+              status: "active",
+              plan: "team",
+              type: "team",
+              teamId: invite.teamId,
+              teamAdminId: invite.adminId,
+              teamAdminName: invite.adminName,
+              startDate: admin.firestore.FieldValue.serverTimestamp(),
+              expiresAt: team.expiresAt,
+              downloadsUsed: 0,
+              downloadLimit: team.downloadsPerMember || 200,
+            },
+          });
+
+          const teamMemberRef = db.collection("TeamMembers").doc();
+          transaction.set(teamMemberRef, {
+            teamId: invite.teamId,
+            memberId: userId,
+            memberEmail: userEmail,
+            adminId: invite.adminId,
+            role: "member",
+            joinedAt: admin.firestore.FieldValue.serverTimestamp(),
+            status: "active",
+            invitedVia: doc.id,
+          });
+        });
+
+        acceptedTeams.push({
+          teamId: invite.teamId,
+          teamName: team.name || "Team",
+          adminName: invite.adminName,
+        });
+      }
+    }
+
+    return {
+      success: true,
+      acceptedInvites: acceptedTeams,
+      message:
+        acceptedTeams.length > 0
+          ? `Added to ${acceptedTeams.length} team(s)`
+          : "No pending invitations",
+    };
+  } catch (err) {
+    console.error("Check invitations error:", err);
+    throw new functions.https.HttpsError("internal", err.message);
+  }
+});
+
+// =============================
+// 4. GET TEAM DETAILS (NEW)
+// =============================
+
+// =============================
+// 5. GET PENDING INVITATIONS (NEW)
+// =============================
+exports.getPendingInvitations = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  if (req.method !== "GET")
+    return res.status(405).send({ error: "Method Not Allowed" });
+
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: { message: "Login required" } });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const userId = decodedToken.uid;
+
+    const db = admin.firestore();
+
+    // Get user email
+    const userProfileRef = db.collection("Profiles").doc(userId);
+    const userProfileSnap = await userProfileRef.get();
+
+    if (!userProfileSnap.exists) {
+      return res.status(404).json({ error: { message: "User not found" } });
+    }
+
+    const userProfile = userProfileSnap.data();
+    const userEmail = userProfile.email;
+
+    // Get pending invitations for this email
+    const invitesQuery = await db
+      .collection("TeamInvites")
+      .where("inviteEmail", "==", userEmail)
+      .where("status", "==", "pending")
+      .get();
+
+    const invitations = [];
+
+    for (const doc of invitesQuery.docs) {
+      const invite = doc.data();
+      const teamRef = db.collection("Teams").doc(invite.teamId);
+      const teamSnap = await teamRef.get();
+
+      if (teamSnap.exists) {
+        const team = teamSnap.data();
+        invitations.push({
+          id: doc.id,
+          inviteCode: invite.inviteCode,
+          teamId: invite.teamId,
+          teamName: team.name || "Team",
+          adminName: invite.adminName,
+          adminEmail: invite.adminEmail,
+          invitedAt: invite.invitedAt,
+          expiresAt: invite.expiresAt,
+          downloadLimit: invite.downloadLimit,
+        });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      invitations,
+      count: invitations.length,
+    });
+  } catch (err) {
+    console.error("Get invitations error:", err);
+    return res.status(500).json({
+      error: { message: err.message || "Internal server error" },
+    });
+  }
+});
+
+// =============================
+// 6. CANCEL TEAM INVITE (NEW)
+// =============================
+exports.cancelTeamInvite = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  if (req.method !== "POST")
+    return res.status(405).send({ error: "Method Not Allowed" });
+
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: { message: "Login required" } });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const adminId = decodedToken.uid;
+
+    const { inviteId } = req.body;
+
+    if (!inviteId) {
+      return res.status(400).json({ error: { message: "inviteId required" } });
+    }
+
+    const db = admin.firestore();
+
+    // Get invitation
+    const inviteRef = db.collection("TeamInvites").doc(inviteId);
+    const inviteSnap = await inviteRef.get();
+
+    if (!inviteSnap.exists) {
+      return res
+        .status(404)
+        .json({ error: { message: "Invitation not found" } });
+    }
+
+    const invite = inviteSnap.data();
+
+    // Verify ownership
+    if (invite.adminId !== adminId) {
+      return res.status(403).json({ error: { message: "Not authorized" } });
+    }
+
+    // Cancel invitation
+    await inviteRef.update({
+      status: "cancelled",
+      cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+      cancelledBy: adminId,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Invitation cancelled",
+    });
+  } catch (err) {
+    console.error("Cancel invite error:", err);
+    return res.status(500).json({
+      error: { message: err.message || "Internal server error" },
+    });
+  }
+});
+
+// =============================
+// 7. REMOVE TEAM MEMBER (NEW)
+// =============================
+exports.removeTeamMember = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  if (req.method !== "POST")
+    return res.status(405).send({ error: "Method Not Allowed" });
+
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: { message: "Login required" } });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const adminId = decodedToken.uid;
+
+    const { teamId, memberId } = req.body;
+
+    if (!teamId || !memberId) {
+      return res
+        .status(400)
+        .json({ error: { message: "teamId and memberId required" } });
+    }
+
+    const db = admin.firestore();
+
+    // Verify admin owns team
+    const teamRef = db.collection("Teams").doc(teamId);
+    const teamSnap = await teamRef.get();
+
+    if (!teamSnap.exists) {
+      return res.status(404).json({ error: { message: "Team not found" } });
+    }
+
+    const team = teamSnap.data();
+
+    if (team.ownerId !== adminId) {
+      return res
+        .status(403)
+        .json({ error: { message: "Only team owner can remove members" } });
+    }
+
+    // Can't remove yourself
+    if (memberId === adminId) {
+      return res
+        .status(400)
+        .json({ error: { message: "Cannot remove yourself" } });
+    }
+
+    // Remove from team
+    await db.runTransaction(async (transaction) => {
+      transaction.update(teamRef, {
+        members: admin.firestore.FieldValue.arrayRemove(memberId),
+        totalMembers: Math.max(0, team.totalMembers - 1),
+      });
+
+      // Remove subscription from member
+      const memberProfileRef = db.collection("Profiles").doc(memberId);
+      transaction.update(memberProfileRef, {
+        subscription: admin.firestore.FieldValue.delete(),
+      });
+
+      // Update TeamMembers collection
+      const teamMembersQuery = await transaction.get(
+        db
+          .collection("TeamMembers")
+          .where("teamId", "==", teamId)
+          .where("memberId", "==", memberId)
+      );
+
+      teamMembersQuery.forEach((doc) => {
+        transaction.update(doc.ref, {
+          status: "removed",
+          removedAt: admin.firestore.FieldValue.serverTimestamp(),
+          removedBy: adminId,
+        });
+      });
+    });
+
+    // Get member email for notification
+    const memberProfileRef = db.collection("Profiles").doc(memberId);
+    const memberProfileSnap = await memberProfileRef.get();
+
+    if (memberProfileSnap.exists && memberProfileSnap.data().email) {
+      await mailTransport.sendMail({
+        from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
+        to: memberProfileSnap.data().email,
+        subject: "Removed from Team",
+        html: `<p>You have been removed from the team.</p>`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Team member removed",
+    });
+  } catch (err) {
+    console.error("Remove team member error:", err);
+    return res.status(500).json({
+      error: { message: err.message || "Internal server error" },
+    });
+  }
+});
+
 exports.resetDownloadsMonthly = onSchedule(
   {
     schedule: "0 0 1 * *",
