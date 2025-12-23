@@ -1,9 +1,9 @@
 import React from "react";
 
 function MarqStock() {
-  const marquess = ["Free Templates"]; // Replace with your actual array
+  const marquess = ["Templates"]; // Replace with your actual array
   const AllMarquess = Array(6).fill(marquess).flat();
-  const contact = ["Templates"]; // Replace with your actual array
+  const contact = ["Free Download"]; // Replace with your actual array
   const AllContact = Array(6).fill(contact).flat();
 
   return (

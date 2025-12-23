@@ -1,4 +1,6 @@
 import React from "react";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 function openAccordion(event) {
     document.querySelectorAll(".accordion-info").forEach((element) => {
         element.classList.remove("active");
@@ -12,6 +14,7 @@ function openAccordion(event) {
 const SellerGuideline = () => {
     return (
         <>
+        <SEO {...SEO_CONFIG.sellerGuidlines} />
             <div className="section-padding">
                 <div className="container mx-size">
                     <h1 className="text-4xl fw-500 mb-8 text-center">Seller Guidelines</h1>
@@ -21,7 +24,7 @@ const SellerGuideline = () => {
                     </h3>
 
                     <p className="fotter-police-p p-color mb-8">
-                        Congratulations on joining <span className="text-bold underline main-color">Sham Marianas</span> as a valued contributor. This comprehensive guide outlines our platform standards, submission processes, and best practices to ensure your success. Please read these guidelines thoroughly before submitting any assets.
+                        Congratulations on joining <span className="text-bold underline main-color">Sham Marianas</span>, as a valued contributor. This comprehensive guide outlines our platform standards, submission processes, and best practices to ensure your success. Please read these guidelines thoroughly before submitting any assets.
                     </p>
 
                     <h3 className="mt-5 fz-30 fw-400 mb-2">
@@ -35,7 +38,7 @@ const SellerGuideline = () => {
                         <li className="mb-2">Complete the registration form with accurate details</li>
                         <li className="mb-2">Verify your email address through the confirmation link</li>
                         <li className="mb-2">Set up your secure password and profile information</li>
-                        <li className="mb-2">Waiting for <span className="text-bold underline main-color">Sham Marianas</span> approval</li>
+                        <li className="mb-2">Waiting for <span className="text-bold underline main-color">Sham Marianas</span>, approval</li>
                     </ul>
 
                     <h4 className="fz-24 fw-400 mb-2">Existing Contributor Login</h4>
@@ -227,7 +230,7 @@ const SellerGuideline = () => {
                     </h3>
 
                     <p className="fotter-police-p p-color mb-2">
-                        <strong><span className="text-bold underline main-color">Sham Marianas</span> reserves the right to:</strong>
+                        <strong><span className="text-bold underline main-color">Sham Marianas</span>, reserves the right to:</strong>
                     </p>
                     <ul className="fotter-police-p p-color mb-4 list-disc p-0 ">
                         <li className="mb-2">Update these guidelines without prior notice</li>

@@ -8,12 +8,15 @@ import Marq2 from "../../Components/marq2";
 import Intro from "../../Components/Content/Intro";
 import Header from "../../Components/Content/Header";
 import Content from "../../Components/Content/Content";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 export default function PageServicesDetails() {
   const main = useRef();
 
   return (
     <>
+      <SEO seo={SEO_CONFIG.content} />
       <body>
         <Cursor />
         <ProgressScroll />

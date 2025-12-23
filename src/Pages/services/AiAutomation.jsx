@@ -8,12 +8,15 @@ import Marq2 from "../../Components/marq2";
 import Intro from "../../Components/AiAutomation/Intro";
 import Header from "../../Components/AiAutomation/Header";
 import AiAutomation from "../../Components/AiAutomation/AiAutomation";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 export default function PageServicesDetails() {
   const main = useRef();
 
   return (
     <>
+      <SEO {...SEO_CONFIG.aiAutomation} />
       <body>
         <Cursor />
         <ProgressScroll />

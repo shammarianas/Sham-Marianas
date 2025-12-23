@@ -3488,7 +3488,7 @@ div>button.add_to_wishlist_btn.favorited {
 }
 
 .group_page_main .group_tab form input:focus {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #52b0b4;
 }
 
 .group_page_main .group_tab form button {
@@ -4119,7 +4119,7 @@ div>button.add_to_wishlist_btn.favorited {
 }
 
 .checkout_main .container .left form .section .input_field input:focus {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #52b0b4;
 }
 
 .checkout_main .container .left form .section .input_field .card_input {
@@ -4385,7 +4385,7 @@ div>button.add_to_wishlist_btn.favorited {
 }
 
 .checkout_main .container .right .coupon .input_field input:focus {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #52b0b4;
 }
 
 .checkout_main .container .right .coupon .input_field .apply_btn {
@@ -5551,9 +5551,9 @@ div>button.add_to_wishlist_btn.favorited {
   overflow: hidden;
 }
 
-.subscription-card.active {
+/* .subscription-card.active {
   border-color: #4CAF50;
-}
+} */
 
 
 
@@ -5719,154 +5719,114 @@ div>button.add_to_wishlist_btn.favorited {
   margin: 0;
 }
 
-/* Team Management Section */
+/* Team Management Styles */
 .team-management-section {
   margin-top: 2rem;
   padding-top: 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.team-management-section h3 {
-  color: #fff;
-  font-size: 1.3rem;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-}
-
-.invite-member-form {
-  margin-bottom: 2rem;
-}
-
-.form-group {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.form-input {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 0.9rem;
-  transition: all 0.3s;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #4CAF50;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.form-note {
-  font-size: 0.8rem;
-  color: #888;
-  margin-top: 0.25rem;
-}
-
-/* Pending Invites */
-.pending-invites {
-  margin-top: 1.5rem;
-}
-
-.pending-invites h4 {
-  color: #fff;
-  font-size: 1.1rem;
-  margin-bottom: 0.75rem;
-  font-weight: 500;
-}
-
-.invites-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.invite-item {
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1.5rem;
 }
 
-.invite-info {
+.section-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.member-count {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
 }
 
-.invite-email {
-  color: #fff;
-  font-weight: 500;
+.member-count i {
+  color: #6366f1;
+}
+
+/* Invite Member Form */
+.invite-member-form {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.invite-member-form h4 {
+  margin: 0 0 0.5rem 0;
+}
+
+.form-description {
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1rem;
   font-size: 0.9rem;
 }
 
-.invite-date {
-  color: #aaa;
-  font-size: 0.8rem;
+.input-with-button {
+  display: flex;
+  gap: 1rem;
 }
 
-.cancel-invite-btn {
-  padding: 0.4rem 0.75rem;
-  background: transparent;
-  border: 1px solid #f44336;
-  color: #f44336;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.3s;
+.invite-email-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: white;
+  font-size: 1rem;
 }
 
-.cancel-invite-btn:hover {
-  background: rgba(244, 67, 54, 0.1);
+.invite-email-input:focus {
+  outline: none;
+  border-color: #52b0b4;
 }
-
+.icon.fas.fa-paper-plane{
+      padding-right: 10px;
+}
 /* Team Members List */
 .team-members-list {
-  margin-top: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .team-members-list h4 {
-  color: #fff;
-  font-size: 1.1rem;
   margin-bottom: 1rem;
-  font-weight: 500;
 }
 
 .members-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
 }
 
 .member-card {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 1rem;
   background: rgba(255, 255, 255, 0.03);
+  padding: 1rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  gap: 0.75rem;
+}
+
+.member-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .member-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 1.1rem;
-  flex-shrink: 0;
 }
 
 .member-avatar img {
@@ -5881,56 +5841,182 @@ div>button.add_to_wishlist_btn.favorited {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
 }
 
-.member-info {
-  flex: 1;
+.member-details {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
-}
-
-.member-name {
-  color: #fff;
-  font-weight: 500;
-  font-size: 0.9rem;
+  gap: 0.25rem;
 }
 
 .member-email {
-  color: #aaa;
+  font-weight: 500;
+  color: white;
+}
+
+.member-role .role-badge {
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
   font-size: 0.8rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.member-status {
-  font-size: 0.7rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: 10px;
   display: inline-block;
-  width: fit-content;
-  margin-top: 0.25rem;
 }
 
-.member-status.active {
-  background: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
+.member-joined {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.member-status.pending {
-  background: rgba(255, 193, 7, 0.1);
-  color: #FFC107;
+.member-actions .remove-member-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.member-status.invited {
-  background: rgba(33, 150, 243, 0.1);
-  color: #2196F3;
+.member-actions .remove-member-btn:hover {
+  background: rgba(255, 107, 107, 0.1);
 }
 
-.member-actions {
+/* Pending Invites */
+.pending-invites {
+  margin-bottom: 2rem;
+}
+
+.invites-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.invite-item {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.invite-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.invite-info i {
+  color: #f59e0b;
+}
+
+.invite-email {
+  color: white;
+  font-weight: 500;
+}
+
+.invite-status {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+}
+
+.invite-sent {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cancel-invite-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-invite-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Team Usage Stats */
+.team-usage-stats {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.team-usage-stats h4 {
+  margin: 0 0 1rem 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #6366f1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .input-with-button {
+    flex-direction: column;
+  }
+  
+  .member-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .member-actions {
+    width: 100%;
+  }
+  
+  .remove-member-btn {
+    width: 100%;
+  }
+  
+  .invite-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .invite-actions {
+    width: 100%;
+  }
+  
+  .cancel-invite-btn {
+    width: 100%;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .action-btn {

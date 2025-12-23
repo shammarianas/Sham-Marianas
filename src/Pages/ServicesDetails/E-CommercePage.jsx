@@ -83,8 +83,7 @@ const EcommercePage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas
-            </span>{" "}
-            we go beyond designing e-commerce websites,  we create immersive
+            </span>, we go beyond designing e-commerce websites,  we create immersive
             digital storefronts that wow your customers and turn casual clicks
             into loyal buyers.
           </>,
