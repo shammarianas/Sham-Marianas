@@ -646,7 +646,7 @@ const Login = () => {
 
       // Redirect after a short delay
       setTimeout(() => {
-        navigate("/templates", { replace: true });
+        navigate("/login", { replace: true });
       }, 2000);
     } catch (err) {
       console.error("Sign-up error details:", err);
