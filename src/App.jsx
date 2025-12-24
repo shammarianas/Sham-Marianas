@@ -163,7 +163,7 @@ export const AppRoutes = () => (
     <Route path="/blog-category/:category" element={<BlogCategory />} />
 
     {/* Profile routes - should come before generic dynamic route */}
-    <Route path="/Profile/:username" element={<Profile />} />
+    <Route path="/profile/:username" element={<Profile />} />
     <Route path="/:username" element={<Profile />} />
 
     {/* Updated Category Routes - Now all start with /category */}

@@ -136,11 +136,13 @@ const Navbar = () => {
   const getProfileLink = () => {
     if (!currentUser?.uid) return "/login";
 
-    if (username) {
-      return `/${username}`; // ✅ Twitter style: /username
+    // ✅ Check if username is valid (not null/undefined)
+    if (username && username !== "null" && username !== "undefined") {
+      return `/${username}`;
     }
 
-    return `/profile`; // Fallback
+    // ✅ Fallback to UID-based profile
+    return `/profile/${currentUser.uid}`;
   };
   useEffect(() => {
     const handleScroll = () => {
