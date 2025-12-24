@@ -3,14 +3,14 @@ export const SEO_CONFIG = {
   //   Main Pages SEO
   // =========================================================
   home: {
-    title: "Shammarianas - Top Digital Marketing Agency",
-    description: "Sham Marianas is a top advertising agency that helps businesses grow with digital marketing, brand building, and ROI-focused advertising.",
-    keywords: "Web development, Digital Marketing, SEO, Social Media Marketing, Branding, Advertising Agency",
+    title: "Sham Marianas | Advertising Agency Dubai, UAE",
+    description: "Sham Marianas is the best advertising agency in Dubai. We help with online marketing, managing your social media, creating strong brands, and developing plans that deliver real results and increased revenue. Let us help your business grow in the UAE! ",
+    keywords: " Digital marketing agency Dubai, advertising agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
   },
   about: {
-    title: "About Us - Shammarianas | Our Story & Mission",
-    description: "Learn about Shammarianas - our mission, vision, and team. We are a leading digital marketing agency with expertise in web development, SEO, and brand building.",
-    keywords: "About Shammarianas, Our Mission, Our Team, Company History, Digital Marketing Experts",
+    title: "About Sham Marianas | Dubai's Top Advertising Agency",
+    description: "Sham Marianas started in 2022. We're a full-service digital agency. We bring fresh marketing, websites, and creative ideas to help UAE businesses grow.",
+    keywords: "about advertising agency Dubai, digital agency UAE, branding specialists Dubai, social campaigns UAE",
   },
   services: {
     title: "Our Services - Shammarianas | Digital Marketing Solutions",
@@ -18,73 +18,73 @@ export const SEO_CONFIG = {
     keywords: "Digital Marketing Services, Web Development Services, SEO Services, Social Media Marketing, Branding Services",
   },
   aiAutomation: {
-    title: "AI Automation Services - Shammarianas | Streamline Your Business",
-    description: "Discover Shammarianas AI Automation services to streamline your business processes, enhance efficiency, and drive growth with cutting-edge AI solutions.",
-    keywords: "AI Automation, Business Automation, AI Solutions, Process Automation, Digital Transformation",
+    title: " AI Automation Dubai, UAE",
+    description: "Sham Marianas creates AI automation for UAE ops. BPA, chatbots, analytics, CRM—smart systems boost efficiency and growth.",
+    keywords: "AI automation Dubai, business automation UAE, chatbots Dubai, workflow automation UAE, CRM automation Dubai",
   },
   boothDesign: {
-    title: "Booth Design Services - Shammarianas | Creative Exhibition Stands",
-    description: "Get innovative booth design services from Shammarianas. We create eye-catching exhibition stands that attract visitors and enhance your brand presence.",
-    keywords: "Booth Design, Exhibition Stands, Trade Show Booths, Creative Booths, Event Marketing",
+    title: "Exhibition Booth Design Dubai",
+    description: " Impress at events with custom booth designs by Sham Marianas. Eye-catching structures built for UAE trade shows and exhibitions.",
+    keywords: " exhibition booth Dubai, trade show design UAE, booth fabrication Dubai",
   },
   branding: {
-    title: "Branding Services - Shammarianas | Build Your Brand Identity",
-    description: "Enhance your brand identity with Shammarianas branding services. We offer logo design, brand strategy, and visual identity solutions to make your brand stand out.",
-    keywords: "Branding Services, Brand Identity, Logo Design, Brand Strategy, Visual Identity",
+    title: " Branding Design Agency Dubai, UAE",
+    description: "Sham Marianas creates compelling brand identities with logos, visuals, and strategies tailored for UAE markets. Stand out and connect with your audience effectively.",
+    keywords: " branding design Dubai, logo design UAE, brand identity Dubai",
   },
   content: {
-    title: "Content Creation Services - Shammarianas | Engaging Content",
-    description: "Boost your online presence with Shammarianas content creation services. We provide high-quality blog posts, articles, and multimedia content to engage your audience.",
-    keywords: "Content Creation, Blog Writing, Article Writing, Multimedia Content, Digital Content Services",
+    title: "Content Writing Services Dubai",
+    description: "Engage audiences with high-quality content from Sham Marianas. SEO-optimized blogs, copies, and scripts that drive traffic for Dubai brands.",
+    keywords: "content writing Dubai, SEO content UAE, blog writing Dubai",
   },
   digitalMarketer: {
-    title: "Digital Marketer Services - Shammarianas | Grow Your Online Presence",
-    description: "Partner with Shammarianas for expert digital marketer services. We specialize in SEO, social media marketing, and online advertising to help your business thrive.",
-    keywords: "Digital Marketer, SEO Services, Social Media Marketing, Online Advertising, Digital Marketing Agency",
+    title: "Social Media Digital Marketing Dubai",
+    description: "Grow your presence with Sham Marianas' social media and digital strategies. Targeted campaigns across platforms for maximum UAE engagement.",
+    keywords: "social media Dubai, digital marketing UAE, meta ads Dubai",
   },
   ecommerce: {
-    title: "Ecommerce Development Services - Shammarianas | Online Store Solutions",
-    description: "Launch and grow your online store with Shammarianas ecommerce development services. We provide custom ecommerce solutions tailored to your business needs.",
-    keywords: "Ecommerce Development, Online Store Solutions, Ecommerce Website, Shopping Cart Development, Ecommerce Platform",
+    title: " E-Commerce Development Dubai, UAE",
+    description: "Launch thriving online stores with Sham Marianas' e-commerce solutions. Secure, scalable platforms designed to boost sales for UAE retailers.",
+    keywords: "E e-commerce Dubai, online store UAE, Shopify Dubai, WooCommerce Dubai",
   },
   Photography: {
-    title: "Photography Services - Shammarianas | Professional Photography",
-    description: "Capture stunning visuals with Shammarianas photography services. We offer professional photography solutions for events, products, and marketing campaigns.",
-    keywords: "Photography Services, Professional Photography, Event Photography, Product Photography, Marketing Photography",
+    title: " Photography Video Production Dubai",
+    description: " Professional photography and video services creating high-impact visuals for Dubai brands and events.",
+    keywords: "photography Dubai, video production UAE, product shoots Dubai",
   },
   printMediaSolutions: {
-    title: "Print Media Solutions - Shammarianas | Quality Print Services",
-    description: "Discover Shammarianas print media solutions for high-quality printing services. We provide brochures, flyers, business cards, and more to enhance your brand.",
-    keywords: "Print Media Solutions, Printing Services, Brochures, Flyers, Business Cards, Quality Print",
+    title: "Print Media Solutions Dubai, UAE",
+    description: "Sham Marianas crafts impactful print for UAE brands: brochures, cards, banners, packaging. Bold design meets strategy—captivate and convert.",
+    keywords: "print media Dubai, brochure printing UAE, banners Dubai",
   },
   productDesign: {
-    title: "Product Design Services - Shammarianas | Innovative Designs",
-    description: "Transform your ideas into reality with Shammarianas product design services. We offer innovative design solutions for products that stand out in the market.",
-    keywords: "Product Design Services, Innovative Product Design, Industrial Design, Product Development, Creative Designs",
+    title: "Product Design Agency Dubai, UAE",
+    description: "Innovative product design services that transform your ideas into functional, attractive products with user-centric design principles.",
+    keywords: " product design Dubai, prototype design UAE, industrial design Dubai",
   },
   uiUxDesign: {
-    title: "Product Design Services - Shammarianas | Innovative Designs",
-    description: "Transform your ideas into reality with Shammarianas product design services. We offer innovative design solutions for products that stand out in the market.",
-    keywords: "Product Design Services, Innovative Product Design, Industrial Design, Product Development, Creative Designs",
+    title: " UI UX Design Services Dubai, UAE",
+    description: " User-centric UI/UX design services that combine intuitive interface design with seamless usability to enhance customer experience and engagement.",
+    keywords: "UI UX design Dubai, user experience UAE, app design Dubai",
   },
   vfxAndCgiAds: {
-    title: "Product Design Services - Shammarianas | Innovative Designs",
-    description: "Transform your ideas into reality with Shammarianas product design services. We offer innovative design solutions for products that stand out in the market.",
-    keywords: "Product Design Services, Innovative Product Design, Industrial Design, Product Development, Creative Designs",
+    title: "VFX CGI Ads Agency Dubai",
+    description: "Create mesmerizing ads with Sham Marianas' VFX and CGI expertise. Cinematic effects and animations that captivate UAE audiences.",
+    keywords: "VFX Dubai, CGI ads UAE, motion graphics Dubai",
   },
   webDevelopment: {
-    title: "Product Design Services - Shammarianas | Innovative Designs",
-    description: "Transform your ideas into reality with Shammarianas product design services. We offer innovative design solutions for products that stand out in the market.",
-    keywords: "Product Design Services, Innovative Product Design, Industrial Design, Product Development, Creative Designs",
+    title: "Web Development Company Dubai, UAE",
+    description: "Build fast, responsive websites with Sham Marianas. Our expert developers deliver custom solutions powering UAE business growth online.",
+    keywords: "web development Dubai, website developer UAE, custom web development Dubai",
   },
 
   // =========================================================
   //   Blog Pages SEO
   // =========================================================
   blogHome: {
-    title: "Blog - Shammarianas | Digital Marketing Insights & Tips",
-    description: "Get the latest insights, tips and trends in digital marketing, SEO, social media, and business growth from Shammarianas experts.",
-    keywords: "Digital Marketing Blog, SEO Tips, Marketing Strategies, Business Growth, Content Marketing, Social Media Tips",
+    title: "Sham Marianas Blog | Advertising Insights Dubai UAE",
+    description: "Explore Sham Marianas blog for expert insights on advertising, branding, AI automation, and UAE growth from Dubai's top agency.",
+    keywords: "advertising blog Dubai, advertising insights UAE,AI automation blog, business growth UAE",
   },
 
   // Dynamic Blog SEO Template
@@ -326,7 +326,7 @@ export const SEO_CONFIG = {
   //   Portfolio & Project SEO
   // =========================================================
   portfolio: {
-    title: "Portfolio - Shammarianas | Our Projects & Work",
+    title: "Sham Marianas Portfolio | Dubai Creative Projects ",
     description: "Explore Shammarianas portfolio of successful projects including web design, development, digital marketing, and branding solutions.",
     keywords: "Portfolio, Projects, Case Studies, Web Design, Development, Digital Marketing, Branding",
   },
@@ -366,21 +366,21 @@ export const SEO_CONFIG = {
   },
 
   privacy: {
-    title: "Privacy Policy - Shammarianas",
-    description: "Read Shammarianas privacy policy to understand how we collect, use, and protect your personal information.",
-    keywords: "Privacy Policy, Data Protection, Terms of Service, Legal, Compliance",
+    title: " Privacy Policy | Sham Marianas Dubai",
+    description: "Sham Marianas Privacy Policy details how we protect your data in Dubai per UAE standards for advertising services. Review our secure practices",
+     keywords: " privacy policy, Dubai agency, Sham Marianas data protection, UAE privacy advertising",
   },
 
   terms: {
-    title: "Terms of Service - Shammarianas",
-    description: "Terms and conditions for using Shammarianas website and services. Please read carefully.",
-    keywords: "Terms of Service, Legal Terms, User Agreement, Conditions, Policy",
+    title: " Terms & Conditions | Sham Marianas Dubai",
+    description: " Sham Marianas' Terms and Conditions govern our Dubai advertising, branding, and AI services. Please review them for secure engagement.",
+    keywords: "terms and conditions Dubai agency, Sham Marianas T&C, advertising terms Dubai",
   },
 
-  helpCenter: {
-    title: "Support - Shammarianas",
-    description: "Terms and conditions for using Shammarianas website and services. Please read carefully.",
-    keywords: "Terms of Service, Legal Terms, User Agreement, Conditions, Policy",
+  contact: {
+    title: "Contact Sham Marianas | Dubai Agency",
+    description: " Reach out to Sham Marianas for Dubai advertising and branding. Our team elevates UAE businesses—connect now!",
+    keywords: "contact Sham Marianas Dubai, advertising agency UAE, branding inquiry Dubai, AI services contact UAE",
   },
 
   // =========================================================
@@ -409,28 +409,28 @@ export const SEO_CONFIG = {
   },
 
   contributorLogin: {
-    title: "Contributor Login - Shammarianas | Access Your Contributor Account",
-    description: "Login to your Shammarianas contributor account to manage your articles, blogs, and content submissions.",
-    keywords: "Contributor Login, Content Submission, Blog Management, Article Contributor"
+    title: " Contribute Login | Shammarianas Marketplace",
+    description: "Sham Marianas Marketplace: Upload 3D, videos, textures & assets to earn. Get the dashboard, download everything, and use it freely.",
+    keywords: "contribute assets, upload 3D marketplace, login download assets, contributor marketplace, upload videos earn, asset dashboard"
   },
 
   contributorSignup: {
-    title: "Contributor Signup - Shammarianas | Create Your Contributor Account",
-    description: "Sign up as a contributor on Shammarianas to submit articles, blogs, and content.",
-    keywords: "Contributor Signup, Content Submission, Blog Management, Article Contributor"
+    title: " Register | Shammarianas Marketplace",
+    description: "Join Shammarianas by registering. Gain contributor status for asset sharing and project access.",
+    keywords: " sign up contributor, new account assets, register marketplace, join Shammarianas, contributor access"
   },
 
   contributorForgotPassword: {
-    title: "Contributor Forgot Password - Shammarianas | Reset Your Password",
+    title: " Password Recovery Shammarianas",
     description: "Reset your Shammarianas contributor account password. Enter your email to receive password reset instructions.",
     keywords: "Contributor Forgot Password, Password Reset, Account Recovery, Reset Login",
     robots: "noindex, nofollow"
   },
 
   templates: {
-    title: "Website Templates - Shammarianas | Professional Designs",
-    description: "Browse professional website templates and designs from Shammarianas. Responsive templates for businesses, portfolios, and e-commerce.",
-    keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
+    title: "Templates | Sham Marianas Dubai Designs",
+    description: "Check out Sham Marianas' ready-to-use website templates. Modern, easy-to-customize designs perfect for UAE businesses. Get online quickly and grow your brand!",
+    keywords: " Sham marianas Website templates, Get online fast, Brand styles, Business growth"
   },
 
   // =========================================================
