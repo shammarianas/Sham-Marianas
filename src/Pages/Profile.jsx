@@ -19,6 +19,8 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   deleteUser,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 
 import { db, auth } from "../../firebase";
@@ -46,7 +48,7 @@ const Profile = () => {
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
 
-console.log("Profile user state:", user);
+  console.log("Profile user state:", user);
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -342,7 +344,7 @@ console.log("Profile user state:", user);
               foundInCollection = "Contributors";
               break;
             }
-console.log("Searching Contributors with variation:", foundUserId);
+            console.log("Searching Contributors with variation:", foundUserId);
             q = query(
               collection(db, "Contributors"),
               where("username_lowercase", "==", variation.toLowerCase())
@@ -1329,9 +1331,65 @@ console.log("Searching Contributors with variation:", foundUserId);
 
     try {
       const user = auth.currentUser;
+      if (!user) {
+        alert("No user is currently signed in.");
+        return;
+      }
+
       const providerId = user.providerData[0]?.providerId;
 
-      if (providerId === "password") {
+      // 🔹 Check if user signed up with Google
+      if (providerId === "google.com") {
+        const confirmed = window.confirm(
+          "Since you signed up with Google, you need to reauthenticate with Google to delete your account.\n\n" +
+            "Are you ready to proceed? You'll be redirected to Google for authentication."
+        );
+
+        if (!confirmed) return;
+
+        try {
+          // Import Google auth provider
+          const { GoogleAuthProvider } = await import("firebase/auth");
+
+          const provider = new GoogleAuthProvider();
+          provider.addScope("profile");
+          provider.addScope("email");
+
+          // Add your app's custom parameters if needed
+          provider.setCustomParameters({
+            prompt: "select_account",
+          });
+
+          // Reauthenticate with Google
+          const result = await signInWithPopup(auth, provider);
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+
+          if (!credential) {
+            alert("Failed to authenticate with Google. Please try again.");
+            return;
+          }
+
+          // Proceed with account deletion after successful reauthentication
+          await proceedWithAccountDeletion(user);
+        } catch (error) {
+          console.error("Google reauthentication error:", error);
+
+          if (error.code === "auth/popup-blocked") {
+            alert(
+              "Popup was blocked. Please allow popups for this site and try again."
+            );
+          } else if (
+            error.code === "auth/cancelled-popup-request" ||
+            error.code === "auth/popup-closed-by-user"
+          ) {
+            alert("Authentication cancelled. Account deletion aborted.");
+          } else {
+            alert("Failed to authenticate with Google: " + error.message);
+          }
+          return;
+        }
+      } else if (providerId === "password") {
+        // 🔹 Handle email/password users (your existing code)
         const password = prompt(
           "To permanently delete your account, please enter your password:"
         );
@@ -1341,19 +1399,43 @@ console.log("Searching Contributors with variation:", foundUserId);
         }
 
         const confirmed = window.confirm(
-          "Are you sure? This action CANNOT be undone!"
+          "Are you sure? This action CANNOT be undone! All your data will be permanently deleted."
         );
         if (!confirmed) return;
 
         const credential = EmailAuthProvider.credential(user.email, password);
         await reauthenticateWithCredential(user, credential);
+
+        // Proceed with account deletion
+        await proceedWithAccountDeletion(user);
       } else {
+        // 🔹 Handle other providers (GitHub, Facebook, etc.)
         alert(
-          `Account deletion for ${providerId} login is not supported. Please use your original provider to reauthenticate.`
+          `Account deletion for ${providerId} login requires reauthentication.\n\n` +
+            `Please sign out and sign back in with ${providerId}, then try deleting your account again.`
         );
         return;
       }
+    } catch (err) {
+      console.error("Account deletion error:", err);
 
+      if (err.code === "auth/wrong-password") {
+        alert("The password you entered is incorrect.");
+      } else if (err.code === "auth/requires-recent-login") {
+        alert(
+          "For security reasons, you need to sign in again recently to delete your account.\n\n" +
+            "Please sign out and sign back in, then try again."
+        );
+      } else {
+        alert("Failed to delete account: " + err.message);
+      }
+    }
+  };
+
+  // 🔹 Separate function to handle the actual deletion process
+  const proceedWithAccountDeletion = async (user) => {
+    try {
+      // 1. Delete user's subcollections
       const subcollections = ["favorites", "downloads"];
       for (const sub of subcollections) {
         const snap = await getDocs(collection(db, "Profiles", userId, sub));
@@ -1362,8 +1444,10 @@ console.log("Searching Contributors with variation:", foundUserId);
         }
       }
 
+      // 2. Delete the main profile document
       await deleteDoc(doc(db, "Profiles", userId));
 
+      // 3. Remove user from other users' followers/following lists
       const profileQuery = query(collection(db, "Profiles"));
       const usersSnap = await getDocs(profileQuery);
 
@@ -1383,15 +1467,14 @@ console.log("Searching Contributors with variation:", foundUserId);
         }
       }
 
+      // 4. Delete the user's authentication account
       await deleteUser(user);
-      alert("Your account has been permanently deleted.");
+
+      alert("✅ Your account has been permanently deleted.");
       navigate("/templates", { replace: true });
-    } catch (err) {
-      if (err.code === "auth/wrong-password") {
-        alert("The password you entered is incorrect.");
-      } else {
-        alert("Failed to delete account: " + err.message);
-      }
+    } catch (error) {
+      console.error("Error in account deletion process:", error);
+      throw error;
     }
   };
 
@@ -1460,8 +1543,6 @@ console.log("Searching Contributors with variation:", foundUserId);
 
   return (
     <>
-     
-
       {/* Billing History Modal */}
       {showBillingModal && (
         <div className="modal-overlay" onClick={handleCloseBillingModal}>
