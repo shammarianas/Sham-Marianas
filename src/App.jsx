@@ -12,6 +12,8 @@ import Footer from "./Components/Footer";
 import Upload from "./Pages/Upload";
 import Cart from "./Pages/Cart";
 import Login from "./Pages/Login/Login";
+import AutoLoginTeam from "./Pages/Login/AutoLoginTeam";
+
 import Checkout from "./Pages/Checkout";
 import { FilterProvider } from "./Context/FilterContext";
 import Profile from "./Pages/Profile";
@@ -89,6 +91,8 @@ export const AppRoutes = () => (
   <Routes>
     {/* Static routes first */}
     <Route path="/Login" element={<Login />} />
+    <Route path="/auto-login-team" element={<AutoLoginTeam />} />
+
     <Route path="/login" element={<Login />} />
     <Route path="/ContributorLogin" element={<ContributorLogin />} />
     <Route path="/ContributorDashboard" element={<ContributorDashboard />} />
@@ -136,7 +140,10 @@ export const AppRoutes = () => (
     <Route path="/services/demo" element={<Demo />} />
     <Route path="/error" element={<Error />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-    <Route path="/privacy-policy-template" element={<PrivacyPolicyTemplate />} />
+    <Route
+      path="/privacy-policy-template"
+      element={<PrivacyPolicyTemplate />}
+    />
     <Route path="/terms-and-conditions" element={<TermsandCondition />} />
     <Route
       path="/terms-condition-template"
