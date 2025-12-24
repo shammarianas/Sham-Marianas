@@ -1053,22 +1053,7 @@ const AdminDashboard = () => {
             color: white;
           }
           
-          .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #f72585;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border: 2px solid #121212;
-          }
+        
           
           .header-btn {
             position: relative;

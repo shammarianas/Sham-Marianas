@@ -19,7 +19,7 @@ function Footer() {
     path === "/terms-condition-template" ||
     path === "/seller-guideline" ||
     path === "/contributor-policies" ||
-    path === "/pricing-and-fees" ||
+    path === "/prices-and-fees" ||
     path.startsWith("/error") ||
     path.startsWith("/category/fonts") ||
     path.startsWith("/category/video-templates") ||
@@ -140,7 +140,7 @@ function Footer() {
                         <Link to="/seller-guideline">Seller Guidelines</Link>
                       </li>
                       <li className="mb-15">
-                        <Link to="/pricing-and-fees">Pricing & Fees</Link>
+                        <Link to="/prices-and-fees">Pricing & Fees</Link>
                       </li>
                     </ul>
                   </div>
