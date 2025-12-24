@@ -568,7 +568,7 @@ const SellerEarning = () => {
                 <th>Pending Payout</th>
                 <th>Completed Payouts</th>
                 <th>Total Uploads</th>
-                <th>Avg. Value/Upload</th>
+                {/* <th>Avg. Value/Upload</th> */}
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -618,12 +618,12 @@ const SellerEarning = () => {
                       {contributor.totalSales} uploads
                     </div>
                   </td>
-                  <td>
+                  {/* <td>
                     <div className="comp-dis">
                       <FiDollarSign style={{ marginRight: "4px" }} />
                       {formatCurrency(contributor.avgOrderValue)}
                     </div>
-                  </td>
+                  </td> */}
                   <td>{getStatusBadge(contributor.status)}</td>
                   <td>
                     <div className="report-actions">

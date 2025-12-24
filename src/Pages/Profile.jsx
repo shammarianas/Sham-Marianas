@@ -83,7 +83,8 @@ const Profile = () => {
   const [inviting, setInviting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState([]);
 
-  const isOwnProfile = currentUser?.uid === userId;
+const isOwnProfile = currentUser?.uid && userId && currentUser.uid === userId;
+
 
   // ✅ SEO Function - Optimized
   const getProfileSEO = (userData, userItems = []) => {
@@ -1458,57 +1459,6 @@ const Profile = () => {
 
   return (
     <>
-      {/* ✅ SEO Component - Replace Helmet */}
-      {/* {seoData ? <SEO {...seoData} /> : <SEO {...getLoadingSEO()} />} */}
-
-      {/* <Helmet>
-        <title>{getDisplayName()} | shammarianas</title>
-        <meta
-          name="description"
-          content={`View ${getDisplayName()}'s profile on shammarianas`}
-        />
-        <meta
-          property="og:title"
-          content={`${getDisplayName()} | shammarianas`}
-        />
-        <meta
-          property="og:description"
-          content={`View ${getDisplayName()}'s profile on shammarianas`}
-        />
-        <meta
-          property="og:image"
-          content={
-            user?.profilePic ||
-            `https://avatar.iran.liara.run/username?username=${getInitials()}`
-          }
-        />
-        <meta
-          property="og:url"
-          content={`https://shammarianas.vercel.app/#/profile/${userId}`}
-        />
-        <meta
-          name="twitter:title"
-          content={`${getDisplayName()} | shammarianas`}
-        />
-        <meta
-          name="twitter:description"
-          content={`View ${getDisplayName()}'s profile on shammarianas`}
-        />
-        <meta
-          name="twitter:image"
-          content={
-            user?.profilePic ||
-            `https://avatar.iran.liara.run/username?username=${getInitials()}`
-          }
-        />
-        <meta name="twitter:card" content="summary_large_image" />
-        <link
-          rel="canonical"
-          href={`https://shammarianas.me/#/${user?.username}`}
-        />
-      </Helmet> */}
-
-      {/* Billing History Modal */}
       {showBillingModal && (
         <div className="modal-overlay" onClick={handleCloseBillingModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
