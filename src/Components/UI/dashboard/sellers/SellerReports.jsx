@@ -972,7 +972,7 @@ const SellerReports = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">Reports generating</div>
-            <div className="report-stat-trend">
+            <div className="report-stat-trend positive">
               +
               {((stats.generatingReports / stats.totalReports) * 100).toFixed(
                 1
@@ -1003,7 +1003,7 @@ const SellerReports = () => {
         </div>
       </div>
 
-      {/* Revenue Stats */}
+     
       {/* Revenue Stats */}
       <div className="reports-stats-grid">
         <div className="report-stat-card revenue">
