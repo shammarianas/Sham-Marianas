@@ -28,6 +28,16 @@ const Earnings = () => {
   const [selectedAnalytics, setSelectedAnalytics] = useState(null);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // ✅ ADD GROWTH DATA STATE
+  const [growthData, setGrowthData] = useState({
+    platformEarningsGrowth: 0,
+    sellerPayoutsGrowth: 0,
+    avgTransactionGrowth: 0,
+    monthlyGrowth: {},
+    categoryGrowth: {}
+  });
+  
   const [earningsData, setEarningsData] = useState({
     overview: {
       totalRevenue: 0,
@@ -48,133 +58,84 @@ const Earnings = () => {
     },
   });
 
-  // ✅ Dynamic data fetching from Firebase - UPDATED to use Purchases collection
-  // ✅ Dynamic data fetching from Firebase - FIXED VERSION
-  // ✅ Dynamic data fetching from Firebase - SIMPLIFIED FIXED VERSION
-  // ✅ Dynamic data fetching from Firebase - FINAL FIXED VERSION
-  // Updated fetchEarningsData function
+  // ✅ REAL GROWTH CALCULATION FUNCTION
+  const calculateActualGrowth = (currentData, previousData) => {
+    if (!previousData || previousData === 0) return 0;
+    
+    const current = currentData || 0;
+    const previous = previousData || 0;
+    
+    if (previous === 0) return current > 0 ? 100 : 0;
+    
+    const growth = ((current - previous) / previous) * 100;
+    return parseFloat(growth.toFixed(1));
+  };
+
+  // ✅ UPDATED FETCH FUNCTION WITH REAL GROWTH CALCULATIONS
   useEffect(() => {
     const fetchEarningsData = async () => {
       setLoading(true);
       try {
         console.log("📊 Fetching earnings data...");
 
-        // 1️⃣ Get PlatformStats for total revenue and platform earnings
+        // 1️⃣ GET PLATFORMSTATS (Previous vs Current compare)
         const platformStatsDoc = await getDocs(collection(db, "PlatformStats"));
         let platformStats = {};
         let platformEarnings = 0;
         let subscriptionRevenue = 0;
         let perDownloadRevenue = 0;
+        let previousPlatformEarnings = 0;
 
         if (!platformStatsDoc.empty) {
           platformStats = platformStatsDoc.docs[0].data();
           console.log("📈 PlatformStats found:", platformStats);
 
-          // Calculate platform earnings from PlatformStats
-          subscriptionRevenue =
-            parseFloat(platformStats.subscriptionRevenue) || 0;
-          perDownloadRevenue =
-            parseFloat(platformStats.perDownloadRevenue) || 0;
+          // Current platform earnings
+          subscriptionRevenue = parseFloat(platformStats.subscriptionRevenue) || 0;
+          perDownloadRevenue = parseFloat(platformStats.perDownloadRevenue) || 0;
           platformEarnings = subscriptionRevenue + perDownloadRevenue;
+
+          // Previous platform earnings (if available)
+          previousPlatformEarnings = parseFloat(platformStats.previousMonthEarnings) || 
+                                    parseFloat(platformStats.lastMonthEarnings) || 0;
         }
 
-        // 2️⃣ Get Transactions collection for average transaction value
-        const transactionsSnapshot = await getDocs(
+        // 2️⃣ GET TRANSACTIONS for current and previous months
+        const now = new Date();
+        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+        // Get all transactions for calculations
+        const allTransactionsSnapshot = await getDocs(
           query(collection(db, "Transactions"), orderBy("timestamp", "desc"))
         );
 
-        // 3️⃣ Get Contributors for seller pendingEarnings (Seller Payouts)
-        const contributorsSnapshot = await getDocs(
-          collection(db, "Contributors")
-        );
-
-        let totalSellerPayouts = 0;
-        const contributorsData = [];
-
-        contributorsSnapshot.forEach((doc) => {
-          const contributor = doc.data();
-          const pendingEarnings = parseFloat(contributor.pendingEarnings) || 0;
-          totalSellerPayouts += pendingEarnings;
-
-          contributorsData.push({
-            id: doc.id,
-            name:
-              contributor.fullName || contributor.username || "Unknown Seller",
-            pendingEarnings: pendingEarnings,
-            totalEarnings: parseFloat(contributor.totalEarnings) || 0,
-          });
-        });
-
-        // 4️⃣ Get Purchases collection for category performance
-        const purchasesSnapshot = await getDocs(
-          query(collection(db, "Purchases"), orderBy("timestamp", "desc"))
-        );
-
-        console.log(`🛒 Purchases found: ${purchasesSnapshot.size}`);
-
-        // Calculate category performance from Purchases
-        const categoryMap = new Map();
-        let totalCategoryRevenue = 0;
-
-        purchasesSnapshot.forEach((doc) => {
-          const purchase = doc.data();
-          const amount = parseFloat(purchase.amount) || 0;
-          const category = purchase.assetCategory || "Uncategorized";
-
-          if (amount > 0) {
-            totalCategoryRevenue += amount;
-
-            const current = categoryMap.get(category) || {
-              revenue: 0,
-              count: 0,
-            };
-
-            categoryMap.set(category, {
-              revenue: current.revenue + amount,
-              count: current.count + 1,
-            });
-          }
-        });
-
-        // Convert category map to array and calculate percentages
-        const categories = Array.from(categoryMap.entries())
-          .map(([name, data]) => {
-            const percentage =
-              totalCategoryRevenue > 0
-                ? Math.round((data.revenue / totalCategoryRevenue) * 100)
-                : 0;
-
-            // Calculate growth (simplified - you can implement actual growth logic)
-            const growth = Math.floor(Math.random() * 30) - 10; // Random between -10% to +20%
-
-            return {
-              name: name,
-              revenue: Math.round(data.revenue * 100) / 100,
-              count: data.count,
-              percentage: percentage,
-              growth: growth,
-            };
-          })
-          .sort((a, b) => b.revenue - a.revenue) // Sort by revenue descending
-          .slice(0, 6); // Show top 6 categories
-
-        console.log("📊 Categories calculated:", categories);
-
-        // 5️⃣ Calculate total revenue (Platform Earnings + Seller Payouts)
-        const totalRevenue = platformEarnings + totalSellerPayouts;
-
-        // ✅ Calculate average transaction value from Transactions
-        let transactionSum = 0;
-        let transactionCount = 0;
+        // Calculate current vs previous month data
+        let currentMonthTotal = 0;
+        let currentMonthCount = 0;
+        let previousMonthTotal = 0;
+        let previousMonthCount = 0;
         const transactionsData = [];
 
-        transactionsSnapshot.forEach((doc) => {
+        allTransactionsSnapshot.forEach((doc) => {
           const transaction = doc.data();
           const amount = parseFloat(transaction.amount) || 0;
-
-          if (amount > 0) {
-            transactionSum += amount;
-            transactionCount++;
+          const timestamp = transaction.timestamp;
+          
+          if (timestamp && amount > 0) {
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            
+            // Check if transaction is in current month
+            if (date >= currentMonthStart && date <= now) {
+              currentMonthTotal += amount;
+              currentMonthCount++;
+            }
+            // Check if transaction is in previous month
+            else if (date >= previousMonthStart && date <= previousMonthEnd) {
+              previousMonthTotal += amount;
+              previousMonthCount++;
+            }
           }
 
           transactionsData.push({
@@ -183,19 +144,117 @@ const Earnings = () => {
             amount: amount,
             userId: transaction.userId || "Unknown",
             plan: transaction.plan || "N/A",
-            timestamp: transaction.timestamp,
+            timestamp: timestamp,
             status: transaction.status || "completed",
           });
         });
 
-        const avgTransactionValue =
-          transactionCount > 0
-            ? Math.round((transactionSum / transactionCount) * 100) / 100
-            : 0;
+        const avgTransactionValue = currentMonthCount > 0 ? 
+          Math.round((currentMonthTotal / currentMonthCount) * 100) / 100 : 0;
+        
+        const previousAvgTransactionValue = previousMonthCount > 0 ? 
+          Math.round((previousMonthTotal / previousMonthCount) * 100) / 100 : 0;
 
-        // ✅ Calculate monthly data from Transactions
+        // 3️⃣ GET CONTRIBUTORS for seller payouts growth
+        const contributorsSnapshot = await getDocs(collection(db, "Contributors"));
+        let totalSellerPayouts = 0;
+        let previousSellerPayouts = 0;
+        const contributorsData = [];
+
+        contributorsSnapshot.forEach((doc) => {
+          const contributor = doc.data();
+          const pendingEarnings = parseFloat(contributor.pendingEarnings) || 0;
+          totalSellerPayouts += pendingEarnings;
+          
+          // Previous earnings (if available)
+          previousSellerPayouts += parseFloat(contributor.previousMonthEarnings) || 
+                                  parseFloat(contributor.lastMonthEarnings) || 0;
+
+          contributorsData.push({
+            id: doc.id,
+            name: contributor.fullName || contributor.username || "Unknown Seller",
+            pendingEarnings: pendingEarnings,
+            totalEarnings: parseFloat(contributor.totalEarnings) || 0,
+            previousEarnings: parseFloat(contributor.previousMonthEarnings) || 0,
+          });
+        });
+
+        // 4️⃣ GET PURCHASES for category growth (current vs previous month)
+        const purchasesSnapshot = await getDocs(
+          query(collection(db, "Purchases"), orderBy("timestamp", "desc"))
+        );
+
+        console.log(`🛒 Purchases found: ${purchasesSnapshot.size}`);
+
+        // Separate current and previous month category data
+        const currentMonthCategoryMap = new Map();
+        const previousMonthCategoryMap = new Map();
+        let totalCategoryRevenue = 0;
+
+        purchasesSnapshot.forEach((doc) => {
+          const purchase = doc.data();
+          const amount = parseFloat(purchase.amount) || 0;
+          const category = purchase.assetCategory || "Uncategorized";
+          const timestamp = purchase.timestamp;
+
+          if (timestamp && amount > 0) {
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            
+            if (date >= currentMonthStart && date <= now) {
+              totalCategoryRevenue += amount;
+              const current = currentMonthCategoryMap.get(category) || { revenue: 0, count: 0 };
+              currentMonthCategoryMap.set(category, {
+                revenue: current.revenue + amount,
+                count: current.count + 1,
+              });
+            } else if (date >= previousMonthStart && date <= previousMonthEnd) {
+              const previous = previousMonthCategoryMap.get(category) || { revenue: 0, count: 0 };
+              previousMonthCategoryMap.set(category, {
+                revenue: previous.revenue + amount,
+                count: previous.count + 1,
+              });
+            }
+          }
+        });
+
+        // Calculate REAL category growth
+        const categories = Array.from(currentMonthCategoryMap.entries())
+          .map(([name, currentData]) => {
+            const previousData = previousMonthCategoryMap.get(name) || { revenue: 0, count: 0 };
+            const previousRevenue = previousData.revenue;
+            
+            // REAL growth calculation
+            const growth = previousRevenue > 0 ? 
+              ((currentData.revenue - previousRevenue) / previousRevenue) * 100 :
+              currentData.revenue > 0 ? 100 : 0;
+
+            const percentage = totalCategoryRevenue > 0 ? 
+              Math.round((currentData.revenue / totalCategoryRevenue) * 100) : 0;
+
+            return {
+              name: name,
+              revenue: Math.round(currentData.revenue * 100) / 100,
+              count: currentData.count,
+              percentage: percentage,
+              growth: parseFloat(growth.toFixed(1)), // REAL growth
+              previousRevenue: Math.round(previousRevenue * 100) / 100,
+            };
+          })
+          .sort((a, b) => b.revenue - a.revenue)
+          .slice(0, 6);
+
+        console.log("📊 Categories calculated:", categories);
+
+        // 5️⃣ Calculate total revenue
+        const totalRevenue = platformEarnings + totalSellerPayouts;
+        const previousTotalRevenue = previousPlatformEarnings + previousSellerPayouts;
+
+        // 6️⃣ Calculate monthly data from Transactions
         const monthlyData = new Map();
-        transactionsSnapshot.forEach((doc) => {
+        const monthlyGrowthData = {};
+        
+        // Group transactions by month
+        allTransactionsSnapshot.forEach((doc) => {
           const transaction = doc.data();
           const amount = parseFloat(transaction.amount) || 0;
 
@@ -218,7 +277,7 @@ const Earnings = () => {
           }
         });
 
-        // ✅ Prepare monthly data
+        // Prepare monthly data with growth
         const monthly = Array.from(monthlyData.entries())
           .sort((a, b) => {
             const monthA = new Date(a[0]);
@@ -227,14 +286,11 @@ const Earnings = () => {
           })
           .slice(0, 6)
           .map(([month, data], index, array) => {
-            const prevRevenue =
-              index < array.length - 1
-                ? array[index + 1][1].revenue
-                : data.revenue;
-            const growth =
-              prevRevenue > 0
-                ? ((data.revenue - prevRevenue) / prevRevenue) * 100
-                : 0;
+            const prevRevenue = index < array.length - 1 ? 
+              array[index + 1][1].revenue : data.revenue;
+            
+            const growth = prevRevenue > 0 ? 
+              ((data.revenue - prevRevenue) / prevRevenue) * 100 : 0;
 
             return {
               month: month.split(" ")[0],
@@ -245,37 +301,52 @@ const Earnings = () => {
             };
           });
 
-        // ✅ Calculate growth rate
-        const overallGrowth =
-          monthly.length > 1
-            ? monthly.reduce((sum, month) => sum + month.growth, 0) /
-              monthly.length
-            : 0;
+        // 7️⃣ Calculate overall growth rate (average of monthly growths)
+        const overallGrowth = monthly.length > 1 ? 
+          monthly.reduce((sum, month) => sum + month.growth, 0) / monthly.length : 0;
 
-        // ✅ Calculate percentages
-        const platformPercentage =
-          totalRevenue > 0
-            ? Math.round((platformEarnings / totalRevenue) * 100)
-            : 0;
-        const sellerPercentage =
-          totalRevenue > 0
-            ? Math.round((totalSellerPayouts / totalRevenue) * 100)
-            : 0;
+        // 8️⃣ Calculate percentages
+        const platformPercentage = totalRevenue > 0 ? 
+          Math.round((platformEarnings / totalRevenue) * 100) : 0;
+        const sellerPercentage = totalRevenue > 0 ? 
+          Math.round((totalSellerPayouts / totalRevenue) * 100) : 0;
 
-        // ✅ Sort contributors by pendingEarnings (top sellers)
+        // 9️⃣ Sort contributors by pendingEarnings (top sellers)
         const topSellers = [...contributorsData]
           .filter((seller) => seller.pendingEarnings > 0)
           .sort((a, b) => b.pendingEarnings - a.pendingEarnings)
           .slice(0, 5)
-          .map((seller) => ({
-            id: seller.id,
-            name: seller.name,
-            earnings: Math.round(seller.pendingEarnings * 100) / 100,
-            totalEarnings: Math.round(seller.totalEarnings * 100) / 100,
-            sales: Math.floor(seller.pendingEarnings / 10),
-          }));
+          .map((seller) => {
+            // Calculate seller growth
+            const sellerGrowth = seller.previousEarnings > 0 ? 
+              ((seller.pendingEarnings - seller.previousEarnings) / seller.previousEarnings) * 100 : 
+              seller.pendingEarnings > 0 ? 100 : 0;
 
-        // ✅ Update earnings data - ADD CATEGORIES HERE
+            return {
+              id: seller.id,
+              name: seller.name,
+              earnings: Math.round(seller.pendingEarnings * 100) / 100,
+              totalEarnings: Math.round(seller.totalEarnings * 100) / 100,
+              sales: Math.floor(seller.pendingEarnings / 10),
+              growth: parseFloat(sellerGrowth.toFixed(1)), // REAL seller growth
+            };
+          });
+
+        // 🔟 SET DYNAMIC GROWTH DATA
+        setGrowthData({
+          platformEarningsGrowth: calculateActualGrowth(platformEarnings, previousPlatformEarnings),
+          sellerPayoutsGrowth: calculateActualGrowth(totalSellerPayouts, previousSellerPayouts),
+          avgTransactionGrowth: calculateActualGrowth(avgTransactionValue, previousAvgTransactionValue),
+          totalRevenueGrowth: calculateActualGrowth(totalRevenue, previousTotalRevenue),
+          monthlyGrowth: Object.fromEntries(
+            monthly.map(m => [`${m.month}-${m.year}`, m.growth])
+          ),
+          categoryGrowth: Object.fromEntries(
+            categories.map(cat => [cat.name, cat.growth])
+          )
+        });
+
+        // ✅ Update earnings data with ALL DYNAMIC VALUES
         setEarningsData({
           overview: {
             totalRevenue: Math.round(totalRevenue * 100) / 100,
@@ -292,16 +363,22 @@ const Earnings = () => {
             sellerPercentage: sellerPercentage,
             subscriptionRevenue: Math.round(subscriptionRevenue * 100) / 100,
             perDownloadRevenue: Math.round(perDownloadRevenue * 100) / 100,
-            totalTransactions: transactionCount,
+            totalTransactions: currentMonthCount,
+            // Add previous month data for future comparisons
+            previousMonthRevenue: Math.round(previousTotalRevenue * 100) / 100,
+            previousPlatformEarnings: Math.round(previousPlatformEarnings * 100) / 100,
+            previousSellerPayouts: Math.round(previousSellerPayouts * 100) / 100,
           },
           monthly: monthly,
-          categories: categories, // Added categories
+          categories: categories,
           topSellers: topSellers,
           recentTransactions: transactionsData.slice(0, 10),
         });
 
         console.log("✅ Earnings data loaded successfully!");
+        console.log("📈 Growth Data:", growthData);
         console.log(`📊 Total Categories: ${categories.length}`);
+
       } catch (error) {
         console.error("❌ Error fetching earnings data:", error);
       } finally {
@@ -311,6 +388,14 @@ const Earnings = () => {
 
     fetchEarningsData();
   }, []);
+
+  // ✅ Helper function for monthly growth calculation
+  const calculateMonthlyGrowth = (currentMonth, previousMonth) => {
+    if (!previousMonth || previousMonth.revenue === 0) return 0;
+    
+    return ((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue) * 100;
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -326,6 +411,7 @@ const Earnings = () => {
       monthly: earningsData.monthly,
       categories: earningsData.categories,
       topSellers: earningsData.topSellers,
+      growthData: growthData,
     };
   };
 
@@ -433,7 +519,7 @@ const Earnings = () => {
         </div>
       </div>
 
-      {/* Statistics Cards - UPDATED with actual percentages */}
+      {/* Statistics Cards - FULLY DYNAMIC */}
       <div className="reports-stats-grid">
         {/* Total Revenue */}
         <div className="report-stat-card primary">
@@ -450,7 +536,8 @@ const Earnings = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">Gross platform revenue</div>
-            {getTrendBadge(earningsData.overview.growthRate)}
+            {/* ✅ DYNAMIC GROWTH */}
+            {getTrendBadge(growthData.totalRevenueGrowth || earningsData.overview.growthRate)}
           </div>
         </div>
 
@@ -469,10 +556,10 @@ const Earnings = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              {earningsData.overview.platformPercentage || 20}% platform
-              commission
+              {earningsData.overview.platformPercentage || 0}% platform commission
             </div>
-            {getTrendBadge(18.3)}
+            {/* ✅ DYNAMIC GROWTH - NO STATIC VALUE */}
+            {getTrendBadge(growthData.platformEarningsGrowth)}
           </div>
         </div>
 
@@ -491,10 +578,10 @@ const Earnings = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">
-              {earningsData.overview.sellerPercentage || 80}% distributed to
-              sellers
+              {earningsData.overview.sellerPercentage || 0}% distributed to sellers
             </div>
-            {getTrendBadge(14.2)}
+            {/* ✅ DYNAMIC GROWTH - NO STATIC VALUE */}
+            {getTrendBadge(growthData.sellerPayoutsGrowth)}
           </div>
         </div>
 
@@ -513,7 +600,8 @@ const Earnings = () => {
           </div>
           <div className="report-stat-content">
             <div className="report-stat-subtext">Average order value</div>
-            {getTrendBadge(5.7)}
+            {/* ✅ DYNAMIC GROWTH - NO STATIC VALUE */}
+            {getTrendBadge(growthData.avgTransactionGrowth)}
           </div>
         </div>
       </div>
@@ -540,7 +628,6 @@ const Earnings = () => {
         </div>
 
         <div className="filter-controls-grid">
-          {/* Add a Transactions tab button */}
           <div className="analytics-tabs">
             <button
               className={`tab-button ${
@@ -602,7 +689,7 @@ const Earnings = () => {
         </div>
       </div>
 
-      {/* Overview Tab - UPDATED with actual percentages */}
+      {/* Overview Tab - FULLY DYNAMIC */}
       {activeTab === "overview" && (
         <div className="reports-content-grid">
           {/* Revenue Distribution */}
@@ -614,7 +701,7 @@ const Earnings = () => {
               </h3>
               <div className="satisfaction-score">
                 <span className="score-value">
-                  {earningsData.overview.platformPercentage || 20}%
+                  {earningsData.overview.platformPercentage || 0}%
                 </span>
                 <span className="score-label">Platform Cut</span>
               </div>
@@ -625,8 +712,7 @@ const Earnings = () => {
                   <div className="pie-chart">
                     <div className="pie-chart-center">
                       <div className="pie-chart-label">
-                        {earningsData.overview.sellerPercentage || 80}% Seller
-                        Share
+                        {earningsData.overview.sellerPercentage || 0}% Seller Share
                       </div>
                     </div>
                   </div>
@@ -638,7 +724,7 @@ const Earnings = () => {
                     <div className="pie-label-text">
                       <span className="pie-label-name">Seller Payouts</span>
                       <span className="pie-label-percentage">
-                        {earningsData.overview.sellerPercentage || 80}% (
+                        {earningsData.overview.sellerPercentage || 0}% (
                         {formatCurrency(earningsData.overview.sellerPayouts)})
                       </span>
                     </div>
@@ -649,9 +735,8 @@ const Earnings = () => {
                     <div className="pie-label-text">
                       <span className="pie-label-name">Platform Earnings</span>
                       <span className="pie-label-percentage">
-                        {earningsData.overview.platformPercentage || 20}% (
-                        {formatCurrency(earningsData.overview.platformEarnings)}
-                        )
+                        {earningsData.overview.platformPercentage || 0}% (
+                        {formatCurrency(earningsData.overview.platformEarnings)})
                       </span>
                     </div>
                   </div>
@@ -660,8 +745,7 @@ const Earnings = () => {
             </div>
           </div>
 
-          {/* Category Performance */}
-          {/* Category Performance - UPDATED with real data */}
+          {/* Category Performance - FULLY DYNAMIC */}
           <div className="reports-categories-card">
             <div className="reports-categories-header">
               <h3 className="panel-title">
@@ -678,15 +762,12 @@ const Earnings = () => {
                   <div className="category-header">
                     <span className="category-name">{category.name}</span>
                     <span className="category-count">
-                      {category.percentage}% ({formatCurrency(category.revenue)}
-                      )
+                      {category.percentage}% ({formatCurrency(category.revenue)})
                     </span>
                   </div>
                   <div className="category-progress-bar">
                     <div
-                      className={`category-progress-fill ${getTrendColor(
-                        category.growth
-                      )}`}
+                      className={`category-progress-fill ${getTrendColor(category.growth)}`}
                       style={{ width: `${category.percentage}%` }}
                     ></div>
                   </div>
@@ -700,8 +781,7 @@ const Earnings = () => {
                   </div>
                 </div>
               ))}
-              {(!earningsData.categories ||
-                earningsData.categories.length === 0) && (
+              {(!earningsData.categories || earningsData.categories.length === 0) && (
                 <div className="no-categories">
                   <FiPackage className="no-categories-icon" />
                   <p>No category data available from purchases</p>
@@ -712,7 +792,7 @@ const Earnings = () => {
         </div>
       )}
 
-      {/* Revenue Tab - FIXED with null check */}
+      {/* Revenue Tab - DYNAMIC */}
       {activeTab === "revenue" && (
         <div className="recent-reports-card">
           <div className="recent-reports-header">
@@ -768,8 +848,7 @@ const Earnings = () => {
                     <td>{getTrendBadge(month.growth || 0)}</td>
                   </tr>
                 ))}
-                {(!earningsData.monthly ||
-                  earningsData.monthly.length === 0) && (
+                {(!earningsData.monthly || earningsData.monthly.length === 0) && (
                   <tr>
                     <td colSpan="4" className="no-data">
                       <div className="no-data-content">
@@ -784,7 +863,8 @@ const Earnings = () => {
           </div>
         </div>
       )}
-      {/* Transactions Tab (Replaces Payouts Tab) */}
+
+      {/* Transactions Tab */}
       {activeTab === "transactions" && (
         <div className="recent-reports-card">
           <div className="recent-reports-header">
@@ -793,8 +873,7 @@ const Earnings = () => {
               Recent Transactions
             </h3>
             <div className="time-range-info">
-              Showing {earningsData.recentTransactions?.length || 0}{" "}
-              transactions
+              Showing {earningsData.recentTransactions?.length || 0} transactions
             </div>
           </div>
           <div className="recent-reports-body">
@@ -835,7 +914,7 @@ const Earnings = () => {
                       </td>
                       <td>
                         <div className="user-id">
-                          {transaction.userId.substring(0, 10)}...
+                          {transaction.userId?.substring(0, 10) || "Unknown"}...
                         </div>
                       </td>
                       <td>{transaction.plan}</td>
@@ -849,8 +928,7 @@ const Earnings = () => {
                     </tr>
                   );
                 })}
-                {(!earningsData.recentTransactions ||
-                  earningsData.recentTransactions.length === 0) && (
+                {(!earningsData.recentTransactions || earningsData.recentTransactions.length === 0) && (
                   <tr>
                     <td colSpan="6" className="no-data">
                       <div className="no-data-content">
@@ -866,7 +944,7 @@ const Earnings = () => {
         </div>
       )}
 
-      {/* Analytics Tab */}
+      {/* Analytics Tab - UPDATED with dynamic data */}
       {activeTab === "analytics" && (
         <div className="reports-content-grid">
           <div className="reports-chart-card">
@@ -879,29 +957,31 @@ const Earnings = () => {
                 <span className="score-value">
                   +{earningsData.overview.growthRate}%
                 </span>
-                <span className="score-label">YoY Growth</span>
+                <span className="score-label">Monthly Growth</span>
               </div>
             </div>
             <div className="reports-chart-body">
               <div className="performance-metrics-grid">
                 <div className="performance-metric">
                   <div className="metric-header">
-                    <span className="metric-name">
-                      Monthly Recurring Revenue
-                    </span>
+                    <span className="metric-name">Monthly Recurring Revenue</span>
                     <span className="metric-status improving">Growing</span>
                   </div>
                   <div className="metric-value">
-                    {formatCurrency(earningsData.overview.totalRevenue / 6)}
+                    {formatCurrency(earningsData.overview.totalRevenue)}
                   </div>
                   <div className="metric-target">
-                    Target: {formatCurrency(20000)}
+                    Target: {formatCurrency(earningsData.overview.previousMonthRevenue * 1.2 || 20000)}
                   </div>
                   <div className="metric-progress">
                     <div className="progress-bar">
                       <div
                         className="progress-fill"
-                        style={{ width: "85%" }}
+                        style={{ 
+                          width: `${Math.min(100, 
+                            (earningsData.overview.totalRevenue / 
+                            (earningsData.overview.previousMonthRevenue * 1.2 || 20000)) * 100)}%` 
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -912,7 +992,9 @@ const Earnings = () => {
                     <span className="metric-name">Customer Lifetime Value</span>
                     <span className="metric-status improving">Increasing</span>
                   </div>
-                  <div className="metric-value">{formatCurrency(450)}</div>
+                  <div className="metric-value">
+                    {formatCurrency(earningsData.overview.avgTransactionValue * 3)}
+                  </div>
                   <div className="metric-target">
                     Target: {formatCurrency(500)}
                   </div>
@@ -920,7 +1002,10 @@ const Earnings = () => {
                     <div className="progress-bar">
                       <div
                         className="progress-fill"
-                        style={{ width: "90%" }}
+                        style={{ 
+                          width: `${Math.min(100, 
+                            ((earningsData.overview.avgTransactionValue * 3) / 500) * 100)}%` 
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -931,13 +1016,21 @@ const Earnings = () => {
                     <span className="metric-name">Payout Efficiency</span>
                     <span className="metric-status excellent">Optimal</span>
                   </div>
-                  <div className="metric-value">99.2%</div>
+                  <div className="metric-value">
+                    {earningsData.overview.sellerPayouts > 0 ? 
+                      Math.round((earningsData.overview.completedPayouts / earningsData.overview.sellerPayouts) * 100) + '%' : 
+                      '0%'}
+                  </div>
                   <div className="metric-target">Target: 98%</div>
                   <div className="metric-progress">
                     <div className="progress-bar">
                       <div
                         className="progress-fill"
-                        style={{ width: "99.2%" }}
+                        style={{ 
+                          width: `${Math.min(100, 
+                            (earningsData.overview.completedPayouts / 
+                            (earningsData.overview.sellerPayouts || 1)) * 100)}%` 
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -946,7 +1039,7 @@ const Earnings = () => {
             </div>
           </div>
 
-          {/* Category Performance - FIXED with null check */}
+          {/* Category Performance */}
           <div className="reports-categories-card">
             <div className="reports-categories-header">
               <h3 className="panel-title">
@@ -962,15 +1055,12 @@ const Earnings = () => {
                       {category.name || "Unknown"}
                     </span>
                     <span className="category-count">
-                      {category.percentage || 0}% (
-                      {formatCurrency(category.revenue || 0)})
+                      {category.percentage || 0}% ({formatCurrency(category.revenue || 0)})
                     </span>
                   </div>
                   <div className="category-progress-bar">
                     <div
-                      className={`category-progress-fill ${getTrendColor(
-                        category.growth || 0
-                      )}`}
+                      className={`category-progress-fill ${getTrendColor(category.growth || 0)}`}
                       style={{ width: `${category.percentage || 0}%` }}
                     ></div>
                   </div>
@@ -979,8 +1069,7 @@ const Earnings = () => {
                   </div>
                 </div>
               ))}
-              {(!earningsData.categories ||
-                earningsData.categories.length === 0) && (
+              {(!earningsData.categories || earningsData.categories.length === 0) && (
                 <div className="no-categories">
                   <p>No category data available</p>
                 </div>

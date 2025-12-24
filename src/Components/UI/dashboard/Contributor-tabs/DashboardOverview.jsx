@@ -742,7 +742,7 @@ const DashboardOverview = ({
                   <Link to="/contributor-policies">Contributer Terms & Conditions</Link>
                 </li>
                 <li className="mb-15">
-                  <Link to="/pricing-and-fees">Pricing & Fees</Link>
+                  <Link to="/prices-and-fees">Prices & Fees</Link>
                 </li>
               </ul>
             </div>
