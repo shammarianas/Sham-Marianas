@@ -28,8 +28,9 @@ import { Helmet } from "react-helmet-async";
 // Add these URLs at the top of your Profile.js or in a config file
 const CLOUD_FUNCTIONS = {
   addTeamMember: "https://addteammember-xc6vtzxljq-uc.a.run.app",
-  autoAcceptTeamInvitation:
-    "https://us-central1-sham-marianas.cloudfunctions.net/autoAcceptTeamInvitation",
+  oneClickJoinTeam:
+    "https://us-central1-sham-marianas.cloudfunctions.net/oneClickJoinTeam",
+
   getTeamDetails:
     "https://us-central1-sham-marianas.cloudfunctions.net/getTeamDetails",
   getPendingInvitations:

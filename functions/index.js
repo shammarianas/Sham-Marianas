@@ -470,7 +470,7 @@ exports.stripeWebhook = functions.https.onRequest(
                     monthlyReset: new Date(
                       now + 30 * 24 * 60 * 60 * 1000
                     ).toISOString(),
-                    price: 7 * teamSize, // $7 × teamSize
+                    price: 8 * teamSize, // $7 × teamSize
                     perDownloadValue: PER_DOWNLOAD_VALUE_TEAM, // 🆕 Added
                   },
                   updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -1621,9 +1621,6 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
   }
 });
 // =============================
-// MONTHLY RESET FUNCTION
-// =============================
-
 exports.addTeamMember = functions.https.onRequest(async (req, res) => {
   // CORS headers
   res.set("Access-Control-Allow-Origin", "*");
@@ -1735,6 +1732,7 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       .limit(1)
       .get();
 
+    // Check if user already has subscription
     if (!existingUserQuery.empty) {
       const existingUser = existingUserQuery.docs[0].data();
       const existingUserSubscription = existingUser.subscription || {};
@@ -1757,48 +1755,78 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       }
     }
 
-    // Generate invite code
-    const inviteCode = Math.random().toString(36).substr(2, 8).toUpperCase();
-    const inviteId = `invite_${Date.now()}_${inviteCode}`;
+    // Check if invitation already exists for this email
+    const existingInviteQuery = await db
+      .collection("TeamInvites")
+      .where("teamId", "==", teamId)
+      .where("inviteEmail", "==", memberEmail)
+      .where("status", "==", "pending")
+      .limit(1)
+      .get();
 
-    // For local testing - create direct link
+    if (!existingInviteQuery.empty) {
+      return res.status(400).json({
+        error: {
+          message: "An invitation already exists for this email",
+          code: "duplicate-invite",
+        },
+      });
+    }
+
+    // Generate a special token for auto-approval
+    const approvalToken = Math.random().toString(36).substr(2, 20);
+    const inviteId = `invite_${Date.now()}_${approvalToken.substring(0, 8)}`;
+
+    // Create invitation WITHOUT transaction
+    await db
+      .collection("TeamInvites")
+      .doc(inviteId)
+      .set({
+        inviteId,
+        approvalToken,
+        teamId,
+        adminId,
+        adminEmail: adminProfile.email,
+        adminName: `${adminProfile.firstName || ""} ${
+          adminProfile.lastName || ""
+        }`.trim(),
+        inviteEmail: memberEmail,
+        status: "pending",
+        invitedAt: admin.firestore.FieldValue.serverTimestamp(),
+        expiresAt: admin.firestore.Timestamp.fromDate(
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        ),
+        plan: "team",
+        downloadLimit: team.downloadsPerMember || 200,
+        memberLimit: team.memberLimit,
+        autoApprove: true,
+      });
+
+    console.log("✅ Invitation created successfully");
+
+    // Determine URLs for local vs production
     const isLocal = process.env.FUNCTIONS_EMULATOR === "true";
     const baseUrl = isLocal
       ? `http://localhost:5001/${process.env.GCLOUD_PROJECT}/us-central1`
       : "https://us-central1-sham-marianas.cloudfunctions.net";
 
-    // Create invitation
-    const inviteRef = db.collection("TeamInvites").doc(inviteId);
-    await inviteRef.set({
-      inviteId,
-      inviteCode,
-      teamId,
-      adminId,
-      adminEmail: adminProfile.email,
-      adminName: `${adminProfile.firstName || ""} ${
-        adminProfile.lastName || ""
-      }`.trim(),
-      inviteEmail: memberEmail,
-      status: "pending",
-      invitedAt: admin.firestore.FieldValue.serverTimestamp(),
-      expiresAt: admin.firestore.Timestamp.fromDate(
-        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-      ),
-      plan: "team",
-      downloadLimit: team.downloadsPerMember || 200,
-      memberLimit: team.memberLimit,
-    });
+    const frontendUrl = isLocal
+      ? "http://localhost:3000"
+      : "https://shammarianas.vercel.app";
+
+    // Create the magic link for one-click approval
+    const magicLink = `${baseUrl}/oneClickJoinTeam?token=${approvalToken}&email=${encodeURIComponent(
+      memberEmail
+    )}`;
 
     // For local testing - return direct link
     if (isLocal) {
-      const directLink = `${baseUrl}/autoAcceptTeamInvitation?inviteCode=${inviteCode}`;
-
       return res.status(200).json({
         success: true,
         inviteId,
-        inviteCode,
-        directLink: directLink,
-        message: "For local testing - use the direct link below",
+        approvalToken,
+        magicLink: magicLink,
+        message: "For local testing - use the magic link below",
         testData: {
           teamId,
           adminEmail: adminProfile.email,
@@ -1814,46 +1842,74 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       });
     }
 
-    // For production - send email
+    // Send email with ONE-CLICK magic link
     await mailTransport.sendMail({
       from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
       to: memberEmail,
-      subject: "Team Invitation - Sham Marianas",
+      subject: "🚀 One-Click Team Invitation - Sham Marianas",
       html: `
-        <h2>You're Invited! 🎉</h2>
-        <p>You've been invited by <strong>${adminProfile.firstName || ""} ${
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #4CAF50;">You're Invited! 🎉</h2>
+          
+          <p>You've been invited by <strong>${adminProfile.firstName || ""} ${
         adminProfile.lastName || ""
-      }</strong> to join their team.</p>
-        
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>Click to Join:</h3>
-          <p>
-              <a href="https://us-central1-sham-marianas.cloudfunctions.net/autoAcceptTeamInvitation?inviteCode=${inviteCode}" 
-       style="display: inline-block; padding: 15px 30px; background: #4CAF50; color: white; 
-              text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold;">
-      Accept Team Invitation
-    </a>
+      }</strong> to join their team on Sham Marianas.</p>
+          
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                     padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center;">
+            <h3 style="color: white; margin-bottom: 20px;">One-Click Join</h3>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 25px;">
+              Click below to instantly join the team. No password needed!
+            </p>
+            
+            <a href="${magicLink}" 
+               style="display: inline-block; padding: 18px 40px; background: white; 
+                      color: #4CAF50; text-decoration: none; border-radius: 50px; 
+                      font-size: 18px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                      transition: transform 0.3s ease;">
+              ✨ Join Team Instantly
+            </a>
+            
+            <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 20px;">
+              This link works once and expires in 7 days
+            </p>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h4 style="color: #333; margin-bottom: 15px;">What you get:</h4>
+            <ul style="color: #666; line-height: 1.8;">
+              <li>✅ <strong>${
+                team.downloadsPerMember || 200
+              } downloads/month</strong></li>
+              <li>✅ Premium assets & templates</li>
+              <li>✅ Team collaboration tools</li>
+              <li>✅ 4K quality downloads</li>
+              <li>✅ Commercial license</li>
+            </ul>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="color: #666; font-size: 14px;">
+              <strong>Note:</strong> If the button doesn't work, copy and paste this link in your browser:<br>
+              <code style="background: #f5f5f5; padding: 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">
+                ${magicLink}
+              </code>
+            </p>
+          </div>
+          
+          <p style="color: #999; font-size: 12px; margin-top: 30px; text-align: center;">
+            This invitation was sent by ${adminProfile.email}<br>
+            © ${new Date().getFullYear()} Sham Marianas. All rights reserved.
           </p>
         </div>
-        
-        <h3>Benefits:</h3>
-        <ul>
-          <li>✅ ${team.downloadsPerMember || 200} downloads/month</li>
-          <li>✅ Premium assets access</li>
-          <li>✅ Team collaboration</li>
-        </ul>
-        
-        <p><strong>Expires in 7 days</strong></p>
-        <br/>
-        <p>Best regards,<br/><strong>Sham Marianas Team</strong></p>
       `,
     });
 
     return res.status(200).json({
       success: true,
       inviteId,
-      inviteCode,
-      message: "Invitation sent successfully",
+      approvalToken,
+      message: "One-click invitation sent successfully!",
     });
   } catch (err) {
     console.error("Add team member error:", err);
@@ -1876,287 +1932,427 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
   }
 });
 
-// =============================
-// 2. AUTO ACCEPT TEAM INVITATION (NEW)
-// =============================
+exports.oneClickJoinTeam = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
 
-exports.autoAcceptTeamInvitation = functions.https.onRequest(
-  async (req, res) => {
-    res.set("Access-Control-Allow-Origin", "*");
-    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.set("Access-Control-Allow-Headers", "Content-Type");
+  try {
+    const { token, email } = req.query;
 
-    if (req.method === "OPTIONS") return res.status(204).send("");
-    if (req.method !== "GET" && req.method !== "POST") {
-      return res.status(405).send({ error: "Method Not Allowed" });
+    if (!token || !email) {
+      return res.status(400).send("Invalid link");
     }
 
-    try {
-      const inviteCode =
-        req.method === "GET" ? req.query.inviteCode : req.body.inviteCode;
+    const db = admin.firestore();
 
-      if (!inviteCode) {
-        return res.status(400).send(`
+    // 1. Find invitation
+    const invitesQuery = await db
+      .collection("TeamInvites")
+      .where("approvalToken", "==", token)
+      .where("inviteEmail", "==", email)
+      .limit(1)
+      .get();
+
+    if (invitesQuery.empty) {
+      return res.status(404).send("Invitation not found");
+    }
+
+    const inviteDoc = invitesQuery.docs[0];
+    const inviteData = inviteDoc.data();
+
+    // Check if already accepted
+    if (inviteData.status !== "pending") {
+      return res.send(`
         <!DOCTYPE html>
-        <html><head><title>Invalid Invitation</title><meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>body{font-family:Arial;text-align:center;padding:50px;}</style>
-        </head><body>
-        <h1 style="color:red;">❌ Invalid Invitation</h1>
-        <p>No invitation code provided.</p>
-        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
-        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
-        </body></html>
+        <html><head><title>Already Accepted</title></head>
+        <body>
+          <h1>Invitation Already Used</h1>
+          <p>This invitation has already been accepted.</p>
+          <a href="https://shammarianas.vercel.app">Go to Homepage</a>
+        </body>
+        </html>
       `);
+    }
+
+    // 2. Get team
+    const teamRef = db.collection("Teams").doc(inviteData.teamId);
+    const teamSnap = await teamRef.get();
+
+    if (!teamSnap.exists) {
+      return res.status(404).send("Team not found");
+    }
+
+    const team = teamSnap.data();
+
+    // 3. CHECK IF USER EXISTS
+    let userId = null;
+    let userExistsInAuth = false;
+
+    // A. Check Firebase Auth first
+    try {
+      const userRecord = await admin.auth().getUserByEmail(email);
+      userId = userRecord.uid;
+      userExistsInAuth = true;
+      console.log(`✅ User found in Firebase Auth: ${userId}`);
+    } catch (authError) {
+      if (authError.code === "auth/user-not-found") {
+        console.log(`ℹ️ User not found in Firebase Auth: ${email}`);
+        // We'll create a profile-only user
+      } else {
+        console.error("Auth lookup error:", authError);
+        throw authError;
       }
+    }
 
-      const db = admin.firestore();
+    // B. Check Profiles collection
+    const existingUserQuery = await db
+      .collection("Profiles")
+      .where("email", "==", email)
+      .limit(1)
+      .get();
 
-      // Find invitation
-      const invitesQuery = await db
-        .collection("TeamInvites")
-        .where("inviteCode", "==", inviteCode)
-        .limit(1)
-        .get();
+    if (!existingUserQuery.empty) {
+      const profileData = existingUserQuery.docs[0].data();
+      const profileUserId = existingUserQuery.docs[0].id;
 
-      if (invitesQuery.empty) {
-        return res.status(404).send(`
-        <!DOCTYPE html><html><head><title>Invalid Invitation</title></head><body>
-        <h1 style="color:red;">❌ Invalid Invitation</h1>
-        <p>Invitation not found or already used.</p>
-        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
-        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
-        </body></html>
-      `);
+      if (userId && userId !== profileUserId) {
+        console.warn(
+          `⚠️ Mismatch: Auth ID (${userId}) ≠ Profile ID (${profileUserId})`
+        );
+        userId = profileUserId; // Use Profile ID
+      } else if (!userId) {
+        userId = profileUserId;
       }
+      console.log(`✅ User found in Profiles: ${userId}`);
+    }
 
-      const inviteDoc = invitesQuery.docs[0];
-      const inviteData = inviteDoc.data();
+    // C. Create user if doesn't exist
+    if (!userId) {
+      console.log(`🆕 Creating new profile-only user for: ${email}`);
 
-      // Check status
-      if (inviteData.status !== "pending") {
-        return res.status(400).send(`
-        <!DOCTYPE html><html><head><title>Invitation ${inviteData.status}</title></head><body>
-        <h1 style="color:orange;">ℹ️ Invitation ${inviteData.status}</h1>
-        <p>This invitation has already been ${inviteData.status}.</p>
-        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
-        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
-        </body></html>
-      `);
-      }
+      userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Check expiration
-      const expiresAt = inviteData.expiresAt.toDate();
-      if (new Date() > expiresAt) {
-        await inviteDoc.ref.update({ status: "expired" });
-        return res.status(410).send(`
-        <!DOCTYPE html><html><head><title>Expired</title></head><body>
-        <h1 style="color:red;">⌛ Expired</h1>
-        <p>This invitation has expired.</p>
-        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
-        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
-        </body></html>
-      `);
-      }
-
-      // Get team
-      const teamRef = db.collection("Teams").doc(inviteData.teamId);
-      const teamSnap = await teamRef.get();
-
-      if (!teamSnap.exists) {
-        return res.status(404).send(`
-        <!DOCTYPE html><html><head><title>Team Not Found</title></head><body>
-        <h1 style="color:red;">❌ Team Not Found</h1>
-        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
-        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
-        </body></html>
-      `);
-      }
-
-      const team = teamSnap.data();
-
-      // Check if team full (excluding owner)
-      const currentMembers = team.members || [];
-      const maxInvitableMembers = team.memberLimit - 1;
-
-      if (currentMembers.length - 1 >= maxInvitableMembers) {
-        return res.status(403).send(`
-        <!DOCTYPE html><html><head><title>Team Full</title></head><body>
-        <h1 style="color:red;">👥 Team Full</h1>
-        <p>Team has reached member limit.</p>
-        <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
-        background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
-        </body></html>
-      `);
-      }
-
-      // If user logged in via query params
-      const userId = req.query.userId;
-      const userEmail = req.query.userEmail;
-
-      if (!userId) {
-        // User not logged in - show signup page
-        await inviteDoc.ref.update({
-          status: "clicked",
-          clickedAt: admin.firestore.FieldValue.serverTimestamp(),
+      await db
+        .collection("Profiles")
+        .doc(userId)
+        .set({
+          uid: userId,
+          email: email,
+          username: email.split("@")[0].toLowerCase(),
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          status: "active",
+          role: "user",
+          emailVerified: true,
+          subscription: null,
+          firstName: "",
+          lastName: "",
+          profilePic: null,
+          phoneNumber: "",
+          bio: "",
+          country: "",
+          followers: [],
+          following: [],
+          followersCount: 0,
+          followingCount: 0,
+          authMethod: "email_link_only",
         });
 
-        return res.send(`
-        <!DOCTYPE html><html><head><title>Join Team</title></head><body>
-        <h1 style="color:#2196F3;">👋 Team Invitation</h1>
-        <p>You've been invited by <strong>${inviteData.adminName}</strong></p>
-        <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;">
-          <p>✅ ${team.downloadsPerMember || 200} downloads/month</p>
-          <p>✅ Team collaboration</p>
-          <p>✅ Premium assets</p>
-        </div>
-        <p>Sign up or log in to accept:</p>
-        <div>
-          <a href="https://shammarianas.vercel.app/signup?inviteCode=${inviteCode}&email=${encodeURIComponent(
-          inviteData.inviteEmail
-        )}" 
-             style="display:inline-block;padding:12px 24px;background:#4CAF50;color:white;
-             text-decoration:none;border-radius:5px;margin:10px;">Create Account</a>
-          <a href="https://shammarianas.vercel.app/login?inviteCode=${inviteCode}&email=${encodeURIComponent(
-          inviteData.inviteEmail
-        )}" 
-             style="display:inline-block;padding:12px 24px;background:#2196F3;color:white;
-             text-decoration:none;border-radius:5px;margin:10px;">Login</a>
-        </div>
-        <p style="margin-top:30px;color:#666;">Sent to: ${
-          inviteData.inviteEmail
-        }</p>
-        </body></html>
-      `);
-      }
+      console.log(`✅ Created profile-only user: ${userId}`);
+    }
 
-      // User logged in - check email
-      if (userEmail !== inviteData.inviteEmail) {
-        return res.status(403).send(`
-        <!DOCTYPE html><html><head><title>Email Mismatch</title></head><body>
-        <h1 style="color:red;">✉️ Email Mismatch</h1>
-        <p>Invitation sent to: <strong>${inviteData.inviteEmail}</strong></p>
-        <p>You are: <strong>${userEmail}</strong></p>
-        <a href="https://shammarianas.vercel.app/logout?redirect=/login?inviteCode=${inviteCode}" 
-           style="display:inline-block;padding:12px 24px;background:#2196F3;color:white;
-           text-decoration:none;border-radius:5px;">Switch Account</a>
-        </body></html>
-      `);
-      }
+    // 4. Check if user is already in this team
+    const teamMembers = team.members || [];
+    if (teamMembers.includes(userId)) {
+      console.log(`ℹ️ User ${userId} is already in team ${inviteData.teamId}`);
 
-      // Add user to team
-      const userProfileRef = db.collection("Profiles").doc(userId);
-      const userProfileSnap = await userProfileRef.get();
-
-      if (!userProfileSnap.exists) {
-        return res.status(404).send(`
-        <!DOCTYPE html><html><head><title>Error</title></head><body>
-        <h1 style="color:red;">❌ Account Error</h1>
-        <a href="https://shammarianas.vercel.app/signup?inviteCode=${inviteCode}" 
-           style="display:inline-block;padding:12px 24px;background:#4CAF50;color:white;
-           text-decoration:none;border-radius:5px;">Create Account</a>
-        </body></html>
-      `);
-      }
-
-      await db.runTransaction(async (transaction) => {
-        // Update invitation status
-        transaction.update(inviteDoc.ref, {
-          status: "accepted",
-          acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
-          acceptedBy: userId,
-        });
-
-        // Get fresh team data within transaction
-        const freshTeamSnap = await transaction.get(teamRef);
-        const freshTeam = freshTeamSnap.data();
-
-        // Add user to members array
-        const updatedMembersArray = [...(freshTeam.members || []), userId];
-
-        // Initialize memberDownloads for new member
-        const updatedMemberDownloads = {
-          ...(freshTeam.memberDownloads || {}),
-        };
-        updatedMemberDownloads[userId] = 0;
-
-        // Update team document
-        transaction.update(teamRef, {
-          members: updatedMembersArray,
-          totalMembers: updatedMembersArray.length,
-          memberDownloads: updatedMemberDownloads,
-        });
-
-        // Update user profile with team subscription
-        transaction.update(userProfileRef, {
-          subscription: {
-            status: "active",
-            plan: "team",
-            type: "team",
-            teamId: inviteData.teamId,
-            downloadLimit: team.downloadsPerMember || 200,
-            downloadsUsed: 0,
-            startDate: admin.firestore.FieldValue.serverTimestamp(),
-            expiresAt: team.expiresAt,
-            billingCycle: "monthly",
-            price: team.perMemberPrice || 7,
-          },
-        });
+      await inviteDoc.ref.update({
+        status: "already_member",
+        acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+        acceptedBy: userId,
       });
 
-      // Send notification to admin
-      const adminProfileRef = db.collection("Profiles").doc(inviteData.adminId);
-      const adminProfileSnap = await adminProfileRef.get();
-
-      if (adminProfileSnap.exists) {
-        const adminProfile = adminProfileSnap.data();
-
-        // For local testing - log instead of sending email
-        if (process.env.FUNCTIONS_EMULATOR === "true") {
-          console.log(
-            "LOCAL TEST: Would send email to admin:",
-            adminProfile.email
-          );
-          console.log("Subject: Team Invitation Accepted");
-          console.log("Message:", `${userEmail} joined your team.`);
-        } else {
-          await mailTransport.sendMail({
-            from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
-            to: adminProfile.email,
-            subject: "Team Invitation Accepted",
-            html: `<h2>🎉 Invitation Accepted!</h2><p>${userEmail} joined your team.</p>`,
-          });
-        }
-      }
-
       return res.send(`
-      <!DOCTYPE html><html><head><title>Welcome!</title></head><body>
-      <h1 style="color:#4CAF50;">✅ Welcome to the Team!</h1>
-      <p>You've joined <strong>${inviteData.adminName}</strong>'s team.</p>
-      <div style="background:#f8f9fa;padding:20px;border-radius:8px;margin:20px 0;">
-        <p>✅ ${team.downloadsPerMember || 200} downloads/month</p>
-        <p>✅ Team features unlocked</p>
-        <p>✅ ${currentMembers.length + 1} of ${
-        team.memberLimit
-      } team members</p>
-      </div>
-      <a href="https://shammarianas.vercel.app/dashboard" 
-         style="display:inline-block;padding:12px 24px;background:#4CAF50;color:white;
-         text-decoration:none;border-radius:5px;">Go to Dashboard</a>
-      </body></html>
-    `);
-    } catch (err) {
-      console.error("Auto-accept error:", err);
-      return res.status(500).send(`
-      <!DOCTYPE html><html><head><title>Error</title></head><body>
-      <h1 style="color:red;">⚠️ Server Error</h1>
-      <a href="https://shammarianas.vercel.app" style="display:inline-block;padding:12px 24px;
-      background:#4CAF50;color:white;text-decoration:none;border-radius:5px;">Go Home</a>
-      </body></html>
-    `);
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Already a Member</title>
+          <style>
+            body { font-family: Arial; text-align: center; padding: 50px; }
+            .info { color: #2196F3; font-size: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="info">ℹ️ You're already a member of this team!</div>
+          <p>You already have access to ${
+            team.downloadsPerMember || 200
+          } downloads/month.</p>
+          <a href="https://shammarianas.vercel.app/dashboard">Go to Dashboard</a>
+        </body>
+        </html>
+      `);
     }
+
+    // 5. Add user to team - SIMPLE VERSION (NO TRANSACTION)
+    console.log(`🎯 Adding user ${userId} to team ${inviteData.teamId}`);
+
+    // Update invitation status
+    await inviteDoc.ref.update({
+      status: "accepted",
+      acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+      acceptedBy: userId,
+    });
+
+    // Add user to team members
+    const updatedMembers = [...teamMembers, userId];
+    const memberDownloads = team.memberDownloads || {};
+    memberDownloads[userId] = 0;
+
+    await teamRef.update({
+      members: updatedMembers,
+      totalMembers: updatedMembers.length,
+      memberDownloads: memberDownloads,
+    });
+
+    // Update user profile with team subscription
+    await db
+      .collection("Profiles")
+      .doc(userId)
+      .update({
+        subscription: {
+          status: "active",
+          plan: "team",
+          type: "team",
+          teamId: inviteData.teamId,
+          downloadLimit: team.downloadsPerMember || 200,
+          downloadsUsed: 0,
+          startDate: admin.firestore.FieldValue.serverTimestamp(),
+          expiresAt: team.expiresAt,
+          billingCycle: "monthly",
+          price: team.perMemberPrice || 7,
+        },
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+    console.log(`✅ Successfully added ${userId} to team ${inviteData.teamId}`);
+
+    // 6. Generate auto-login token (if user exists in Auth)
+    let loginToken = null;
+    let autoLoginScript = "";
+
+    if (userExistsInAuth) {
+      try {
+        loginToken = await admin.auth().createCustomToken(userId);
+
+        autoLoginScript = `
+          <script>
+            // Store token for auto-login
+            localStorage.setItem('teamJoinToken', '${loginToken}');
+            localStorage.setItem('teamJoinEmail', '${email}');
+            localStorage.setItem('teamJoinUserId', '${userId}');
+            
+            console.log('Auto-login token stored for ${email}');
+            
+            // Auto-redirect after 2 seconds
+            setTimeout(function() {
+              window.location.href = 'https://shammarianas.vercel.app/auto-login-team';
+            }, 2000);
+          </script>
+        `;
+
+        console.log(`🔑 Generated login token for ${userId}`);
+      } catch (tokenError) {
+        console.error("❌ Failed to generate login token:", tokenError);
+        // Continue without auto-login
+      }
+    }
+
+    // 7. Show success page
+    const isLocal = process.env.FUNCTIONS_EMULATOR === "true";
+    const dashboardUrl = isLocal
+      ? "http://localhost:3000/dashboard"
+      : "https://shammarianas.vercel.app/dashboard";
+    const loginUrl = isLocal
+      ? "http://localhost:3000/login"
+      : "https://shammarianas.vercel.app/login";
+
+    const successHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Welcome to the Team!</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 50px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+          }
+          .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: rgba(255,255,255,0.95); 
+            padding: 40px; 
+            border-radius: 20px; 
+            color: #333;
+          }
+          .success { 
+            color: #4CAF50; 
+            font-size: 28px;
+            margin-bottom: 20px;
+          }
+          .btn { 
+            display: inline-block; 
+            padding: 15px 30px; 
+            background: #4CAF50; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            margin: 20px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+          }
+          .btn-secondary {
+            background: #2196F3;
+          }
+          .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="success">🎉 Successfully Joined Team!</div>
+          
+          <p>Welcome to <strong>${inviteData.adminName}'s</strong> team!</p>
+          
+          <div class="info-box">
+            <h3>What you get:</h3>
+            <ul>
+              <li>✅ <strong>${
+                team.downloadsPerMember || 200
+              } downloads/month</strong></li>
+              <li>✅ Premium assets & templates</li>
+              <li>✅ Team collaboration features</li>
+              <li>✅ 4K quality downloads</li>
+              <li>✅ Commercial license</li>
+            </ul>
+            
+            <p><strong>Account Status:</strong> 
+              ${
+                userExistsInAuth
+                  ? "✅ Full account access"
+                  : "⚠️ Profile access only"
+              }
+            </p>
+          </div>
+          
+          <div>
+            <button onclick="window.location.href='${dashboardUrl}'" class="btn" id="dashboardBtn">
+              🚀 Go to Dashboard
+            </button>
+            <br>
+            <button onclick="window.location.href='${loginUrl}'" class="btn btn-secondary">
+              🔑 Login to Account
+            </button>
+          </div>
+          
+          <p style="color: #666; margin-top: 30px;">
+            ${
+              userExistsInAuth
+                ? "You will be automatically logged in..."
+                : "Please login with your email to access your account."
+            }
+          </p>
+          
+          <p style="font-size: 12px; color: #999; margin-top: 40px;">
+            Invited by: ${inviteData.adminEmail}
+          </p>
+        </div>
+        
+        ${autoLoginScript}
+        
+        <script>
+          // Fallback if auto-login doesn't work
+          document.getElementById('dashboardBtn').addEventListener('click', function() {
+            if(localStorage.getItem('teamJoinToken')) {
+              window.location.href = 'https://shammarianas.vercel.app/auto-login-team';
+            }
+          });
+        </script>
+      </body>
+      </html>
+    `;
+
+    return res.send(successHtml);
+  } catch (error) {
+    console.error("❌ One-click join error:", error);
+
+    // Detailed error page
+    const isLocal = process.env.FUNCTIONS_EMULATOR === "true";
+    const homeUrl = isLocal
+      ? "http://localhost:3000"
+      : "https://shammarianas.vercel.app";
+    const contactUrl = isLocal
+      ? "http://localhost:3000/contact"
+      : "https://shammarianas.vercel.app/contact";
+
+    return res.status(500).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Error</title>
+        <style>
+          body { font-family: Arial; padding: 50px; text-align: center; }
+          .error { color: #ff6b6b; }
+          .debug { background: #f5f5f5; padding: 15px; margin: 20px; text-align: left; font-size: 12px; }
+          .action-btn {
+            padding: 10px 20px; 
+            background: #4CAF50; 
+            color: white; 
+            text-decoration: none; 
+            margin: 10px; 
+            display: inline-block;
+            border-radius: 5px;
+          }
+          .action-btn-secondary {
+            background: #2196F3;
+          }
+        </style>
+      </head>
+      <body>
+        <h1 class="error">⚠️ Something went wrong</h1>
+        <p>We couldn't add you to the team at this time.</p>
+        
+        <div class="debug">
+          <strong>Error Details:</strong><br>
+          ${error.message}<br>
+          ${error.code || ""}
+        </div>
+        
+        <p>Please try:</p>
+        <div>
+          <a href="${homeUrl}/login" class="action-btn">
+            1. Login to your account
+          </a>
+          <br>
+          <a href="${contactUrl}" class="action-btn action-btn-secondary">
+            2. Contact support
+          </a>
+        </div>
+      </body>
+      </html>
+    `);
   }
-);
+});
 
 exports.getTeamDetails = functions.https.onRequest(async (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
@@ -2295,182 +2491,6 @@ exports.getTeamDetails = functions.https.onRequest(async (req, res) => {
     });
   } catch (err) {
     console.error("Get team details error:", err);
-    return res.status(500).json({
-      error: { message: err.message || "Internal server error" },
-    });
-  }
-});
-
-// =============================
-// 3. CHECK USER INVITATIONS (NEW)
-// =============================
-exports.checkUserInvitations = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "Login required");
-  }
-
-  const userId = context.auth.uid;
-  const userEmail = context.auth.token.email;
-  const db = admin.firestore();
-
-  try {
-    // Check for pending invitations
-    const invitesQuery = await db
-      .collection("TeamInvites")
-      .where("inviteEmail", "==", userEmail)
-      .where("status", "in", ["pending", "clicked"])
-      .get();
-
-    const acceptedTeams = [];
-
-    for (const doc of invitesQuery.docs) {
-      const invite = doc.data();
-      const teamRef = db.collection("Teams").doc(invite.teamId);
-      const teamSnap = await teamRef.get();
-
-      if (teamSnap.exists) {
-        const team = teamSnap.data();
-
-        // Auto-accept
-        await db.runTransaction(async (transaction) => {
-          transaction.update(doc.ref, {
-            status: "accepted",
-            acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
-            acceptedBy: userId,
-          });
-
-          transaction.update(teamRef, {
-            members: admin.firestore.FieldValue.arrayUnion(userId),
-            totalMembers: team.totalMembers + 1,
-          });
-
-          const userProfileRef = db.collection("Profiles").doc(userId);
-          transaction.update(userProfileRef, {
-            subscription: {
-              status: "active",
-              plan: "team",
-              type: "team",
-              teamId: invite.teamId,
-              teamAdminId: invite.adminId,
-              teamAdminName: invite.adminName,
-              startDate: admin.firestore.FieldValue.serverTimestamp(),
-              expiresAt: team.expiresAt,
-              downloadsUsed: 0,
-              downloadLimit: team.downloadsPerMember || 200,
-            },
-          });
-
-          const teamMemberRef = db.collection("TeamMembers").doc();
-          transaction.set(teamMemberRef, {
-            teamId: invite.teamId,
-            memberId: userId,
-            memberEmail: userEmail,
-            adminId: invite.adminId,
-            role: "member",
-            joinedAt: admin.firestore.FieldValue.serverTimestamp(),
-            status: "active",
-            invitedVia: doc.id,
-          });
-        });
-
-        acceptedTeams.push({
-          teamId: invite.teamId,
-          teamName: team.name || "Team",
-          adminName: invite.adminName,
-        });
-      }
-    }
-
-    return {
-      success: true,
-      acceptedInvites: acceptedTeams,
-      message:
-        acceptedTeams.length > 0
-          ? `Added to ${acceptedTeams.length} team(s)`
-          : "No pending invitations",
-    };
-  } catch (err) {
-    console.error("Check invitations error:", err);
-    throw new functions.https.HttpsError("internal", err.message);
-  }
-});
-
-// =============================
-// 4. GET TEAM DETAILS (NEW)
-// =============================
-
-// =============================
-// 5. GET PENDING INVITATIONS (NEW)
-// =============================
-exports.getPendingInvitations = functions.https.onRequest(async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-  if (req.method === "OPTIONS") return res.status(204).send("");
-  if (req.method !== "GET")
-    return res.status(405).send({ error: "Method Not Allowed" });
-
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: { message: "Login required" } });
-    }
-
-    const idToken = authHeader.split("Bearer ")[1];
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const userId = decodedToken.uid;
-
-    const db = admin.firestore();
-
-    // Get user email
-    const userProfileRef = db.collection("Profiles").doc(userId);
-    const userProfileSnap = await userProfileRef.get();
-
-    if (!userProfileSnap.exists) {
-      return res.status(404).json({ error: { message: "User not found" } });
-    }
-
-    const userProfile = userProfileSnap.data();
-    const userEmail = userProfile.email;
-
-    // Get pending invitations for this email
-    const invitesQuery = await db
-      .collection("TeamInvites")
-      .where("inviteEmail", "==", userEmail)
-      .where("status", "==", "pending")
-      .get();
-
-    const invitations = [];
-
-    for (const doc of invitesQuery.docs) {
-      const invite = doc.data();
-      const teamRef = db.collection("Teams").doc(invite.teamId);
-      const teamSnap = await teamRef.get();
-
-      if (teamSnap.exists) {
-        const team = teamSnap.data();
-        invitations.push({
-          id: doc.id,
-          inviteCode: invite.inviteCode,
-          teamId: invite.teamId,
-          teamName: team.name || "Team",
-          adminName: invite.adminName,
-          adminEmail: invite.adminEmail,
-          invitedAt: invite.invitedAt,
-          expiresAt: invite.expiresAt,
-          downloadLimit: invite.downloadLimit,
-        });
-      }
-    }
-
-    return res.status(200).json({
-      success: true,
-      invitations,
-      count: invitations.length,
-    });
-  } catch (err) {
-    console.error("Get invitations error:", err);
     return res.status(500).json({
       error: { message: err.message || "Internal server error" },
     });

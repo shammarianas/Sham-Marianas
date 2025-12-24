@@ -623,37 +623,6 @@ const Login = () => {
       } else {
         console.error("Profile document not found after saving!");
       }
-      await checkAndAcceptInvitations(user);
-
-      const inviteCode = localStorage.getItem("inviteCode");
-      if (inviteCode) {
-        try {
-          const response = await fetch(
-            "https://us-central1-sham-marianas.cloudfunctions.net/autoAcceptTeamInvitation",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                inviteCode: inviteCode,
-                userId: user.uid,
-                userEmail: user.email,
-              }),
-            }
-          );
-
-          if (response.ok) {
-            console.log("Auto-accepted team invitation from URL");
-            // Clear the stored invite code
-            localStorage.removeItem("inviteCode");
-          } else {
-            console.error("Failed to accept invitation from URL");
-          }
-        } catch (inviteError) {
-          console.error("Error accepting invitation from URL:", inviteError);
-        }
-      }
 
       // Send welcome email
       try {
@@ -694,22 +663,6 @@ const Login = () => {
     }
   };
   // Add this function after other functions like completeSignup
-  const checkAndAcceptInvitations = async (user) => {
-    if (!user || !user.email) return;
-
-    try {
-      const checkInvitations = httpsCallable(functions, "checkUserInvitations");
-      const result = await checkInvitations();
-
-      if (result.data.success && result.data.acceptedInvites.length > 0) {
-        console.log("Auto-joined teams:", result.data.acceptedInvites);
-        // Optional: Show a notification to user
-        // alert(`Welcome! You've been added to ${result.data.acceptedInvites.length} team(s)`);
-      }
-    } catch (error) {
-      console.error("Error checking invitations:", error);
-    }
-  };
 
   const loginWithEmailPassword = async (e) => {
     e.preventDefault();
@@ -770,19 +723,6 @@ const Login = () => {
   }, [isEmailVerified, currentStep, success]);
 
   // Add this useEffect to clear invitation codes on logout
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Clean up invitation codes if user leaves the page
-      localStorage.removeItem("inviteCode");
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      localStorage.removeItem("inviteCode");
-    };
-  }, []);
 
   const handlePasswordReset = async (e) => {
     e.preventDefault();
@@ -857,7 +797,7 @@ const Login = () => {
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                     className="view_btn"
                   >
-                    <img  loading="lazy"  src={eye_icon} alt="view" />
+                    <img loading="lazy" src={eye_icon} alt="view" />
                   </button>
                 )}
               </div>
@@ -1215,7 +1155,7 @@ const Login = () => {
                       onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                       className="view_btn"
                     >
-                      <img  loading="lazy"  src={eye_icon} alt="view" />
+                      <img loading="lazy" src={eye_icon} alt="view" />
                     </button>
                   )}
                 </div>
@@ -1235,7 +1175,7 @@ const Login = () => {
                       onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                       className="view_btn"
                     >
-                      <img  loading="lazy"  src={eye_icon} alt="view" />
+                      <img loading="lazy" src={eye_icon} alt="view" />
                     </button>
                   )}
                 </div>
