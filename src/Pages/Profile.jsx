@@ -45,6 +45,8 @@ const Profile = () => {
   const { username: urlUsername } = useParams();
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
+
+console.log("Profile user state:", user);
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,8 +85,7 @@ const Profile = () => {
   const [inviting, setInviting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState([]);
 
-const isOwnProfile = currentUser?.uid && userId && currentUser.uid === userId;
-
+  const isOwnProfile = currentUser?.uid && userId && currentUser.uid === userId;
 
   // ✅ SEO Function - Optimized
   const getProfileSEO = (userData, userItems = []) => {
@@ -341,7 +342,7 @@ const isOwnProfile = currentUser?.uid && userId && currentUser.uid === userId;
               foundInCollection = "Contributors";
               break;
             }
-
+console.log("Searching Contributors with variation:", foundUserId);
             q = query(
               collection(db, "Contributors"),
               where("username_lowercase", "==", variation.toLowerCase())
@@ -1459,6 +1460,9 @@ const isOwnProfile = currentUser?.uid && userId && currentUser.uid === userId;
 
   return (
     <>
+     
+
+      {/* Billing History Modal */}
       {showBillingModal && (
         <div className="modal-overlay" onClick={handleCloseBillingModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
