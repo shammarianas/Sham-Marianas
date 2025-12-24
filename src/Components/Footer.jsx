@@ -32,9 +32,9 @@ function Footer() {
     path.startsWith("/category/scripts") ||
     path.startsWith("/category/hdri") ||
     path.startsWith("/profile/") ||
-    path.startsWith("/profile/") ||
     path.startsWith("/subscription") ||
     path.startsWith("/view/");
+    
 
 
 
@@ -167,7 +167,6 @@ function Footer() {
                     <ul className="rest fz-14 opacity-7">
                       <li className="mb-15"><Link to="/privacy-policy">Privacy Policy</Link></li>
                       <li className="mb-15"><Link to="/terms-and-conditions">Terms & Conditions</Link></li>
-                      <li className="mb-15"><Link to="/support">Help Center</Link></li>
                     </ul>
                   </div>
                 </>

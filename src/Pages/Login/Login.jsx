@@ -594,11 +594,66 @@ const Login = () => {
         }
       );
 
+<<<<<<< HEAD
       setTimeout(() => {
         window.location.reload();
       }, 3000);
     } catch (err) {
       setError("Sign-up failed: " + err.message);
+=======
+      // Save to Firestore
+      await setDoc(userProfileRef, profileData, { merge: true });
+
+      // Verify the data was saved
+      const savedDoc = await getDoc(userProfileRef);
+      if (savedDoc.exists()) {
+        console.log(
+          "Profile successfully saved to Firestore:",
+          savedDoc.data()
+        );
+      } else {
+        console.error("Profile document not found after saving!");
+      }
+
+      // Send welcome email
+      try {
+        await fetch(
+          "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: email,
+              name: name || username,
+            }),
+          }
+        );
+      } catch (emailErr) {
+        console.error("Failed to send welcome email:", emailErr);
+        // Continue even if email fails
+      }
+
+      // Sign out the user after account creation
+      await signOut(auth);
+
+      // Reset to login page
+      setPage("login");
+      resetForm();
+      setSuccess("Account created successfully! Please log in with your email and password.");
+    } catch (err) {
+   
+      console.error("Sign-up error details:", err);
+
+      if (err.code === "auth/user-not-found") {
+        setError("User not found. Please try signing up again.");
+      } else if (err.code === "auth/wrong-password") {
+        setError("Incorrect password. Please try again.");
+      } else if (err.code === "auth/too-many-requests") {
+        setError("Too many attempts. Please try again later.");
+      } else {
+        setError("Sign-up failed: " + err.message);
+      }
+>>>>>>> d5b21b94ba86a2e6797d2acc2bc5991168551bb1
     }
   };
 
@@ -661,6 +716,18 @@ const Login = () => {
     setError("");
     setSuccess("");
     setResendTimer(0);
+    // Reset all form fields
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setUsername("");
+    setName("");
+    setPhone("");
+    setBirthday("");
+    setCountryCode("+1");
+    setCountry("");
+    setCity("");
+    setTermsAccepted(false);
   };
 
   return (
