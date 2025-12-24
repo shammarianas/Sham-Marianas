@@ -684,8 +684,6 @@ const Login = () => {
 
       setSuccess("Login successful!");
 
-      await checkAndAcceptInvitations(user);
-
       await fetch(
         "https://us-central1-sham-marianas.cloudfunctions.net/sendLoginEmail",
         {
