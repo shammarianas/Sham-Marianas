@@ -27,8 +27,6 @@ import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 import SEO from "../../common/SEO";
 import { SEO_CONFIG } from "../../utils/seoConfig";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { functions } from "../../../firebase"; // Make sure you export functions from firebase.js
 
 // Country code data (for phone)
 const countryCodes = [
@@ -160,24 +158,7 @@ const Login = () => {
 
     fetchCountries();
   }, []);
-  // Add this useEffect after your existing useEffect for countries
-  useEffect(() => {
-    // Handle invitation codes from URL
-    const searchParams = new URLSearchParams(location.search);
-    const inviteCode = searchParams.get("inviteCode");
-    const inviteEmail = searchParams.get("email");
 
-    if (inviteEmail) {
-      setEmail(inviteEmail);
-    }
-
-    // Store invitation code for later use in completeSignup
-    if (inviteCode) {
-      localStorage.setItem("inviteCode", inviteCode);
-    }
-
-    console.log("Invitation params:", { inviteCode, inviteEmail });
-  }, [location]);
   // Cleanup timeout on component unmount
   useEffect(() => {
     return () => {
@@ -552,117 +533,74 @@ const Login = () => {
   };
 
   // Complete signup after email verification
-  // Complete signup after email verification
   const completeSignup = async () => {
     try {
       let user;
-
-      // Check if user is already logged in (tempUser)
       if (tempUser && tempUser.emailVerified) {
         user = tempUser;
-
-        // Reload user to get latest email verification status
-        await user.reload();
-        user = auth.currentUser;
       } else {
-        // If no tempUser, try to sign in
-        const userCredential = await signInWithEmailAndPassword(
+        const userCredential = await createUserWithEmailAndPassword(
           auth,
           email,
           password
         );
         user = userCredential.user;
+
+        await updateProfile(user, { displayName: username });
+
+        if (!user.emailVerified) {
+          await sendEmailVerification(user, {
+            url: window.location.origin + "/email-verified",
+          });
+          setError("Please verify your email first. Check your inbox.");
+          return;
+        }
       }
 
-      // Double check email verification
-      if (!user.emailVerified) {
-        setError("Please verify your email first. Check your inbox.");
-        return;
-      }
-
-      // Update profile with username
-      await updateProfile(user, {
-        displayName: username,
-      });
-
-      // Create profile in Firestore
       const userProfileRef = doc(db, "Profiles", user.uid);
+      await setDoc(
+        userProfileRef,
+        {
+          username: user.displayName,
+          email: user.email,
+          profilePic: user.photoURL,
+          uid: user.uid,
+          role: "user",
+          name: name,
+          phone: `${countryCode} ${phone}`,
+          emailVerified: true,
+          birthday: birthday,
+          countryCode: countryCode,
+          country: country,
+          city: city,
+          createdAt: serverTimestamp(),
+          joinDate: serverTimestamp(),
+          lastLogin: serverTimestamp(),
+        },
+        { merge: true }
+      );
 
-      // Prepare profile data
-      const profileData = {
-        username: username,
-        email: user.email,
-        profilePic: user.photoURL || "",
-        uid: user.uid,
-        role: "user",
-        name: name,
-        phone: `${countryCode} ${phone}`,
-        emailVerified: true,
-        birthday: birthday,
-        countryCode: countryCode,
-        country: country,
-        city: city,
-        createdAt: serverTimestamp(),
-        joinDate: serverTimestamp(),
-        lastLogin: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
+      setSuccess("Sign-up successful! Redirecting...");
 
-      console.log("Saving profile data:", profileData); // Debug log
+      await fetch(
+        "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            name: name || username,
+          }),
+        }
+      );
 
-      // Save to Firestore
-      await setDoc(userProfileRef, profileData, { merge: true });
-
-      // Verify the data was saved
-      const savedDoc = await getDoc(userProfileRef);
-      if (savedDoc.exists()) {
-        console.log(
-          "Profile successfully saved to Firestore:",
-          savedDoc.data()
-        );
-      } else {
-        console.error("Profile document not found after saving!");
-      }
-
-      // Send welcome email
-      try {
-        await fetch(
-          "https://us-central1-sham-marianas.cloudfunctions.net/sendWelcomeEmail",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: email,
-              name: name || username,
-            }),
-          }
-        );
-      } catch (emailErr) {
-        console.error("Failed to send welcome email:", emailErr);
-        // Continue even if email fails
-      }
-
-      setSuccess("Sign-up successful! Redirecting to dashboard...");
-
-      // Redirect after a short delay
       setTimeout(() => {
-        navigate("/login", { replace: true });
-      }, 2000);
+        window.location.reload();
+      }, 3000);
     } catch (err) {
-      console.error("Sign-up error details:", err);
-
-      if (err.code === "auth/user-not-found") {
-        setError("User not found. Please try signing up again.");
-      } else if (err.code === "auth/wrong-password") {
-        setError("Incorrect password. Please try again.");
-      } else if (err.code === "auth/too-many-requests") {
-        setError("Too many attempts. Please try again later.");
-      } else {
-        setError("Sign-up failed: " + err.message);
-      }
+      setError("Sign-up failed: " + err.message);
     }
   };
-  // Add this function after other functions like completeSignup
 
   const loginWithEmailPassword = async (e) => {
     e.preventDefault();
@@ -696,31 +634,13 @@ const Login = () => {
         }
       );
 
-      setTimeout(() => navigate("/templates", { replace: true }), 3000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
     } catch (err) {
       setError("Login failed: " + err.message);
     }
   };
-
-  // Add this useEffect after your existing useEffects
-  useEffect(() => {
-    const autoCompleteSignup = async () => {
-      if (
-        isEmailVerified &&
-        currentStep === 2 &&
-        !success.includes("Redirecting")
-      ) {
-        // Wait 2 seconds then automatically complete signup
-        setTimeout(async () => {
-          await completeSignup();
-        }, 2000);
-      }
-    };
-
-    autoCompleteSignup();
-  }, [isEmailVerified, currentStep, success]);
-
-  // Add this useEffect to clear invitation codes on logout
 
   const handlePasswordReset = async (e) => {
     e.preventDefault();
@@ -795,7 +715,7 @@ const Login = () => {
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                     className="view_btn"
                   >
-                    <img loading="lazy" src={eye_icon} alt="view" />
+                    <img src={eye_icon} alt="view" />
                   </button>
                 )}
               </div>
@@ -1153,7 +1073,7 @@ const Login = () => {
                       onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                       className="view_btn"
                     >
-                      <img loading="lazy" src={eye_icon} alt="view" />
+                      <img src={eye_icon} alt="view" />
                     </button>
                   )}
                 </div>
@@ -1173,7 +1093,7 @@ const Login = () => {
                       onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                       className="view_btn"
                     >
-                      <img loading="lazy" src={eye_icon} alt="view" />
+                      <img src={eye_icon} alt="view" />
                     </button>
                   )}
                 </div>
@@ -1293,16 +1213,16 @@ const Login = () => {
                       }}
                     >
                       <button
-                        className="login_btn"
                         type="button"
+                        className="login_btn"
                         onClick={checkEmailVerification}
                         style={{ flex: 1 }}
                       >
                         {isEmailVerified ? "✓ Verified" : "I've Verified"}
                       </button>
                       <button
-                        className="login_btn"
                         type="button"
+                        className="login_btn"
                         onClick={resendVerificationEmail}
                         disabled={resendTimer > 0}
                         style={{
