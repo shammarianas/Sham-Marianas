@@ -1,4 +1,3 @@
-// utils/seoConfig.js - COMPLETE VERSION
 export const SEO_CONFIG = {
   // =========================================================
   //   Main Pages SEO

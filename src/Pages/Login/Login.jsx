@@ -642,13 +642,15 @@ const Login = () => {
         // Continue even if email fails
       }
 
-      setSuccess("Sign-up successful! Redirecting to dashboard...");
+      // Sign out the user after account creation
+      await signOut(auth);
 
-      // Redirect after a short delay
-      setTimeout(() => {
-        navigate("/login", { replace: true });
-      }, 2000);
+      // Reset to login page
+      setPage("login");
+      resetForm();
+      setSuccess("Account created successfully! Please log in with your email and password.");
     } catch (err) {
+   
       console.error("Sign-up error details:", err);
 
       if (err.code === "auth/user-not-found") {
@@ -741,6 +743,18 @@ const Login = () => {
     setError("");
     setSuccess("");
     setResendTimer(0);
+    // Reset all form fields
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setUsername("");
+    setName("");
+    setPhone("");
+    setBirthday("");
+    setCountryCode("+1");
+    setCountry("");
+    setCity("");
+    setTermsAccepted(false);
   };
 
   return (
