@@ -71,7 +71,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const currencyFormatter = formatCurrency || defaultFormatCurrency;
   const dateFormatter = formatDate || defaultFormatDate;
 
-  // 🔥 Firebase Data Fetching
+  
   // 🔥 Firebase Data Fetching - Updated to use Profiles collection
   useEffect(() => {
     const fetchSubscriptions = async () => {
@@ -167,7 +167,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
 
     return featuresMap[planType?.toLowerCase()] || ["Standard Features"];
   };
-  // Dynamic Stats Calculation
+  
   // Dynamic Stats Calculation
   const stats = useMemo(() => {
     const totalSubscriptions = subscriptionData.length;

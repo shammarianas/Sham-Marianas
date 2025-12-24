@@ -43,7 +43,7 @@ const SellerAnalytics = () => {
     },
   });
 
-  // ✅ DYNAMIC DATA FETCHING
+  // ✅ DYNAMIC DATA FETCHING - FIXED
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
@@ -59,19 +59,27 @@ const SellerAnalytics = () => {
 
         contributorsSnapshot.forEach((doc) => {
           const contributorData = doc.data();
-          allContributors.push({
+          const contributor = {
             id: doc.id,
             ...contributorData,
-          });
+            // Ensure totalEarnings is a number
+            totalEarnings: parseFloat(contributorData.totalEarnings) || 0,
+          };
+
+          allContributors.push(contributor);
 
           // Count active sellers
           if (contributorData.status === "verified") {
             activeSellers++;
           }
+
+          // Add to total revenue
+          totalRevenue += contributor.totalEarnings;
         });
 
-        // Fetch assets for each contributor to calculate revenue
+        // Fetch assets for each contributor to get product count and category data
         const topPerformers = [];
+        const categoryMap = {};
 
         for (const contributor of allContributors) {
           try {
@@ -82,37 +90,31 @@ const SellerAnalytics = () => {
             );
             const assetsSnapshot = await getDocs(assetsQuery);
 
-            let contributorRevenue = 0;
             let contributorProducts = 0;
 
             assetsSnapshot.forEach((assetDoc) => {
               const assetData = assetDoc.data();
               contributorProducts++;
 
-              // Calculate revenue from approved/published assets
-              if (
-                assetData.status === "approved" ||
-                assetData.status === "published"
-              ) {
-                const price = parseFloat(assetData.price) || 0;
-                const downloads = parseInt(assetData.downloads) || 0;
-                contributorRevenue += price * downloads;
+              // Track category distribution
+              if (assetData.category) {
+                const category = assetData.category;
+                categoryMap[category] = (categoryMap[category] || 0) + 1;
               }
             });
 
-            const actualEarnings = contributor.totalEarnings || 0;
-            totalRevenue += actualEarnings;
             // Only include contributors with revenue or products
-            if (contributorRevenue > 0 || contributorProducts > 0) {
+            if (contributor.totalEarnings > 0 || contributorProducts > 0) {
               topPerformers.push({
                 id: contributor.id,
                 name:
                   contributor.businessName ||
                   contributor.username ||
                   contributor.displayName ||
+                  contributor.email?.split('@')[0] ||
                   "Unknown Seller",
                 email: contributor.email || "No email",
-                revenue: contributor.totalEarnings || 0, // ✅ ACTUAL EARNINGS USE KARO
+                revenue: contributor.totalEarnings || 0, // ✅ Use actual totalEarnings
                 growth: calculateRandomGrowth(),
                 products: contributorProducts,
                 rating: calculateRandomRating(),
@@ -132,14 +134,43 @@ const SellerAnalytics = () => {
         // Sort by revenue (descending)
         topPerformers.sort((a, b) => b.revenue - a.revenue);
 
-        // Calculate category distribution
-        const topCategories = [
-          { name: "3D Models", value: 35, growth: 12.5 },
-          { name: "Graphics", value: 25, growth: 8.3 },
-          { name: "Templates", value: 20, growth: 15.7 },
-          { name: "Fonts", value: 12, growth: -2.1 },
-          { name: "Others", value: 8, growth: 5.4 },
-        ];
+        // Calculate category distribution from categoryMap
+        const topCategories = [];
+        const totalProducts = Object.values(categoryMap).reduce((sum, count) => sum + count, 0);
+
+        Object.entries(categoryMap).forEach(([category, count]) => {
+          const percentage = totalProducts > 0 ? Math.round((count / totalProducts) * 100) : 0;
+          topCategories.push({
+            name: category || "Uncategorized",
+            value: percentage,
+            growth: calculateRandomGrowth(),
+          });
+        });
+
+        // Sort categories by value (descending) and take top 5
+        topCategories.sort((a, b) => b.value - a.value);
+        const top5Categories = topCategories.slice(0, 5);
+
+        // If we don't have enough categories, add placeholder ones
+        while (top5Categories.length < 5) {
+          const placeholderCategories = ["3D Models", "Graphics", "Templates", "Fonts", "Others"];
+          const existingNames = top5Categories.map(c => c.name);
+          const newCategory = placeholderCategories.find(name => !existingNames.includes(name));
+          if (newCategory) {
+            top5Categories.push({
+              name: newCategory,
+              value: Math.floor(Math.random() * 20) + 5,
+              growth: calculateRandomGrowth(),
+            });
+          } else {
+            break;
+          }
+        }
+
+        // Calculate average revenue per seller
+        const avgRevenuePerSeller = allContributors.length > 0
+          ? totalRevenue / allContributors.length
+          : 0;
 
         // Update analytics data
         setAnalyticsData({
@@ -147,12 +178,9 @@ const SellerAnalytics = () => {
             totalRevenue,
             totalSellers: allContributors.length,
             activeSellers,
-            avgRevenuePerSeller:
-              allContributors.length > 0
-                ? totalRevenue / allContributors.length
-                : 0,
-            growthRate: 15.2,
-            topCategories,
+            avgRevenuePerSeller,
+            growthRate: 15.2, // You can calculate this dynamically based on timeRange if needed
+            topCategories: top5Categories,
           },
           performance: {
             topPerformers: topPerformers.slice(0, 10), // Top 10 performers
@@ -181,7 +209,11 @@ const SellerAnalytics = () => {
     if (!timestamp) return "N/A";
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toISOString().split("T")[0];
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
     } catch {
       return "N/A";
     }
@@ -192,6 +224,7 @@ const SellerAnalytics = () => {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -204,13 +237,14 @@ const SellerAnalytics = () => {
   };
 
   const getGrowthBadge = (growth) => {
-    return growth >= 0 ? (
+    const growthNum = parseFloat(growth);
+    return growthNum >= 0 ? (
       <span className="report-stat-trend positive">
-        +{growth}% <FiTrendingUp className="fi-pl" />
+        +{growthNum}% <FiTrendingUp className="fi-pl" />
       </span>
     ) : (
       <span className="report-stat-trend negative">
-        {growth}% <FiTrendingDown className="fi-pl" />
+        {growthNum}% <FiTrendingDown className="fi-pl" />
       </span>
     );
   };
@@ -243,20 +277,9 @@ const SellerAnalytics = () => {
     (seller) =>
       seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       seller.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
-  // if (loading) {
-  //   return (
-  //     <div className="user-reports-dashboard">
-  //       <div className="loading-overlay">
-  //         <div className="loading-content">
-  //           <div className="loading-spinner"></div>
-  //           <p>Loading seller analytics...</p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+
 
   return (
     <div className="user-reports-dashboard">
@@ -395,18 +418,16 @@ const SellerAnalytics = () => {
             style={{ display: "flex", gap: "0.5rem", gridColumn: "1 / -1" }}
           >
             <button
-              className={`tab-button ${
-                activeTab === "overview" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "overview" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("overview")}
             >
               <FiBarChart2 className="tab-icon" />
               Overview
             </button>
             <button
-              className={`tab-button ${
-                activeTab === "performance" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "performance" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("performance")}
             >
               <FiTrendingUp className="tab-icon" />
@@ -420,9 +441,8 @@ const SellerAnalytics = () => {
               Growth
             </button>
             <button
-              className={`tab-button ${
-                activeTab === "insights" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "insights" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("insights")}
             >
               <FiEye className="tab-icon" />
@@ -492,9 +512,8 @@ const SellerAnalytics = () => {
                         </div>
                         <div className="category-progress-bar">
                           <div
-                            className={`category-progress-fill ${
-                              category.growth >= 0 ? "excellent" : "poor"
-                            }`}
+                            className={`category-progress-fill ${category.growth >= 0 ? "excellent" : "poor"
+                              }`}
                             style={{ width: `${category.value}%` }}
                           ></div>
                         </div>
@@ -598,9 +617,10 @@ const SellerAnalytics = () => {
                           <button
                             className="action-button small"
                             title="View Analytics"
-                            onClick={() =>
-                              alert(`Viewing analytics for ${seller.name}`)
-                            }
+                            onClick={() => {
+                              setSelectedSeller(seller);
+                              setShowDetailsModal(true);
+                            }}
                           >
                             <FiBarChart2 />
                           </button>
