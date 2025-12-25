@@ -286,35 +286,30 @@ exports.stripeWebhook = functions.https.onRequest(
               admin.firestore.FieldValue.increment(finalSellerEarning),
           });
 
-          // ✅ 5. Credit seller earnings
-          const ownerUpdate = {
-            earnings: admin.firestore.FieldValue.increment(finalSellerEarning),
-            totalEarnings:
-              admin.firestore.FieldValue.increment(finalSellerEarning),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          };
-
-          // Update Profiles collection
+          // ✅ FIXED: Use update() for seller earnings to preserve existing fields
           await db
             .collection("Profiles")
             .doc(ownerId)
-            .set(ownerUpdate, { merge: true });
+            .update({
+              earnings:
+                admin.firestore.FieldValue.increment(finalSellerEarning),
+              totalEarnings:
+                admin.firestore.FieldValue.increment(finalSellerEarning),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
 
           // 🆕 CRITICAL: Update Contributors collection for non-admin sellers
-          // 🎯 UPDATED: Match YOUR contributor fields
           if (!isAdmin) {
             try {
               await ensureContributorExists(db, ownerId);
 
               const contributorRef = db.collection("Contributors").doc(ownerId);
-
-              // ✅ ONLY UPDATE THESE TWO FIELDS
               await contributorRef.update({
                 totalEarnings:
                   admin.firestore.FieldValue.increment(finalSellerEarning),
                 pendingEarnings:
                   admin.firestore.FieldValue.increment(finalSellerEarning),
-                lastUpdated: admin.firestore.FieldValue.serverTimestamp(), // Optional timestamp
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
               });
 
               console.log(
@@ -332,7 +327,6 @@ exports.stripeWebhook = functions.https.onRequest(
 
           // ✅ 6. Update platform stats with category breakdown
           const finalAssetCategory = asset.category || assetCategory;
-
           await db
             .collection("PlatformStats")
             .doc("revenue")
@@ -377,59 +371,97 @@ exports.stripeWebhook = functions.https.onRequest(
             )}, Platform=$${finalCompanyEarning.toFixed(3)}`
           );
 
-          // Return early since per-download payment is handled
           return res.json({ received: true });
         }
 
         // ============ SUBSCRIPTION HANDLING ============
         if (plan && buyerId && buyerId !== "guest") {
           const now = Date.now();
-          const expiresAt = admin.firestore.Timestamp.fromMillis(
-            now + 30 * 24 * 60 * 60 * 1000
-          );
+
+          // ✅ FIXED: Calculate expiration based on billing cycle
+          let expiresAt;
+          let monthlyResetDate;
+          let subscriptionPrice;
+          let perMemberPrice;
+
+          if (billingCycle === "yearly") {
+            // Yearly subscription: 365 days
+            expiresAt = admin.firestore.Timestamp.fromMillis(
+              now + 365 * 24 * 60 * 60 * 1000
+            );
+            monthlyResetDate = new Date(
+              now + 30 * 24 * 60 * 60 * 1000
+            ).toISOString();
+
+            // Set price based on plan for yearly
+            if (plan === "individual") {
+              subscriptionPrice = 108; // $108/year
+            } else if (plan === "team") {
+              perMemberPrice = 96;
+              subscriptionPrice = 96 * teamSize;
+            }
+          } else {
+            // Monthly subscription: 30 days (default)
+            expiresAt = admin.firestore.Timestamp.fromMillis(
+              now + 30 * 24 * 60 * 60 * 1000
+            );
+            monthlyResetDate = new Date(
+              now + 30 * 24 * 60 * 60 * 1000
+            ).toISOString();
+
+            // Set price based on plan for monthly
+            if (plan === "individual") {
+              subscriptionPrice = 9; // $9/month
+            } else if (plan === "team") {
+              perMemberPrice = 8;
+              subscriptionPrice = 8 * teamSize;
+            }
+          }
+
+          // Get the current user profile first
+          const userProfileRef = db.collection("Profiles").doc(buyerId);
+          const userProfileSnap = await userProfileRef.get();
+          let userProfile = {};
+
+          if (userProfileSnap.exists) {
+            userProfile = userProfileSnap.data();
+          }
 
           // INDIVIDUAL SUBSCRIPTION
           if (plan === "individual") {
-            await db
-              .collection("Profiles")
-              .doc(buyerId)
-              .set(
-                {
-                  subscription: {
-                    status: "active",
-                    plan: "individual",
-                    type: "individual",
-                    startDate: admin.firestore.FieldValue.serverTimestamp(),
-                    expiresAt,
-                    downloadsUsed: 0,
-                    downloadLimit: 200,
-                    billingCycle: billingCycle,
-                    monthlyReset: new Date(
-                      now + 30 * 24 * 60 * 60 * 1000
-                    ).toISOString(),
-                    price: 9, // $9/month
-                    perDownloadValue: PER_DOWNLOAD_VALUE_INDIVIDUAL, // 🆕 Added
-                  },
-                  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true }
-              );
-
-            // Record transaction
-            await db.collection("Transactions").doc().set({
-              type: "subscription_payment",
-              userId: buyerId,
+            const subscriptionData = {
+              status: "active",
               plan: "individual",
-              amount,
-              paymentIntentId: paymentIntent.id,
-              timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            });
+              type: "individual",
+              startDate: admin.firestore.FieldValue.serverTimestamp(),
+              expiresAt: expiresAt,
+              downloadsUsed: 0,
+              downloadLimit: 200,
+              billingCycle: billingCycle,
+              monthlyReset: monthlyResetDate,
+              price: subscriptionPrice,
+              perDownloadValue: PER_DOWNLOAD_VALUE_INDIVIDUAL,
+              isYearly: billingCycle === "yearly",
+              yearlyPrice: billingCycle === "yearly" ? 108 : null,
+              monthlyPrice: billingCycle === "monthly" ? 9 : null,
+            };
 
-            console.log(`✅ Individual subscription activated for ${buyerId}`);
+            // ✅ ULTRA-SIMPLE: Use set with merge for subscription field only
+            await userProfileRef.set(
+              {
+                subscription: subscriptionData,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+            console.log(`✅ Individual subscription saved for ${buyerId}`);
           }
+
           // TEAM SUBSCRIPTION
           else if (plan === "team") {
             const teamId = `team_${buyerId}_${Date.now()}`;
+            const downloadsPerMember = 200; // 200 per month even for yearly
 
             // Create team document
             await db
@@ -437,61 +469,69 @@ exports.stripeWebhook = functions.https.onRequest(
               .doc(teamId)
               .set({
                 ownerId: buyerId,
-                teamId,
+                teamId: teamId,
                 members: [buyerId],
                 memberLimit: Math.min(teamSize, 10),
-                perMemberPrice: 7, // $7 per member
+                perMemberPrice: perMemberPrice,
                 plan: "team",
                 active: true,
                 startDate: admin.firestore.FieldValue.serverTimestamp(),
-                expiresAt,
-                downloadsPerMember: 200,
-                totalDownloadsUsed: 0,
+                expiresAt: expiresAt,
+                downloadsPerMember: downloadsPerMember,
                 totalMembers: teamSize,
-                perDownloadValue: PER_DOWNLOAD_VALUE_TEAM, // 🆕 Added
+                perDownloadValue: PER_DOWNLOAD_VALUE_TEAM,
+                billingCycle: billingCycle,
+                isYearly: billingCycle === "yearly",
+                yearlyPrice: billingCycle === "yearly" ? 96 * teamSize : null,
+                monthlyPrice: billingCycle === "monthly" ? 8 * teamSize : null,
               });
 
-            // Update owner's profile
-            await db
-              .collection("Profiles")
-              .doc(buyerId)
-              .set(
-                {
-                  subscription: {
-                    status: "active",
-                    plan: "team",
-                    type: "team",
-                    teamId,
-                    startDate: admin.firestore.FieldValue.serverTimestamp(),
-                    expiresAt,
-                    downloadsUsed: 0,
-                    downloadLimit: 200,
-                    billingCycle: billingCycle,
-                    monthlyReset: new Date(
-                      now + 30 * 24 * 60 * 60 * 1000
-                    ).toISOString(),
-                    price: 8 * teamSize, // $7 × teamSize
-                    perDownloadValue: PER_DOWNLOAD_VALUE_TEAM, // 🆕 Added
-                  },
-                  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true }
-              );
+            // ✅ FIXED: Use set() with merge: true to preserve all existing fields
+            const subscriptionData = {
+              status: "active",
+              plan: "team",
+              type: "team",
+              teamId: teamId,
+              startDate: admin.firestore.FieldValue.serverTimestamp(),
+              expiresAt: expiresAt,
+              downloadsUsed: 0,
+              totalMembers: teamSize,
+              downloadLimit: 200,
+              billingCycle: billingCycle,
+              monthlyReset: monthlyResetDate,
+              price: subscriptionPrice,
+              perDownloadValue: PER_DOWNLOAD_VALUE_TEAM,
+              isYearly: billingCycle === "yearly",
+              yearlyPrice: billingCycle === "yearly" ? 96 * teamSize : null,
+              monthlyPrice: billingCycle === "monthly" ? 8 * teamSize : null,
+            };
+
+            // ✅ ULTRA-SIMPLE: Use set with merge for subscription field only
+            await userProfileRef.set(
+              {
+                subscription: subscriptionData,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+            console.log(`✅ Team subscription saved for ${buyerId}`);
 
             // Record transaction
             await db.collection("Transactions").doc().set({
               type: "subscription_payment",
               userId: buyerId,
               plan: "team",
-              teamId,
-              teamSize,
-              amount,
+              billingCycle: billingCycle,
+              teamId: teamId,
+              teamSize: teamSize,
+              amount: amount,
               paymentIntentId: paymentIntent.id,
               timestamp: admin.firestore.FieldValue.serverTimestamp(),
             });
 
             console.log(
-              `✅ Team subscription created (${teamId}) for ${buyerId}`
+              `✅ Team ${billingCycle} subscription created (${teamId}) for ${buyerId}`
             );
           }
 
@@ -519,15 +559,12 @@ exports.stripeWebhook = functions.https.onRequest(
             const asset = assetSnap.data();
             const ownerId = asset.ownerId;
 
-            // ============ IMPORTANT FIX ============
-            // Detect if asset is paid (string "paid" से)
+            // Detect if asset is paid
             let isPaidAsset = false;
-            let assetPrice = amount; // Default: payment amount
+            let assetPrice = amount;
 
-            // Method 1: Check price field (string "paid" or number)
             if (asset.price) {
               if (typeof asset.price === "string") {
-                // String "paid" को detect करें
                 isPaidAsset = asset.price.toLowerCase() === "paid";
                 assetPrice = isPaidAsset ? amount : 0;
               } else if (typeof asset.price === "number" && asset.price > 0) {
@@ -536,19 +573,16 @@ exports.stripeWebhook = functions.https.onRequest(
               }
             }
 
-            // Method 2: Check licenseType
             if (!isPaidAsset && asset.licenseType) {
               isPaidAsset = asset.licenseType.toLowerCase() !== "free use";
             }
 
-            // Method 3: If still not sure, assume paid (because payment happened)
             if (!isPaidAsset && amount > 0) {
               isPaidAsset = true;
               console.log(
                 `ℹ️ Assuming paid asset based on payment amount: $${amount}`
               );
             }
-            // ============ FIX END ============
 
             // Free asset handling
             if (!isPaidAsset) {
@@ -573,14 +607,14 @@ exports.stripeWebhook = functions.https.onRequest(
               ownerProfileSnap.exists &&
               ownerProfileSnap.data().role === "admin";
 
-            // 🆕 FIXED: Admin को 100%, Contributor को 40% commission
+            // Calculate earnings
             let sellerEarning, companyEarning;
             if (isAdmin) {
-              sellerEarning = amount; // Admin को पूरी amount
-              companyEarning = 0; // Platform को कुछ नहीं
+              sellerEarning = amount;
+              companyEarning = 0;
             } else {
-              sellerEarning = parseFloat((amount * 0.4).toFixed(6)); // Contributor को 40%
-              companyEarning = parseFloat((amount * 0.6).toFixed(6)); // Platform को 60%
+              sellerEarning = parseFloat((amount * 0.4).toFixed(6));
+              companyEarning = parseFloat((amount * 0.6).toFixed(6));
             }
 
             // Create purchase record
@@ -609,32 +643,31 @@ exports.stripeWebhook = functions.https.onRequest(
                 admin.firestore.FieldValue.increment(sellerEarning),
             });
 
-            // Credit seller earnings
-            const ownerUpdate = {
-              earnings: admin.firestore.FieldValue.increment(sellerEarning),
-              totalEarnings:
-                admin.firestore.FieldValue.increment(sellerEarning),
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            };
+            // ✅ FIXED: Use update() for seller earnings
+            await db
+              .collection("Profiles")
+              .doc(ownerId)
+              .update({
+                earnings: admin.firestore.FieldValue.increment(sellerEarning),
+                totalEarnings:
+                  admin.firestore.FieldValue.increment(sellerEarning),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
 
-            // 🆕 अगर contributor है तो Contributors collection में भी update करें
+            // Update contributor if not admin
             if (!isAdmin) {
               try {
                 await ensureContributorExists(db, ownerId);
-
-                const contributorRef = db
+                await db
                   .collection("Contributors")
-                  .doc(ownerId);
-
-                // ✅ ONLY UPDATE THESE TWO FIELDS
-                await contributorRef.update({
-                  totalEarnings:
-                    admin.firestore.FieldValue.increment(sellerEarning),
-                  pendingEarnings:
-                    admin.firestore.FieldValue.increment(sellerEarning),
-                  lastUpdated: admin.firestore.FieldValue.serverTimestamp(), // Optional timestamp
-                });
-
+                  .doc(ownerId)
+                  .update({
+                    totalEarnings:
+                      admin.firestore.FieldValue.increment(sellerEarning),
+                    pendingEarnings:
+                      admin.firestore.FieldValue.increment(sellerEarning),
+                    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+                  });
                 console.log(
                   `✅ Contributor ${ownerId} earnings updated: +$${sellerEarning.toFixed(
                     3
@@ -647,11 +680,6 @@ exports.stripeWebhook = functions.https.onRequest(
                 );
               }
             }
-
-            await db
-              .collection("Profiles")
-              .doc(ownerId)
-              .set(ownerUpdate, { merge: true });
 
             // Update platform stats
             await db
@@ -1878,8 +1906,8 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
   }
 });
 // =============================
+
 exports.addTeamMember = functions.https.onRequest(async (req, res) => {
-  // CORS headers
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -1931,9 +1959,13 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
     const adminProfile = adminProfileSnap.data();
     const adminSubscription = adminProfile.subscription || {};
 
+    // Check if admin is on team plan
     if (adminSubscription.type !== "team" || !adminSubscription.teamId) {
       return res.status(400).json({
-        error: { message: "You are not in a team", code: "not-in-team" },
+        error: {
+          message: "You are not on a team plan",
+          code: "not-on-team-plan",
+        },
       });
     }
 
@@ -1961,23 +1993,45 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       });
     }
 
-    // Get current team members from the team document
-    const currentMembers = team.members || [];
-    const currentMemberCount = currentMembers.length;
+    // CRITICAL FIX: Get totalMembers from subscription plan, not from team.members
+    // The subscription price determines how many members can be added
 
-    // Calculate available slots: memberLimit - 1 (for owner/admin themselves)
-    const maxInvitableMembers = team.memberLimit - 1;
+    // Extract team size from subscription plan name/price
+    // Example: If admin paid for 3 members, team.memberLimit should be 3
+    const teamSize = team.memberLimit || 1; // This should be from subscription (e.g., 2, 3, 4 members)
+    const currentTeamMembers = team.members || [];
+    const currentMemberCount = currentTeamMembers.length;
+
+    console.log(
+      `📊 Team Stats: Size=${teamSize}, Current=${currentMemberCount}, Owner=${team.ownerId}`
+    );
+
+    // Calculate available slots: teamSize - 1 (owner doesn't count as a slot)
+    // If teamSize = 2: owner + 1 member = 1 available slot
+    // If teamSize = 3: owner + 2 members = 2 available slots
+    // If teamSize = 4: owner + 3 members = 3 available slots
+    const maxInvitableMembers = Math.max(0, teamSize - 1);
     const availableSlots = Math.max(
       0,
       maxInvitableMembers - (currentMemberCount - 1)
     );
 
-    // Check member limit (excluding owner)
+    console.log(
+      `📊 Available slots: ${availableSlots} (Max invitable: ${maxInvitableMembers})`
+    );
+
     if (availableSlots <= 0) {
       return res.status(403).json({
         error: {
-          message: `Team member limit reached. You can invite up to ${maxInvitableMembers} member(s).`,
+          message: `Team member limit reached. You can invite up to ${maxInvitableMembers} member(s). Current team size allows ${teamSize} total members.`,
           code: "resource-exhausted",
+          details: {
+            teamSize,
+            currentMembers: currentMemberCount,
+            maxInvitableMembers,
+            availableSlots,
+            ownerIncluded: true,
+          },
         },
       });
     }
@@ -2034,7 +2088,7 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
     const approvalToken = Math.random().toString(36).substr(2, 20);
     const inviteId = `invite_${Date.now()}_${approvalToken.substring(0, 8)}`;
 
-    // Create invitation WITHOUT transaction
+    // Create invitation
     await db
       .collection("TeamInvites")
       .doc(inviteId)
@@ -2056,10 +2110,14 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
         plan: "team",
         downloadLimit: team.downloadsPerMember || 200,
         memberLimit: team.memberLimit,
+        teamSize: teamSize,
+        currentMemberCount: currentMemberCount,
         autoApprove: true,
       });
 
-    console.log("✅ Invitation created successfully");
+    console.log(
+      `✅ Invitation created for ${memberEmail}. Available slots: ${availableSlots}`
+    );
 
     // Determine URLs for local vs production
     const isLocal = process.env.FUNCTIONS_EMULATOR === "true";
@@ -2076,97 +2134,18 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       memberEmail
     )}`;
 
-    // For local testing - return direct link
-    if (isLocal) {
-      return res.status(200).json({
-        success: true,
-        inviteId,
-        approvalToken,
-        magicLink: magicLink,
-        message: "For local testing - use the magic link below",
-        testData: {
-          teamId,
-          adminEmail: adminProfile.email,
-          inviteEmail: memberEmail,
-          currentMemberCount,
-          maxInvitableMembers,
-          availableSlots,
-          team: {
-            memberLimit: team.memberLimit,
-            downloadsPerMember: team.downloadsPerMember,
-          },
-        },
-      });
-    }
-
-    // Send email with ONE-CLICK magic link
-    await mailTransport.sendMail({
-      from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
-      to: memberEmail,
-      subject: "🚀 One-Click Team Invitation - Sham Marianas",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #4CAF50;">You're Invited! 🎉</h2>
-          
-          <p>You've been invited by <strong>${adminProfile.firstName || ""} ${
-        adminProfile.lastName || ""
-      }</strong> to join their team on Sham Marianas.</p>
-          
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                     padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center;">
-            <h3 style="color: white; margin-bottom: 20px;">One-Click Join</h3>
-            <p style="color: rgba(255,255,255,0.9); margin-bottom: 25px;">
-              Click below to instantly join the team. No password needed!
-            </p>
-            
-            <a href="${magicLink}" 
-               style="display: inline-block; padding: 18px 40px; background: white; 
-                      color: #4CAF50; text-decoration: none; border-radius: 50px; 
-                      font-size: 18px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                      transition: transform 0.3s ease;">
-              ✨ Join Team Instantly
-            </a>
-            
-            <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 20px;">
-              This link works once and expires in 7 days
-            </p>
-          </div>
-          
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h4 style="color: #333; margin-bottom: 15px;">What you get:</h4>
-            <ul style="color: #666; line-height: 1.8;">
-              <li>✅ <strong>${
-                team.downloadsPerMember || 200
-              } downloads/month</strong></li>
-              <li>✅ Premium assets & templates</li>
-              <li>✅ Team collaboration tools</li>
-              <li>✅ 4K quality downloads</li>
-              <li>✅ Commercial license</li>
-            </ul>
-          </div>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 14px;">
-              <strong>Note:</strong> If the button doesn't work, copy and paste this link in your browser:<br>
-              <code style="background: #f5f5f5; padding: 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">
-                ${magicLink}
-              </code>
-            </p>
-          </div>
-          
-          <p style="color: #999; font-size: 12px; margin-top: 30px; text-align: center;">
-            This invitation was sent by ${adminProfile.email}<br>
-            © ${new Date().getFullYear()} Sham Marianas. All rights reserved.
-          </p>
-        </div>
-      `,
-    });
-
     return res.status(200).json({
       success: true,
       inviteId,
       approvalToken,
-      message: "One-click invitation sent successfully!",
+      teamDetails: {
+        teamId,
+        teamSize,
+        currentMembers: currentMemberCount,
+        availableSlots: availableSlots,
+        maxInvitableMembers: maxInvitableMembers,
+      },
+      message: `Invitation sent! You have ${availableSlots} slot(s) remaining.`,
     });
   } catch (err) {
     console.error("Add team member error:", err);
@@ -2385,7 +2364,7 @@ exports.oneClickJoinTeam = functions.https.onRequest(async (req, res) => {
           startDate: admin.firestore.FieldValue.serverTimestamp(),
           expiresAt: team.expiresAt,
           billingCycle: "monthly",
-          price: team.perMemberPrice || 7,
+          price: team.perMemberPrice || 8,
         },
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
@@ -2706,31 +2685,54 @@ exports.getTeamDetails = functions.https.onRequest(async (req, res) => {
       ...doc.data(),
     }));
 
-    // Calculate available slots correctly (memberLimit - 1 for owner)
-    const currentMemberCount = members.length;
-    const maxInvitableMembers = team.memberLimit - 1;
-    const availableSlots = Math.max(
-      0,
-      maxInvitableMembers - (currentMemberCount - 1)
-    );
+    // ✅ FIXED CALCULATION: Team size comes from subscription plan
+    // team.memberLimit should be the TOTAL team size (owner + members)
+    // Example: If user paid for 3-member team, team.memberLimit = 3
+
+    const totalTeamSize = team.memberLimit || 2; // Total team size (owner + members)
+    const currentMemberCount = members.length; // Includes owner
+
+    // ✅ CORRECT LOGIC:
+    // - Owner doesn't count as an "invitable" slot
+    // - Available slots = (totalTeamSize - 1) - (currentMemberCount - 1)
+    // Simplified: Available slots = totalTeamSize - currentMemberCount
+
+    const maxInvitableMembers = Math.max(0, totalTeamSize - 1);
+    const availableSlots = Math.max(0, totalTeamSize - currentMemberCount);
+
+    console.log(`📊 Team Stats for ${teamId}:`);
+    console.log(`   Total Team Size (from plan): ${totalTeamSize}`);
+    console.log(`   Current Members: ${currentMemberCount}`);
+    console.log(`   Owner Included: ${team.ownerId ? "Yes" : "No"}`);
+    console.log(`   Max Invitable Members: ${maxInvitableMembers}`);
+    console.log(`   Available Slots: ${availableSlots}`);
 
     // Calculate total team downloads
-    const totalTeamDownloadsAllowed =
-      team.downloadsPerMember * team.memberLimit;
+    const downloadsPerMember = team.downloadsPerMember || 200;
+    const totalTeamDownloadsAllowed = downloadsPerMember * totalTeamSize;
 
     return res.status(200).json({
       success: true,
       team: {
         id: teamSnap.id,
-        name: "Team", // Add team name field if you have it
+        name: team.name || "Team",
         ownerId: team.ownerId,
-        memberLimit: team.memberLimit || 2,
-        downloadsPerMember: team.downloadsPerMember || 200,
+
+        // ✅ IMPORTANT: These are the subscription-based limits
+        totalTeamSize: totalTeamSize, // Total members allowed (owner + team members)
+        memberLimit: totalTeamSize, // Same as totalTeamSize for clarity
+        currentMembers: currentMemberCount,
+        availableSlots: availableSlots,
+        maxInvitableMembers: maxInvitableMembers,
+
+        downloadsPerMember: downloadsPerMember,
         plan: team.plan || "team",
         startDate: team.startDate,
         expiresAt: team.expiresAt,
-        active: team.active || true,
+        active: team.active !== false, // Default to true
         perMemberPrice: team.perMemberPrice || 7,
+
+        // Downloads stats
         totalDownloadsUsed: totalTeamDownloadsUsed,
         totalDownloadsAllowed: totalTeamDownloadsAllowed,
         remainingTeamDownloads: Math.max(
@@ -2738,18 +2740,38 @@ exports.getTeamDetails = functions.https.onRequest(async (req, res) => {
           totalTeamDownloadsAllowed - totalTeamDownloadsUsed
         ),
         memberDownloads: team.memberDownloads || {},
-        availableSlots: availableSlots,
-        totalMembers: currentMemberCount,
-        maxInvitableMembers: maxInvitableMembers,
+
+        // Additional info
+        createdAt: team.createdAt,
+        updatedAt: team.updatedAt,
       },
       members,
       pendingInvites,
       userRole: team.ownerId === userId ? "owner" : "member",
+
+      // ✅ Subscription info from user's profile
+      subscriptionInfo: {
+        plan: subscription.plan || "team",
+        type: subscription.type || "team",
+        status: subscription.status || "active",
+        price: subscription.price || 0,
+        downloadLimit: subscription.downloadLimit || downloadsPerMember,
+        downloadsUsed: subscription.downloadsUsed || 0,
+        remainingDownloads: Math.max(
+          0,
+          (subscription.downloadLimit || downloadsPerMember) -
+            (subscription.downloadsUsed || 0)
+        ),
+        expiresAt: subscription.expiresAt,
+      },
     });
   } catch (err) {
-    console.error("Get team details error:", err);
+    console.error("❌ Get team details error:", err);
     return res.status(500).json({
-      error: { message: err.message || "Internal server error" },
+      error: {
+        message: err.message || "Internal server error",
+        code: err.code || "internal-error",
+      },
     });
   }
 });
