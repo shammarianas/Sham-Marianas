@@ -117,6 +117,7 @@ const SellerAnalytics = () => {
                 revenue: contributor.totalEarnings || 0, // ✅ Use actual totalEarnings
                 growth: calculateRandomGrowth(),
                 products: contributorProducts,
+                specialization: contributor.specialization || "Unknown",
                 rating: calculateRandomRating(),
                 joinDate: formatFirebaseDate(contributor.createdAt),
                 status:
@@ -567,7 +568,7 @@ const SellerAnalytics = () => {
                     <th>Seller</th>
                     <th>Revenue</th>
                     <th>Growth</th>
-                    <th>Products</th>
+                    <th>Specialization</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -598,7 +599,7 @@ const SellerAnalytics = () => {
                       </td>
                       <td>{getGrowthBadge(seller.growth)}</td>
                       <td>
-                        <div className="comp-dis">{seller.products} Assets</div>
+                        <div className="comp-dis">{seller.specialization} ({seller.products})</div>
                       </td>
 
                       <td>{getStatusBadge(seller.status)}</td>
@@ -782,9 +783,9 @@ const SellerAnalytics = () => {
                     </span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Products:</span>
+                    <span className="detail-label">Specialization:</span>
                     <span className="detail-value">
-                      {selectedSeller.products}
+                      {selectedSeller.specialization} ({selectedSeller.products} products)
                     </span>
                   </div>
                   <div className="detail-item">
@@ -803,8 +804,7 @@ const SellerAnalytics = () => {
                   <div className="detail-description">
                     {selectedSeller.name} is performing{" "}
                     {selectedSeller.growth >= 0 ? "well" : "below average"} with
-                    a {selectedSeller.growth}% growth rate. Their product
-                    catalog of {selectedSeller.products} items is generating{" "}
+                    a {selectedSeller.growth}% growth rate. Their specialization in {selectedSeller.specialization} with {selectedSeller.products} products is generating{" "}
                     {formatCurrency(selectedSeller.revenue)} in revenue.
                   </div>
                 </div>
