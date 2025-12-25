@@ -7,6 +7,7 @@ import {
   signOut,
   sendEmailVerification,
   onAuthStateChanged,
+  fetchSignInMethodsForEmail, // ✅ ADD THIS LINE
 } from "firebase/auth";
 import { auth } from "../../../firebase";
 import {
@@ -22,7 +23,11 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import eye_icon from "../../assets/Icons/eye.png";
-import { loginWithGoogle } from "./GoogleLogin";
+import {
+  loginWithGoogle,
+  googleContributorSignup,
+  loginWithGoogleContributor,
+} from "./GoogleLogin";
 import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 import SEO from "../../common/SEO";
@@ -89,7 +94,8 @@ const ContributorLogin = () => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [tempUser, setTempUser] = useState(null);
-
+  const [authMethod, setAuthMethod] = useState(null); // 'email_password', 'google', or null
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
   // ✅ CONTRIBUTOR SPECIFIC FIELDS
   const [fullName, setFullName] = useState("");
   const [usernameStatus, setUsernameStatus] = useState("");
@@ -115,19 +121,23 @@ const ContributorLogin = () => {
     const fetchCountries = async () => {
       setLoadingCountries(true);
       try {
-        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
-        
+        const response = await fetch(
+          "https://restcountries.com/v3.1/all?fields=name,cca2"
+        );
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        
-        const formattedCountries = data.map(country => ({
-          name: country.name.common,
-          code: country.cca2
-        })).sort((a, b) => a.name.localeCompare(b.name));
-        
+
+        const formattedCountries = data
+          .map((country) => ({
+            name: country.name.common,
+            code: country.cca2,
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
         setAllCountries(formattedCountries);
         console.log(
           `Fetched ${formattedCountries.length} countries for Contributor`
@@ -344,21 +354,50 @@ const ContributorLogin = () => {
   const validateStep1 = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (
-      !fullName ||
-      !username ||
-      !email ||
-      !phone ||
-      !birthday ||
-      !password ||
-      !confirmPassword ||
-      !country ||
-      !city
-    ) {
-      setError("Please fill all required fields");
-      return false;
+    // For existing Google users, skip password validation
+    if (isGoogleUser) {
+      // Google users ke liye validation (no password required)
+      if (
+        !fullName ||
+        !username ||
+        !email ||
+        !phone ||
+        !birthday ||
+        !country ||
+        !city
+      ) {
+        setError("Please fill all required fields");
+        return false;
+      }
+    } else {
+      // Email/password users ke liye normal validation
+      if (
+        !fullName ||
+        !username ||
+        !email ||
+        !phone ||
+        !birthday ||
+        !password ||
+        !confirmPassword ||
+        !country ||
+        !city
+      ) {
+        setError("Please fill all required fields");
+        return false;
+      }
+
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return false;
+      }
+
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return false;
+      }
     }
 
+    // Common validation for all users
     if (!emailRegex.test(email)) {
       setError("Please enter a valid email address");
       return false;
@@ -366,16 +405,6 @@ const ContributorLogin = () => {
 
     if (phone.length !== 10) {
       setError("Phone number must be 10 digits");
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return false;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
       return false;
     }
 
@@ -391,7 +420,6 @@ const ContributorLogin = () => {
 
     return true;
   };
-
   const validateStep2 = () => {
     if (!specialization || !experience) {
       setError("Please fill all required professional fields");
@@ -399,7 +427,6 @@ const ContributorLogin = () => {
     }
     return true;
   };
-
   const nextStep = async () => {
     console.log("🔄 nextStep called. Current step:", currentStep);
 
@@ -411,17 +438,40 @@ const ContributorLogin = () => {
       }
       console.log("✅ Step 1 validation passed");
 
-      // Call sendVerificationEmail and wait for it to complete
-      console.log("  → Calling sendVerificationEmail...");
-      await sendVerificationEmail();
+      // ✅ FIX: If Google user, SKIP sendVerificationEmail and go directly to step 3
+      if (isGoogleUser) {
+        console.log("✅ Google user detected, going directly to step 3");
+        setCurrentStep(3);
+        return; // IMPORTANT: Return here to skip email verification
+      }
 
-      // Only proceed if email verification was sent or user already verified
-      if (!isVerificationSent && !isEmailVerified) {
-        console.error(
-          "❌ Email verification not sent, stopping step progression"
-        );
+      // Only for email/password users
+      console.log("  → Calling sendVerificationEmail...");
+      const success = await sendVerificationEmail();
+
+      if (!success) {
+        console.error("❌ sendVerificationEmail failed");
         return;
       }
+
+      // Don't auto-increment step - let sendVerificationEmail handle it
+      return;
+    }
+
+    if (currentStep === 2) {
+      console.log("  → In Step 2 (Email Verification)...");
+      // For Google users in step 2 (shouldn't happen), redirect to step 3
+      if (isGoogleUser) {
+        console.log("✅ Google user in step 2, redirecting to step 3");
+        setCurrentStep(3);
+        return;
+      }
+
+      // For email/password users, proceed normally
+      setCurrentStep(3);
+      setError("");
+      console.log("  → Moved to step:", currentStep + 1);
+      return;
     }
 
     if (currentStep === 3) {
@@ -768,6 +818,80 @@ const ContributorLogin = () => {
     setError("");
     setSuccess("");
 
+    // Handle existing Google users
+    if (isGoogleUser) {
+      try {
+        // Get current logged-in Google user
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+          setError("Please login with Google first.");
+          return;
+        }
+
+        const usernameLower = username.toLowerCase().trim();
+
+        // Check username availability
+        const usernameQuery = query(
+          collection(db, "Contributors"),
+          where("username", "==", usernameLower)
+        );
+        const querySnapshot = await getDocs(usernameQuery);
+
+        if (!querySnapshot.empty) {
+          setError("This username is already taken. Please choose another.");
+          return;
+        }
+
+        // Save to Firestore with Google user's UID
+        const contributorRef = doc(db, "Contributors", currentUser.uid);
+
+        await setDoc(contributorRef, {
+          username: usernameLower,
+          displayUsername: username,
+          fullName,
+          email: currentUser.email,
+          emailVerified: true,
+          profilePic: currentUser.photoURL || "",
+          uid: currentUser.uid,
+          role: "contributor",
+          status: "pending",
+          authMethod: "google",
+
+          phone: `${countryCode} ${phone}`,
+          birthday,
+          countryCode,
+          country,
+          city,
+          portfolio,
+          skills,
+          specialization,
+          experience,
+          bio,
+
+          totalUploads: 0,
+          approvedUploads: 0,
+          totalEarnings: 0,
+          pendingEarnings: 0,
+          rating: 0,
+          reviews: 0,
+
+          createdAt: serverTimestamp(),
+          joinDate: serverTimestamp(),
+          lastLogin: serverTimestamp(),
+          lastUpdated: serverTimestamp(),
+        });
+
+        setCurrentStep(5);
+        setSuccess("Contributor application submitted! Under review.");
+      } catch (err) {
+        console.error("Google user contributor signup error:", err);
+        setError("Failed to submit application: " + err.message);
+      }
+      return;
+    }
+
+    // Original email/password flow (for new users)
     try {
       let user;
 
@@ -829,7 +953,6 @@ const ContributorLogin = () => {
       setError("Something went wrong. Please try again.");
     }
   };
-
   const handlePasswordReset = async (e) => {
     e.preventDefault();
     try {
@@ -920,6 +1043,8 @@ const ContributorLogin = () => {
                   setIsVerificationSent(false);
                   setIsEmailVerified(false);
                   setTempUser(null);
+                  setAuthMethod(null);
+                  setIsGoogleUser(false);
                 }}
               >
                 Become Contributor <i className="icon fas fa-arrow-right"></i>
@@ -956,7 +1081,7 @@ const ContributorLogin = () => {
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                     className="view_btn"
                   >
-                    <img  loading="lazy"  src={eye_icon} alt="view" />
+                    <img loading="lazy" src={eye_icon} alt="view" />
                   </button>
                 )}
               </div>
@@ -983,7 +1108,7 @@ const ContributorLogin = () => {
                 <button
                   className="google"
                   type="button"
-                  onClick={loginWithGoogle}
+                  onClick={loginWithGoogleContributor}
                 >
                   <i className="fab fa-google"></i>
                 </button>
@@ -1021,6 +1146,8 @@ const ContributorLogin = () => {
                   setIsVerificationSent(false);
                   setIsEmailVerified(false);
                   setTempUser(null);
+                  setAuthMethod(null);
+                  setIsGoogleUser(false);
                 }}
               >
                 Back to Login <i className="icon fas fa-arrow-right"></i>
@@ -1258,7 +1385,6 @@ const ContributorLogin = () => {
                       </small>
                     </div>
                   </div>
-
                   <label htmlFor="password">
                     Password * (Min. 6 characters)
                   </label>
@@ -1276,7 +1402,7 @@ const ContributorLogin = () => {
                         onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                         className="view_btn"
                       >
-                        <img  loading="lazy"  src={eye_icon} alt="view" />
+                        <img loading="lazy" src={eye_icon} alt="view" />
                       </button>
                     )}
                   </div>
@@ -1296,69 +1422,180 @@ const ContributorLogin = () => {
                         onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                         className="view_btn"
                       >
-                        <img  loading="lazy"  src={eye_icon} alt="view" />
+                        <img loading="lazy" src={eye_icon} alt="view" />
                       </button>
                     )}
                   </div>
+
+                  {/* Google Sign Up Button - FOR EXISTING GOOGLE USERS ONLY */}
+                  <div
+                    className="separator"
+                    style={{ margin: "1.5rem 0" }}
+                  ></div>
+
+                  <div
+                    className="buttons"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: "1rem",
+                      marginTop: "1rem",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="google"
+                      onClick={async () => {
+                        try {
+                          const googleUser = await googleContributorSignup();
+
+                          // Auto-fill the form with Google user info
+                          setEmail(googleUser.email || "");
+                          if (googleUser.fullName)
+                            setFullName(googleUser.fullName);
+                          setAuthMethod("google");
+                          setIsGoogleUser(true);
+
+                          // Auto-suggest username from email
+                          if (googleUser.email && !username) {
+                            const suggestedUsername = googleUser.email
+                              .split("@")[0]
+                              .toLowerCase();
+                            setUsername(suggestedUsername);
+                          }
+
+                          // Hide password fields for Google users
+                          setPassword(""); // Clear password
+                          setConfirmPassword(""); // Clear confirm password
+
+                          setSuccess(
+                            "Google account connected! Please fill remaining details."
+                          );
+                          setError("");
+                        } catch (error) {
+                          console.error("Google login error:", error);
+                          setError(error.message);
+                        }
+                      }}
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "#4285f4",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i
+                        className="fab fa-google"
+                        style={{ color: "white", fontSize: "1.2rem" }}
+                      ></i>
+                    </button>
+                  </div>
+
+                  <p
+                    style={{
+                      textAlign: "center",
+                      color: "#888",
+                      fontSize: "0.9rem",
+                      marginTop: "0.5rem",
+                    }}
+                  >
+                    Already have a Google account? Use it to sign up
+                  </p>
+
+                  {isGoogleUser && (
+                    <div
+                      style={{
+                        padding: "1rem",
+                        backgroundColor: "rgba(66, 133, 244, 0.1)",
+                        borderRadius: "0.5rem",
+                        marginTop: "1rem",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      <p
+                        style={{
+                          color: "#4285f4",
+                          margin: 0,
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        <i
+                          className="fab fa-google"
+                          style={{ marginRight: "8px" }}
+                        ></i>
+                        <strong>Google account connected</strong> - No password
+                        required for existing Google users
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
 
               {/* ========== STEP 2: EMAIL VERIFICATION ========== */}
               {currentStep === 2 && (
                 <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                  <div
-                    style={{
-                      fontSize: "3rem",
-                      color: "#52b0b4",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    ✉️
-                  </div>
-                  <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
-                    Verify Your Email
-                  </h3>
-                  <p
-                    style={{
-                      color: "#f5f5f5",
-                      opacity: 0.8,
-                      marginBottom: "1.5rem",
-                    }}
-                  >
-                    We've sent a verification link to:
-                    <br />
-                    <strong>{email}</strong>
-                  </p>
-
-                  {!isVerificationSent ? (
-                    <div>
-                      <p
-                        style={{
-                          color: "#f5f5f5",
-                          opacity: 0.6,
-                          fontSize: "0.9rem",
-                          marginBottom: "1.5rem",
-                        }}
-                      >
-                        Click "Next" to send verification email
-                      </p>
-                    </div>
-                  ) : (
+                  {/* GOOGLE USER KO STEP 2 SE AUTOMATICALLY REDIRECT */}
+                  {isGoogleUser ? (
                     <>
                       <div
                         style={{
-                          backgroundColor: "rgba(82, 176, 180, 0.1)",
+                          fontSize: "3rem",
+                          color: "#4285f4",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        🔄
+                      </div>
+
+                      <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
+                        Redirecting to Portfolio...
+                      </h3>
+
+                      <p
+                        style={{
+                          color: "#f5f5f5",
+                          opacity: 0.8,
+                          marginBottom: "1.5rem",
+                        }}
+                      >
+                        Google users skip email verification.
+                        <br />
+                        Taking you directly to the next step...
+                      </p>
+
+                      <div
+                        style={{
+                          backgroundColor: "rgba(66, 133, 244, 0.1)",
                           padding: "1rem",
                           borderRadius: "0.5rem",
                           marginBottom: "1.5rem",
                         }}
                       >
                         <p style={{ color: "#f5f5f5", margin: 0 }}>
-                          <strong>Important:</strong> Check your email inbox and
-                          click the verification link. After clicking the link,
-                          come back here and click "I've Verified".
+                          <i
+                            className="fab fa-google"
+                            style={{ marginRight: "8px" }}
+                          ></i>
+                          <strong>Google Account Connected</strong>
+                          <br />
+                          <small style={{ opacity: 0.8 }}>
+                            Your existing Google account is already verified.
+                          </small>
                         </p>
                       </div>
+
+                      {/* Auto-redirect after 2 seconds */}
+                      {useEffect(() => {
+                        const timer = setTimeout(() => {
+                          setCurrentStep(3);
+                        }, 2000);
+                        return () => clearTimeout(timer);
+                      }, [])}
 
                       <div
                         style={{
@@ -1370,60 +1607,164 @@ const ContributorLogin = () => {
                         <button
                           type="button"
                           className="login_btn"
-                          onClick={checkEmailVerification}
-                          style={{ flex: 1 }}
-                        >
-                          {isEmailVerified ? "✓ Verified" : "I've Verified"}
-                        </button>
-                        <button
-                          type="button"
-                          className="login_btn"
-                          onClick={resendVerificationEmail}
-                          disabled={resendTimer > 0}
+                          onClick={() => {
+                            setCurrentStep(3);
+                          }}
                           style={{
-                            backgroundColor: "transparent",
-                            border: "1px solid rgba(255,255,255,0.2)",
                             flex: 1,
-                            opacity: resendTimer > 0 ? 0.5 : 1,
+                            backgroundColor: "#4285f4",
                           }}
                         >
-                          {resendTimer > 0
-                            ? `Resend (${resendTimer}s)`
-                            : "Resend Link"}
+                          Go to Portfolio Now
                         </button>
                       </div>
+                    </>
+                  ) : (
+                    /* EMAIL/PASSWORD USER FLOW - Your existing code */
+                    <>
+                      <div
+                        style={{
+                          fontSize: "3rem",
+                          color: "#52b0b4",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        ✉️
+                      </div>
 
-                      {isEmailVerified && (
-                        <div
-                          style={{
-                            marginTop: "1.5rem",
-                            padding: "1rem",
-                            backgroundColor: "rgba(76, 175, 80, 0.1)",
-                            borderRadius: "0.5rem",
-                          }}
-                        >
-                          <p style={{ color: "#4caf50", margin: 0 }}>
-                            ✓ Email verified successfully! You can now proceed.
+                      <h3 style={{ color: "#f5f5f5", marginBottom: "1rem" }}>
+                        Verify Your Email
+                      </h3>
+
+                      <p
+                        style={{
+                          color: "#f5f5f5",
+                          opacity: 0.8,
+                          marginBottom: "1.5rem",
+                        }}
+                      >
+                        {isVerificationSent
+                          ? "We've sent a verification link to:"
+                          : "We'll send a verification link to:"}
+                        <br />
+                        <strong>{email}</strong>
+                      </p>
+
+                      {!isVerificationSent ? (
+                        <div>
+                          <p
+                            style={{
+                              color: "#f5f5f5",
+                              opacity: 0.6,
+                              fontSize: "0.9rem",
+                              marginBottom: "1.5rem",
+                            }}
+                          >
+                            Click "Next" to send verification email
                           </p>
                         </div>
+                      ) : (
+                        <>
+                          <div
+                            style={{
+                              backgroundColor: "rgba(82, 176, 180, 0.1)",
+                              padding: "1rem",
+                              borderRadius: "0.5rem",
+                              marginBottom: "1.5rem",
+                            }}
+                          >
+                            <p style={{ color: "#f5f5f5", margin: 0 }}>
+                              <strong>Important:</strong> Check your email inbox
+                              and click the verification link. After clicking
+                              the link, come back here and click "I've
+                              Verified".
+                            </p>
+                          </div>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "1rem",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <button
+                              type="button"
+                              className="login_btn"
+                              onClick={checkEmailVerification}
+                              style={{ flex: 1 }}
+                            >
+                              {isEmailVerified ? "✓ Verified" : "I've Verified"}
+                            </button>
+                            <button
+                              type="button"
+                              className="login_btn"
+                              onClick={resendVerificationEmail}
+                              disabled={resendTimer > 0}
+                              style={{
+                                backgroundColor: "transparent",
+                                border: "1px solid rgba(255,255,255,0.2)",
+                                flex: 1,
+                                opacity: resendTimer > 0 ? 0.5 : 1,
+                              }}
+                            >
+                              {resendTimer > 0
+                                ? `Resend (${resendTimer}s)`
+                                : "Resend Link"}
+                            </button>
+                          </div>
+
+                          {isEmailVerified && (
+                            <div
+                              style={{
+                                marginTop: "1.5rem",
+                                padding: "1rem",
+                                backgroundColor: "rgba(76, 175, 80, 0.1)",
+                                borderRadius: "0.5rem",
+                              }}
+                            >
+                              <p style={{ color: "#4caf50", margin: 0 }}>
+                                ✓ Email verified successfully! You can now
+                                proceed.
+                              </p>
+                            </div>
+                          )}
+                        </>
                       )}
+
+                      <div
+                        style={{
+                          marginTop: "1.5rem",
+                          padding: "1rem",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          borderRadius: "0.5rem",
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        <p
+                          style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}
+                        >
+                          <strong>Note:</strong> If you don't see the email,
+                          check your spam folder.
+                        </p>
+                      </div>
+
+                      {/* Back button for email/password users */}
+                      <button
+                        type="button"
+                        className="login_btn"
+                        onClick={prevStep}
+                        style={{
+                          backgroundColor: "transparent",
+                          border: "1px solid rgba(255,255,255,0.2)",
+                          marginTop: "1rem",
+                          width: "100%",
+                        }}
+                      >
+                        Back to Personal Info
+                      </button>
                     </>
                   )}
-
-                  <div
-                    style={{
-                      marginTop: "1.5rem",
-                      padding: "1rem",
-                      backgroundColor: "rgba(255,255,255,0.05)",
-                      borderRadius: "0.5rem",
-                      fontSize: "0.9rem",
-                    }}
-                  >
-                    <p style={{ color: "#f5f5f5", opacity: 0.7, margin: 0 }}>
-                      <strong>Note:</strong> If you don't see the email, check
-                      your spam folder.
-                    </p>
-                  </div>
                 </div>
               )}
 
@@ -1815,6 +2156,7 @@ const ContributorLogin = () => {
               {success && <span className="success">{success}</span>}
 
               {/* ========== BUTTONS ========== */}
+              {/* ========== BUTTONS ========== */}
               {currentStep < 5 && (
                 <div
                   style={{
@@ -1843,20 +2185,29 @@ const ContributorLogin = () => {
                       type="button"
                       className="login_btn"
                       onClick={nextStep}
-                      disabled={currentStep === 2 && !isEmailVerified}
+                      disabled={
+                        currentStep === 2 && !isEmailVerified && !isGoogleUser
+                      }
                       style={{
                         flex: 1,
                         opacity:
-                          currentStep === 2 && !isEmailVerified ? 0.5 : 1,
+                          currentStep === 2 && !isEmailVerified && !isGoogleUser
+                            ? 0.5
+                            : 1,
                       }}
                     >
-                      {currentStep === 2 ? "Next" : "Next"}
+                      {currentStep === 1 && isGoogleUser
+                        ? "Go to Portfolio" // ✅ Google user ke liye alag text
+                        : currentStep === 2
+                        ? "Next"
+                        : "Next"}
                     </button>
                   ) : (
                     <button
                       type="submit"
-                      className={`login_btn ${!termsAccepted ? "disabled" : ""
-                        }`}
+                      className={`login_btn ${
+                        !termsAccepted ? "disabled" : ""
+                      }`}
                       disabled={!termsAccepted}
                       style={{ flex: 1 }}
                     >
