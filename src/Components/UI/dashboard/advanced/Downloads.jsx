@@ -669,6 +669,9 @@ const handleViewUsers = (asset) => {
                         <div className="report-user-email">
                           {download.assetType}
                         </div>
+                        <div className="report-user-email small-text">
+                          by {download.publisher}
+                        </div>
                       </div>
                     </div>
                   </td>
