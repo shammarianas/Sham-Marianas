@@ -648,9 +648,10 @@ const Login = () => {
       // Reset to login page
       setPage("login");
       resetForm();
-      setSuccess("Account created successfully! Please log in with your email and password.");
+      setSuccess(
+        "Account created successfully! Please log in with your email and password."
+      );
     } catch (err) {
-   
       console.error("Sign-up error details:", err);
 
       if (err.code === "auth/user-not-found") {
