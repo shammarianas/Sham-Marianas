@@ -36,7 +36,8 @@ const SellerReports = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [reportTypeFilter, setReportTypeFilter] = useState("all");
+ const [specializationFilter, setSpecializationFilter] = useState("all");
+  const [availableSpecializations, setAvailableSpecializations] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(null);
@@ -63,7 +64,7 @@ const SellerReports = () => {
     return reportsData.map((report) => ({
       sellerName: report.sellerName || "Unknown Seller",
       sellerEmail: report.sellerEmail || "No email",
-      reportType: report.reportType || "Unknown Type",
+      specialization: report.specialization || "Unknown",
       period: report.period || "N/A",
       generatedDate: report.generatedDate || "N/A",
       status: report.status || "unknown",
@@ -105,6 +106,7 @@ const SellerReports = () => {
 
         // Generate dynamic reports based on contributors
         const dynamicReports = [];
+        const allSpecializations = new Set();
         let reportId = 1;
 
         for (const contributor of allContributors.slice(0, 12)) {
@@ -188,7 +190,9 @@ const SellerReports = () => {
                 rating: parseFloat(assetData.rating) || 0,
                 createdAt: assetDate,
                 status: assetData.status || "unknown",
+                category: assetData.category || 'Other',
               });
+            allSpecializations.add(contributor.specialization || "Unknown");
             });
             // Calculate dynamic growth percentages based on actual data
             let weeklyGrowth = 0;
@@ -260,26 +264,15 @@ const SellerReports = () => {
               }
             }
 
-            // Generate different report types with weighted probability
-            const reportTypes = [
-              { type: "Monthly Sales", weight: 0.35 },
-              { type: "Product Performance", weight: 0.25 },
-              { type: "Earnings Summary", weight: 0.25 },
-              { type: "Customer Analytics", weight: 0.15 },
-            ];
-
-            // Weighted random selection
-            const random = Math.random();
-            let cumulativeWeight = 0;
-            let selectedReportType = reportTypes[0].type;
-
-            for (const rt of reportTypes) {
-              cumulativeWeight += rt.weight;
-              if (random < cumulativeWeight) {
-                selectedReportType = rt.type;
-                break;
-              }
-            }
+            // Calculate primary category from assets
+            const categoryCounts = {};
+            assetDetails.forEach(asset => {
+              const cat = asset.category || 'Other';
+              categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+            });
+            const primaryCategory = Object.keys(categoryCounts).reduce((a, b) => 
+              categoryCounts[a] > categoryCounts[b] ? a : b, 'Other'
+            );
 
             // Dynamic status based on recent activity
             let status = "completed";
@@ -315,7 +308,7 @@ const SellerReports = () => {
                 "Unknown Seller",
               sellerEmail: contributor.email || "No email",
               sellerId: contributor.id,
-              reportType: selectedReportType,
+              specialization: contributor.specialization || "Unknown",
               period: period,
               generatedDate: new Date(
                 Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
@@ -389,6 +382,7 @@ const SellerReports = () => {
           }
         }
 
+        setAvailableSpecializations(Array.from(allSpecializations).sort());
         setReports(dynamicReports);
         console.log("✅ Dynamic reports generated:", dynamicReports.length);
       } catch (error) {
@@ -465,15 +459,15 @@ const SellerReports = () => {
   const filteredReports = reports.filter((report) => {
     const matchesSearch =
       report.sellerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.reportType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       report.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.sellerEmail.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || report.status === statusFilter;
-    const matchesType =
-      reportTypeFilter === "all" || report.reportType === reportTypeFilter;
+    const matchesSpecialization = 
+    specializationFilter === "all" || report.specialization === specializationFilter;
 
-    return matchesSearch && matchesStatus && matchesType;
+     return matchesSearch && matchesStatus && matchesSpecialization;
   });
 
   // ✅ DYNAMIC STATISTICS - ENHANCED
@@ -544,21 +538,29 @@ const SellerReports = () => {
     );
   };
 
-  const getReportTypeBadge = (reportType) => {
-    const types = {
-      "Monthly Sales": { class: "technical" },
-      "Product Performance": { class: "billing" },
-      "Earnings Summary": { class: "general" },
-      "Customer Analytics": { class: "feature" },
-    };
-    const typeInfo = types[reportType] || { class: "general" };
-
-    return (
-      <span className={`report-category-badge ${typeInfo.class}`}>
-        {typeInfo.icon} {reportType}
-      </span>
-    );
+ const getCategoryBadge = (category) => {
+  const categoryStyles = {
+    "Videos": { class: "videos", icon: "🎬" },
+    "3D Models": { class: "models", icon: "🎮" },
+    "Video Templates": { class: "video-templates", icon: "📹" },
+    "Images": { class: "images", icon: "🖼️" },
+    "Graphic Templates": { class: "graphics", icon: "🎨" },
+    "Mockups": { class: "mockups", icon: "📱" },
+    "Fonts": { class: "fonts", icon: "🔤" },
+    "Icons": { class: "icons", icon: "⚡" },
+    "Textures": { class: "textures", icon: "🧱" },
+    "Scripts": { class: "scripts", icon: "💻" },
+    "HDRIs": { class: "hdris", icon: "🌅" },
   };
+
+  const style = categoryStyles[category] || { class: "general", icon: "📄" };
+
+  return (
+    <span className={`report-category-badge ${style.class}`}>
+      {style.icon} {category}
+    </span>
+  );
+};
 
   // ✅ PROPER REPORT DOWNLOAD FUNCTION
   const downloadReportAsExcel = (report) => {
@@ -566,7 +568,7 @@ const SellerReports = () => {
 
     // Prepare data for Excel
     const worksheetData = [
-      ["Seller Report", report.reportType],
+      ["Seller Category Report", report.reportType],
       ["Seller Name", report.sellerName],
       ["Seller Email", report.sellerEmail],
       ["Report Period", report.period],
@@ -694,7 +696,7 @@ const SellerReports = () => {
     const fileName = `${report.sellerName.replace(
       /[^a-z0-9]/gi,
       "_"
-    )}_${report.reportType.replace(/\s+/g, "_")}_${report.period.replace(
+    )}_${report.category.replace(/\s+/g, "_")}_${report.period.replace(
       /[^a-z0-9]/gi,
       "_"
     )}_${new Date().toISOString().split("T")[0]}.xlsx`;
@@ -742,7 +744,7 @@ const SellerReports = () => {
         reportId: reports.length + 1,
         sellerName: "New Seller Report",
         sellerEmail: "report@example.com",
-        reportType: "Monthly Sales",
+       category: "Videos",
         period: getRandomPeriod(),
         generatedDate: new Date().toISOString().split("T")[0],
         lastUpdated: new Date().toISOString(),
@@ -780,7 +782,7 @@ const SellerReports = () => {
   const resetFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
-    setReportTypeFilter("all");
+   setSpecializationFilter("all");;
   };
 
   const exportAllReports = () => {
@@ -819,7 +821,7 @@ const SellerReports = () => {
       [
         "Seller Name",
         "Email",
-        "Report Type",
+        "Category",
         "Period",
         "Generated Date",
         "Revenue",
@@ -834,7 +836,7 @@ const SellerReports = () => {
       worksheetData.push([
         report.sellerName,
         report.sellerEmail,
-        report.reportType,
+        report.category,
         report.period,
         report.generatedDate,
         `$${report.revenue.toLocaleString()}`,
@@ -1106,16 +1108,17 @@ const SellerReports = () => {
           </select>
 
           <select
-            className="filter-select"
-            value={reportTypeFilter}
-            onChange={(e) => setReportTypeFilter(e.target.value)}
-          >
-            <option value="all">All Types</option>
-            <option value="Monthly Sales">Monthly Sales</option>
-            <option value="Product Performance">Product Performance</option>
-            <option value="Earnings Summary">Earnings Summary</option>
-            <option value="Customer Analytics">Customer Analytics</option>
-          </select>
+  className="filter-select"
+  value={specializationFilter}
+  onChange={(e) => setSpecializationFilter(e.target.value)}
+>
+  <option value="all">All Specializations</option>
+  {availableSpecializations.map((spec) => (
+    <option key={spec} value={spec}>
+      {spec}
+    </option>
+  ))}
+</select>
 
           <div className="filter-actions">
             <button className="filter-button" onClick={resetFilters}>
@@ -1153,7 +1156,7 @@ const SellerReports = () => {
             <thead>
               <tr>
                 <th>Seller</th>
-                <th>Report Type</th>
+                <th>Specialization</th>
                 <th>Generated Date</th>
                 <th>Revenue</th>
                 <th>Status</th>
@@ -1181,9 +1184,9 @@ const SellerReports = () => {
                       </div>
                     </div>
                   </td>
-                  <td>{getReportTypeBadge(report.reportType)}</td>
+                  <td>{report.specialization}</td>
 
-                  <td>
+                  <td> 
                     <div className="comp-dis">
                       {report.generatedDate}
                       <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
@@ -1285,9 +1288,9 @@ const SellerReports = () => {
                 <div className="detail-section">
                   <h4>Report Information</h4>
                   <div className="detail-item">
-                    <span className="detail-label">Report Type:</span>
+                    <span className="detail-label">Category:</span>
                     <span className="detail-value">
-                      {getReportTypeBadge(selectedReport.reportType)}
+                      {getCategoryBadge(selectedReport.category)}
                     </span>
                   </div>
 
