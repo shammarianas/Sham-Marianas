@@ -26,7 +26,6 @@ import {
 import { db, auth } from "../../firebase";
 import { useUser } from "../Context/UserProvider";
 import ListedItemCard from "../Components/UI/ListedItemCard";
-import { Helmet } from "react-helmet-async";
 // Add these URLs at the top of your Profile.js or in a config file
 const CLOUD_FUNCTIONS = {
   addTeamMember: "https://addteammember-xc6vtzxljq-uc.a.run.app",
@@ -48,7 +47,7 @@ const Profile = () => {
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
 
-  console.log("Profile user state:", user);
+console.log("Profile user state:", user);
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -344,7 +343,7 @@ const Profile = () => {
               foundInCollection = "Contributors";
               break;
             }
-            console.log("Searching Contributors with variation:", foundUserId);
+console.log("Searching Contributors with variation:", foundUserId);
             q = query(
               collection(db, "Contributors"),
               where("username_lowercase", "==", variation.toLowerCase())
@@ -1469,7 +1468,7 @@ const Profile = () => {
       // 4. Delete the user's authentication account
       await deleteUser(user);
 
-      alert("✅ Your account has been permanently deleted.");
+      alert("Your account has been permanently deleted.");
       navigate("/templates", { replace: true });
     } catch (error) {
       console.error("Error in account deletion process:", error);
@@ -1542,7 +1541,7 @@ const Profile = () => {
 
   return (
     <>
-
+     
 
       {/* Billing History Modal */}
       {showBillingModal && (
