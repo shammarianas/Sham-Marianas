@@ -2179,7 +2179,7 @@ const ContributorLogin = () => {
                       }}
                     >
                       {currentStep === 1 && isGoogleUser
-                        ? "Next" // ✅ Google user ke liye alag text
+                        ? "Next" 
                         : currentStep === 2
                         ? "Next"
                         : "Next"}
