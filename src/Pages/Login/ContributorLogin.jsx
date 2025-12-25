@@ -455,6 +455,7 @@ const ContributorLogin = () => {
       }
 
       // Don't auto-increment step - let sendVerificationEmail handle it
+      setCurrentStep(3);
       return;
     }
 
@@ -821,6 +822,12 @@ const ContributorLogin = () => {
     setError("");
     setSuccess("");
 
+    const currentUser = auth.currentUser;
+    if (currentUser && !currentUser.emailVerified && currentUser.providerData[0]?.providerId === "password") {
+      setError("Please verify your email first. Check your inbox.");
+      return;
+    }
+
     // Handle existing Google users
     if (isGoogleUser) {
       try {
@@ -945,7 +952,6 @@ const ContributorLogin = () => {
           "Please verify your email first by clicking the link sent to your inbox."
         );
         setTempUser(user);
-        setCurrentStep(2);
         return;
       }
 
@@ -953,7 +959,7 @@ const ContributorLogin = () => {
         await updateProfile(user, { displayName: fullName || username });
       }
 
-      await handleContributorProfile(user);
+      setCurrentStep(3);
     } catch (err) {
       console.error("Contributor signup error:", err);
       setError("Something went wrong. Please try again.");
