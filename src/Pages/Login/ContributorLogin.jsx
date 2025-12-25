@@ -23,6 +23,8 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import eye_icon from "../../assets/Icons/eye.png";
+// import { loginWithGoogle } from "./GoogleLogin";
+// import { loginWithApple } from "./AppleLogin";
 import {
   loginWithGoogle,
   googleContributorSignup,
@@ -1102,7 +1104,7 @@ const ContributorLogin = () => {
               <button className="login_btn" type="submit">
                 Login as Contributor
               </button>
-              <div className="separator"></div>
+              {/* <div className="separator"></div>
 
               <div className="buttons">
                 <button
@@ -1119,7 +1121,7 @@ const ContributorLogin = () => {
                 >
                   <i className="fab fa-apple"></i>
                 </button>
-              </div>
+              </div> */}
             </form>
           </div>
         )}
