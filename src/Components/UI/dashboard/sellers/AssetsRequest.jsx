@@ -78,6 +78,28 @@ const AssetRequestsDashboard = () => {
           }
         });
 
+        // ✅ Fetch contributor emails
+        const ownerIds = [...new Set(contributorAssets.map(asset => asset.ownerId).filter(id => id))];
+        const contributorsMap = {};
+
+        if (ownerIds.length > 0) {
+          // Handle Firestore 'in' query limit (10 items max)
+          const batchSize = 10;
+          for (let i = 0; i < ownerIds.length; i += batchSize) {
+            const batch = ownerIds.slice(i, i + batchSize);
+            const contributorsQuery = query(collection(db, "Contributors"), where("__name__", "in", batch));
+            const contributorsSnapshot = await getDocs(contributorsQuery);
+            contributorsSnapshot.forEach(doc => {
+              contributorsMap[doc.id] = doc.data().email;
+            });
+          }
+        }
+
+        // Update assets with fetched emails
+        contributorAssets.forEach(asset => {
+          asset.authorEmail = contributorsMap[asset.ownerId] || asset.authorEmail || "No email provided";
+        });
+
         // Sort by creation date (newest first)
         contributorAssets.sort((a, b) => {
           const timeA = a.submitDate?.toDate?.() || new Date(a.submitDate);
