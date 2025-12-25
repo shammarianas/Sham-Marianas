@@ -783,6 +783,263 @@ exports.sendContributorStatusEmail = functions.https.onRequest((req, res) => {
 });
 
 // =============================
+// EMAIL SUPPORT COMPLAINTS
+// =============================
+exports.sendSupportComplaintEmail = functions.firestore.onDocumentCreated(
+  "Profiles/{userId}/Support/{complaintId}",
+  async (event) => {
+    try {
+      const snapshot = event.data;
+      if (!snapshot) {
+        console.error("No data associated with the event");
+        return;
+      }
+
+      const complaintData = snapshot.data();
+      const {
+        complaintId,
+        subject,
+        description,
+        issueType,
+        email: userEmail,
+        userType,
+        createdAt,
+        status = "pending",
+      } = complaintData;
+
+      console.log(
+        `📧 Processing support complaint: ${complaintId} from ${userEmail}`
+      );
+
+      // Format the email content
+      const mailOptions = {
+        from: `"Sham Marianas Support" <${process.env.LOGIN_EMAIL_USER}>`,
+        to: "info@shammarianas.com",
+        cc: process.env.LOGIN_EMAIL_USER, // Also send to admin for tracking
+        subject: `[Support Complaint ${complaintId}] ${subject}`,
+        html: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+                            .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
+                            .info-box { background: white; border-left: 4px solid #4CAF50; padding: 15px; margin: 15px 0; }
+                            .label { font-weight: bold; color: #555; }
+                            .status-pending { color: #ff9800; font-weight: bold; }
+                            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; }
+                            .complaint-id { background: #e8f5e9; padding: 10px; border-radius: 4px; font-family: monospace; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h2>🆘 New Support Complaint Received</h2>
+                                <p>Complaint ID: <strong>${complaintId}</strong></p>
+                            </div>
+                            
+                            <div class="content">
+                                <div class="info-box">
+                                    <p><span class="label">Complaint ID:</span> <span class="complaint-id">${complaintId}</span></p>
+                                    <p><span class="label">User Type:</span> ${userType}</p>
+                                    <p><span class="label">User Email:</span> ${userEmail}</p>
+                                    <p><span class="label">Status:</span> <span class="status-pending">${status}</span></p>
+                                    <p><span class="label">Submitted:</span> ${
+                                      createdAt?.toDate().toLocaleString() ||
+                                      new Date().toLocaleString()
+                                    }</p>
+                                </div>
+                                
+                                <h3>📝 Complaint Details</h3>
+                                <p><span class="label">Subject:</span> ${subject}</p>
+                                <p><span class="label">Issue Type:</span> ${issueType}</p>
+                                
+                                <h3>📄 Description:</h3>
+                                <div style="background: white; padding: 15px; border: 1px solid #eee; border-radius: 4px;">
+                                    ${description.replace(/\n/g, "<br>")}
+                                </div>
+                                
+                                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 4px;">
+                                    <h4>🚀 Action Required:</h4>
+                                    <p>1. Review this complaint in Firebase Console</p>
+                                    <p>2. Update status: <code>Profiles/${
+                                      event.params.userId
+                                    }/Support/${
+          event.params.complaintId
+        }</code></p>
+                                    <p>3. Respond to user at: ${userEmail}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="footer">
+                                <p>This email was automatically generated by Sham Marianas Support System.</p>
+                                <p>Firestore Path: Profiles/${
+                                  event.params.userId
+                                }/Support/${event.params.complaintId}</p>
+                                <p>Timestamp: ${new Date().toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `,
+        // Plain text version for email clients that don't support HTML
+        text: `
+                    NEW SUPPORT COMPLAINT - ${complaintId}
+                    
+                    ============================================
+                    COMPLAINT ID: ${complaintId}
+                    USER TYPE: ${userType}
+                    USER EMAIL: ${userEmail}
+                    STATUS: ${status}
+                    SUBMITTED: ${
+                      createdAt?.toDate().toLocaleString() ||
+                      new Date().toLocaleString()
+                    }
+                    
+                    ============================================
+                    SUBJECT: ${subject}
+                    ISSUE TYPE: ${issueType}
+                    
+                    DESCRIPTION:
+                    ${description}
+                    
+                    ============================================
+                    ACTION REQUIRED:
+                    1. Review in Firebase Console
+                    2. Update status at: Profiles/${
+                      event.params.userId
+                    }/Support/${event.params.complaintId}
+                    3. Respond to user: ${userEmail}
+                    
+                    ============================================
+                    Auto-generated by Sham Marianas Support System
+                    ${new Date().toLocaleString()}
+                `,
+      };
+
+      // Send the email
+      await mailTransport.sendMail(mailOptions);
+      console.log(
+        `✅ Support complaint email sent for: ${complaintId} to info@shammarianas.com
+`
+      );
+
+      // Optionally, also update the complaint document to mark email sent
+      const db = admin.firestore();
+      await snapshot.ref.update({
+        emailSent: true,
+        emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        emailRecipient: "info@shammarianas.com",
+      });
+    } catch (error) {
+      console.error("❌ Error sending support complaint email:", error);
+
+      // Log error to Firestore for debugging
+      try {
+        await event.data.ref.update({
+          emailError: error.message,
+          emailSent: false,
+        });
+      } catch (updateError) {
+        console.error("Failed to update error status:", updateError);
+      }
+    }
+  }
+);
+
+// Also trigger for Contributors collection
+exports.sendContributorSupportComplaintEmail =
+  functions.firestore.onDocumentCreated(
+    "Contributors/{userId}/Support/{complaintId}",
+    async (event) => {
+      // Same implementation as above, but for Contributors collection
+      try {
+        const snapshot = event.data;
+        if (!snapshot) {
+          console.error("No data associated with the event");
+          return;
+        }
+
+        const complaintData = snapshot.data();
+        const {
+          complaintId,
+          subject,
+          description,
+          issueType,
+          email: userEmail,
+          userType = "contributor",
+          createdAt,
+          status = "pending",
+        } = complaintData;
+
+        console.log(
+          `📧 Processing contributor support complaint: ${complaintId} from ${userEmail}`
+        );
+
+        const mailOptions = {
+          from: `"Sham Marianas Support" <${process.env.LOGIN_EMAIL_USER}>`,
+          to: "info@shammarianas.com",
+          cc: process.env.LOGIN_EMAIL_USER,
+          subject: `[CONTRIBUTOR Support ${complaintId}] ${subject}`,
+          html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <div style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+                            <h2>👥 CONTRIBUTOR Support Complaint</h2>
+                            <p><strong>Complaint ID:</strong> ${complaintId}</p>
+                        </div>
+                        
+                        <div style="background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px;">
+                            <div style="background: white; padding: 15px; margin: 15px 0; border-left: 4px solid #4CAF50;">
+                                <p><strong>📋 Complaint ID:</strong> <code>${complaintId}</code></p>
+                                <p><strong>👤 User Type:</strong> ${userType}</p>
+                                <p><strong>📧 User Email:</strong> ${userEmail}</p>
+                                <p><strong>📅 Submitted:</strong> ${
+                                  createdAt?.toDate().toLocaleString() ||
+                                  new Date().toLocaleString()
+                                }</p>
+                                <p><strong>🔧 Issue Type:</strong> ${issueType}</p>
+                            </div>
+                            
+                            <h3>📝 Subject:</h3>
+                            <p>${subject}</p>
+                            
+                            <h3>📄 Description:</h3>
+                            <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
+                                ${description.replace(/\n/g, "<br>")}
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 4px;">
+                                <h4>🚀 Priority: CONTRIBUTOR ISSUE</h4>
+                                <p>Contributors are revenue-generating users. Please respond within 24 hours.</p>
+                                <p>Firestore Path: Contributors/${
+                                  event.params.userId
+                                }/Support/${event.params.complaintId}</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+        };
+
+        await mailTransport.sendMail(mailOptions);
+        console.log(`✅ Contributor support email sent for: ${complaintId}`);
+
+        // Update document
+        await snapshot.ref.update({
+          emailSent: true,
+          emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } catch (error) {
+        console.error("❌ Error sending contributor support email:", error);
+        await event.data.ref.update({
+          emailError: error.message,
+          emailSent: false,
+        });
+      }
+    }
+  );
+// =============================
 // GENERATE DOWNLOAD URL (ENHANCED)
 // =============================
 
