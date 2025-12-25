@@ -23,8 +23,6 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import eye_icon from "../../assets/Icons/eye.png";
-// import { loginWithGoogle } from "./GoogleLogin";
-// import { loginWithApple } from "./AppleLogin";
 import {
   loginWithGoogle,
   googleContributorSignup,
@@ -809,6 +807,9 @@ const ContributorLogin = () => {
 
       setCurrentStep(5);
       setSuccess("Contributor account created successfully! Under review.");
+
+      // Sign out the user after account creation to require manual login
+      await signOut(auth);
     } catch (err) {
       console.error("Profile error:", err);
       setError("Failed to create profile. Try a different username.");
@@ -886,6 +887,9 @@ const ContributorLogin = () => {
 
         setCurrentStep(5);
         setSuccess("Contributor application submitted! Under review.");
+
+        // Sign out the user after account creation to require manual login
+        await signOut(auth);
       } catch (err) {
         console.error("Google user contributor signup error:", err);
         setError("Failed to submit application: " + err.message);
@@ -1104,7 +1108,7 @@ const ContributorLogin = () => {
               <button className="login_btn" type="submit">
                 Login as Contributor
               </button>
-              {/* <div className="separator"></div>
+               <div className="separator"></div>
 
               <div className="buttons">
                 <button
@@ -1121,7 +1125,7 @@ const ContributorLogin = () => {
                 >
                   <i className="fab fa-apple"></i>
                 </button>
-              </div> */}
+              </div> 
             </form>
           </div>
         )}
@@ -1435,18 +1439,10 @@ const ContributorLogin = () => {
                     style={{ margin: "1.5rem 0" }}
                   ></div>
 
-                  <div
-                    className="buttons"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      gap: "1rem",
-                      marginTop: "1rem",
-                    }}
-                  >
+                  <div className="buttons">
                     <button
-                      type="button"
-                      className="google"
+                     className="google"
+                  type="button"
                       onClick={async () => {
                         try {
                           const googleUser = await googleContributorSignup();
@@ -1479,22 +1475,8 @@ const ContributorLogin = () => {
                           setError(error.message);
                         }
                       }}
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: "#4285f4",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
                     >
-                      <i
-                        className="fab fa-google"
-                        style={{ color: "white", fontSize: "1.2rem" }}
-                      ></i>
+                      <i className="fab fa-google"></i>
                     </button>
                   </div>
 
@@ -1506,22 +1488,20 @@ const ContributorLogin = () => {
                       marginTop: "0.5rem",
                     }}
                   >
-                    Already have a Google account? Use it to sign up
+                    Already have an account with Google? Use it to sign up with Google
                   </p>
 
                   {isGoogleUser && (
                     <div
                       style={{
                         padding: "1rem",
-                        backgroundColor: "rgba(66, 133, 244, 0.1)",
+                        backgroundColor: "#52b0b412",
                         borderRadius: "0.5rem",
-                        marginTop: "1rem",
-                        marginBottom: "1rem",
                       }}
                     >
                       <p
                         style={{
-                          color: "#4285f4",
+                          color: "#52b0b4",
                           margin: 0,
                           fontSize: "0.9rem",
                         }}
@@ -2157,7 +2137,7 @@ const ContributorLogin = () => {
               {error && <span className="error">{error}</span>}
               {success && <span className="success">{success}</span>}
 
-              {/* ========== BUTTONS ========== */}
+             
               {/* ========== BUTTONS ========== */}
               {currentStep < 5 && (
                 <div
@@ -2199,7 +2179,7 @@ const ContributorLogin = () => {
                       }}
                     >
                       {currentStep === 1 && isGoogleUser
-                        ? "Go to Portfolio" // ✅ Google user ke liye alag text
+                        ? "Next" // ✅ Google user ke liye alag text
                         : currentStep === 2
                         ? "Next"
                         : "Next"}

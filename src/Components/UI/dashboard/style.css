@@ -2938,13 +2938,13 @@ ul {
 
 /* Unauthorized */
 .unauthorized-access {
-  padding: 20px;
-  text-align: center;
-  color: var(--danger);
-  background-color: rgba(247, 37, 133, 0.1);
-  border-radius: 8px;
-  margin: 20px;
-  border: 1px solid rgba(247, 37, 133, 0.3);
+     padding: 20px;
+    text-align: center;
+    color: #52b0b4;
+    background-color: #52b0b41f;
+    border-radius: 8px;
+    margin: 20px;
+    border: 1px solid #52b0b4;
 }
 
 /* Responsive */
