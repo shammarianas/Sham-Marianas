@@ -1469,7 +1469,7 @@ console.log("Searching Contributors with variation:", foundUserId);
       // 4. Delete the user's authentication account
       await deleteUser(user);
 
-      alert("✅ Your account has been permanently deleted.");
+      alert("Your account has been permanently deleted.");
       navigate("/templates", { replace: true });
     } catch (error) {
       console.error("Error in account deletion process:", error);

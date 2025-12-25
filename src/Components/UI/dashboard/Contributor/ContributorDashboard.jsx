@@ -52,7 +52,7 @@ import SearchTrends from "../Contributor-tabs/SearchTrends";
 import Support from "../../../../Pages/Support";
 import ReportTrack from "../Contributor-tabs/ReportTrack";
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
-import SellerGuideline from "../../../../Pages/Get Started/SellerGuidelines"; 
+import SellerGuideline from "../../../../Pages/Get Started/SellerGuidelines";
 // ✅ ADDED: Import Profile component
 import Profile from "../../../../Pages/Profile"; // Adjust path as needed
 import Error from "../../../../Pages/Error";
@@ -126,11 +126,11 @@ const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, on
 // ✅ ADDED: Format notification time
 const formatNotificationTime = (timestamp) => {
   if (!timestamp) return 'Just now';
-  
+
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
-  
+
   if (diffInSeconds < 60) return 'Just now';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
@@ -272,7 +272,11 @@ const SellerDashboard = () => {
             );
 
             if (sellerData.status === "pending") {
-              navigate("/contributor-pending");
+              // navigate("/contributor-pending");
+              // alert("Your contributor account is still pending approval.");
+              if (error && !isSeller) {
+                return <UnauthorizedAccess error={error} />;
+              }
             } else if (sellerData.status === "rejected") {
               navigate("/error");
             } else {
@@ -316,9 +320,9 @@ const SellerDashboard = () => {
           ...doc.data(),
         });
       });
-      
+
       setNotifications(notificationsData);
-      
+
       // Calculate unread count
       const unread = notificationsData.filter(notification => !notification.read).length;
       setUnreadCount(unread);
@@ -346,7 +350,7 @@ const SellerDashboard = () => {
 
     try {
       const unreadNotifications = notifications.filter(notification => !notification.read);
-      const batch = unreadNotifications.map(notification => 
+      const batch = unreadNotifications.map(notification =>
         updateDoc(doc(db, `Contributors/${userData.uid}/Notifications`, notification.id), {
           read: true,
           readAt: serverTimestamp()
@@ -386,7 +390,7 @@ const SellerDashboard = () => {
   const fetchUserReports = async (uid) => {
     try {
       const supportQuery = query(
-        collection(db, `Contributors/${uid}/Support`), 
+        collection(db, `Contributors/${uid}/Support`),
         orderBy("createdAt", "desc")
       );
 
@@ -680,20 +684,20 @@ const SellerDashboard = () => {
   };
 
   return (
-   <>
-    <Cursor />
-    <div className="seller-dashboard">
-      {/* ✅ ADDED: Mobile Header with Hamburger Menu */}
-      <div className="mobile-header">
-        <button className="hamburger-menu" onClick={toggleSidebar}>
-          {sidebarOpen ? (
-            <FiX className="hamburger-icon" />
-          ) : (
-            <FiMenu className="hamburger-icon" />
-          )}
-        </button>
-       
-        {/* <div className="mobile-notification">
+    <>
+      <Cursor />
+      <div className="seller-dashboard">
+        {/* ✅ ADDED: Mobile Header with Hamburger Menu */}
+        <div className="mobile-header">
+          <button className="hamburger-menu" onClick={toggleSidebar}>
+            {sidebarOpen ? (
+              <FiX className="hamburger-icon" />
+            ) : (
+              <FiMenu className="hamburger-icon" />
+            )}
+          </button>
+
+          {/* <div className="mobile-notification">
           <button className="header-btn notification-btn" onClick={toggleNotifications}>
             <FiBell className="btn-icon" />
             {unreadCount > 0 && (
@@ -701,107 +705,101 @@ const SellerDashboard = () => {
             )}
           </button>
         </div> */}
-      </div>
-
-      {/* Sidebar */}
-      <div className={`seller-sidebar ${sidebarOpen ? "open" : "closed"}`} ref={sidebarRef}>
-        <div className="seller-sidebar-header">
-          <div className="seller-brand">
-            <FiShoppingBag className="brand-icon" />
-            <span className="brand-text">Contributor Dashboard</span>
-          </div>
         </div>
 
-        <nav className="seller-sidebar-nav-c">
-          {/* Main Menu */}
-          <div className="nav-c-section">
-            <div className="nav-c-section-title">MAIN</div>
-            <ul className="nav-c-menu">
-              <li
-                className={`nav-c-item ${
-                  activeTab === "dashboard" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("dashboard")}
-              >
-                <FiHome className="nav-c-icon" />
-                <span className="nav-c-label">Dashboard</span>
-              </li>
-              <li
-                className={`nav-c-item ${
-                  activeTab === "upload" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("upload")}
-              >
-                <FiUpload className="nav-c-icon" />
-                <span className="nav-c-label">Upload</span>
-              </li>
-            </ul>
+        {/* Sidebar */}
+        <div className={`seller-sidebar ${sidebarOpen ? "open" : "closed"}`} ref={sidebarRef}>
+          <div className="seller-sidebar-header">
+            <div className="seller-brand">
+              <FiShoppingBag className="brand-icon" />
+              <span className="brand-text">Contributor Dashboard</span>
+            </div>
           </div>
 
-          {/* Files Status */}
-          <div className="nav-c-section">
-            <div className="nav-c-section-title">FILES STATUS</div>
-            <ul className="nav-c-menu">
-              <li
-                className={`nav-c-item ${
-                  activeTab === "under-revision" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("under-revision")}
-              >
-                <FiClock className="nav-c-icon" />
-                <span className="nav-c-label">Under revision</span>
-                {stats.underRevision > 0 && (
-                  <span className="nav-c-badge">{stats.underRevision}</span>
-                )}
-              </li>
-              <li
-                className={`nav-c-item ${
-                  activeTab === "rejections" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("rejections")}
-              >
-                <FiXCircle className="nav-c-icon" />
-                <span className="nav-c-label">Rejections</span>
-                {stats.rejections > 0 && (
-                  <span className="nav-c-badge">{stats.rejections}</span>
-                )}
-              </li>
-              <li
-                className={`nav-c-item ${
-                  activeTab === "published" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("published")}
-              >
-                <FiCheckCircle className="nav-c-icon" />
-                <span className="nav-c-label">Published</span>
-                {stats.published > 0 && (
-                  <span className="nav-c-badge">{stats.published}</span>
-                )}
-              </li>
-            </ul>
-          </div>
+          <nav className="seller-sidebar-nav-c">
+            {/* Main Menu */}
+            <div className="nav-c-section">
+              <div className="nav-c-section-title">MAIN</div>
+              <ul className="nav-c-menu">
+                <li
+                  className={`nav-c-item ${activeTab === "dashboard" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("dashboard")}
+                >
+                  <FiHome className="nav-c-icon" />
+                  <span className="nav-c-label">Dashboard</span>
+                </li>
+                <li
+                  className={`nav-c-item ${activeTab === "upload" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("upload")}
+                >
+                  <FiUpload className="nav-c-icon" />
+                  <span className="nav-c-label">Upload</span>
+                </li>
+              </ul>
+            </div>
 
-          {/* Stats */}
-          <div className="nav-c-section">
-            <div className="nav-c-section-title">STATS</div>
-            <ul className="nav-c-menu">
-              <li
-                className={`nav-c-item ${
-                  activeTab === "stats" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("stats")}
-              >
-                <FiTrendingUp className="nav-c-icon" />
-                <span className="nav-c-label">Stats</span>
-              </li>
-            </ul>
-          </div>
+            {/* Files Status */}
+            <div className="nav-c-section">
+              <div className="nav-c-section-title">FILES STATUS</div>
+              <ul className="nav-c-menu">
+                <li
+                  className={`nav-c-item ${activeTab === "under-revision" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("under-revision")}
+                >
+                  <FiClock className="nav-c-icon" />
+                  <span className="nav-c-label">Under revision</span>
+                  {stats.underRevision > 0 && (
+                    <span className="nav-c-badge">{stats.underRevision}</span>
+                  )}
+                </li>
+                <li
+                  className={`nav-c-item ${activeTab === "rejections" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("rejections")}
+                >
+                  <FiXCircle className="nav-c-icon" />
+                  <span className="nav-c-label">Rejections</span>
+                  {stats.rejections > 0 && (
+                    <span className="nav-c-badge">{stats.rejections}</span>
+                  )}
+                </li>
+                <li
+                  className={`nav-c-item ${activeTab === "published" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("published")}
+                >
+                  <FiCheckCircle className="nav-c-icon" />
+                  <span className="nav-c-label">Published</span>
+                  {stats.published > 0 && (
+                    <span className="nav-c-badge">{stats.published}</span>
+                  )}
+                </li>
+              </ul>
+            </div>
 
-          {/* Resources and Help */}
-          <div className="nav-c-section">
-            <div className="nav-c-section-title">RESOURCES AND HELP</div>
-            <ul className="nav-c-menu">
-              {/* <li
+            {/* Stats */}
+            <div className="nav-c-section">
+              <div className="nav-c-section-title">STATS</div>
+              <ul className="nav-c-menu">
+                <li
+                  className={`nav-c-item ${activeTab === "stats" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("stats")}
+                >
+                  <FiTrendingUp className="nav-c-icon" />
+                  <span className="nav-c-label">Stats</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources and Help */}
+            <div className="nav-c-section">
+              <div className="nav-c-section-title">RESOURCES AND HELP</div>
+              <ul className="nav-c-menu">
+                {/* <li
                 className={`nav-c-item ${
                   activeTab === "search-trends" ? "active" : ""
                 }`}
@@ -819,62 +817,57 @@ const SellerDashboard = () => {
                 <FiPieChart className="nav-c-icon" />
                 <span className="nav-c-label">Visual Trends</span>
               </li> */}
-              <li
-                className={`nav-c-item ${
-                  activeTab === "guidelines" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("guidelines")}
-              >
-                <FiList className="nav-c-icon" />
-                <span className="nav-c-label">Guidelines</span>
-              </li>
-              <li
-                className={`nav-c-item ${
-                  activeTab === "contact" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("contact")}
-              >
-                <FiMessageSquare className="nav-c-icon" />
-                <span className="nav-c-label">Contact</span>
-              </li>
-              <li
-                className={`nav-c-item ${
-                  activeTab === "report-track" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("report-track")}
-              >
-                <FiFileText className="nav-c-icon" />
-                <span className="nav-c-label">Track Reports</span>
-                {unresolvedReportsCount > 0 && (
-                  <span className="nav-c-badge">{unresolvedReportsCount}</span>
-                )}
-              </li>
-            </ul>
-          </div>
+                <li
+                  className={`nav-c-item ${activeTab === "guidelines" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("guidelines")}
+                >
+                  <FiList className="nav-c-icon" />
+                  <span className="nav-c-label">Guidelines</span>
+                </li>
+                <li
+                  className={`nav-c-item ${activeTab === "contact" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("contact")}
+                >
+                  <FiMessageSquare className="nav-c-icon" />
+                  <span className="nav-c-label">Contact</span>
+                </li>
+                <li
+                  className={`nav-c-item ${activeTab === "report-track" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("report-track")}
+                >
+                  <FiFileText className="nav-c-icon" />
+                  <span className="nav-c-label">Track Reports</span>
+                  {unresolvedReportsCount > 0 && (
+                    <span className="nav-c-badge">{unresolvedReportsCount}</span>
+                  )}
+                </li>
+              </ul>
+            </div>
 
-          {/* Account */}
-          <div className="nav-c-section">
-            <div className="nav-c-section-title">ACCOUNT</div>
-            <ul className="nav-c-menu">
-              <li
-                className={`nav-c-item ${
-                  activeTab === "profile" ? "active" : ""
-                }`}
-                onClick={handleProfileTab}
-              >
-                <FiUser className="nav-c-icon" />
-                <span className="nav-c-label">Profile</span>
-              </li>
-              <li
-                className={`nav-c-item ${
-                  activeTab === "billing" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("billing")}
-              >
-                <FiDollarSign className="nav-c-icon" />
-                <span className="nav-c-label">Billing and invoices</span>
-              </li>
-              {/* <li
+            {/* Account */}
+            <div className="nav-c-section">
+              <div className="nav-c-section-title">ACCOUNT</div>
+              <ul className="nav-c-menu">
+                <li
+                  className={`nav-c-item ${activeTab === "profile" ? "active" : ""
+                    }`}
+                  onClick={handleProfileTab}
+                >
+                  <FiUser className="nav-c-icon" />
+                  <span className="nav-c-label">Profile</span>
+                </li>
+                <li
+                  className={`nav-c-item ${activeTab === "billing" ? "active" : ""
+                    }`}
+                  onClick={() => handleTabClick("billing")}
+                >
+                  <FiDollarSign className="nav-c-icon" />
+                  <span className="nav-c-label">Billing and invoices</span>
+                </li>
+                {/* <li
                 className={`nav-c-item ${
                   activeTab === "feedback" ? "active" : ""
                 }`}
@@ -883,84 +876,84 @@ const SellerDashboard = () => {
                 <FiStar className="nav-c-icon" />
                 <span className="nav-c-label">Feedback</span>
               </li> */}
-            </ul>
-          </div>
-        </nav>
-      </div>
-
-      {/* Overlay for mobile when sidebar is open */}
-      {sidebarOpen && window.innerWidth <= 768 && (
-        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
-      )}
-
-      {/* Main Content */}
-      <div className={`seller-main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
-        <div className="seller-header">
-          <div className="header-left">
-            <h1 className="page-title">
-              {activeTab === "dashboard" && "Dashboard"}
-              {activeTab === "files" && "My Files"}
-              {activeTab === "upload" && "Upload Files"}
-              {activeTab === "under-revision" && "Under Revision"}
-              {activeTab === "rejections" && "Rejections"}
-              {activeTab === "published" && "Published Files"}
-              {activeTab === "stats" && "Statistics"}
-              {activeTab === "search-trends" && "Search Trends"}
-              {activeTab === "visual-trends" && "Visual Trends"}
-              {activeTab === "guidelines" && "Guidelines"}
-              {activeTab === "contact" && "Contact Support"}
-              {activeTab === "report-track" && "Track Reports"}
-              {activeTab === "profile" && "Profile"} 
-              {activeTab === "billing" && "Billing & Invoices"}
-              {activeTab === "feedback" && "Feedback"}
-            </h1>
-          </div>
-          <div className="header-right m-0">
-            {/* ✅ UPDATED: Notification Button with Badge */}
-            <div className="notification-container" ref={notificationRef}>
-              <button className="header-btn notification-btn" onClick={toggleNotifications}>
-                <FiBell className="btn-icon" />
-                {unreadCount > 0 && (
-                  <span className="notification-badge">{unreadCount}</span>
-                )}
-              </button>
-              
-              {/* Notification Dropdown */}
-              {showNotifications && (
-                <NotificationDropdown
-                  notifications={notifications}
-                  onMarkAsRead={markNotificationAsRead}
-                  onMarkAllAsRead={markAllNotificationsAsRead}
-                  onClose={() => setShowNotifications(false)}
-                />
-              )}
+              </ul>
             </div>
-            
-            {/* <button className="header-btn">
-              <FiSettings className="btn-icon" />
-            </button> */}
-          </div>
+          </nav>
         </div>
 
-        {error && (
-          <div className="error-alert">
-            {error}
-            <button onClick={() => setError(null)} className="close-error">
-              <FiXCircle />
-            </button>
-          </div>
+        {/* Overlay for mobile when sidebar is open */}
+        {sidebarOpen && window.innerWidth <= 768 && (
+          <div className="sidebar-overlay" onClick={toggleSidebar}></div>
         )}
 
-        {/* Dashboard Content */}
-        <div className="seller-content">
-          {loading && <div className="loading-overlay">Loading...</div>}
+        {/* Main Content */}
+        <div className={`seller-main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
+          <div className="seller-header">
+            <div className="header-left">
+              <h1 className="page-title">
+                {activeTab === "dashboard" && "Dashboard"}
+                {activeTab === "files" && "My Files"}
+                {activeTab === "upload" && "Upload Files"}
+                {activeTab === "under-revision" && "Under Revision"}
+                {activeTab === "rejections" && "Rejections"}
+                {activeTab === "published" && "Published Files"}
+                {activeTab === "stats" && "Statistics"}
+                {activeTab === "search-trends" && "Search Trends"}
+                {activeTab === "visual-trends" && "Visual Trends"}
+                {activeTab === "guidelines" && "Guidelines"}
+                {activeTab === "contact" && "Contact Support"}
+                {activeTab === "report-track" && "Track Reports"}
+                {activeTab === "profile" && "Profile"}
+                {activeTab === "billing" && "Billing & Invoices"}
+                {activeTab === "feedback" && "Feedback"}
+              </h1>
+            </div>
+            <div className="header-right m-0">
+              {/* ✅ UPDATED: Notification Button with Badge */}
+              <div className="notification-container" ref={notificationRef}>
+                <button className="header-btn notification-btn" onClick={toggleNotifications}>
+                  <FiBell className="btn-icon" />
+                  {unreadCount > 0 && (
+                    <span className="notification-badge">{unreadCount}</span>
+                  )}
+                </button>
 
-          {/* Render the active tab component */}
-          {renderActiveTab()}
+                {/* Notification Dropdown */}
+                {showNotifications && (
+                  <NotificationDropdown
+                    notifications={notifications}
+                    onMarkAsRead={markNotificationAsRead}
+                    onMarkAllAsRead={markAllNotificationsAsRead}
+                    onClose={() => setShowNotifications(false)}
+                  />
+                )}
+              </div>
+
+              {/* <button className="header-btn">
+              <FiSettings className="btn-icon" />
+            </button> */}
+            </div>
+          </div>
+
+          {error && (
+            <div className="error-alert">
+              {error}
+              <button onClick={() => setError(null)} className="close-error">
+                <FiXCircle />
+              </button>
+            </div>
+          )}
+
+          {/* Dashboard Content */}
+          <div className="seller-content">
+            {loading && <div className="loading-overlay">Loading...</div>}
+
+            {/* Render the active tab component */}
+            {renderActiveTab()}
+          </div>
         </div>
       </div>
-    </div>
-   </>
+    </>
   );
 };
 

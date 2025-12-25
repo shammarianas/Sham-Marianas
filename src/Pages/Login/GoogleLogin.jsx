@@ -103,7 +103,7 @@ export const loginWithGoogleContributor = () => {
         alert(
           "No contributor profile found. Please sign up as contributor first."
         );
-        window.location.href = "/contributor/signup";
+        window.location.href = "/contributorlogin";
       } else {
         const contributorData = contributorDoc.data();
 
@@ -119,12 +119,12 @@ export const loginWithGoogleContributor = () => {
           window.location.href = "/contributordashboard";
         } else if (contributorData.status === "pending") {
           alert("Your contributor account is still pending approval.");
-          window.location.href = "/contributor/pending";
+          // window.location.href = "/contributor/pending";
         } else if (contributorData.status === "rejected") {
           alert(
             "Your contributor application was rejected. Please contact support."
           );
-          window.location.href = "/contributor/login";
+          window.location.href = "/contributorlogin";
         }
       }
     })
