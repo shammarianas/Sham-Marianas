@@ -594,13 +594,6 @@ const Login = () => {
         }
       );
 
-<<<<<<< HEAD
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
-    } catch (err) {
-      setError("Sign-up failed: " + err.message);
-=======
       // Save to Firestore
       await setDoc(userProfileRef, profileData, { merge: true });
 
@@ -653,7 +646,6 @@ const Login = () => {
       } else {
         setError("Sign-up failed: " + err.message);
       }
->>>>>>> d5b21b94ba86a2e6797d2acc2bc5991168551bb1
     }
   };
 

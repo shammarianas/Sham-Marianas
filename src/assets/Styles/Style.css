@@ -4829,7 +4829,7 @@ div>button.add_to_wishlist_btn.favorited {
   transition: all 0.3s ease;
 }
 
-.profile_main .profile .top .right .actions .follow_btn.disabled {
+btn.disabled {
   background-color: rgba(255, 255, 255, 0.3490196078);
   color: rgba(255, 255, 255, 0.3490196078);
   cursor: not-allowed;
@@ -4845,7 +4845,9 @@ div>button.add_to_wishlist_btn.favorited {
 }
 
 .profile_main .profile .top .right .actions .follow_btn:hover {
-  background-color: #0288d1;
+  border: 1px solid #fff;
+    background: transparent;
+    color: #fff;
 }
 
 .profile_main .bottom {
