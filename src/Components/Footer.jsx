@@ -6,13 +6,52 @@ function Footer() {
   const location = useLocation();
   const path = location.pathname.toLowerCase();
 
+  // List of non-template single-segment paths
+  const nonTemplateSinglePaths = [
+    "/",
+    "/services",
+    "/about",
+    "/contact",
+    "/blog",
+    "/portfolio",
+    "/support",
+    "/page-team",
+    "/analytics",
+    "/terms",
+    "/privacy",
+    "/cart",
+    "/groups",
+    "/upload",
+    "/checkout",
+    "/library",
+    "/mydownloads",
+    "/favorites",
+    "/texture",
+    "/success",
+    "/error",
+    "/privacy-policy",
+    "/terms-and-conditions",
+    "/seller-guideline",
+    "/prices-and-fees",
+    "/contributor-policies",
+    "/comming-soon",
+    "/blogs",
+    "/subscription",
+    "/login",
+    "/contributorlogin",
+    "/contributordashboard",
+    "/admin",
+    "/reset",
+    "/logout",
+    "/auto-login-team"
+  ];
+
   // Check if the current page is /templates or a category template page
   const isTemplatePage =
     path === "/templates" ||
     path === "/contributorlogin" ||
     path === "/login" ||
     path == "/support" ||
-    path === "/profile" ||
     path === "//Favorites" ||
     path === "/MyDownloads" ||
     path === "/privacy-policy-template" ||
@@ -20,6 +59,7 @@ function Footer() {
     path === "/seller-guideline" ||
     path === "/contributor-policies" ||
     path === "/prices-and-fees" ||
+    path.startsWith("/profile") ||
     path.startsWith("/error") ||
     path.startsWith("/category/fonts") ||
     path.startsWith("/category/video-templates") ||
@@ -31,9 +71,9 @@ function Footer() {
     path.startsWith("/category/images") ||
     path.startsWith("/category/scripts") ||
     path.startsWith("/category/hdri") ||
-    path.startsWith("/profile/") ||
     path.startsWith("/subscription") ||
-    path.startsWith("/view/");
+    path.startsWith("/view/") ||
+    (path.match(/^\/[^\/]+$/) && !nonTemplateSinglePaths.includes(path.toLowerCase()));
     
 
 
