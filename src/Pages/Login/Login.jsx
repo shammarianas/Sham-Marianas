@@ -371,72 +371,83 @@ const Login = () => {
     }
   }, [password, confirmPassword, page]);
 
-  // Send email verification
-  const sendVerificationEmail = async () => {
-    try {
-      setError("");
-      setSuccess("");
+// Send email verification
+const sendVerificationEmail = async () => {
+  try {
+    setError("");
+    setSuccess("");
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setError("Please enter a valid email address");
-        return;
-      }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
-      if (!validateStep1()) {
-        return;
-      }
+    if (!validateStep1()) {
+      return;
+    }
 
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
+    // Pehle user create karo
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    const user = userCredential.user;
+
+    // Update profile with username
+    await updateProfile(user, {
+      displayName: username,
+    });
+
+    // ✅ CRITICAL FIX: Simple verification send, no URL needed
+    await sendEmailVerification(user, {
+      // URL remove karo ya specific page par dalo
+      url: window.location.origin, // Ya phir "/" homepage
+      handleCodeInApp: true, // ✅ Change from false to true
+    });
+
+    setTempUser(user);
+    setIsVerificationSent(true);
+    setResendTimer(60);
+    setSuccess(
+      "Verification email sent! Please check your inbox and spam folder."
+    );
+
+  } catch (err) {
+    console.error("Full verification error:", err.code, err.message);
+    
+    if (err.code === "auth/email-already-in-use") {
+      setError(
+        "Email already registered. Please login or use a different email."
       );
-      const user = userCredential.user;
+    } else if (err.code === "auth/too-many-requests") {
+      setError("Too many attempts. Please try again later.");
+    } else if (err.code === "auth/network-request-failed") {
+      setError("Network error. Please check your internet connection.");
+    } else {
+      setError("Failed to send verification: " + err.message);
+    }
+  }
+};
+ 
 
-      await updateProfile(user, {
-        displayName: username,
+// Resend verification email
+const resendVerificationEmail = async () => {
+  try {
+    if (tempUser) {
+      await sendEmailVerification(tempUser, {
+        url: window.location.origin,
+        handleCodeInApp: true, // ✅ Change to true
       });
-
-      await sendEmailVerification(user, {
-        url: window.location.origin + "/email-verified",
-        handleCodeInApp: false,
-      });
-
-      setTempUser(user);
-      setIsVerificationSent(true);
       setResendTimer(60);
-      setSuccess(
-        "Verification email sent! Check your inbox and click the link to verify."
-      );
-    } catch (err) {
-      if (err.code === "auth/email-already-in-use") {
-        setError(
-          "Email already registered. Please login or use a different email."
-        );
-      } else if (err.code === "auth/too-many-requests") {
-        setError("Too many attempts. Please try again later.");
-      } else {
-        setError("Failed to send verification: " + err.message);
-      }
+      setSuccess("Verification email resent! Check your inbox and spam folder.");
     }
-  };
-
-  // Resend verification email
-  const resendVerificationEmail = async () => {
-    try {
-      if (tempUser) {
-        await sendEmailVerification(tempUser, {
-          url: window.location.origin + "/email-verified",
-          handleCodeInApp: false,
-        });
-        setResendTimer(60);
-        setSuccess("Verification email resent! Check your inbox.");
-      }
-    } catch (err) {
-      setError("Failed to resend email: " + err.message);
-    }
-  };
+  } catch (err) {
+    console.error("Resend error:", err);
+    setError("Failed to resend email: " + err.message);
+  }
+};
 
   // Check email verification status
   const checkEmailVerification = async () => {
