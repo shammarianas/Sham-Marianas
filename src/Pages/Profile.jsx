@@ -26,7 +26,6 @@ import {
 import { db, auth } from "../../firebase";
 import { useUser } from "../Context/UserProvider";
 import ListedItemCard from "../Components/UI/ListedItemCard";
-import { Helmet } from "react-helmet-async";
 // Add these URLs at the top of your Profile.js or in a config file
 const CLOUD_FUNCTIONS = {
   addTeamMember: "https://addteammember-xc6vtzxljq-uc.a.run.app",
@@ -48,7 +47,7 @@ const Profile = () => {
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
 
-  console.log("Profile user state:", user);
+console.log("Profile user state:", user);
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -344,7 +343,7 @@ const Profile = () => {
               foundInCollection = "Contributors";
               break;
             }
-            console.log("Searching Contributors with variation:", foundUserId);
+console.log("Searching Contributors with variation:", foundUserId);
             q = query(
               collection(db, "Contributors"),
               where("username_lowercase", "==", variation.toLowerCase())
@@ -535,9 +534,8 @@ const Profile = () => {
                   email: memberProfile.email,
                   name:
                     memberProfile.name ||
-                    `${memberProfile.firstName || ""} ${
-                      memberProfile.lastName || ""
-                    }`.trim(),
+                    `${memberProfile.firstName || ""} ${memberProfile.lastName || ""
+                      }`.trim(),
                   role: memberId === teamData.ownerId ? "owner" : "member",
                   joinedAt: memberProfile.joinDate || memberProfile.createdAt,
                   profilePic: memberProfile.profilePic,
@@ -835,7 +833,7 @@ const Profile = () => {
       !subscription ||
       !window.confirm(
         "Are you sure you want to cancel your subscription?\n\n" +
-          "You will continue to have access until the end of your current billing period."
+        "You will continue to have access until the end of your current billing period."
       )
     )
       return;
@@ -1470,7 +1468,7 @@ const Profile = () => {
       // 4. Delete the user's authentication account
       await deleteUser(user);
 
-      alert("✅ Your account has been permanently deleted.");
+      alert("Your account has been permanently deleted.");
       navigate("/templates", { replace: true });
     } catch (error) {
       console.error("Error in account deletion process:", error);
@@ -1543,6 +1541,8 @@ const Profile = () => {
 
   return (
     <>
+     
+
       {/* Billing History Modal */}
       {showBillingModal && (
         <div className="modal-overlay" onClick={handleCloseBillingModal}>
@@ -1709,18 +1709,16 @@ const Profile = () => {
                 <div className="actions">
                   {currentUser ? (
                     <button
-                      className={`follow_btn ${
-                        currentUser.uid === userId ? "disabled" : ""
-                      }`}
+                      className={`follow_btn ${currentUser.uid === userId ? "disabled" : ""
+                        }`}
                       onClick={
-                        currentUser.uid === userId ? () => {} : followUser
+                        currentUser.uid === userId ? () => { } : followUser
                       }
                       disabled={currentUser.uid === userId}
                     >
                       <i
-                        className={`icon fas ${
-                          isFollowing ? "fa-check" : "fa-plus"
-                        }`}
+                        className={`icon fas ${isFollowing ? "fa-check" : "fa-plus"
+                          }`}
                       ></i>
                       <span>{isFollowing ? "Following" : "Follow"}</span>
                     </button>
@@ -1743,18 +1741,16 @@ const Profile = () => {
               {/* Navigation Tabs */}
               <div className="profile-nav-tabs">
                 <button
-                  className={`profile-nav-tab ${
-                    activeTab === "profile" ? "active" : ""
-                  }`}
+                  className={`profile-nav-tab ${activeTab === "profile" ? "active" : ""
+                    }`}
                   onClick={() => setActiveTab("profile")}
                 >
                   <i className="icon fas fa-user-cog"></i>
                   <span>Profile Settings</span>
                 </button>
                 <button
-                  className={`profile-nav-tab ${
-                    activeTab === "subscription" ? "active" : ""
-                  }`}
+                  className={`profile-nav-tab ${activeTab === "subscription" ? "active" : ""
+                    }`}
                   onClick={() => setActiveTab("subscription")}
                 >
                   <i className="icon fas fa-crown"></i>
@@ -1889,11 +1885,10 @@ const Profile = () => {
                     <div className="danger-zone-content">
                       <div className="danger-actions">
                         <button
-                          className={`butn butn-sm butn-bord ${
-                            user?.status === "deactivated"
+                          className={`butn butn-sm butn-bord ${user?.status === "deactivated"
                               ? "butn-bg main-colorbg"
                               : "butn-danger"
-                          } radius-5`}
+                            } radius-5`}
                           onClick={
                             user?.status === "deactivated"
                               ? handleActivateAccount
@@ -1901,11 +1896,10 @@ const Profile = () => {
                           }
                         >
                           <i
-                            className={`icon fas ${
-                              user?.status === "deactivated"
+                            className={`icon fas ${user?.status === "deactivated"
                                 ? "fa-play"
                                 : "fa-pause"
-                            }`}
+                              }`}
                           ></i>
                           <span>
                             {user?.status === "deactivated"
@@ -1945,17 +1939,16 @@ const Profile = () => {
                           <div className="header-left">
                             <h2>Current Subscription</h2>
                             <div
-                              className={`status-badge ${
-                                formatSubscriptionStatus(
-                                  user?.subscription?.status ||
-                                    subscription?.status
-                                ).class
-                              }`}
+                              className={`status-badge ${formatSubscriptionStatus(
+                                user?.subscription?.status ||
+                                subscription?.status
+                              ).class
+                                }`}
                             >
                               {
                                 formatSubscriptionStatus(
                                   user?.subscription?.status ||
-                                    subscription?.status
+                                  subscription?.status
                                 ).text
                               }
                             </div>
@@ -1977,9 +1970,9 @@ const Profile = () => {
                             <span className="info-value">
                               {getSubscriptionTypeDisplay(
                                 user?.subscription?.type ||
-                                  user?.subscription?.plan ||
-                                  subscription?.subscriptionType ||
-                                  "individual"
+                                user?.subscription?.plan ||
+                                subscription?.subscriptionType ||
+                                "individual"
                               )}
                             </span>
                           </div>
@@ -2026,9 +2019,9 @@ const Profile = () => {
                             <span className="info-value">
                               {formatDate(
                                 user?.subscription?.expiresAt ||
-                                  user?.subscription?.nextBillingDate ||
-                                  subscription?.nextBillingDate ||
-                                  subscription?.currentPeriodEnd
+                                user?.subscription?.nextBillingDate ||
+                                subscription?.nextBillingDate ||
+                                subscription?.currentPeriodEnd
                               ) || "N/A"}
                             </span>
                           </div>
@@ -2051,8 +2044,8 @@ const Profile = () => {
                             <span className="info-value">
                               {formatDate(
                                 user?.subscription?.startDate ||
-                                  subscription?.createdAt ||
-                                  subscription?.startDate
+                                subscription?.createdAt ||
+                                subscription?.startDate
                               ) || "N/A"}
                             </span>
                           </div>
@@ -2062,205 +2055,205 @@ const Profile = () => {
                         {(user?.subscription?.type === "team" ||
                           subscription?.subscriptionType === "team" ||
                           user?.subscription?.plan === "team") && (
-                          <div className="team-management-section">
-                            <div className="section-header">
-                              <h3>Team Management</h3>
-                              <div className="member-count">
-                                <i className="fas fa-users"></i>
-                                <span>
-                                  {teamMembers.length} /{" "}
-                                  {user?.subscription?.teamMembers ||
-                                    subscription?.teamMembers ||
-                                    1}{" "}
-                                  members
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Invite Team Member */}
-                            <div className="invite-member-form">
-                              <h4>Add Team Member</h4>
-                              <p className="form-description">
-                                Invite team members by email. They'll receive an
-                                invitation to join your team.
-                              </p>
-
-                              <div className="input-with-button">
-                                <input
-                                  type="email"
-                                  placeholder="Enter email address"
-                                  value={inviteEmail}
-                                  onChange={(e) =>
-                                    setInviteEmail(e.target.value)
-                                  }
-                                  className="invite-email-input"
-                                />
-                                <button
-                                  className="butn butn-sm butn-bg main-colorbg color-white radius-5"
-                                  onClick={inviteTeamMember}
-                                  disabled={inviting || !inviteEmail}
-                                >
-                                  <i className="icon fas fa-paper-plane pr-3"></i>
+                            <div className="team-management-section">
+                              <div className="section-header">
+                                <h3>Team Management</h3>
+                                <div className="member-count">
+                                  <i className="fas fa-users"></i>
                                   <span>
-                                    {inviting ? "Sending..." : "Invite"}
-                                  </span>
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Current Team Members */}
-                            {teamMembers.length > 0 && (
-                              <div className="team-members-list">
-                                <h4>Team Members</h4>
-                                <div className="members-grid">
-                                  {teamMembers.map((member) => (
-                                    <div
-                                      key={member.id}
-                                      className="member-card"
-                                    >
-                                      <div className="member-info">
-                                        <div className="member-avatar">
-                                          {member.profilePic ? (
-                                            <img
-                                              src={member.profilePic}
-                                              alt={member.email}
-                                            />
-                                          ) : (
-                                            <div className="avatar-initials">
-                                              {member.email
-                                                ?.charAt(0)
-                                                .toUpperCase()}
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="member-details">
-                                          <div className="member-email">
-                                            {member.email}
-                                          </div>
-                                          <div className="member-role">
-                                            <span className="role-badge">
-                                              {member.role || "Member"}
-                                            </span>
-                                          </div>
-                                          <div className="member-joined">
-                                            Joined:{" "}
-                                            {formatDate(member.joinedAt)}
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="member-actions">
-                                        <button
-                                          className="remove-member-btn"
-                                          onClick={() =>
-                                            removeTeamMember(member.id)
-                                          }
-                                          title="Remove member"
-                                        >
-                                          <i className="fas fa-trash"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Pending Invites */}
-                            {pendingInvites.length > 0 && (
-                              <div className="pending-invites">
-                                <h4>Pending Invitations</h4>
-                                <div className="invites-list">
-                                  {pendingInvites.map((invite) => (
-                                    <div
-                                      key={invite.id}
-                                      className="invite-item"
-                                    >
-                                      <div className="invite-info">
-                                        <i className="fas fa-envelope"></i>
-                                        <span className="invite-email">
-                                          {invite.inviteEmail}
-                                        </span>
-                                        <span className="invite-status pending">
-                                          Pending
-                                        </span>
-                                        <span className="invite-sent">
-                                          Sent: {formatDate(invite.invitedAt)}
-                                        </span>
-                                      </div>
-                                      <div className="invite-actions">
-                                        <button
-                                          className="cancel-invite-btn"
-                                          onClick={() =>
-                                            cancelInvite(invite.id)
-                                          }
-                                        >
-                                          Cancel
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Team Usage Stats */}
-                            <div className="team-usage-stats">
-                              <h4>Team Usage</h4>
-                              <div className="stats-grid">
-                                <div className="stat-item">
-                                  <div className="stat-label">
-                                    Total Downloads
-                                  </div>
-                                  <div className="stat-value">
-                                    {subscription?.downloadsUsed || 0}
-                                  </div>
-                                </div>
-                                <div className="stat-item">
-                                  <div className="stat-label">
-                                    Downloads Limit
-                                  </div>
-                                  <div className="stat-value">
-                                    {subscription?.downloadLimit || 0}
-                                  </div>
-                                </div>
-                                <div className="stat-item">
-                                  <div className="stat-label">
-                                    Available Slots
-                                  </div>
-                                  <div className="stat-value">
-                                    {(user?.subscription?.teamMembers ||
+                                    {teamMembers.length} /{" "}
+                                    {user?.subscription?.teamMembers ||
                                       subscription?.teamMembers ||
-                                      1) - teamMembers.length}
+                                      1}{" "}
+                                    members
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Invite Team Member */}
+                              <div className="invite-member-form">
+                                <h4>Add Team Member</h4>
+                                <p className="form-description">
+                                  Invite team members by email. They'll receive an
+                                  invitation to join your team.
+                                </p>
+
+                                <div className="input-with-button">
+                                  <input
+                                    type="email"
+                                    placeholder="Enter email address"
+                                    value={inviteEmail}
+                                    onChange={(e) =>
+                                      setInviteEmail(e.target.value)
+                                    }
+                                    className="invite-email-input"
+                                  />
+                                  <button
+                                    className="butn butn-sm butn-bg main-colorbg color-white radius-5"
+                                    onClick={inviteTeamMember}
+                                    disabled={inviting || !inviteEmail}
+                                  >
+                                    <i className="icon fas fa-paper-plane pr-3"></i>
+                                    <span>
+                                      {inviting ? "Sending..." : "Invite"}
+                                    </span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Current Team Members */}
+                              {teamMembers.length > 0 && (
+                                <div className="team-members-list">
+                                  <h4>Team Members</h4>
+                                  <div className="members-grid">
+                                    {teamMembers.map((member) => (
+                                      <div
+                                        key={member.id}
+                                        className="member-card"
+                                      >
+                                        <div className="member-info">
+                                          <div className="member-avatar">
+                                            {member.profilePic ? (
+                                              <img
+                                                src={member.profilePic}
+                                                alt={member.email}
+                                              />
+                                            ) : (
+                                              <div className="avatar-initials">
+                                                {member.email
+                                                  ?.charAt(0)
+                                                  .toUpperCase()}
+                                              </div>
+                                            )}
+                                          </div>
+                                          <div className="member-details">
+                                            <div className="member-email">
+                                              {member.email}
+                                            </div>
+                                            <div className="member-role">
+                                              <span className="role-badge">
+                                                {member.role || "Member"}
+                                              </span>
+                                            </div>
+                                            <div className="member-joined">
+                                              Joined:{" "}
+                                              {formatDate(member.joinedAt)}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="member-actions">
+                                          <button
+                                            className="remove-member-btn"
+                                            onClick={() =>
+                                              removeTeamMember(member.id)
+                                            }
+                                            title="Remove member"
+                                          >
+                                            <i className="fas fa-trash"></i>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Pending Invites */}
+                              {pendingInvites.length > 0 && (
+                                <div className="pending-invites">
+                                  <h4>Pending Invitations</h4>
+                                  <div className="invites-list">
+                                    {pendingInvites.map((invite) => (
+                                      <div
+                                        key={invite.id}
+                                        className="invite-item"
+                                      >
+                                        <div className="invite-info">
+                                          <i className="fas fa-envelope"></i>
+                                          <span className="invite-email">
+                                            {invite.inviteEmail}
+                                          </span>
+                                          <span className="invite-status pending">
+                                            Pending
+                                          </span>
+                                          <span className="invite-sent">
+                                            Sent: {formatDate(invite.invitedAt)}
+                                          </span>
+                                        </div>
+                                        <div className="invite-actions">
+                                          <button
+                                            className="cancel-invite-btn"
+                                            onClick={() =>
+                                              cancelInvite(invite.id)
+                                            }
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Team Usage Stats */}
+                              <div className="team-usage-stats">
+                                <h4>Team Usage</h4>
+                                <div className="stats-grid">
+                                  <div className="stat-item">
+                                    <div className="stat-label">
+                                      Total Downloads
+                                    </div>
+                                    <div className="stat-value">
+                                      {subscription?.downloadsUsed || 0}
+                                    </div>
+                                  </div>
+                                  <div className="stat-item">
+                                    <div className="stat-label">
+                                      Downloads Limit
+                                    </div>
+                                    <div className="stat-value">
+                                      {subscription?.downloadLimit || 0}
+                                    </div>
+                                  </div>
+                                  <div className="stat-item">
+                                    <div className="stat-label">
+                                      Available Slots
+                                    </div>
+                                    <div className="stat-value">
+                                      {(user?.subscription?.teamMembers ||
+                                        subscription?.teamMembers ||
+                                        1) - teamMembers.length}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
                         {/* Cancel Subscription Option */}
                         {(user?.subscription?.status === "active" ||
                           subscription?.status === "active") && (
-                          <div className="cancel-subscription-section">
-                            <div className="cancel-warning">
-                              <i className="fas fa-exclamation-triangle"></i>
-                              <div>
-                                <h4>Cancel Subscription</h4>
-                                <p>
-                                  If you cancel, you'll lose access to premium
-                                  features at the end of your current billing
-                                  period.
-                                </p>
+                            <div className="cancel-subscription-section">
+                              <div className="cancel-warning">
+                                <i className="fas fa-exclamation-triangle"></i>
+                                <div>
+                                  <h4>Cancel Subscription</h4>
+                                  <p>
+                                    If you cancel, you'll lose access to premium
+                                    features at the end of your current billing
+                                    period.
+                                  </p>
+                                </div>
                               </div>
+                              <button
+                                className="butn butn-sm butn-danger radius-5"
+                                onClick={cancelSubscription}
+                              >
+                                Cancel Subscription
+                              </button>
                             </div>
-                            <button
-                              className="butn butn-sm butn-danger radius-5"
-                              onClick={cancelSubscription}
-                            >
-                              Cancel Subscription
-                            </button>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
                   ) : (

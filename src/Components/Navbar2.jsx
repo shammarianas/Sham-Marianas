@@ -629,7 +629,6 @@ const Navbar = () => {
           "/reset",
           "/admin",
           "/Contributor",
-          "/contributor/dashboard",
           "/contributordashboard",
         ].includes(currentPage) && (
           <div
@@ -659,7 +658,6 @@ const Navbar = () => {
           "/reset",
           "/admin",
           "/Contributor",
-          "/contributor/dashboard",
           "/contributordashboard",
         ].includes(currentPage) && (
           <>
@@ -730,7 +728,6 @@ const Navbar = () => {
         "/reset",
         "/admin",
         "/Contributor",
-        "/contributor/dashboard",
         "/contributordashboard",
       ].includes(currentPage) && (
         <>
