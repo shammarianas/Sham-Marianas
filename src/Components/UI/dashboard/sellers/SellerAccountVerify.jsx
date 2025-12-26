@@ -82,7 +82,7 @@ const SellerAccountVerify = () => {
             username: sellerData.username || "N/A",
             email: sellerData.email || "N/A",
             phone: sellerData.phone || "N/A",
-            dob: sellerData.dob || "N/A",
+            dob: formatDate(sellerData.dob),
             
             // Location Information
             city: sellerData.city || "N/A",
