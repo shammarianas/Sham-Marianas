@@ -286,35 +286,30 @@ exports.stripeWebhook = functions.https.onRequest(
               admin.firestore.FieldValue.increment(finalSellerEarning),
           });
 
-          // ✅ 5. Credit seller earnings
-          const ownerUpdate = {
-            earnings: admin.firestore.FieldValue.increment(finalSellerEarning),
-            totalEarnings:
-              admin.firestore.FieldValue.increment(finalSellerEarning),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          };
-
-          // Update Profiles collection
+          // ✅ FIXED: Use update() for seller earnings to preserve existing fields
           await db
             .collection("Profiles")
             .doc(ownerId)
-            .set(ownerUpdate, { merge: true });
+            .update({
+              earnings:
+                admin.firestore.FieldValue.increment(finalSellerEarning),
+              totalEarnings:
+                admin.firestore.FieldValue.increment(finalSellerEarning),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
 
           // 🆕 CRITICAL: Update Contributors collection for non-admin sellers
-          // 🎯 UPDATED: Match YOUR contributor fields
           if (!isAdmin) {
             try {
               await ensureContributorExists(db, ownerId);
 
               const contributorRef = db.collection("Contributors").doc(ownerId);
-
-              // ✅ ONLY UPDATE THESE TWO FIELDS
               await contributorRef.update({
                 totalEarnings:
                   admin.firestore.FieldValue.increment(finalSellerEarning),
                 pendingEarnings:
                   admin.firestore.FieldValue.increment(finalSellerEarning),
-                lastUpdated: admin.firestore.FieldValue.serverTimestamp(), // Optional timestamp
+                lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
               });
 
               console.log(
@@ -332,7 +327,6 @@ exports.stripeWebhook = functions.https.onRequest(
 
           // ✅ 6. Update platform stats with category breakdown
           const finalAssetCategory = asset.category || assetCategory;
-
           await db
             .collection("PlatformStats")
             .doc("revenue")
@@ -377,59 +371,97 @@ exports.stripeWebhook = functions.https.onRequest(
             )}, Platform=$${finalCompanyEarning.toFixed(3)}`
           );
 
-          // Return early since per-download payment is handled
           return res.json({ received: true });
         }
 
         // ============ SUBSCRIPTION HANDLING ============
         if (plan && buyerId && buyerId !== "guest") {
           const now = Date.now();
-          const expiresAt = admin.firestore.Timestamp.fromMillis(
-            now + 30 * 24 * 60 * 60 * 1000
-          );
+
+          // ✅ FIXED: Calculate expiration based on billing cycle
+          let expiresAt;
+          let monthlyResetDate;
+          let subscriptionPrice;
+          let perMemberPrice;
+
+          if (billingCycle === "yearly") {
+            // Yearly subscription: 365 days
+            expiresAt = admin.firestore.Timestamp.fromMillis(
+              now + 365 * 24 * 60 * 60 * 1000
+            );
+            monthlyResetDate = new Date(
+              now + 30 * 24 * 60 * 60 * 1000
+            ).toISOString();
+
+            // Set price based on plan for yearly
+            if (plan === "individual") {
+              subscriptionPrice = 108; // $108/year
+            } else if (plan === "team") {
+              perMemberPrice = 96;
+              subscriptionPrice = 96 * teamSize;
+            }
+          } else {
+            // Monthly subscription: 30 days (default)
+            expiresAt = admin.firestore.Timestamp.fromMillis(
+              now + 30 * 24 * 60 * 60 * 1000
+            );
+            monthlyResetDate = new Date(
+              now + 30 * 24 * 60 * 60 * 1000
+            ).toISOString();
+
+            // Set price based on plan for monthly
+            if (plan === "individual") {
+              subscriptionPrice = 9; // $9/month
+            } else if (plan === "team") {
+              perMemberPrice = 8;
+              subscriptionPrice = 8 * teamSize;
+            }
+          }
+
+          // Get the current user profile first
+          const userProfileRef = db.collection("Profiles").doc(buyerId);
+          const userProfileSnap = await userProfileRef.get();
+          let userProfile = {};
+
+          if (userProfileSnap.exists) {
+            userProfile = userProfileSnap.data();
+          }
 
           // INDIVIDUAL SUBSCRIPTION
           if (plan === "individual") {
-            await db
-              .collection("Profiles")
-              .doc(buyerId)
-              .set(
-                {
-                  subscription: {
-                    status: "active",
-                    plan: "individual",
-                    type: "individual",
-                    startDate: admin.firestore.FieldValue.serverTimestamp(),
-                    expiresAt,
-                    downloadsUsed: 0,
-                    downloadLimit: 200,
-                    billingCycle: billingCycle,
-                    monthlyReset: new Date(
-                      now + 30 * 24 * 60 * 60 * 1000
-                    ).toISOString(),
-                    price: 9, // $9/month
-                    perDownloadValue: PER_DOWNLOAD_VALUE_INDIVIDUAL, // 🆕 Added
-                  },
-                  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true }
-              );
-
-            // Record transaction
-            await db.collection("Transactions").doc().set({
-              type: "subscription_payment",
-              userId: buyerId,
+            const subscriptionData = {
+              status: "active",
               plan: "individual",
-              amount,
-              paymentIntentId: paymentIntent.id,
-              timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            });
+              type: "individual",
+              startDate: admin.firestore.FieldValue.serverTimestamp(),
+              expiresAt: expiresAt,
+              downloadsUsed: 0,
+              downloadLimit: 200,
+              billingCycle: billingCycle,
+              monthlyReset: monthlyResetDate,
+              price: subscriptionPrice,
+              perDownloadValue: PER_DOWNLOAD_VALUE_INDIVIDUAL,
+              isYearly: billingCycle === "yearly",
+              yearlyPrice: billingCycle === "yearly" ? 108 : null,
+              monthlyPrice: billingCycle === "monthly" ? 9 : null,
+            };
 
-            console.log(`✅ Individual subscription activated for ${buyerId}`);
+            // ✅ ULTRA-SIMPLE: Use set with merge for subscription field only
+            await userProfileRef.set(
+              {
+                subscription: subscriptionData,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+            console.log(`✅ Individual subscription saved for ${buyerId}`);
           }
+
           // TEAM SUBSCRIPTION
           else if (plan === "team") {
             const teamId = `team_${buyerId}_${Date.now()}`;
+            const downloadsPerMember = 200; // 200 per month even for yearly
 
             // Create team document
             await db
@@ -437,61 +469,69 @@ exports.stripeWebhook = functions.https.onRequest(
               .doc(teamId)
               .set({
                 ownerId: buyerId,
-                teamId,
+                teamId: teamId,
                 members: [buyerId],
                 memberLimit: Math.min(teamSize, 10),
-                perMemberPrice: 7, // $7 per member
+                perMemberPrice: perMemberPrice,
                 plan: "team",
                 active: true,
                 startDate: admin.firestore.FieldValue.serverTimestamp(),
-                expiresAt,
-                downloadsPerMember: 200,
-                totalDownloadsUsed: 0,
+                expiresAt: expiresAt,
+                downloadsPerMember: downloadsPerMember,
                 totalMembers: teamSize,
-                perDownloadValue: PER_DOWNLOAD_VALUE_TEAM, // 🆕 Added
+                perDownloadValue: PER_DOWNLOAD_VALUE_TEAM,
+                billingCycle: billingCycle,
+                isYearly: billingCycle === "yearly",
+                yearlyPrice: billingCycle === "yearly" ? 96 * teamSize : null,
+                monthlyPrice: billingCycle === "monthly" ? 8 * teamSize : null,
               });
 
-            // Update owner's profile
-            await db
-              .collection("Profiles")
-              .doc(buyerId)
-              .set(
-                {
-                  subscription: {
-                    status: "active",
-                    plan: "team",
-                    type: "team",
-                    teamId,
-                    startDate: admin.firestore.FieldValue.serverTimestamp(),
-                    expiresAt,
-                    downloadsUsed: 0,
-                    downloadLimit: 200,
-                    billingCycle: billingCycle,
-                    monthlyReset: new Date(
-                      now + 30 * 24 * 60 * 60 * 1000
-                    ).toISOString(),
-                    price: 8 * teamSize, // $7 × teamSize
-                    perDownloadValue: PER_DOWNLOAD_VALUE_TEAM, // 🆕 Added
-                  },
-                  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true }
-              );
+            // ✅ FIXED: Use set() with merge: true to preserve all existing fields
+            const subscriptionData = {
+              status: "active",
+              plan: "team",
+              type: "team",
+              teamId: teamId,
+              startDate: admin.firestore.FieldValue.serverTimestamp(),
+              expiresAt: expiresAt,
+              downloadsUsed: 0,
+              totalMembers: teamSize,
+              downloadLimit: 200,
+              billingCycle: billingCycle,
+              monthlyReset: monthlyResetDate,
+              price: subscriptionPrice,
+              perDownloadValue: PER_DOWNLOAD_VALUE_TEAM,
+              isYearly: billingCycle === "yearly",
+              yearlyPrice: billingCycle === "yearly" ? 96 * teamSize : null,
+              monthlyPrice: billingCycle === "monthly" ? 8 * teamSize : null,
+            };
+
+            // ✅ ULTRA-SIMPLE: Use set with merge for subscription field only
+            await userProfileRef.set(
+              {
+                subscription: subscriptionData,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+            console.log(`✅ Team subscription saved for ${buyerId}`);
 
             // Record transaction
             await db.collection("Transactions").doc().set({
               type: "subscription_payment",
               userId: buyerId,
               plan: "team",
-              teamId,
-              teamSize,
-              amount,
+              billingCycle: billingCycle,
+              teamId: teamId,
+              teamSize: teamSize,
+              amount: amount,
               paymentIntentId: paymentIntent.id,
               timestamp: admin.firestore.FieldValue.serverTimestamp(),
             });
 
             console.log(
-              `✅ Team subscription created (${teamId}) for ${buyerId}`
+              `✅ Team ${billingCycle} subscription created (${teamId}) for ${buyerId}`
             );
           }
 
@@ -519,15 +559,12 @@ exports.stripeWebhook = functions.https.onRequest(
             const asset = assetSnap.data();
             const ownerId = asset.ownerId;
 
-            // ============ IMPORTANT FIX ============
-            // Detect if asset is paid (string "paid" से)
+            // Detect if asset is paid
             let isPaidAsset = false;
-            let assetPrice = amount; // Default: payment amount
+            let assetPrice = amount;
 
-            // Method 1: Check price field (string "paid" or number)
             if (asset.price) {
               if (typeof asset.price === "string") {
-                // String "paid" को detect करें
                 isPaidAsset = asset.price.toLowerCase() === "paid";
                 assetPrice = isPaidAsset ? amount : 0;
               } else if (typeof asset.price === "number" && asset.price > 0) {
@@ -536,19 +573,16 @@ exports.stripeWebhook = functions.https.onRequest(
               }
             }
 
-            // Method 2: Check licenseType
             if (!isPaidAsset && asset.licenseType) {
               isPaidAsset = asset.licenseType.toLowerCase() !== "free use";
             }
 
-            // Method 3: If still not sure, assume paid (because payment happened)
             if (!isPaidAsset && amount > 0) {
               isPaidAsset = true;
               console.log(
                 `ℹ️ Assuming paid asset based on payment amount: $${amount}`
               );
             }
-            // ============ FIX END ============
 
             // Free asset handling
             if (!isPaidAsset) {
@@ -573,14 +607,14 @@ exports.stripeWebhook = functions.https.onRequest(
               ownerProfileSnap.exists &&
               ownerProfileSnap.data().role === "admin";
 
-            // 🆕 FIXED: Admin को 100%, Contributor को 40% commission
+            // Calculate earnings
             let sellerEarning, companyEarning;
             if (isAdmin) {
-              sellerEarning = amount; // Admin को पूरी amount
-              companyEarning = 0; // Platform को कुछ नहीं
+              sellerEarning = amount;
+              companyEarning = 0;
             } else {
-              sellerEarning = parseFloat((amount * 0.4).toFixed(6)); // Contributor को 40%
-              companyEarning = parseFloat((amount * 0.6).toFixed(6)); // Platform को 60%
+              sellerEarning = parseFloat((amount * 0.4).toFixed(6));
+              companyEarning = parseFloat((amount * 0.6).toFixed(6));
             }
 
             // Create purchase record
@@ -609,32 +643,31 @@ exports.stripeWebhook = functions.https.onRequest(
                 admin.firestore.FieldValue.increment(sellerEarning),
             });
 
-            // Credit seller earnings
-            const ownerUpdate = {
-              earnings: admin.firestore.FieldValue.increment(sellerEarning),
-              totalEarnings:
-                admin.firestore.FieldValue.increment(sellerEarning),
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            };
+            // ✅ FIXED: Use update() for seller earnings
+            await db
+              .collection("Profiles")
+              .doc(ownerId)
+              .update({
+                earnings: admin.firestore.FieldValue.increment(sellerEarning),
+                totalEarnings:
+                  admin.firestore.FieldValue.increment(sellerEarning),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
 
-            // 🆕 अगर contributor है तो Contributors collection में भी update करें
+            // Update contributor if not admin
             if (!isAdmin) {
               try {
                 await ensureContributorExists(db, ownerId);
-
-                const contributorRef = db
+                await db
                   .collection("Contributors")
-                  .doc(ownerId);
-
-                // ✅ ONLY UPDATE THESE TWO FIELDS
-                await contributorRef.update({
-                  totalEarnings:
-                    admin.firestore.FieldValue.increment(sellerEarning),
-                  pendingEarnings:
-                    admin.firestore.FieldValue.increment(sellerEarning),
-                  lastUpdated: admin.firestore.FieldValue.serverTimestamp(), // Optional timestamp
-                });
-
+                  .doc(ownerId)
+                  .update({
+                    totalEarnings:
+                      admin.firestore.FieldValue.increment(sellerEarning),
+                    pendingEarnings:
+                      admin.firestore.FieldValue.increment(sellerEarning),
+                    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+                  });
                 console.log(
                   `✅ Contributor ${ownerId} earnings updated: +$${sellerEarning.toFixed(
                     3
@@ -647,11 +680,6 @@ exports.stripeWebhook = functions.https.onRequest(
                 );
               }
             }
-
-            await db
-              .collection("Profiles")
-              .doc(ownerId)
-              .set(ownerUpdate, { merge: true });
 
             // Update platform stats
             await db
@@ -701,6 +729,213 @@ const mailTransport = nodemailer.createTransport({
   },
 });
 
+// =============================
+// CONTACT FORM EMAIL FUNCTION
+// =============================
+exports.sendContactFormEmail = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    if (req.method !== "POST") {
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    const { name, email, subject, message } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        error: "Missing required fields: name, email, and message are required",
+      });
+    }
+
+    // Generate a unique ID for tracking
+    const submissionId = `CONTACT_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
+    console.log(
+      `📧 Processing contact form submission: ${submissionId} from ${email}`
+    );
+
+    // Email to your business
+    const mailOptionsToBusiness = {
+      from: `"Sham Marianas Contact" <${process.env.LOGIN_EMAIL_USER}>`,
+      to: "info@shammarians.com",
+      cc: process.env.LOGIN_EMAIL_USER, // Optional: Also send to admin
+      subject: `[Contact Form] ${subject || "New Message from Website"}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+                .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
+                .info-box { background: white; border-left: 4px solid #4CAF50; padding: 15px; margin: 15px 0; }
+                .label { font-weight: bold; color: #555; }
+                .submission-id { background: #e8f5e9; padding: 10px; border-radius: 4px; font-family: monospace; }
+                .message-content { background: white; padding: 15px; border: 1px solid #eee; border-radius: 4px; margin: 15px 0; }
+                .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>📬 New Contact Form Submission</h2>
+                    <p>Submission ID: <strong>${submissionId}</strong></p>
+                </div>
+                
+                <div class="content">
+                    <div class="info-box">
+                        <p><span class="label">Submission ID:</span> <span class="submission-id">${submissionId}</span></p>
+                        <p><span class="label">Name:</span> ${name}</p>
+                        <p><span class="label">Email:</span> ${email}</p>
+                        <p><span class="label">Received:</span> ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <h3>📝 Contact Details</h3>
+                    <p><span class="label">Subject:</span> ${
+                      subject || "Not specified"
+                    }</p>
+                    
+                    <h3>📄 Message:</h3>
+                    <div class="message-content">
+                        ${message.replace(/\n/g, "<br>")}
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 4px;">
+                        <h4>🚀 Quick Actions:</h4>
+                        <p>1. Reply to: <a href="mailto:${email}">${email}</a></p>
+                        <p>2. Call back if needed</p>
+                        <p>3. Add to CRM system</p>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>This email was automatically generated by Sham Marianas Contact Form.</p>
+                    <p>Submission Time: ${new Date().toLocaleString()}</p>
+                    <p>No data stored in Firebase - Direct email notification only.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `,
+      text: `
+        NEW CONTACT FORM SUBMISSION - ${submissionId}
+        
+        ============================================
+        SUBMISSION ID: ${submissionId}
+        NAME: ${name}
+        EMAIL: ${email}
+        RECEIVED: ${new Date().toLocaleString()}
+        
+        ============================================
+        SUBJECT: ${subject || "Not specified"}
+        
+        MESSAGE:
+        ${message}
+        
+        ============================================
+        QUICK ACTIONS:
+        1. Reply to: ${email}
+        2. Call back if needed
+        3. Add to CRM system
+        
+        ============================================
+        Auto-generated by Sham Marianas Contact Form
+        No data stored in Firebase - Direct email only.
+        ${new Date().toLocaleString()}
+      `,
+    };
+
+    // Email confirmation to user
+    const mailOptionsToUser = {
+      from: `"Sham Marianas" <${process.env.LOGIN_EMAIL_USER}>`,
+      to: email,
+      subject: "Thank You for Contacting Sham Marianas",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+                .contact-info { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; }
+                .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Thank You, ${name}!</h1>
+                    <p>We've received your message and will respond within 24-48 hours.</p>
+                </div>
+                
+                <div class="content">
+                    <h3>📋 Your Message Summary:</h3>
+                    <p><strong>Reference ID:</strong> ${submissionId}</p>
+                    <p><strong>Subject:</strong> ${
+                      subject || "Not specified"
+                    }</p>
+                    <p><strong>Message:</strong></p>
+                    <div style="background: white; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        ${message.replace(/\n/g, "<br>")}
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="contact-info">
+                        <h3>📞 Our Contact Information</h3>
+                        <p><strong>Dubai Office:</strong> +971 52 803 6012</p>
+                        <p><strong>Pakistan Office:</strong> +92 311 678 8423</p>
+                        <p><strong>Email:</strong> info@shammarians.com</p>
+                        
+                        <div style="margin-top: 20px;">
+                            <h4>Follow Us:</h4>
+                            <p>
+                                <a href="https://www.facebook.com/shammarianas/">Facebook</a> | 
+                                <a href="https://www.instagram.com/sham_marianas/">Instagram</a> | 
+                                <a href="https://twitter.com/shammarianas">Twitter</a> | 
+                                <a href="https://www.linkedin.com/in/shammarianas/">LinkedIn</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>This is an automated confirmation. Please do not reply to this email.</p>
+                    <p>© ${new Date().getFullYear()} Sham Marianas. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `,
+    };
+
+    try {
+      // Send both emails
+      await mailTransport.sendMail(mailOptionsToBusiness);
+      await mailTransport.sendMail(mailOptionsToUser);
+
+      console.log(
+        `✅ Contact form email sent: ${submissionId} to info@shammarians.com`
+      );
+      console.log(`✅ Confirmation email sent to user: ${email}`);
+
+      return res.status(200).json({
+        success: true,
+        message: "Email sent successfully",
+        submissionId: submissionId,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("❌ Error sending contact form email:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  });
+});
 exports.sendLoginEmail = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
     if (req.method !== "POST") {
@@ -782,6 +1017,263 @@ exports.sendContributorStatusEmail = functions.https.onRequest((req, res) => {
   });
 });
 
+// =============================
+// EMAIL SUPPORT COMPLAINTS
+// =============================
+exports.sendSupportComplaintEmail = functions.firestore.onDocumentCreated(
+  "Profiles/{userId}/Support/{complaintId}",
+  async (event) => {
+    try {
+      const snapshot = event.data;
+      if (!snapshot) {
+        console.error("No data associated with the event");
+        return;
+      }
+
+      const complaintData = snapshot.data();
+      const {
+        complaintId,
+        subject,
+        description,
+        issueType,
+        email: userEmail,
+        userType,
+        createdAt,
+        status = "pending",
+      } = complaintData;
+
+      console.log(
+        `📧 Processing support complaint: ${complaintId} from ${userEmail}`
+      );
+
+      // Format the email content
+      const mailOptions = {
+        from: `"Sham Marianas Support" <${process.env.LOGIN_EMAIL_USER}>`,
+        to: "info@shammarianas.com",
+        cc: process.env.LOGIN_EMAIL_USER, // Also send to admin for tracking
+        subject: `[Support Complaint ${complaintId}] ${subject}`,
+        html: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+                            .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
+                            .info-box { background: white; border-left: 4px solid #4CAF50; padding: 15px; margin: 15px 0; }
+                            .label { font-weight: bold; color: #555; }
+                            .status-pending { color: #ff9800; font-weight: bold; }
+                            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; }
+                            .complaint-id { background: #e8f5e9; padding: 10px; border-radius: 4px; font-family: monospace; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h2>🆘 New Support Complaint Received</h2>
+                                <p>Complaint ID: <strong>${complaintId}</strong></p>
+                            </div>
+                            
+                            <div class="content">
+                                <div class="info-box">
+                                    <p><span class="label">Complaint ID:</span> <span class="complaint-id">${complaintId}</span></p>
+                                    <p><span class="label">User Type:</span> ${userType}</p>
+                                    <p><span class="label">User Email:</span> ${userEmail}</p>
+                                    <p><span class="label">Status:</span> <span class="status-pending">${status}</span></p>
+                                    <p><span class="label">Submitted:</span> ${
+                                      createdAt?.toDate().toLocaleString() ||
+                                      new Date().toLocaleString()
+                                    }</p>
+                                </div>
+                                
+                                <h3>📝 Complaint Details</h3>
+                                <p><span class="label">Subject:</span> ${subject}</p>
+                                <p><span class="label">Issue Type:</span> ${issueType}</p>
+                                
+                                <h3>📄 Description:</h3>
+                                <div style="background: white; padding: 15px; border: 1px solid #eee; border-radius: 4px;">
+                                    ${description.replace(/\n/g, "<br>")}
+                                </div>
+                                
+                                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 4px;">
+                                    <h4>🚀 Action Required:</h4>
+                                    <p>1. Review this complaint in Firebase Console</p>
+                                    <p>2. Update status: <code>Profiles/${
+                                      event.params.userId
+                                    }/Support/${
+          event.params.complaintId
+        }</code></p>
+                                    <p>3. Respond to user at: ${userEmail}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="footer">
+                                <p>This email was automatically generated by Sham Marianas Support System.</p>
+                                <p>Firestore Path: Profiles/${
+                                  event.params.userId
+                                }/Support/${event.params.complaintId}</p>
+                                <p>Timestamp: ${new Date().toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `,
+        // Plain text version for email clients that don't support HTML
+        text: `
+                    NEW SUPPORT COMPLAINT - ${complaintId}
+                    
+                    ============================================
+                    COMPLAINT ID: ${complaintId}
+                    USER TYPE: ${userType}
+                    USER EMAIL: ${userEmail}
+                    STATUS: ${status}
+                    SUBMITTED: ${
+                      createdAt?.toDate().toLocaleString() ||
+                      new Date().toLocaleString()
+                    }
+                    
+                    ============================================
+                    SUBJECT: ${subject}
+                    ISSUE TYPE: ${issueType}
+                    
+                    DESCRIPTION:
+                    ${description}
+                    
+                    ============================================
+                    ACTION REQUIRED:
+                    1. Review in Firebase Console
+                    2. Update status at: Profiles/${
+                      event.params.userId
+                    }/Support/${event.params.complaintId}
+                    3. Respond to user: ${userEmail}
+                    
+                    ============================================
+                    Auto-generated by Sham Marianas Support System
+                    ${new Date().toLocaleString()}
+                `,
+      };
+
+      // Send the email
+      await mailTransport.sendMail(mailOptions);
+      console.log(
+        `✅ Support complaint email sent for: ${complaintId} to info@shammarianas.com
+`
+      );
+
+      // Optionally, also update the complaint document to mark email sent
+      const db = admin.firestore();
+      await snapshot.ref.update({
+        emailSent: true,
+        emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        emailRecipient: "info@shammarianas.com",
+      });
+    } catch (error) {
+      console.error("❌ Error sending support complaint email:", error);
+
+      // Log error to Firestore for debugging
+      try {
+        await event.data.ref.update({
+          emailError: error.message,
+          emailSent: false,
+        });
+      } catch (updateError) {
+        console.error("Failed to update error status:", updateError);
+      }
+    }
+  }
+);
+
+// Also trigger for Contributors collection
+exports.sendContributorSupportComplaintEmail =
+  functions.firestore.onDocumentCreated(
+    "Contributors/{userId}/Support/{complaintId}",
+    async (event) => {
+      // Same implementation as above, but for Contributors collection
+      try {
+        const snapshot = event.data;
+        if (!snapshot) {
+          console.error("No data associated with the event");
+          return;
+        }
+
+        const complaintData = snapshot.data();
+        const {
+          complaintId,
+          subject,
+          description,
+          issueType,
+          email: userEmail,
+          userType = "contributor",
+          createdAt,
+          status = "pending",
+        } = complaintData;
+
+        console.log(
+          `📧 Processing contributor support complaint: ${complaintId} from ${userEmail}`
+        );
+
+        const mailOptions = {
+          from: `"Sham Marianas Support" <${process.env.LOGIN_EMAIL_USER}>`,
+          to: "info@shammarianas.com",
+          cc: process.env.LOGIN_EMAIL_USER,
+          subject: `[CONTRIBUTOR Support ${complaintId}] ${subject}`,
+          html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <div style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+                            <h2>👥 CONTRIBUTOR Support Complaint</h2>
+                            <p><strong>Complaint ID:</strong> ${complaintId}</p>
+                        </div>
+                        
+                        <div style="background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px;">
+                            <div style="background: white; padding: 15px; margin: 15px 0; border-left: 4px solid #4CAF50;">
+                                <p><strong>📋 Complaint ID:</strong> <code>${complaintId}</code></p>
+                                <p><strong>👤 User Type:</strong> ${userType}</p>
+                                <p><strong>📧 User Email:</strong> ${userEmail}</p>
+                                <p><strong>📅 Submitted:</strong> ${
+                                  createdAt?.toDate().toLocaleString() ||
+                                  new Date().toLocaleString()
+                                }</p>
+                                <p><strong>🔧 Issue Type:</strong> ${issueType}</p>
+                            </div>
+                            
+                            <h3>📝 Subject:</h3>
+                            <p>${subject}</p>
+                            
+                            <h3>📄 Description:</h3>
+                            <div style="background: white; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
+                                ${description.replace(/\n/g, "<br>")}
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 4px;">
+                                <h4>🚀 Priority: CONTRIBUTOR ISSUE</h4>
+                                <p>Contributors are revenue-generating users. Please respond within 24 hours.</p>
+                                <p>Firestore Path: Contributors/${
+                                  event.params.userId
+                                }/Support/${event.params.complaintId}</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+        };
+
+        await mailTransport.sendMail(mailOptions);
+        console.log(`✅ Contributor support email sent for: ${complaintId}`);
+
+        // Update document
+        await snapshot.ref.update({
+          emailSent: true,
+          emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } catch (error) {
+        console.error("❌ Error sending contributor support email:", error);
+        await event.data.ref.update({
+          emailError: error.message,
+          emailSent: false,
+        });
+      }
+    }
+  );
 // =============================
 // GENERATE DOWNLOAD URL (ENHANCED)
 // =============================
@@ -1621,8 +2113,8 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
   }
 });
 // =============================
+
 exports.addTeamMember = functions.https.onRequest(async (req, res) => {
-  // CORS headers
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -1674,9 +2166,13 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
     const adminProfile = adminProfileSnap.data();
     const adminSubscription = adminProfile.subscription || {};
 
+    // Check if admin is on team plan
     if (adminSubscription.type !== "team" || !adminSubscription.teamId) {
       return res.status(400).json({
-        error: { message: "You are not in a team", code: "not-in-team" },
+        error: {
+          message: "You are not on a team plan",
+          code: "not-on-team-plan",
+        },
       });
     }
 
@@ -1704,23 +2200,45 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       });
     }
 
-    // Get current team members from the team document
-    const currentMembers = team.members || [];
-    const currentMemberCount = currentMembers.length;
+    // CRITICAL FIX: Get totalMembers from subscription plan, not from team.members
+    // The subscription price determines how many members can be added
 
-    // Calculate available slots: memberLimit - 1 (for owner/admin themselves)
-    const maxInvitableMembers = team.memberLimit - 1;
+    // Extract team size from subscription plan name/price
+    // Example: If admin paid for 3 members, team.memberLimit should be 3
+    const teamSize = team.memberLimit || 1; // This should be from subscription (e.g., 2, 3, 4 members)
+    const currentTeamMembers = team.members || [];
+    const currentMemberCount = currentTeamMembers.length;
+
+    console.log(
+      `📊 Team Stats: Size=${teamSize}, Current=${currentMemberCount}, Owner=${team.ownerId}`
+    );
+
+    // Calculate available slots: teamSize - 1 (owner doesn't count as a slot)
+    // If teamSize = 2: owner + 1 member = 1 available slot
+    // If teamSize = 3: owner + 2 members = 2 available slots
+    // If teamSize = 4: owner + 3 members = 3 available slots
+    const maxInvitableMembers = Math.max(0, teamSize - 1);
     const availableSlots = Math.max(
       0,
       maxInvitableMembers - (currentMemberCount - 1)
     );
 
-    // Check member limit (excluding owner)
+    console.log(
+      `📊 Available slots: ${availableSlots} (Max invitable: ${maxInvitableMembers})`
+    );
+
     if (availableSlots <= 0) {
       return res.status(403).json({
         error: {
-          message: `Team member limit reached. You can invite up to ${maxInvitableMembers} member(s).`,
+          message: `Team member limit reached. You can invite up to ${maxInvitableMembers} member(s). Current team size allows ${teamSize} total members.`,
           code: "resource-exhausted",
+          details: {
+            teamSize,
+            currentMembers: currentMemberCount,
+            maxInvitableMembers,
+            availableSlots,
+            ownerIncluded: true,
+          },
         },
       });
     }
@@ -1777,7 +2295,7 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
     const approvalToken = Math.random().toString(36).substr(2, 20);
     const inviteId = `invite_${Date.now()}_${approvalToken.substring(0, 8)}`;
 
-    // Create invitation WITHOUT transaction
+    // Create invitation
     await db
       .collection("TeamInvites")
       .doc(inviteId)
@@ -1799,10 +2317,14 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
         plan: "team",
         downloadLimit: team.downloadsPerMember || 200,
         memberLimit: team.memberLimit,
+        teamSize: teamSize,
+        currentMemberCount: currentMemberCount,
         autoApprove: true,
       });
 
-    console.log("✅ Invitation created successfully");
+    console.log(
+      `✅ Invitation created for ${memberEmail}. Available slots: ${availableSlots}`
+    );
 
     // Determine URLs for local vs production
     const isLocal = process.env.FUNCTIONS_EMULATOR === "true";
@@ -1819,97 +2341,18 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       memberEmail
     )}`;
 
-    // For local testing - return direct link
-    if (isLocal) {
-      return res.status(200).json({
-        success: true,
-        inviteId,
-        approvalToken,
-        magicLink: magicLink,
-        message: "For local testing - use the magic link below",
-        testData: {
-          teamId,
-          adminEmail: adminProfile.email,
-          inviteEmail: memberEmail,
-          currentMemberCount,
-          maxInvitableMembers,
-          availableSlots,
-          team: {
-            memberLimit: team.memberLimit,
-            downloadsPerMember: team.downloadsPerMember,
-          },
-        },
-      });
-    }
-
-    // Send email with ONE-CLICK magic link
-    await mailTransport.sendMail({
-      from: `Sham Marianas <${process.env.LOGIN_EMAIL_USER}>`,
-      to: memberEmail,
-      subject: "🚀 One-Click Team Invitation - Sham Marianas",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #4CAF50;">You're Invited! 🎉</h2>
-          
-          <p>You've been invited by <strong>${adminProfile.firstName || ""} ${
-        adminProfile.lastName || ""
-      }</strong> to join their team on Sham Marianas.</p>
-          
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                     padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center;">
-            <h3 style="color: white; margin-bottom: 20px;">One-Click Join</h3>
-            <p style="color: rgba(255,255,255,0.9); margin-bottom: 25px;">
-              Click below to instantly join the team. No password needed!
-            </p>
-            
-            <a href="${magicLink}" 
-               style="display: inline-block; padding: 18px 40px; background: white; 
-                      color: #4CAF50; text-decoration: none; border-radius: 50px; 
-                      font-size: 18px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                      transition: transform 0.3s ease;">
-              ✨ Join Team Instantly
-            </a>
-            
-            <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 20px;">
-              This link works once and expires in 7 days
-            </p>
-          </div>
-          
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h4 style="color: #333; margin-bottom: 15px;">What you get:</h4>
-            <ul style="color: #666; line-height: 1.8;">
-              <li>✅ <strong>${
-                team.downloadsPerMember || 200
-              } downloads/month</strong></li>
-              <li>✅ Premium assets & templates</li>
-              <li>✅ Team collaboration tools</li>
-              <li>✅ 4K quality downloads</li>
-              <li>✅ Commercial license</li>
-            </ul>
-          </div>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 14px;">
-              <strong>Note:</strong> If the button doesn't work, copy and paste this link in your browser:<br>
-              <code style="background: #f5f5f5; padding: 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">
-                ${magicLink}
-              </code>
-            </p>
-          </div>
-          
-          <p style="color: #999; font-size: 12px; margin-top: 30px; text-align: center;">
-            This invitation was sent by ${adminProfile.email}<br>
-            © ${new Date().getFullYear()} Sham Marianas. All rights reserved.
-          </p>
-        </div>
-      `,
-    });
-
     return res.status(200).json({
       success: true,
       inviteId,
       approvalToken,
-      message: "One-click invitation sent successfully!",
+      teamDetails: {
+        teamId,
+        teamSize,
+        currentMembers: currentMemberCount,
+        availableSlots: availableSlots,
+        maxInvitableMembers: maxInvitableMembers,
+      },
+      message: `Invitation sent! You have ${availableSlots} slot(s) remaining.`,
     });
   } catch (err) {
     console.error("Add team member error:", err);
@@ -2128,7 +2571,7 @@ exports.oneClickJoinTeam = functions.https.onRequest(async (req, res) => {
           startDate: admin.firestore.FieldValue.serverTimestamp(),
           expiresAt: team.expiresAt,
           billingCycle: "monthly",
-          price: team.perMemberPrice || 7,
+          price: team.perMemberPrice || 8,
         },
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
@@ -2449,31 +2892,54 @@ exports.getTeamDetails = functions.https.onRequest(async (req, res) => {
       ...doc.data(),
     }));
 
-    // Calculate available slots correctly (memberLimit - 1 for owner)
-    const currentMemberCount = members.length;
-    const maxInvitableMembers = team.memberLimit - 1;
-    const availableSlots = Math.max(
-      0,
-      maxInvitableMembers - (currentMemberCount - 1)
-    );
+    // ✅ FIXED CALCULATION: Team size comes from subscription plan
+    // team.memberLimit should be the TOTAL team size (owner + members)
+    // Example: If user paid for 3-member team, team.memberLimit = 3
+
+    const totalTeamSize = team.memberLimit || 2; // Total team size (owner + members)
+    const currentMemberCount = members.length; // Includes owner
+
+    // ✅ CORRECT LOGIC:
+    // - Owner doesn't count as an "invitable" slot
+    // - Available slots = (totalTeamSize - 1) - (currentMemberCount - 1)
+    // Simplified: Available slots = totalTeamSize - currentMemberCount
+
+    const maxInvitableMembers = Math.max(0, totalTeamSize - 1);
+    const availableSlots = Math.max(0, totalTeamSize - currentMemberCount);
+
+    console.log(`📊 Team Stats for ${teamId}:`);
+    console.log(`   Total Team Size (from plan): ${totalTeamSize}`);
+    console.log(`   Current Members: ${currentMemberCount}`);
+    console.log(`   Owner Included: ${team.ownerId ? "Yes" : "No"}`);
+    console.log(`   Max Invitable Members: ${maxInvitableMembers}`);
+    console.log(`   Available Slots: ${availableSlots}`);
 
     // Calculate total team downloads
-    const totalTeamDownloadsAllowed =
-      team.downloadsPerMember * team.memberLimit;
+    const downloadsPerMember = team.downloadsPerMember || 200;
+    const totalTeamDownloadsAllowed = downloadsPerMember * totalTeamSize;
 
     return res.status(200).json({
       success: true,
       team: {
         id: teamSnap.id,
-        name: "Team", // Add team name field if you have it
+        name: team.name || "Team",
         ownerId: team.ownerId,
-        memberLimit: team.memberLimit || 2,
-        downloadsPerMember: team.downloadsPerMember || 200,
+
+        // ✅ IMPORTANT: These are the subscription-based limits
+        totalTeamSize: totalTeamSize, // Total members allowed (owner + team members)
+        memberLimit: totalTeamSize, // Same as totalTeamSize for clarity
+        currentMembers: currentMemberCount,
+        availableSlots: availableSlots,
+        maxInvitableMembers: maxInvitableMembers,
+
+        downloadsPerMember: downloadsPerMember,
         plan: team.plan || "team",
         startDate: team.startDate,
         expiresAt: team.expiresAt,
-        active: team.active || true,
+        active: team.active !== false, // Default to true
         perMemberPrice: team.perMemberPrice || 7,
+
+        // Downloads stats
         totalDownloadsUsed: totalTeamDownloadsUsed,
         totalDownloadsAllowed: totalTeamDownloadsAllowed,
         remainingTeamDownloads: Math.max(
@@ -2481,18 +2947,38 @@ exports.getTeamDetails = functions.https.onRequest(async (req, res) => {
           totalTeamDownloadsAllowed - totalTeamDownloadsUsed
         ),
         memberDownloads: team.memberDownloads || {},
-        availableSlots: availableSlots,
-        totalMembers: currentMemberCount,
-        maxInvitableMembers: maxInvitableMembers,
+
+        // Additional info
+        createdAt: team.createdAt,
+        updatedAt: team.updatedAt,
       },
       members,
       pendingInvites,
       userRole: team.ownerId === userId ? "owner" : "member",
+
+      // ✅ Subscription info from user's profile
+      subscriptionInfo: {
+        plan: subscription.plan || "team",
+        type: subscription.type || "team",
+        status: subscription.status || "active",
+        price: subscription.price || 0,
+        downloadLimit: subscription.downloadLimit || downloadsPerMember,
+        downloadsUsed: subscription.downloadsUsed || 0,
+        remainingDownloads: Math.max(
+          0,
+          (subscription.downloadLimit || downloadsPerMember) -
+            (subscription.downloadsUsed || 0)
+        ),
+        expiresAt: subscription.expiresAt,
+      },
     });
   } catch (err) {
-    console.error("Get team details error:", err);
+    console.error("❌ Get team details error:", err);
     return res.status(500).json({
-      error: { message: err.message || "Internal server error" },
+      error: {
+        message: err.message || "Internal server error",
+        code: err.code || "internal-error",
+      },
     });
   }
 });
