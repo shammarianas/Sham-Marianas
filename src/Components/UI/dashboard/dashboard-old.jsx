@@ -100,8 +100,9 @@ const NotificationDropdown = ({
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`notification-item ${notification.read ? "read" : "unread"
-                } ${notification.type}`}
+              className={`notification-item ${
+                notification.read ? "read" : "unread"
+              } ${notification.type}`}
               onClick={() => onMarkAsRead(notification.id)}
             >
               <div className="notification-icon">
@@ -297,10 +298,13 @@ const AdminDashboard = () => {
           where("status", "in", ["pending", "in_progress"])
         );
 
-        const unsubscribeComplaints = onSnapshot(complaintsQuery, (snapshot) => {
-          console.log("Seller complaints count:", snapshot.size);
-          setPendingComplaints(snapshot.size);
-        });
+        const unsubscribeComplaints = onSnapshot(
+          complaintsQuery,
+          (snapshot) => {
+            console.log("Seller complaints count:", snapshot.size);
+            setPendingComplaints(snapshot.size);
+          }
+        );
 
         return () => {
           unsubscribeSupport();
@@ -568,7 +572,7 @@ const AdminDashboard = () => {
           { createdAt: serverTimestamp(), promotedBy: "system" },
           { merge: true }
         );
-      } catch { }
+      } catch {}
       return true;
     }
 
@@ -783,6 +787,8 @@ const AdminDashboard = () => {
 
   const normalizeDate = (value) => {
     if (!value) return null;
+
+    // Handle Firestore Timestamp
     if (value.toDate) {
       try {
         return value.toDate();
@@ -790,9 +796,31 @@ const AdminDashboard = () => {
         return null;
       }
     }
+
+    // Handle Firestore timestamp object with seconds
     if (value.seconds) return new Date(value.seconds * 1000);
+
+    // Handle number (timestamp)
     if (typeof value === "number") return new Date(value);
+
+    // Handle Date object
     if (value instanceof Date) return value;
+
+    // Handle string (NEW - this is what you need!)
+    if (typeof value === "string") {
+      try {
+        // Handle "YYYY-MM-DD" format specifically
+        if (value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          // Parse as UTC to avoid timezone issues
+          return new Date(value + "T00:00:00Z");
+        }
+        // Handle any other date string
+        return new Date(value);
+      } catch {
+        return null;
+      }
+    }
+
     return null;
   };
 
@@ -865,7 +893,8 @@ const AdminDashboard = () => {
       });
       loadBlogs();
       alert(
-        `Blog ${newStatus === "PUBLISHED" ? "published" : "drafted"
+        `Blog ${
+          newStatus === "PUBLISHED" ? "published" : "drafted"
         } successfully!`
       );
     } catch (error) {
@@ -939,10 +968,10 @@ const AdminDashboard = () => {
     return <UnauthorizedAccess error={error} />;
   }
 
-   return (
+  return (
     <>
       <Cursor />
-      
+
       {/* Inline Styles for Dashboard */}
       <style>
         {`
@@ -1085,16 +1114,16 @@ const AdminDashboard = () => {
           <div className="mobile-header">
             <button className="hamburger-menu" onClick={toggleSidebar}>
               {sidebarOpen ? (
-                <svg 
-                  stroke="currentColor" 
-                  fill="none" 
-                  strokeWidth="2" 
-                  viewBox="0 0 24 24" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="close-icon" 
-                  height="1em" 
-                  width="1em" 
+                <svg
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="close-icon"
+                  height="1em"
+                  width="1em"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1104,16 +1133,17 @@ const AdminDashboard = () => {
                 <FiMenu className="hamburger-icon" />
               )}
             </button>
-            
-            <div style={{ color: 'white', fontSize: '1rem', fontWeight: '600' }}>
-              {selectedDashboard === "admin" ? "Admin Dashboard" : "Company Dashboard"}
-            </div>
-            
-            <button
-              className="header-btn"
-              onClick={toggleNotifications}
+
+            <div
+              style={{ color: "white", fontSize: "1rem", fontWeight: "600" }}
             >
-              <FiBell style={{ fontSize: '1.2rem' }} />
+              {selectedDashboard === "admin"
+                ? "Admin Dashboard"
+                : "Company Dashboard"}
+            </div>
+
+            <button className="header-btn" onClick={toggleNotifications}>
+              <FiBell style={{ fontSize: "1.2rem" }} />
               {unreadCount > 0 && (
                 <span className="notification-badge">
                   {unreadCount > 99 ? "99+" : unreadCount}
@@ -1130,40 +1160,49 @@ const AdminDashboard = () => {
         >
           <div className="custom-dropdown" ref={dropdownRef}>
             <button
-             className="dashboard-dropdown"
+              className="dashboard-dropdown"
               onClick={toggleDropdown}
               title="Select Dashboard"
             >
               {selectedDashboard === "admin"
                 ? "Admin Dashboard"
                 : "Company Dashboard"}
-              <FiChevronDown style={{ fontSize: '1rem' }} />
+              <FiChevronDown style={{ fontSize: "1rem" }} />
             </button>
             {isDropdownOpen && (
               <ul className="dropdown-menu p-3">
                 <li
                   style={{
-                    padding: '0.75rem 1rem',
-                    cursor: 'pointer',
-                    color: selectedDashboard === 'admin' ? '#52b0b4' : 'white',
-                    borderBottom: '1px solid #333',
-                    transition: 'background-color 0.2s'
+                    padding: "0.75rem 1rem",
+                    cursor: "pointer",
+                    color: selectedDashboard === "admin" ? "#52b0b4" : "white",
+                    borderBottom: "1px solid #333",
+                    transition: "background-color 0.2s",
                   }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1a1a1a'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  onMouseEnter={(e) =>
+                    (e.target.style.backgroundColor = "#1a1a1a")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.backgroundColor = "transparent")
+                  }
                   onClick={() => handleDashboardChange("admin")}
                 >
                   Admin Dashboard
                 </li>
                 <li
                   style={{
-                    padding: '0.75rem 1rem',
-                    cursor: 'pointer',
-                    color: selectedDashboard === 'company' ? '#52b0b4' : 'white',
-                    transition: 'background-color 0.2s'
+                    padding: "0.75rem 1rem",
+                    cursor: "pointer",
+                    color:
+                      selectedDashboard === "company" ? "#52b0b4" : "white",
+                    transition: "background-color 0.2s",
                   }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1a1a1a'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  onMouseEnter={(e) =>
+                    (e.target.style.backgroundColor = "#1a1a1a")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.backgroundColor = "transparent")
+                  }
                   onClick={() => handleDashboardChange("company")}
                 >
                   Company Dashboard
@@ -1175,49 +1214,59 @@ const AdminDashboard = () => {
           <div className="d-flex flex-column">
             <div>
               {selectedDashboard === "admin" ? (
-                <ul style={{
-                  listStyle: 'none',
-                  margin: '1rem 0 0rem 0',
-                  padding: '0.5rem',
-                  display: 'grid',
-                  borderTop: '1px solid #333'
-                }}>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    margin: "1rem 0 0rem 0",
+                    padding: "0.5rem",
+                    display: "grid",
+                    borderTop: "1px solid #333",
+                  }}
+                >
                   {/* Users Section */}
-                  <li style={{
-                    borderRadius: '8px',
-                    margin: '0 0.5rem',
-                    color: '#b0b0b0'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      padding: '0.75rem 0',
-                      color: '#52b0b4'
-                    }}>
-                      <FiUsers style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
-                      <span style={{ whiteSpace: 'nowrap' }}>Users</span>
+                  <li
+                    style={{
+                      borderRadius: "8px",
+                      margin: "0 0.5rem",
+                      color: "#b0b0b0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        padding: "0.75rem 0",
+                        color: "#52b0b4",
+                      }}
+                    >
+                      <FiUsers
+                        style={{ marginRight: "0.75rem", fontSize: "1.1rem" }}
+                      />
+                      <span style={{ whiteSpace: "nowrap" }}>Users</span>
                     </div>
-                    <ul style={{
-                      width: '100%',
-                      listStyle: 'none',
-                      margin: '0',
-                      borderRadius: '0.5rem',
-                      display: 'grid',
-                      padding: '0rem 1rem'
-                    }}>
+                    <ul
+                      style={{
+                        width: "100%",
+                        listStyle: "none",
+                        margin: "0",
+                        borderRadius: "0.5rem",
+                        display: "grid",
+                        padding: "0rem 1rem",
+                      }}
+                    >
                       <li
                         style={{
-                          fontSize: '12px',
-                          padding: '0rem 0.6rem 0.2rem 0.6rem',
-                          cursor: 'pointer',
-                          color: activeTab === 1 ? 'white' : '#b0b0b0',
-                          transition: 'all 0.2s',
-                          border: 'none',
-                          background: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          borderRadius: '0.5rem'
+                          fontSize: "12px",
+                          padding: "0rem 0.6rem 0.2rem 0.6rem",
+                          cursor: "pointer",
+                          color: activeTab === 1 ? "white" : "#b0b0b0",
+                          transition: "all 0.2s",
+                          border: "none",
+                          background: "transparent",
+                          width: "100%",
+                          textAlign: "left",
+                          borderRadius: "0.5rem",
                         }}
                         onClick={() => handleTabClick(1)}
                       >
@@ -1225,46 +1274,57 @@ const AdminDashboard = () => {
                       </li>
                       <li
                         style={{
-                          fontSize: '12px',
-                          padding: '0rem 0.6rem 0.2rem 0.6rem',
-                          cursor: 'pointer',
-                          color: activeTab === 2 ? 'white' : '#b0b0b0',
-                          transition: 'all 0.2s',
-                          border: 'none',
-                          background: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          borderRadius: '0.5rem'
+                          fontSize: "12px",
+                          padding: "0rem 0.6rem 0.2rem 0.6rem",
+                          cursor: "pointer",
+                          color: activeTab === 2 ? "white" : "#b0b0b0",
+                          transition: "all 0.2s",
+                          border: "none",
+                          background: "transparent",
+                          width: "100%",
+                          textAlign: "left",
+                          borderRadius: "0.5rem",
                         }}
                         onClick={() => handleTabClick(2)}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            width: "100%",
+                          }}
+                        >
                           <span>User Report</span>
                           {pendingRequests > 0 && (
-                            <span style={{
-                              background: 'rgb(82, 176, 180, 0.2)',
-                              color: '#52b0b4',
-                              border: '1px solid rgba(82, 176, 180, 0.3)',
-                              padding: '0.07rem 0.3rem',
-                              borderRadius: '999px',
-                              fontSize: '0.65rem',
-                              fontWeight: '600'
-                            }}>{pendingRequests}</span>
+                            <span
+                              style={{
+                                background: "rgb(82, 176, 180, 0.2)",
+                                color: "#52b0b4",
+                                border: "1px solid rgba(82, 176, 180, 0.3)",
+                                padding: "0.07rem 0.3rem",
+                                borderRadius: "999px",
+                                fontSize: "0.65rem",
+                                fontWeight: "600",
+                              }}
+                            >
+                              {pendingRequests}
+                            </span>
                           )}
                         </div>
                       </li>
                       <li
                         style={{
-                          fontSize: '12px',
-                          padding: '0rem 0.6rem 0.2rem 0.6rem',
-                          cursor: 'pointer',
-                          color: activeTab === 3 ? 'white' : '#b0b0b0',
-                          transition: 'all 0.2s',
-                          border: 'none',
-                          background: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          borderRadius: '0.5rem'
+                          fontSize: "12px",
+                          padding: "0rem 0.6rem 0.2rem 0.6rem",
+                          cursor: "pointer",
+                          color: activeTab === 3 ? "white" : "#b0b0b0",
+                          transition: "all 0.2s",
+                          border: "none",
+                          background: "transparent",
+                          width: "100%",
+                          textAlign: "left",
+                          borderRadius: "0.5rem",
                         }}
                         onClick={() => handleTabClick(3)}
                       >
@@ -1274,86 +1334,116 @@ const AdminDashboard = () => {
                   </li>
 
                   {/* Sellers Section */}
-                  <li style={{
-                    borderRadius: '8px',
-                    margin: '0 0.5rem',
-                    color: '#b0b0b0'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      padding: '0.75rem 0',
-                      color: '#52b0b4'
-                    }}>
-                      <FiUser style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
-                      <span style={{ whiteSpace: 'nowrap' }}>Sellers</span>
+                  <li
+                    style={{
+                      borderRadius: "8px",
+                      margin: "0 0.5rem",
+                      color: "#b0b0b0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        padding: "0.75rem 0",
+                        color: "#52b0b4",
+                      }}
+                    >
+                      <FiUser
+                        style={{ marginRight: "0.75rem", fontSize: "1.1rem" }}
+                      />
+                      <span style={{ whiteSpace: "nowrap" }}>Sellers</span>
                     </div>
-                    <ul style={{
-                      width: '100%',
-                      listStyle: 'none',
-                      margin: '0',
-                      borderRadius: '0.5rem',
-                      display: 'grid',
-                      padding: '0rem 1rem'
-                    }}>
+                    <ul
+                      style={{
+                        width: "100%",
+                        listStyle: "none",
+                        margin: "0",
+                        borderRadius: "0.5rem",
+                        display: "grid",
+                        padding: "0rem 1rem",
+                      }}
+                    >
                       <li
                         style={{
-                          fontSize: '12px',
-                          padding: '0rem 0.6rem 0.2rem 0.6rem',
-                          cursor: 'pointer',
-                          color: activeTab === 4 ? 'white' : '#b0b0b0',
-                          transition: 'all 0.2s',
-                          border: 'none',
-                          background: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          borderRadius: '0.5rem'
+                          fontSize: "12px",
+                          padding: "0rem 0.6rem 0.2rem 0.6rem",
+                          cursor: "pointer",
+                          color: activeTab === 4 ? "white" : "#b0b0b0",
+                          transition: "all 0.2s",
+                          border: "none",
+                          background: "transparent",
+                          width: "100%",
+                          textAlign: "left",
+                          borderRadius: "0.5rem",
                         }}
                         onClick={() => handleTabClick(4)}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            width: "100%",
+                          }}
+                        >
                           <span>Seller Account Verify</span>
                           {pendingSellers > 0 && (
-                            <span style={{
-                              background: 'rgb(82, 176, 180, 0.2)',
-                              color: '#52b0b4',
-                              border: '1px solid rgba(82, 176, 180, 0.3)',
-                              padding: '0.07rem 0.3rem',
-                              borderRadius: '999px',
-                              fontSize: '0.65rem',
-                              fontWeight: '600'
-                            }}>{pendingSellers}</span>
+                            <span
+                              style={{
+                                background: "rgb(82, 176, 180, 0.2)",
+                                color: "#52b0b4",
+                                border: "1px solid rgba(82, 176, 180, 0.3)",
+                                padding: "0.07rem 0.3rem",
+                                borderRadius: "999px",
+                                fontSize: "0.65rem",
+                                fontWeight: "600",
+                              }}
+                            >
+                              {pendingSellers}
+                            </span>
                           )}
                         </div>
                       </li>
                       <li
                         style={{
-                          fontSize: '12px',
-                          padding: '0rem 0.6rem 0.2rem 0.6rem',
-                          cursor: 'pointer',
-                          color: activeTab === 5 ? 'white' : '#b0b0b0',
-                          transition: 'all 0.2s',
-                          border: 'none',
-                          background: 'transparent',
-                          width: '100%',
-                          textAlign: 'left',
-                          borderRadius: '0.5rem'
+                          fontSize: "12px",
+                          padding: "0rem 0.6rem 0.2rem 0.6rem",
+                          cursor: "pointer",
+                          color: activeTab === 5 ? "white" : "#b0b0b0",
+                          transition: "all 0.2s",
+                          border: "none",
+                          background: "transparent",
+                          width: "100%",
+                          textAlign: "left",
+                          borderRadius: "0.5rem",
                         }}
                         onClick={() => handleTabClick(5)}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            width: "100%",
+                          }}
+                        >
                           <span>Asset Request</span>
                           {pendingAssets > 0 && (
-                            <span style={{
-                              background: 'rgb(82, 176, 180, 0.2)',
-                              color: '#52b0b4',
-                              border: '1px solid rgba(82, 176, 180, 0.3)',
-                              padding: '0.07rem 0.3rem',
-                              borderRadius: '999px',
-                              fontSize: '0.65rem',
-                              fontWeight: '600'
-                            }}>{pendingAssets}</span>
+                            <span
+                              style={{
+                                background: "rgb(82, 176, 180, 0.2)",
+                                color: "#52b0b4",
+                                border: "1px solid rgba(82, 176, 180, 0.3)",
+                                padding: "0.07rem 0.3rem",
+                                borderRadius: "999px",
+                                fontSize: "0.65rem",
+                                fontWeight: "600",
+                              }}
+                            >
+                              {pendingAssets}
+                            </span>
                           )}
                         </div>
                       </li>
@@ -1361,16 +1451,16 @@ const AdminDashboard = () => {
                         <li
                           key={tabNum}
                           style={{
-                            fontSize: '12px',
-                            padding: '0rem 0.6rem 0.2rem 0.6rem',
-                            cursor: 'pointer',
-                            color: activeTab === tabNum ? 'white' : '#b0b0b0',
-                            transition: 'all 0.2s',
-                            border: 'none',
-                            background: 'transparent',
-                            width: '100%',
-                            textAlign: 'left',
-                            borderRadius: '0.5rem'
+                            fontSize: "12px",
+                            padding: "0rem 0.6rem 0.2rem 0.6rem",
+                            cursor: "pointer",
+                            color: activeTab === tabNum ? "white" : "#b0b0b0",
+                            transition: "all 0.2s",
+                            border: "none",
+                            background: "transparent",
+                            width: "100%",
+                            textAlign: "left",
+                            borderRadius: "0.5rem",
                           }}
                           onClick={() => handleTabClick(tabNum)}
                         >
@@ -1378,18 +1468,29 @@ const AdminDashboard = () => {
                           {tabNum === 7 && "Seller Report"}
                           {tabNum === 8 && "Seller Analytic"}
                           {tabNum === 9 && (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                width: "100%",
+                              }}
+                            >
                               <span>Seller Complaints</span>
                               {pendingComplaints > 0 && (
-                                <span style={{
-                                  background: 'rgb(82, 176, 180, 0.2)',
-                                  color: '#52b0b4',
-                                  border: '1px solid rgba(82, 176, 180, 0.3)',
-                                  padding: '0.07rem 0.3rem',
-                                  borderRadius: '999px',
-                                  fontSize: '0.65rem',
-                                  fontWeight: '600'
-                                }}>{pendingComplaints}</span>
+                                <span
+                                  style={{
+                                    background: "rgb(82, 176, 180, 0.2)",
+                                    color: "#52b0b4",
+                                    border: "1px solid rgba(82, 176, 180, 0.3)",
+                                    padding: "0.07rem 0.3rem",
+                                    borderRadius: "999px",
+                                    fontSize: "0.65rem",
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  {pendingComplaints}
+                                </span>
                               )}
                             </div>
                           )}
@@ -1399,43 +1500,51 @@ const AdminDashboard = () => {
                   </li>
 
                   {/* Advanced Section */}
-                  <li style={{
-                    borderRadius: '8px',
-                    margin: '0 0.5rem',
-                    color: '#b0b0b0'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      padding: '0.75rem 0',
-                      color: '#52b0b4'
-                    }}>
-                      <FiSettings style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
-                      <span style={{ whiteSpace: 'nowrap' }}>Advanced</span>
+                  <li
+                    style={{
+                      borderRadius: "8px",
+                      margin: "0 0.5rem",
+                      color: "#b0b0b0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        padding: "0.75rem 0",
+                        color: "#52b0b4",
+                      }}
+                    >
+                      <FiSettings
+                        style={{ marginRight: "0.75rem", fontSize: "1.1rem" }}
+                      />
+                      <span style={{ whiteSpace: "nowrap" }}>Advanced</span>
                     </div>
-                    <ul style={{
-                      width: '100%',
-                      listStyle: 'none',
-                      margin: '0',
-                      borderRadius: '0.5rem',
-                      display: 'grid',
-                      padding: '0rem 1rem'
-                    }}>
+                    <ul
+                      style={{
+                        width: "100%",
+                        listStyle: "none",
+                        margin: "0",
+                        borderRadius: "0.5rem",
+                        display: "grid",
+                        padding: "0rem 1rem",
+                      }}
+                    >
                       {[10, 11, 12, 13].map((tabNum) => (
                         <li
                           key={tabNum}
                           style={{
-                            fontSize: '12px',
-                            padding: '0rem 0.6rem 0.2rem 0.6rem',
-                            cursor: 'pointer',
-                            color: activeTab === tabNum ? 'white' : '#b0b0b0',
-                            transition: 'all 0.2s',
-                            border: 'none',
-                            background: 'transparent',
-                            width: '100%',
-                            textAlign: 'left',
-                            borderRadius: '0.5rem'
+                            fontSize: "12px",
+                            padding: "0rem 0.6rem 0.2rem 0.6rem",
+                            cursor: "pointer",
+                            color: activeTab === tabNum ? "white" : "#b0b0b0",
+                            transition: "all 0.2s",
+                            border: "none",
+                            background: "transparent",
+                            width: "100%",
+                            textAlign: "left",
+                            borderRadius: "0.5rem",
                           }}
                           onClick={() => handleTabClick(tabNum)}
                         >
@@ -1449,85 +1558,101 @@ const AdminDashboard = () => {
                   </li>
                 </ul>
               ) : (
-                <ul style={{
-                  listStyle: 'none',
-                  margin: '1rem 0 0rem 0',
-                  padding: '0.5rem',
-                  display: 'grid',
-                  gap: '10px',
-                  borderTop: '1px solid #333'
-                }}>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    margin: "1rem 0 0rem 0",
+                    padding: "0.5rem",
+                    display: "grid",
+                    gap: "10px",
+                    borderTop: "1px solid #333",
+                  }}
+                >
                   <li
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      padding: '0.75rem 1.5rem',
-                      color: activeTab === 1 ? 'white' : '#b0b0b0',
-                      transition: 'all 0.2s',
-                      borderRadius: '8px'
+                      display: "flex",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      padding: "0.75rem 1.5rem",
+                      color: activeTab === 1 ? "white" : "#b0b0b0",
+                      transition: "all 0.2s",
+                      borderRadius: "8px",
                     }}
                     onClick={() => handleTabClick(1)}
                   >
-                    <FiFileText style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
-                    <span style={{ whiteSpace: 'nowrap' }}>Blogs</span>
+                    <FiFileText
+                      style={{ marginRight: "0.75rem", fontSize: "1.1rem" }}
+                    />
+                    <span style={{ whiteSpace: "nowrap" }}>Blogs</span>
                   </li>
                   <li
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      padding: '0.75rem 1.5rem',
-                      color: activeTab === 2 ? 'white' : '#b0b0b0',
-                      transition: 'all 0.2s',
-                      borderRadius: '8px'
+                      display: "flex",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      padding: "0.75rem 1.5rem",
+                      color: activeTab === 2 ? "white" : "#b0b0b0",
+                      transition: "all 0.2s",
+                      borderRadius: "8px",
                     }}
                     onClick={() => handleTabClick(2)}
                   >
-                    <FiBriefcase style={{ marginRight: '0.75rem', fontSize: '1.1rem' }} />
-                    <span style={{ whiteSpace: 'nowrap' }}>Portfolio</span>
+                    <FiBriefcase
+                      style={{ marginRight: "0.75rem", fontSize: "1.1rem" }}
+                    />
+                    <span style={{ whiteSpace: "nowrap" }}>Portfolio</span>
                   </li>
                 </ul>
               )}
             </div>
 
-            <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #333' }}>
-              <div style={{
-                position: 'relative',
-                fontSize: '12px',
-                marginTop: 'auto',
-                padding: '0.2rem 0',
-                display: 'grid'
-              }}>
-                <button style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  padding: '0.2rem 0.75rem',
-                  width: '100%',
-                  textAlign: 'left',
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#b0b0b0',
-                  cursor: 'pointer',
-                  alignItems: 'center',
-                  gap: '0.75rem'
-                }}>
-                  <FiSettings style={{ fontSize: '1.1rem' }} />
-                  <span style={{ whiteSpace: 'nowrap' }}>Settings</span>
+            <div
+              style={{
+                marginTop: "auto",
+                paddingTop: "1rem",
+                borderTop: "1px solid #333",
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  fontSize: "12px",
+                  marginTop: "auto",
+                  padding: "0.2rem 0",
+                  display: "grid",
+                }}
+              >
+                <button
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    padding: "0.2rem 0.75rem",
+                    width: "100%",
+                    textAlign: "left",
+                    background: "transparent",
+                    border: "none",
+                    color: "#b0b0b0",
+                    cursor: "pointer",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <FiSettings style={{ fontSize: "1.1rem" }} />
+                  <span style={{ whiteSpace: "nowrap" }}>Settings</span>
                 </button>
                 <button
                   style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    padding: '0.2rem 0.75rem',
-                    width: '100%',
-                    textAlign: 'left',
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#b0b0b0',
-                    cursor: 'pointer',
-                    alignItems: 'center',
-                    gap: '0.75rem'
+                    display: "flex",
+                    flexDirection: "row",
+                    padding: "0.2rem 0.75rem",
+                    width: "100%",
+                    textAlign: "left",
+                    background: "transparent",
+                    border: "none",
+                    color: "#b0b0b0",
+                    cursor: "pointer",
+                    alignItems: "center",
+                    gap: "0.75rem",
                   }}
                   onClick={async () => {
                     try {
@@ -1536,8 +1661,8 @@ const AdminDashboard = () => {
                     } catch {}
                   }}
                 >
-                  <FiLogOut style={{ fontSize: '1.1rem' }} />
-                  <span style={{ whiteSpace: 'nowrap' }}>Logout</span>
+                  <FiLogOut style={{ fontSize: "1.1rem" }} />
+                  <span style={{ whiteSpace: "nowrap" }}>Logout</span>
                 </button>
               </div>
             </div>
@@ -1553,13 +1678,21 @@ const AdminDashboard = () => {
         <div className="admin-main-content">
           {/* Desktop Header */}
           {window.innerWidth > 768 && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '2rem'
-            }}>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: '600', color: 'white' }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "2rem",
+              }}
+            >
+              <h1
+                style={{
+                  fontSize: "1.75rem",
+                  fontWeight: "600",
+                  color: "white",
+                }}
+              >
                 {activeTab === 1 && selectedDashboard === "admin" && ""}
                 {activeTab === 2 && ""}
                 {activeTab === 3 && ""}
@@ -1578,12 +1711,9 @@ const AdminDashboard = () => {
               </h1>
 
               {/* Desktop Notification Button */}
-              <div style={{ position: 'relative' }} ref={notificationRef}>
-                <button
-                  className="header-btn"
-                  onClick={toggleNotifications}
-                >
-                  <FiBell style={{ fontSize: '1.2rem' }} />
+              <div style={{ position: "relative" }} ref={notificationRef}>
+                <button className="header-btn" onClick={toggleNotifications}>
+                  <FiBell style={{ fontSize: "1.2rem" }} />
                   {unreadCount > 0 && (
                     <span className="notification-badge">
                       {unreadCount > 99 ? "99+" : unreadCount}
@@ -1605,19 +1735,30 @@ const AdminDashboard = () => {
           )}
 
           {error && (
-            <div style={{
-              padding: '1rem',
-              backgroundColor: 'rgba(247, 37, 133, 0.2)',
-              color: '#f72585',
-              border: '1px solid rgba(247, 37, 133, 0.3)',
-              borderRadius: '4px',
-              marginBottom: '1.5rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
+            <div
+              style={{
+                padding: "1rem",
+                backgroundColor: "rgba(247, 37, 133, 0.2)",
+                color: "#f72585",
+                border: "1px solid rgba(247, 37, 133, 0.3)",
+                borderRadius: "4px",
+                marginBottom: "1.5rem",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               {error}
-              <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: '#f72585', cursor: 'pointer', fontSize: '1rem' }}>
+              <button
+                onClick={() => setError(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#f72585",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                }}
+              >
                 <FiX />
               </button>
             </div>
@@ -1643,7 +1784,9 @@ const AdminDashboard = () => {
               {activeTab === 3 && (
                 <PaymentPlan
                   users={users}
-                  formatCurrency={(amount) => `$${amount?.toFixed(2) || "0.00"}`}
+                  formatCurrency={(amount) =>
+                    `$${amount?.toFixed(2) || "0.00"}`
+                  }
                   formatDate={(date) => {
                     if (!date) return "N/A";
                     const normalizedDate = normalizeDate(date);
@@ -1710,20 +1853,22 @@ const AdminDashboard = () => {
           )}
 
           {loading && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0, 0, 0, 0.7)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 1000,
-              color: 'white',
-              fontSize: '1.5rem'
-            }}>
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: "rgba(0, 0, 0, 0.7)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1000,
+                color: "white",
+                fontSize: "1.5rem",
+              }}
+            >
               Loading...
             </div>
           )}

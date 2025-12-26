@@ -906,7 +906,8 @@ const UserDetailsModal = ({
   formatCurrency,
   formatDate,
 }) => {
-  const name = user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
+  const name =
+    user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
   const status = (user.status || "active").toLowerCase();
   const isActive = status === "active";
 
@@ -921,10 +922,10 @@ const UserDetailsModal = ({
             <FiX />
           </button>
         </div>
-        
+
         <div className="modal-body">
           {/* Profile Header */}
-                 <div className="user-profile-header">
+          <div className="user-profile-header">
             <div className="profile-avatar">
               {user.photoURL ? (
                 <img
@@ -946,7 +947,9 @@ const UserDetailsModal = ({
                   {user.role || "user"}
                 </span>
                 <span
-                  className={`status-badge enhanced ${isActive ? "active" : "inactive"}`}
+                  className={`status-badge enhanced ${
+                    isActive ? "active" : "inactive"
+                  }`}
                 >
                   {isActive ? "Active" : "Inactive"}
                 </span>
@@ -960,19 +963,27 @@ const UserDetailsModal = ({
               <h4>Personal Information</h4>
               <div className="detail-item">
                 <span className="detail-label">Full Name:</span>
-                <span className="detail-value">{user.name || "Not provided"}</span>
+                <span className="detail-value">
+                  {user.name || "Not provided"}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">Email:</span>
-                <span className="detail-value">{user.email || "Not provided"}</span>
+                <span className="detail-value">
+                  {user.email || "Not provided"}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">Username:</span>
-                <span className="detail-value">{user.username || "Not provided"}</span>
+                <span className="detail-value">
+                  {user.username || "Not provided"}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">Phone Number:</span>
-                <span className="detail-value">{user.phoneNumber || user.phone || "Not provided"}</span>
+                <span className="detail-value">
+                  {user.phoneNumber || user.phone || "Not provided"}
+                </span>
               </div>
             </div>
 
@@ -981,16 +992,20 @@ const UserDetailsModal = ({
               <h4>Location Information</h4>
               <div className="detail-item">
                 <span className="detail-label">Country:</span>
-                <span className="detail-value">{user.country || "Not provided"}</span>
+                <span className="detail-value">
+                  {user.country || "Not provided"}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">City:</span>
-                <span className="detail-value">{user.city || "Not provided"}</span>
+                <span className="detail-value">
+                  {user.city || "Not provided"}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">Date of Birth:</span>
                 <span className="detail-value">
-                  {user.dateOfBirth || user.birthday 
+                  {user.dateOfBirth || user.birthday
                     ? formatDate(user.dateOfBirth || user.birthday)
                     : "Not provided"}
                 </span>
@@ -1002,13 +1017,13 @@ const UserDetailsModal = ({
               <h4>Account Information</h4>
               <div className="detail-item">
                 <span className="detail-label">User ID:</span>
-                <span 
-                  className="detail-value" 
-                  style={{ 
-                    fontFamily: 'monospace', 
-                    fontWeight: 'bold', 
-                    color: '#3b82f6',
-                    fontSize: '14px'
+                <span
+                  className="detail-value"
+                  style={{
+                    fontFamily: "monospace",
+                    fontWeight: "bold",
+                    color: "#3b82f6",
+                    fontSize: "14px",
                   }}
                 >
                   {user.uid || user.id}
@@ -1038,7 +1053,9 @@ const UserDetailsModal = ({
               </div>
               <div className="detail-item">
                 <span className="detail-label">Total Spent:</span>
-                <span className="detail-value">{formatCurrency(user.totalSpent || 0)}</span>
+                <span className="detail-value">
+                  {formatCurrency(user.totalSpent || 0)}
+                </span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">Downloads:</span>
@@ -1056,12 +1073,12 @@ const UserDetailsModal = ({
                   value={user.role || "user"}
                   onChange={(e) => onRoleChange(user.id, e.target.value)}
                   style={{
-                    padding: '8px 12px',
-                    border: '2px solid #e0e0e0',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    width: '100%',
-                    maxWidth: '200px'
+                    padding: "8px 12px",
+                    border: "2px solid #e0e0e0",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    width: "100%",
+                    maxWidth: "200px",
                   }}
                 >
                   <option value="user">User</option>
@@ -1077,13 +1094,13 @@ const UserDetailsModal = ({
           <button className="action-button secondary" onClick={onClose}>
             Close
           </button>
-          
+
           <button
             className={`action-button ${isActive ? "warning" : "success"}`}
             onClick={() => onStatusToggle(user.id)}
             style={{
-              backgroundColor: isActive ? '#52B0B4' : '#10b981',
-              color: 'white'
+              backgroundColor: isActive ? "#52B0B4" : "#10b981",
+              color: "white",
             }}
           >
             {isActive ? (
