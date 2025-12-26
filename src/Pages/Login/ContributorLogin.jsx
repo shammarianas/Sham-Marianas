@@ -959,7 +959,7 @@ const ContributorLogin = () => {
         await updateProfile(user, { displayName: fullName || username });
       }
 
-      setCurrentStep(3);
+      await handleContributorProfile(user);
     } catch (err) {
       console.error("Contributor signup error:", err);
       setError("Something went wrong. Please try again.");
