@@ -759,7 +759,7 @@ exports.sendContactFormEmail = functions.https.onRequest((req, res) => {
     // Email to your business
     const mailOptionsToBusiness = {
       from: `"Sham Marianas Contact" <${process.env.LOGIN_EMAIL_USER}>`,
-      to: "saeedasif09876@gmail.com",
+      to: "info@shammarians.com",
       cc: process.env.LOGIN_EMAIL_USER, // Optional: Also send to admin
       subject: `[Contact Form] ${subject || "New Message from Website"}`,
       html: `
@@ -890,7 +890,7 @@ exports.sendContactFormEmail = functions.https.onRequest((req, res) => {
                         <h3>📞 Our Contact Information</h3>
                         <p><strong>Dubai Office:</strong> +971 52 803 6012</p>
                         <p><strong>Pakistan Office:</strong> +92 311 678 8423</p>
-                        <p><strong>Email:</strong> saeedasif09876@gmail.com</p>
+                        <p><strong>Email:</strong> info@shammarians.com</p>
                         
                         <div style="margin-top: 20px;">
                             <h4>Follow Us:</h4>
@@ -920,7 +920,7 @@ exports.sendContactFormEmail = functions.https.onRequest((req, res) => {
       await mailTransport.sendMail(mailOptionsToUser);
 
       console.log(
-        `✅ Contact form email sent: ${submissionId} to saeedasif09876@gmail.com`
+        `✅ Contact form email sent: ${submissionId} to info@shammarians.com`
       );
       console.log(`✅ Confirmation email sent to user: ${email}`);
 
