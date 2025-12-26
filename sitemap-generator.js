@@ -2,9 +2,24 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Firebase config (you need to add your config here)
+const firebaseConfig = {
+  apiKey: "AIzaSyCC_cEqxB99hMW16aowMs6AJ3-k52VasW0",
+  authDomain: "sham-marianas.firebaseapp.com",
+  projectId: "sham-marianas",
+  storageBucket: "sham-marianas.firebasestorage.app",
+  messagingSenderId: "607689609153",
+  appId: "1:607689609153:web:3d76a1c337979a691a6940",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const WEBSITE = 'https://shammarianas.com';
 const TODAY = new Date().toISOString().split('T')[0];
@@ -36,19 +51,19 @@ const ROUTES_CONFIG = [
   { path: '/category/textures', dynamic: false },
   { path: '/category/more', dynamic: false },
   
-  // Dynamic routes with sample data
-  { path: '/view/:slug', dynamic: true, samples: ['model-1', 'model-2', 'template-1', 'texture-1'] },
-  { path: '/blog/:id', dynamic: true, samples: ['post-1', 'post-2', 'post-3', 'post-4'] },
-  { path: '/project-details/:id', dynamic: true, samples: ['project-1', 'project-2', 'project-3'] },
+  // Dynamic routes - will be fetched from database
+  { path: '/view/:slug', dynamic: true, collection: 'Assets', field: 'slug' },
+  { path: '/blog/:id', dynamic: true, collection: 'blogs', field: 'id' },
+  { path: '/project-details/:id', dynamic: true, collection: 'projects', field: 'id' },
   { path: '/blog-category/:category', dynamic: true, samples: ['technology', 'design', 'marketing'] },
-  { path: '/profile/:username', dynamic: true, samples: ['john', 'jane', 'alex', 'admin'] },
-  { path: '/:username', dynamic: true, samples: ['john', 'jane', 'alex', 'admin'] },
+  { path: '/profile/:username', dynamic: true, collection: 'Contributors', field: 'username' },
+  { path: '/:username', dynamic: true, collection: 'Contributors', field: 'username' },
 ];
 
-const generateUrlsFromRoutes = () => {
+const generateUrlsFromRoutes = async () => {
   const urls = [];
   
-  ROUTES_CONFIG.forEach(route => {
+  for (const route of ROUTES_CONFIG) {
     if (!route.dynamic) {
       // Static route
       urls.push({
@@ -57,22 +72,37 @@ const generateUrlsFromRoutes = () => {
         freq: route.path === '/' ? 'daily' : 'weekly'
       });
     } else {
-      // Dynamic route - generate sample URLs
-      route.samples.forEach(sample => {
-        const url = route.path.replace(/:(\w+)/, sample);
-        urls.push({
-          url: url,
-          priority: '0.7',
-          freq: 'monthly'
+      // Dynamic route - fetch from database
+      try {
+        const querySnapshot = await getDocs(collection(db, route.collection));
+        const items = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const value = data[route.field] || doc.id;
+          if (value) items.push(value);
         });
-      });
+        
+        items.forEach(item => {
+          const url = route.path.replace(/:(\w+)/, item);
+          urls.push({
+            url: url,
+            priority: '0.7',
+            freq: 'monthly'
+          });
+        });
+        
+        console.log(`Fetched ${items.length} items for ${route.path}`);
+      } catch (error) {
+        console.error(`Error fetching ${route.collection}:`, error);
+        // Fallback to empty
+      }
     }
-  });
+  }
   
   return urls;
 };
 
-const urls = generateUrlsFromRoutes();
+const urls = await generateUrlsFromRoutes();
 
 // Generate XML
 let xml = `<?xml version="1.0" encoding="UTF-8"?>
