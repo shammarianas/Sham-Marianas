@@ -859,23 +859,15 @@ const SellerDashboard = () => {
                   <FiUser className="nav-c-icon" />
                   <span className="nav-c-label">Profile</span>
                 </li>
-                <li
+                {/* <li
                   className={`nav-c-item ${activeTab === "billing" ? "active" : ""
                     }`}
                   onClick={() => handleTabClick("billing")}
                 >
                   <FiDollarSign className="nav-c-icon" />
                   <span className="nav-c-label">Billing and invoices</span>
-                </li>
-                {/* <li
-                className={`nav-c-item ${
-                  activeTab === "feedback" ? "active" : ""
-                }`}
-                onClick={() => handleTabClick("feedback")}
-              >
-                <FiStar className="nav-c-icon" />
-                <span className="nav-c-label">Feedback</span>
-              </li> */}
+                </li> */}
+                
               </ul>
             </div>
           </nav>

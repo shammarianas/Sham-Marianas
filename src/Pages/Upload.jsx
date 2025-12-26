@@ -3114,7 +3114,7 @@ const Upload = ({
                   className="blog-form-select"
                 >
                   <option value="free">Free</option>
-                  <option value="paid">Paid</option>
+                  {/* <option value="paid">Paid</option> */}
                 </select>
                 <p className="blog-form-hint">
                   Select whether this asset is free or paid
