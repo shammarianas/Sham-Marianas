@@ -47,7 +47,7 @@ const Profile = () => {
   const { currentUser } = useUser();
   const [user, setUser] = useState(null);
 
-console.log("Profile user state:", user);
+  console.log("Profile user state:", user);
   const [isFollowing, setIsFollowing] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -343,7 +343,7 @@ console.log("Profile user state:", user);
               foundInCollection = "Contributors";
               break;
             }
-console.log("Searching Contributors with variation:", foundUserId);
+            console.log("Searching Contributors with variation:", foundUserId);
             q = query(
               collection(db, "Contributors"),
               where("username_lowercase", "==", variation.toLowerCase())
@@ -462,6 +462,15 @@ console.log("Searching Contributors with variation:", foundUserId);
             console.log("✅ Cloud Function result:", result);
 
             if (result.success) {
+              // ✅ FIXED: Use the correct available slots from the function
+              const totalTeamSize = result.team?.memberLimit || 2;
+              const currentMembers = result.members?.length || 1;
+              const availableSlots = result.team?.availableSlots || 0;
+
+              console.log(
+                `📊 Team Stats: Size=${totalTeamSize}, Current=${currentMembers}, Available=${availableSlots}`
+              );
+
               // Combine user subscription with team data
               const combinedSubscription = {
                 // User's personal subscription data
@@ -485,10 +494,11 @@ console.log("Searching Contributors with variation:", foundUserId);
                 pendingInvites: result.pendingInvites || [],
                 userRole: result.userRole || "member",
 
-                // Calculated fields
-                availableSlots: result.team?.availableSlots || 0,
-                memberLimit: result.team?.memberLimit || 2,
-                currentMembers: result.members?.length || 1,
+                // ✅ FIXED: Correct team size calculations
+                totalTeamSize: totalTeamSize, // Total team size (2, 3, or 4)
+                memberLimit: totalTeamSize, // Same as totalTeamSize
+                currentMembers: currentMembers,
+                availableSlots: availableSlots, // From function calculation
                 perMemberPrice: result.team?.perMemberPrice || 7,
                 downloadsPerMember: result.team?.downloadsPerMember || 200,
                 totalTeamDownloads: result.team?.totalDownloads || 0,
@@ -534,8 +544,9 @@ console.log("Searching Contributors with variation:", foundUserId);
                   email: memberProfile.email,
                   name:
                     memberProfile.name ||
-                    `${memberProfile.firstName || ""} ${memberProfile.lastName || ""
-                      }`.trim(),
+                    `${memberProfile.firstName || ""} ${
+                      memberProfile.lastName || ""
+                    }`.trim(),
                   role: memberId === teamData.ownerId ? "owner" : "member",
                   joinedAt: memberProfile.joinDate || memberProfile.createdAt,
                   profilePic: memberProfile.profilePic,
@@ -566,11 +577,19 @@ console.log("Searching Contributors with variation:", foundUserId);
             });
           });
 
-          // Calculate available slots (memberLimit - 1 for owner)
-          const maxInvitableMembers = teamData.memberLimit - 1;
+          // ✅ FIXED: Calculate available slots correctly
+          const totalTeamSize = teamData.memberLimit || 2; // From subscription plan
+          const currentMemberCount = members.length; // Includes owner
+
+          // Available slots = total team size - current members
+          // Example: Team size 3, current members 2 → availableSlots = 1
           const availableSlots = Math.max(
             0,
-            maxInvitableMembers - (members.length - 1)
+            totalTeamSize - currentMemberCount
+          );
+
+          console.log(
+            `📊 Fallback Calculation: TeamSize=${totalTeamSize}, Current=${currentMemberCount}, Available=${availableSlots}`
           );
 
           const combinedSubscription = {
@@ -595,10 +614,11 @@ console.log("Searching Contributors with variation:", foundUserId);
             pendingInvites: invites,
             userRole: teamData.ownerId === userId ? "owner" : "member",
 
-            // Calculated fields
+            // ✅ FIXED: Correct team size calculations
+            totalTeamSize: totalTeamSize, // Total team size from subscription
+            memberLimit: totalTeamSize, // Same as totalTeamSize
+            currentMembers: currentMemberCount,
             availableSlots: availableSlots,
-            memberLimit: teamData.memberLimit || 2,
-            currentMembers: members.length,
             perMemberPrice: teamData.perMemberPrice || 7,
             downloadsPerMember: teamData.downloadsPerMember || 200,
             totalTeamDownloads: teamData.totalDownloads || 0,
@@ -621,7 +641,6 @@ console.log("Searching Contributors with variation:", foundUserId);
       setLoadingSubscription(false);
     }
   };
-
   const fetchPendingInvites = async () => {
     if (!userId) return;
 
@@ -833,7 +852,7 @@ console.log("Searching Contributors with variation:", foundUserId);
       !subscription ||
       !window.confirm(
         "Are you sure you want to cancel your subscription?\n\n" +
-        "You will continue to have access until the end of your current billing period."
+          "You will continue to have access until the end of your current billing period."
       )
     )
       return;
@@ -1541,8 +1560,6 @@ console.log("Searching Contributors with variation:", foundUserId);
 
   return (
     <>
-     
-
       {/* Billing History Modal */}
       {showBillingModal && (
         <div className="modal-overlay" onClick={handleCloseBillingModal}>
@@ -1709,16 +1726,18 @@ console.log("Searching Contributors with variation:", foundUserId);
                 <div className="actions">
                   {currentUser ? (
                     <button
-                      className={`follow_btn ${currentUser.uid === userId ? "disabled" : ""
-                        }`}
+                      className={`follow_btn ${
+                        currentUser.uid === userId ? "disabled" : ""
+                      }`}
                       onClick={
-                        currentUser.uid === userId ? () => { } : followUser
+                        currentUser.uid === userId ? () => {} : followUser
                       }
                       disabled={currentUser.uid === userId}
                     >
                       <i
-                        className={`icon fas ${isFollowing ? "fa-check" : "fa-plus"
-                          }`}
+                        className={`icon fas ${
+                          isFollowing ? "fa-check" : "fa-plus"
+                        }`}
                       ></i>
                       <span>{isFollowing ? "Following" : "Follow"}</span>
                     </button>
@@ -1741,16 +1760,18 @@ console.log("Searching Contributors with variation:", foundUserId);
               {/* Navigation Tabs */}
               <div className="profile-nav-tabs">
                 <button
-                  className={`profile-nav-tab ${activeTab === "profile" ? "active" : ""
-                    }`}
+                  className={`profile-nav-tab ${
+                    activeTab === "profile" ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab("profile")}
                 >
                   <i className="icon fas fa-user-cog"></i>
                   <span>Profile Settings</span>
                 </button>
                 <button
-                  className={`profile-nav-tab ${activeTab === "subscription" ? "active" : ""
-                    }`}
+                  className={`profile-nav-tab ${
+                    activeTab === "subscription" ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab("subscription")}
                 >
                   <i className="icon fas fa-crown"></i>
@@ -1885,10 +1906,11 @@ console.log("Searching Contributors with variation:", foundUserId);
                     <div className="danger-zone-content">
                       <div className="danger-actions">
                         <button
-                          className={`butn butn-sm butn-bord ${user?.status === "deactivated"
+                          className={`butn butn-sm butn-bord ${
+                            user?.status === "deactivated"
                               ? "butn-bg main-colorbg"
                               : "butn-danger"
-                            } radius-5`}
+                          } radius-5`}
                           onClick={
                             user?.status === "deactivated"
                               ? handleActivateAccount
@@ -1896,10 +1918,11 @@ console.log("Searching Contributors with variation:", foundUserId);
                           }
                         >
                           <i
-                            className={`icon fas ${user?.status === "deactivated"
+                            className={`icon fas ${
+                              user?.status === "deactivated"
                                 ? "fa-play"
                                 : "fa-pause"
-                              }`}
+                            }`}
                           ></i>
                           <span>
                             {user?.status === "deactivated"
@@ -1939,16 +1962,17 @@ console.log("Searching Contributors with variation:", foundUserId);
                           <div className="header-left">
                             <h2>Current Subscription</h2>
                             <div
-                              className={`status-badge ${formatSubscriptionStatus(
-                                user?.subscription?.status ||
-                                subscription?.status
-                              ).class
-                                }`}
+                              className={`status-badge ${
+                                formatSubscriptionStatus(
+                                  user?.subscription?.status ||
+                                    subscription?.status
+                                ).class
+                              }`}
                             >
                               {
                                 formatSubscriptionStatus(
                                   user?.subscription?.status ||
-                                  subscription?.status
+                                    subscription?.status
                                 ).text
                               }
                             </div>
@@ -1970,9 +1994,9 @@ console.log("Searching Contributors with variation:", foundUserId);
                             <span className="info-value">
                               {getSubscriptionTypeDisplay(
                                 user?.subscription?.type ||
-                                user?.subscription?.plan ||
-                                subscription?.subscriptionType ||
-                                "individual"
+                                  user?.subscription?.plan ||
+                                  subscription?.subscriptionType ||
+                                  "individual"
                               )}
                             </span>
                           </div>
@@ -2002,13 +2026,22 @@ console.log("Searching Contributors with variation:", foundUserId);
                             </span>
                           </div>
 
+                          {/* ✅ FIXED: Team Members Display */}
                           <div className="info-item">
-                            <span className="info-label">Team Members:</span>
+                            <span className="info-label">Team Size:</span>
                             <span className="info-value">
-                              {user?.subscription?.teamMembers ||
-                                subscription?.teamMembers ||
+                              {subscription?.currentMembers ||
+                                teamMembers.length ||
+                                1}{" "}
+                              /{" "}
+                              {subscription?.totalTeamSize ||
+                                subscription?.memberLimit ||
                                 1}{" "}
                               members
+                              {subscription?.availableSlots > 0 &&
+                                ` (${subscription?.availableSlots} slot${
+                                  subscription?.availableSlots > 1 ? "s" : ""
+                                } available)`}
                             </span>
                           </div>
 
@@ -2019,9 +2052,9 @@ console.log("Searching Contributors with variation:", foundUserId);
                             <span className="info-value">
                               {formatDate(
                                 user?.subscription?.expiresAt ||
-                                user?.subscription?.nextBillingDate ||
-                                subscription?.nextBillingDate ||
-                                subscription?.currentPeriodEnd
+                                  user?.subscription?.nextBillingDate ||
+                                  subscription?.nextBillingDate ||
+                                  subscription?.currentPeriodEnd
                               ) || "N/A"}
                             </span>
                           </div>
@@ -2030,10 +2063,19 @@ console.log("Searching Contributors with variation:", foundUserId);
                           <div className="info-item">
                             <span className="info-label">Downloads Used:</span>
                             <span className="info-value">
-                              {user?.subscription?.downloadsUsed || 0} /
+                              {user?.subscription?.downloadsUsed || 0} /{" "}
                               {user?.subscription?.downloadLimit ||
                                 subscription?.downloadLimit ||
                                 0}
+                            </span>
+                          </div>
+
+                          <div className="info-item">
+                            <span className="info-label">
+                              Downloads per Member:
+                            </span>
+                            <span className="info-value">
+                              {subscription?.downloadsPerMember || 200}
                             </span>
                           </div>
 
@@ -2044,8 +2086,8 @@ console.log("Searching Contributors with variation:", foundUserId);
                             <span className="info-value">
                               {formatDate(
                                 user?.subscription?.startDate ||
-                                subscription?.createdAt ||
-                                subscription?.startDate
+                                  subscription?.createdAt ||
+                                  subscription?.startDate
                               ) || "N/A"}
                             </span>
                           </div>
@@ -2055,27 +2097,41 @@ console.log("Searching Contributors with variation:", foundUserId);
                         {(user?.subscription?.type === "team" ||
                           subscription?.subscriptionType === "team" ||
                           user?.subscription?.plan === "team") && (
-                            <div className="team-management-section">
-                              <div className="section-header">
-                                <h3>Team Management</h3>
-                                <div className="member-count">
-                                  <i className="fas fa-users"></i>
-                                  <span>
-                                    {teamMembers.length} /{" "}
-                                    {user?.subscription?.teamMembers ||
-                                      subscription?.teamMembers ||
-                                      1}{" "}
-                                    members
+                          <div className="team-management-section">
+                            <div className="section-header">
+                              <h3>Team Management</h3>
+                              <div className="member-count">
+                                <i className="fas fa-users"></i>
+                                <span>
+                                  {teamMembers.length} /{" "}
+                                  {subscription?.totalTeamSize ||
+                                    subscription?.memberLimit ||
+                                    1}{" "}
+                                  members
+                                </span>
+                                {subscription?.availableSlots > 0 && (
+                                  <span className="slots-available">
+                                    ({subscription?.availableSlots} slot
+                                    {subscription?.availableSlots > 1
+                                      ? "s"
+                                      : ""}{" "}
+                                    available)
                                   </span>
-                                </div>
+                                )}
                               </div>
+                            </div>
 
-                              {/* Invite Team Member */}
+                            {/* Invite Team Member - Only show if slots available */}
+                            {subscription?.availableSlots > 0 && (
                               <div className="invite-member-form">
                                 <h4>Add Team Member</h4>
                                 <p className="form-description">
-                                  Invite team members by email. They'll receive an
-                                  invitation to join your team.
+                                  {subscription?.availableSlots === 1
+                                    ? "You can add 1 more member to your team."
+                                    : `You can add ${subscription?.availableSlots} more members to your team.`}
+                                  Each member gets{" "}
+                                  {subscription?.downloadsPerMember || 200}{" "}
+                                  downloads/month.
                                 </p>
 
                                 <div className="input-with-button">
@@ -2091,95 +2147,150 @@ console.log("Searching Contributors with variation:", foundUserId);
                                   <button
                                     className="butn butn-sm butn-bg main-colorbg color-white radius-5"
                                     onClick={inviteTeamMember}
-                                    disabled={inviting || !inviteEmail}
+                                    disabled={
+                                      inviting ||
+                                      !inviteEmail ||
+                                      subscription?.availableSlots <= 0
+                                    }
                                   >
                                     <i className="icon fas fa-paper-plane pr-3"></i>
                                     <span>
-                                      {inviting ? "Sending..." : "Invite"}
+                                      {inviting
+                                        ? "Sending..."
+                                        : `Invite (${subscription?.availableSlots} left)`}
                                     </span>
                                   </button>
                                 </div>
                               </div>
+                            )}
 
-                              {/* Current Team Members */}
-                              {teamMembers.length > 0 && (
-                                <div className="team-members-list">
-                                  <h4>Team Members</h4>
-                                  <div className="members-grid">
-                                    {teamMembers.map((member) => (
-                                      <div
-                                        key={member.id}
-                                        className="member-card"
-                                      >
-                                        <div className="member-info">
-                                          <div className="member-avatar">
-                                            {member.profilePic ? (
-                                              <img
-                                                src={member.profilePic}
-                                                alt={member.email}
-                                              />
-                                            ) : (
-                                              <div className="avatar-initials">
-                                                {member.email
-                                                  ?.charAt(0)
-                                                  .toUpperCase()}
-                                              </div>
-                                            )}
-                                          </div>
-                                          <div className="member-details">
-                                            <div className="member-email">
-                                              {member.email}
+                            {/* Show message when no slots available */}
+                            {subscription?.availableSlots <= 0 && (
+                              <div className="no-slots-message">
+                                <div className="alert alert-info">
+                                  <i className="fas fa-info-circle"></i>
+                                  <div>
+                                    <strong>Team is full</strong>
+                                    <p>
+                                      You've reached the maximum team size of{" "}
+                                      {subscription?.totalTeamSize ||
+                                        subscription?.memberLimit ||
+                                        1}{" "}
+                                      members. Upgrade your plan to add more
+                                      team members.
+                                    </p>
+                                  </div>
+                                  <Link
+                                    to="/subscription"
+                                    className="butn butn-sm butn-bg main-colorbg radius-5"
+                                  >
+                                    Upgrade Plan
+                                  </Link>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Current Team Members */}
+                            {teamMembers.length > 0 && (
+                              <div className="team-members-list">
+                                <h4>Team Members ({teamMembers.length})</h4>
+                                <div className="members-grid">
+                                  {teamMembers.map((member) => (
+                                    <div
+                                      key={member.id}
+                                      className="member-card"
+                                    >
+                                      <div className="member-info">
+                                        <div className="member-avatar">
+                                          {member.profilePic ? (
+                                            <img
+                                              src={member.profilePic}
+                                              alt={member.email}
+                                            />
+                                          ) : (
+                                            <div className="avatar-initials">
+                                              {member.email
+                                                ?.charAt(0)
+                                                .toUpperCase()}
                                             </div>
-                                            <div className="member-role">
-                                              <span className="role-badge">
-                                                {member.role || "Member"}
-                                              </span>
-                                            </div>
-                                            <div className="member-joined">
-                                              Joined:{" "}
-                                              {formatDate(member.joinedAt)}
-                                            </div>
-                                          </div>
+                                          )}
                                         </div>
-                                        <div className="member-actions">
-                                          <button
-                                            className="remove-member-btn"
-                                            onClick={() =>
-                                              removeTeamMember(member.id)
-                                            }
-                                            title="Remove member"
-                                          >
-                                            <i className="fas fa-trash"></i>
-                                          </button>
+                                        <div className="member-details">
+                                          <div className="member-email">
+                                            {member.email}
+                                          </div>
+                                          <div className="member-role">
+                                            <span
+                                              className={`role-badge ${
+                                                member.role === "owner"
+                                                  ? "owner-badge"
+                                                  : ""
+                                              }`}
+                                            >
+                                              {member.role === "owner"
+                                                ? "Team Owner"
+                                                : "Member"}
+                                            </span>
+                                          </div>
+                                          <div className="member-joined">
+                                            <i className="fas fa-calendar-alt"></i>
+                                            Joined:{" "}
+                                            {formatDate(member.joinedAt)}
+                                          </div>
+                                          <div className="member-downloads">
+                                            <i className="fas fa-download"></i>
+                                            Downloads:{" "}
+                                            {member.downloadsUsed || 0}/
+                                            {member.downloadLimit || 200}
+                                          </div>
                                         </div>
                                       </div>
-                                    ))}
-                                  </div>
+                                      {subscription?.userRole === "owner" &&
+                                        member.role !== "owner" && (
+                                          <div className="member-actions">
+                                            <button
+                                              className="remove-member-btn"
+                                              onClick={() =>
+                                                removeTeamMember(member.id)
+                                              }
+                                              title="Remove member"
+                                            >
+                                              <i className="fas fa-trash"></i>
+                                            </button>
+                                          </div>
+                                        )}
+                                    </div>
+                                  ))}
                                 </div>
-                              )}
+                              </div>
+                            )}
 
-                              {/* Pending Invites */}
-                              {pendingInvites.length > 0 && (
-                                <div className="pending-invites">
-                                  <h4>Pending Invitations</h4>
-                                  <div className="invites-list">
-                                    {pendingInvites.map((invite) => (
-                                      <div
-                                        key={invite.id}
-                                        className="invite-item"
-                                      >
-                                        <div className="invite-info">
-                                          <i className="fas fa-envelope"></i>
-                                          <span className="invite-email">
-                                            {invite.inviteEmail}
-                                          </span>
-                                          <span className="invite-status pending">
-                                            Pending
-                                          </span>
-                                          <span className="invite-sent">
-                                            Sent: {formatDate(invite.invitedAt)}
-                                          </span>
-                                        </div>
+                            {/* Pending Invites */}
+                            {pendingInvites.length > 0 && (
+                              <div className="pending-invites">
+                                <h4>
+                                  Pending Invitations ({pendingInvites.length})
+                                </h4>
+                                <div className="invites-list">
+                                  {pendingInvites.map((invite) => (
+                                    <div
+                                      key={invite.id}
+                                      className="invite-item"
+                                    >
+                                      <div className="invite-info">
+                                        <i className="fas fa-envelope"></i>
+                                        <span className="invite-email">
+                                          {invite.inviteEmail}
+                                        </span>
+                                        <span className="invite-status pending">
+                                          Pending
+                                        </span>
+                                        <span className="invite-sent">
+                                          <i className="fas fa-clock"></i>
+                                          Sent: {formatDate(invite.invitedAt)}
+                                        </span>
+                                      </div>
+                                      {subscription?.userRole === "owner" && (
                                         <div className="invite-actions">
                                           <button
                                             className="cancel-invite-btn"
@@ -2187,73 +2298,90 @@ console.log("Searching Contributors with variation:", foundUserId);
                                               cancelInvite(invite.id)
                                             }
                                           >
+                                            <i className="fas fa-times"></i>
                                             Cancel
                                           </button>
                                         </div>
-                                      </div>
-                                    ))}
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Team Usage Stats */}
+                            <div className="team-usage-stats">
+                              <h4>Team Usage Summary</h4>
+                              <div className="stats-grid">
+                                <div className="stat-item">
+                                  <div className="stat-icon">
+                                    <i className="fas fa-users"></i>
+                                  </div>
+                                  <div className="stat-content">
+                                    <div className="stat-label">Team Size</div>
+                                    <div className="stat-value">
+                                      {subscription?.currentMembers ||
+                                        teamMembers.length}{" "}
+                                      /{" "}
+                                      {subscription?.totalTeamSize ||
+                                        subscription?.memberLimit ||
+                                        1}
+                                    </div>
                                   </div>
                                 </div>
-                              )}
-
-                              {/* Team Usage Stats */}
-                              <div className="team-usage-stats">
-                                <h4>Team Usage</h4>
-                                <div className="stats-grid">
-                                  <div className="stat-item">
-                                    <div className="stat-label">
-                                      Total Downloads
-                                    </div>
-                                    <div className="stat-value">
-                                      {subscription?.downloadsUsed || 0}
-                                    </div>
+                                <div className="stat-item">
+                                  <div className="stat-icon">
+                                    <i className="fas fa-user-plus"></i>
                                   </div>
-                                  <div className="stat-item">
-                                    <div className="stat-label">
-                                      Downloads Limit
-                                    </div>
-                                    <div className="stat-value">
-                                      {subscription?.downloadLimit || 0}
-                                    </div>
-                                  </div>
-                                  <div className="stat-item">
+                                  <div className="stat-content">
                                     <div className="stat-label">
                                       Available Slots
                                     </div>
                                     <div className="stat-value">
-                                      {(user?.subscription?.teamMembers ||
-                                        subscription?.teamMembers ||
-                                        1) - teamMembers.length}
+                                      {subscription?.availableSlots || 0}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="stat-item">
+                                  <div className="stat-icon">
+                                    <i className="fas fa-file-download"></i>
+                                  </div>
+                                  <div className="stat-content">
+                                    <div className="stat-label">Per Member</div>
+                                    <div className="stat-value">
+                                      {subscription?.downloadsPerMember || 200}
                                     </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          )}
+                          </div>
+                        )}
 
                         {/* Cancel Subscription Option */}
                         {(user?.subscription?.status === "active" ||
                           subscription?.status === "active") && (
-                            <div className="cancel-subscription-section">
-                              <div className="cancel-warning">
-                                <i className="fas fa-exclamation-triangle"></i>
-                                <div>
-                                  <h4>Cancel Subscription</h4>
-                                  <p>
-                                    If you cancel, you'll lose access to premium
-                                    features at the end of your current billing
-                                    period.
-                                  </p>
-                                </div>
+                          <div className="cancel-subscription-section">
+                            <div className="cancel-warning">
+                              <i className="fas fa-exclamation-triangle"></i>
+                              <div>
+                                <h4>Cancel Subscription</h4>
+                                <p>
+                                  If you cancel, you'll lose access to premium
+                                  features at the end of your current billing
+                                  period.
+                                </p>
                               </div>
-                              <button
-                                className="butn butn-sm butn-danger radius-5"
-                                onClick={cancelSubscription}
-                              >
-                                Cancel Subscription
-                              </button>
                             </div>
-                          )}
+                            <button
+                              className="butn butn-sm butn-danger radius-5"
+                              onClick={cancelSubscription}
+                            >
+                              Cancel Subscription
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
