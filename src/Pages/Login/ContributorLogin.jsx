@@ -607,7 +607,7 @@ const ContributorLogin = () => {
           );
           setError(
             "Account created but verification email failed: " +
-              verificationError.message
+            verificationError.message
           );
           return true; // Still allow proceeding since account was created
         }
@@ -1114,7 +1114,7 @@ const ContributorLogin = () => {
               <button className="login_btn" type="submit">
                 Login as Contributor
               </button>
-               <div className="separator"></div>
+              <div className="separator"></div>
 
               <div className="buttons">
                 <button
@@ -1131,7 +1131,7 @@ const ContributorLogin = () => {
                 >
                   <i className="fab fa-apple"></i>
                 </button>
-              </div> 
+              </div>
             </form>
           </div>
         )}
@@ -1447,8 +1447,8 @@ const ContributorLogin = () => {
 
                   <div className="buttons">
                     <button
-                     className="google"
-                  type="button"
+                      className="google"
+                      type="button"
                       onClick={async () => {
                         try {
                           const googleUser = await googleContributorSignup();
@@ -1988,43 +1988,77 @@ const ContributorLogin = () => {
                       <strong>Important Note:</strong>
                     </p>
                     <p>
-                      Your contributor account will be{" "}
-                      <strong>under review</strong> after registration. You'll
-                      only be able to access the dashboard once your account is
-                      approved by an admin. This process usually takes 24-48
-                      hours.
+                      Your contributor account is <strong>activated immediately</strong> after registration.
+                      Start submitting your free templates right away and join our growing community
+                      of designers and developers.
                     </p>
 
                     <p>
-                      <strong>1. Content Ownership</strong>
+                      <strong>1. Content Licensing</strong>
                     </p>
                     <p>
-                      You retain ownership of all content you submit but grant
-                      us a worldwide, non-exclusive license to use, distribute,
-                      and display your content.
-                    </p>
-
-                    <p>
-                      <strong>2. Content Guidelines</strong>
-                    </p>
-                    <p>
-                      All submitted content must be original and not infringe on
-                      any third-party rights. Content must meet our quality
-                      standards.
+                      You keep 100% ownership of your work. By submitting templates, you grant
+                      <strong>TemplateHub</strong> permission to:
+                      <ul style={{ marginLeft: "20px", marginTop: "5px" }}>
+                        <li>Distribute your templates as free downloads</li>
+                        <li>Showcase your work in our template gallery</li>
+                        <li>Use screenshots for promotional purposes</li>
+                        <li>Feature your profile to our user community</li>
+                      </ul>
+                      You can continue to sell or share your templates on other platforms.
                     </p>
 
                     <p>
-                      <strong>3. Payment Terms</strong>
+                      <strong>2. Quality Standards</strong>
                     </p>
                     <p>
-                      You will receive 60% of the revenue from sales of your
-                      content. Payments are processed monthly with a minimum
-                      threshold of $50.
+                      All submissions must be:
+                      <ul style={{ marginLeft: "20px", marginTop: "5px" }}>
+                        <li>Your own original work (no reselling others' templates)</li>
+                        <li>Complete and fully functional</li>
+                        <li>Well-documented with setup instructions</li>
+                        <li>Mobile-responsive (where applicable)</li>
+                        <li>Free from bugs and errors</li>
+                      </ul>
+                    </p>
+
+                    <p>
+                      <strong>3. Contributor Benefits</strong>
+                    </p>
+                    <p>
+                      As a valued contributor:
+                      <ul style={{ marginLeft: "20px", marginTop: "5px" }}>
+                        <li>Build your portfolio and online presence</li>
+                        <li>Get exposure to thousands of potential clients</li>
+                        <li>Receive user feedback to improve your skills</li>
+                        <li>Network with other designers in our community</li>
+                        <li>Early access to new features and opportunities</li>
+                      </ul>
+                    </p>
+
+                    <p>
+                      <strong>4. Future Opportunities</strong>
+                    </p>
+                    <p>
+                      While templates are currently free, we're exploring:
+                      <ul style={{ marginLeft: "20px", marginTop: "5px" }}>
+                        <li>Premium template marketplace</li>
+                        <li>Custom design requests from users</li>
+                        <li>Affiliate and partnership programs</li>
+                        <li>Sponsored template placements</li>
+                      </ul>
+                      As a contributor, you'll get first priority for these opportunities.
+                    </p>
+
+                    <p style={{ marginTop: "1.5rem", padding: "15px", backgroundColor: "#e8f4fd", borderRadius: "8px", borderLeft: "4px solid #3b82f6" }}>
+                      <strong>Community First:</strong> We believe in supporting designers and developers.
+                      Our free template library helps beginners learn, professionals showcase their work,
+                      and everyone benefits from shared knowledge.
                     </p>
 
                     <p style={{ marginTop: "1rem", fontStyle: "italic" }}>
-                      By proceeding, you agree to all terms and conditions
-                      outlined in this agreement.
+                      By joining as a contributor, you're helping build a valuable resource for the
+                      design and development community while growing your own skills and portfolio.
                     </p>
                   </div>
 
@@ -2143,7 +2177,7 @@ const ContributorLogin = () => {
               {error && <span className="error">{error}</span>}
               {success && <span className="success">{success}</span>}
 
-             
+
               {/* ========== BUTTONS ========== */}
               {currentStep < 5 && (
                 <div
@@ -2185,17 +2219,16 @@ const ContributorLogin = () => {
                       }}
                     >
                       {currentStep === 1 && isGoogleUser
-                        ? "Next" 
-                        : currentStep === 2
                         ? "Next"
-                        : "Next"}
+                        : currentStep === 2
+                          ? "Next"
+                          : "Next"}
                     </button>
                   ) : (
                     <button
                       type="submit"
-                      className={`login_btn ${
-                        !termsAccepted ? "disabled" : ""
-                      }`}
+                      className={`login_btn ${!termsAccepted ? "disabled" : ""
+                        }`}
                       disabled={!termsAccepted}
                       style={{ flex: 1 }}
                     >
