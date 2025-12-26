@@ -3,7 +3,7 @@ export const SEO_CONFIG = {
   //   Main Pages SEO
   // =========================================================
   home: {
-    title: "Sham Marianas | Advertising Agency Dubai, UAE",
+    title: "Sham Marianas | Advertising Agency in Dubai, UAE",
     description: "Sham Marianas is the best advertising agency in Dubai. We help with online marketing, managing your social media, creating strong brands, and developing plans that deliver real results and increased revenue. Let us help your business grow in the UAE! ",
     keywords: " Digital marketing agency Dubai, advertising agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
   },
