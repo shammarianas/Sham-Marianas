@@ -963,7 +963,7 @@ exports.sendSupportComplaintEmail = functions.firestore.onDocumentCreated(
       // Format the email content
       const mailOptions = {
         from: `"Sham Marianas Support" <${process.env.LOGIN_EMAIL_USER}>`,
-        to: "info@shammarianas.com",
+        to: "support@shammarians.com",
         cc: process.env.LOGIN_EMAIL_USER, // Also send to admin for tracking
         subject: `[Support Complaint ${complaintId}] ${subject}`,
         html: `
@@ -1071,7 +1071,7 @@ exports.sendSupportComplaintEmail = functions.firestore.onDocumentCreated(
       // Send the email
       await mailTransport.sendMail(mailOptions);
       console.log(
-        `✅ Support complaint email sent for: ${complaintId} to info@shammarianas.com
+        `✅ Support complaint email sent for: ${complaintId} to support@shammarians.com
 `
       );
 
@@ -1080,7 +1080,7 @@ exports.sendSupportComplaintEmail = functions.firestore.onDocumentCreated(
       await snapshot.ref.update({
         emailSent: true,
         emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        emailRecipient: "info@shammarianas.com",
+        emailRecipient: "support@shammarians.com",
       });
     } catch (error) {
       console.error("❌ Error sending support complaint email:", error);
@@ -1302,6 +1302,7 @@ exports.sendContactFormEmail = functions.https.onRequest((req, res) => {
   });
 });
 // Also trigger for Contributors collection
+
 exports.sendContributorSupportComplaintEmail =
   functions.firestore.onDocumentCreated(
     "Contributors/{userId}/Support/{complaintId}",
@@ -1332,7 +1333,7 @@ exports.sendContributorSupportComplaintEmail =
 
         const mailOptions = {
           from: `"Sham Marianas Support" <${process.env.LOGIN_EMAIL_USER}>`,
-          to: "info@shammarianas.com",
+          to: "support@shammarianas.com",
           cc: process.env.LOGIN_EMAIL_USER,
           subject: `[CONTRIBUTOR Support ${complaintId}] ${subject}`,
           html: `
