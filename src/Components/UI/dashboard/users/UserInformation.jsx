@@ -371,7 +371,7 @@ const UserInformation = ({ users, setUsers, formatCurrency, formatDate }) => {
                 </span>
               </div>
             </div>
-            <div >
+            <div>
               <div className="filter-controls-grid">
                 <div className="search-input-wrapper">
                   <FiSearch className="search-icon" />
@@ -624,7 +624,12 @@ const UserCard = ({
         <div className="user-card-header">
           <div className="user-avatar">
             {user.photoURL ? (
-              <img  loading="lazy"  src={user.photoURL} alt={name} className="avatar-img" />
+              <img
+                loading="lazy"
+                src={user.photoURL}
+                alt={name}
+                className="avatar-img"
+              />
             ) : (
               <div className="avatar-initials">
                 {(name[0] || "").toUpperCase()}
