@@ -36,8 +36,8 @@ const SellerReports = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
- const [specializationFilter, setSpecializationFilter] = useState("all");
-  const [availableSpecializations, setAvailableSpecializations] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+ const [availableCategories, setAvailableCategories] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(null);
@@ -64,7 +64,7 @@ const SellerReports = () => {
     return reportsData.map((report) => ({
       sellerName: report.sellerName || "Unknown Seller",
       sellerEmail: report.sellerEmail || "No email",
-      specialization: report.specialization || "Unknown",
+      specialization: report.category || "All Types",
       period: report.period || "N/A",
       generatedDate: report.generatedDate || "N/A",
       status: report.status || "unknown",
@@ -106,7 +106,7 @@ const SellerReports = () => {
 
         // Generate dynamic reports based on contributors
         const dynamicReports = [];
-        const allSpecializations = new Set();
+        const allCategories = new Set();
         let reportId = 1;
 
         for (const contributor of allContributors.slice(0, 12)) {
@@ -192,7 +192,7 @@ const SellerReports = () => {
                 status: assetData.status || "unknown",
                 category: assetData.category || 'Other',
               });
-            allSpecializations.add(contributor.specialization || "Unknown");
+            allCategories.add(contributor.specialization || "Unknown");
             });
             // Calculate dynamic growth percentages based on actual data
             let weeklyGrowth = 0;
@@ -308,7 +308,7 @@ const SellerReports = () => {
                 "Unknown Seller",
               sellerEmail: contributor.email || "No email",
               sellerId: contributor.id,
-              specialization: contributor.specialization || "Unknown",
+              category: contributor.specialization || "Unknown",
               period: period,
               generatedDate: new Date(
                 Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
@@ -382,7 +382,7 @@ const SellerReports = () => {
           }
         }
 
-        setAvailableSpecializations(Array.from(allSpecializations).sort());
+        setAvailableCategories(Array.from(allCategories).sort());
         setReports(dynamicReports);
         console.log("✅ Dynamic reports generated:", dynamicReports.length);
       } catch (error) {
@@ -459,15 +459,15 @@ const SellerReports = () => {
   const filteredReports = reports.filter((report) => {
     const matchesSearch =
       report.sellerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       report.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.sellerEmail.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || report.status === statusFilter;
-    const matchesSpecialization = 
-    specializationFilter === "all" || report.specialization === specializationFilter;
+    const matchesCategory = 
+    categoryFilter === "all" || report.category === categoryFilter;
 
-     return matchesSearch && matchesStatus && matchesSpecialization;
+     return matchesSearch && matchesStatus && matchesCategory;
   });
 
   // ✅ DYNAMIC STATISTICS - ENHANCED
@@ -568,9 +568,10 @@ const SellerReports = () => {
 
     // Prepare data for Excel
     const worksheetData = [
-      ["Seller Category Report", report.reportType],
+      ["Seller Report", report.reportType],
       ["Seller Name", report.sellerName],
       ["Seller Email", report.sellerEmail],
+      ["Category", report.category],
       ["Report Period", report.period],
       ["Generated Date", report.generatedDate],
       ["Last Updated", new Date(report.lastUpdated).toLocaleString()],
@@ -606,7 +607,6 @@ const SellerReports = () => {
 
       ["PERFORMANCE INSIGHTS", ""],
       ["Average Price", `$${report.performanceData?.averagePrice || 0}`],
-      ["Average Rating", report.performanceData?.rating || "N/A"],
       ["Best Performing Day", report.performanceData?.bestDay || "N/A"],
       ["Top Asset", report.performanceData?.topPerformingAsset?.name || "N/A"],
       [
@@ -782,7 +782,7 @@ const SellerReports = () => {
   const resetFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
-   setSpecializationFilter("all");;
+    setCategoryFilter("all");
   };
 
   const exportAllReports = () => {
@@ -1109,13 +1109,13 @@ const SellerReports = () => {
 
           <select
   className="filter-select"
-  value={specializationFilter}
-  onChange={(e) => setSpecializationFilter(e.target.value)}
+  value={categoryFilter}
+  onChange={(e) => setCategoryFilter(e.target.value)}
 >
-  <option value="all">All Specializations</option>
-  {availableSpecializations.map((spec) => (
-    <option key={spec} value={spec}>
-      {spec}
+  <option value="all">All Categories</option>
+  {availableCategories.map((cat) => (
+    <option key={cat} value={cat}>
+      {cat}
     </option>
   ))}
 </select>
@@ -1156,7 +1156,7 @@ const SellerReports = () => {
             <thead>
               <tr>
                 <th>Seller</th>
-                <th>Specialization</th>
+                <th>Category</th>
                 <th>Generated Date</th>
                 <th>Revenue</th>
                 <th>Status</th>
@@ -1184,7 +1184,7 @@ const SellerReports = () => {
                       </div>
                     </div>
                   </td>
-                  <td>{report.specialization}</td>
+                  <td>{report.category}</td>
 
                   <td> 
                     <div className="comp-dis">

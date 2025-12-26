@@ -388,9 +388,9 @@ export const SEO_CONFIG = {
   // =========================================================
 
   login: {
-    title: "Login | Shammarianas - Digital Marketing Platform",
-    description: "Login to your Shammarianas account to access digital marketing tools, portfolio management, and exclusive resources.",
-    keywords: "Login Shammarianas, Sign In, Account Access, Digital Marketing Login, Portfolio Dashboard",
+    title: "Login | Shammarianas",
+    description: "Access Shammarianas features through login. Contributors share work, users explore resources",
+    keywords: " secure login, platform access",
     robots: "noindex, follow"
   },
 
@@ -422,8 +422,8 @@ export const SEO_CONFIG = {
 
   contributorForgotPassword: {
     title: " Password Recovery Shammarianas",
-    description: "Reset your Shammarianas contributor account password. Enter your email to receive password reset instructions.",
-    keywords: "Contributor Forgot Password, Password Reset, Account Recovery, Reset Login",
+    description: "Recover Shammarianas access via email. Quick reset restores full platform features securely.Enter registered email to receive Shammarianas password reset link. Submit for instant recovery—sign in once restored",
+    keywords: "password recovery, account reset, Shammarianas access, contributor password, secure reset",
     robots: "noindex, nofollow"
   },
 
@@ -436,56 +436,56 @@ export const SEO_CONFIG = {
   // =========================================================
   //   Asset Types Default Images
   // =========================================================
-  assetDefaults: {
-    videos: {
-      ogImage: "/assets/imgs/categories/videos-og.jpg",
-      twitterImage: "/assets/imgs/categories/videos-twitter.jpg"
-    },
-    models: {
-      ogImage: "/assets/imgs/categories/3d-models-og.jpg",
-      twitterImage: "/assets/imgs/categories/3d-models-twitter.jpg"
-    },
-    "video-templates": {
-      ogImage: "/assets/imgs/categories/video-templates-og.jpg",
-      twitterImage: "/assets/imgs/categories/video-templates-twitter.jpg"
-    },
-    images: {
-      ogImage: "/assets/imgs/categories/images-og.jpg",
-      twitterImage: "/assets/imgs/categories/images-twitter.jpg"
-    },
-    graphics: {
-      ogImage: "/assets/imgs/categories/graphics-og.jpg",
-      twitterImage: "/assets/imgs/categories/graphics-twitter.jpg"
-    },
-    mockups: {
-      ogImage: "/assets/imgs/categories/mockups-og.jpg",
-      twitterImage: "/assets/imgs/categories/mockups-twitter.jpg"
-    },
-    fonts: {
-      ogImage: "/assets/imgs/categories/fonts-og.jpg",
-      twitterImage: "/assets/imgs/categories/fonts-twitter.jpg"
-    },
-    icons: {
-      ogImage: "/assets/imgs/categories/icons-og.jpg",
-      twitterImage: "/assets/imgs/categories/icons-twitter.jpg"
-    },
-    textures: {
-      ogImage: "/assets/imgs/categories/textures-og.jpg",
-      twitterImage: "/assets/imgs/categories/textures-twitter.jpg"
-    },
-    scripts: {
-      ogImage: "/assets/imgs/categories/scripts-og.jpg",
-      twitterImage: "/assets/imgs/categories/scripts-twitter.jpg"
-    },
-    hdris: {
-      ogImage: "/assets/imgs/categories/hdris-og.jpg",
-      twitterImage: "/assets/imgs/categories/hdris-twitter.jpg"
-    },
-    hot: {
-      ogImage: "/assets/imgs/categories/hot-og.jpg",
-      twitterImage: "/assets/imgs/categories/hot-twitter.jpg"
-    }
-  },
+  // assetDefaults: {
+  //   videos: {
+  //     ogImage: "/assets/imgs/categories/videos-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/videos-twitter.jpg"
+  //   },
+  //   models: {
+  //     ogImage: "/assets/imgs/categories/3d-models-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/3d-models-twitter.jpg"
+  //   },
+  //   "video-templates": {
+  //     ogImage: "/assets/imgs/categories/video-templates-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/video-templates-twitter.jpg"
+  //   },
+  //   images: {
+  //     ogImage: "/assets/imgs/categories/images-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/images-twitter.jpg"
+  //   },
+  //   graphics: {
+  //     ogImage: "/assets/imgs/categories/graphics-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/graphics-twitter.jpg"
+  //   },
+  //   mockups: {
+  //     ogImage: "/assets/imgs/categories/mockups-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/mockups-twitter.jpg"
+  //   },
+  //   fonts: {
+  //     ogImage: "/assets/imgs/categories/fonts-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/fonts-twitter.jpg"
+  //   },
+  //   icons: {
+  //     ogImage: "/assets/imgs/categories/icons-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/icons-twitter.jpg"
+  //   },
+  //   textures: {
+  //     ogImage: "/assets/imgs/categories/textures-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/textures-twitter.jpg"
+  //   },
+  //   scripts: {
+  //     ogImage: "/assets/imgs/categories/scripts-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/scripts-twitter.jpg"
+  //   },
+  //   hdris: {
+  //     ogImage: "/assets/imgs/categories/hdris-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/hdris-twitter.jpg"
+  //   },
+  //   hot: {
+  //     ogImage: "/assets/imgs/categories/hot-og.jpg",
+  //     twitterImage: "/assets/imgs/categories/hot-twitter.jpg"
+  //   }
+  // },
 
 
   contributerPolices: {
@@ -494,14 +494,14 @@ export const SEO_CONFIG = {
     keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
   },
   pricesFees: {
-    title: "Website Templates - Shammarianas | Professional Designs",
-    description: "Browse professional website templates and designs from Shammarianas. Responsive templates for businesses, portfolios, and e-commerce.",
-    keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
+    title: "Pricing & Fees | Shammarianas",
+    description: " View Shammarianas' pricing: asset download fees, seller commissions, payout thresholds. Clear costs for 3D models, videos, textures, and creative resources.",
+    keywords: "marketplace pricing fees, asset commissions, download costs, seller payouts"
   },
   privacyPolicyTemplate: {
-    title: "Website Templates - Shammarianas | Professional Designs",
-    description: "Browse professional website templates and designs from Shammarianas. Responsive templates for businesses, portfolios, and e-commerce.",
-    keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
+    title: "Privacy Policy Template | Shammarianas",
+    description: "Download Shammarianas privacy policy template for your 3D/video marketplace. Covers user data, cookies, sharing practices, and legal compliance requirements",
+    keywords: "privacy policy template, marketplace data protection, contributor privacy template, asset site compliance"
   },
   sellerGuidlines: {
     title: "Website Templates - Shammarianas | Professional Designs",
@@ -509,9 +509,9 @@ export const SEO_CONFIG = {
     keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
   },
   termsConditionTemplate: {
-    title: "Website Templates - Shammarianas | Professional Designs",
-    description: "Browse professional website templates and designs from Shammarianas. Responsive templates for businesses, portfolios, and e-commerce.",
-    keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
+    title: "Terms & Conditions Template | Shammarianas",
+    description: "Shammarianas terms template covers payments, liabilities, conduct for asset platform. Essential legal clauses protect operations and users.",
+    keywords: "service terms template, platform rules agreement"
   },
 
 };
