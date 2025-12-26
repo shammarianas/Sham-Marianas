@@ -583,7 +583,7 @@ const SellerComplaints = () => {
                   <h4>Complaint Information</h4>
                   <div className="detail-item">
                     <span className="detail-label">Complaint ID:</span>
-                    <span className="detail-value" style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#3b82f6' }}>
+                    <span className="detail-value" style={{ fontWeight: 'bold', color: '#3b82f6' }}>
                       {selectedComplaint.complaintId}
                       <button
                         onClick={() => copyComplaintId(selectedComplaint.complaintId)}
@@ -597,7 +597,6 @@ const SellerComplaints = () => {
                         }}
                         title="Copy Complaint ID"
                       >
-                        📋
                       </button>
                     </span>
                   </div>
@@ -662,7 +661,7 @@ const SellerComplaints = () => {
                   </div>
                 </div>
 
-                <div className="detail-section full-width">
+                {/* <div className="detail-section full-width">
                   <h4>Admin Response</h4>
                   <textarea
                     className="response-textarea"
@@ -678,7 +677,7 @@ const SellerComplaints = () => {
                       resize: "vertical",
                     }}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
 
