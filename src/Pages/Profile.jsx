@@ -1768,7 +1768,7 @@ const Profile = () => {
                   <i className="icon fas fa-user-cog"></i>
                   <span>Profile Settings</span>
                 </button>
-                <button
+                {/* <button
                   className={`profile-nav-tab ${
                     activeTab === "subscription" ? "active" : ""
                   }`}
@@ -1776,7 +1776,7 @@ const Profile = () => {
                 >
                   <i className="icon fas fa-crown"></i>
                   <span>Subscription</span>
-                </button>
+                </button> */}
               </div>
 
               {/* Profile Settings Tab Content */}
@@ -2445,6 +2445,8 @@ const Profile = () => {
                   )}
                 </div>
               )}
+
+
             </>
           )}
 
