@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AddToBookmark from "./AddToBookmark";
 import { useUser } from "../../Context/UserProvider";
@@ -6,16 +6,39 @@ import { useNavigate } from "react-router-dom";
 import SimpleModelViewer from "./SimpleModelViewer";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
-import { doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, increment, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { getAuth } from "firebase/auth";
 
 const ListedItemCard = ({ id, data, rating, userProfile }) => {
   const { currentUser } = useUser();
   const navigate = useNavigate();
+  const [isContributor, setIsContributor] = useState(false);
   const profile = userProfile || currentUser;
   const { isDownloaded, addToDownloads, error } = useSaveToDownloads(id, data);
   const auth = getAuth();
+
+  useEffect(() => {
+    const checkContributorStatus = async () => {
+      if (!currentUser?.uid) {
+        setIsContributor(false);
+        return;
+      }
+
+      try {
+        const contributorRef = doc(db, "Contributors", currentUser.uid);
+        const contributorSnap = await getDoc(contributorRef);
+        setIsContributor(contributorSnap.exists());
+      } catch (error) {
+        console.error("Error checking contributor status:", error);
+        setIsContributor(false);
+      }
+    };
+
+    if (currentUser?.uid) {
+      checkContributorStatus();
+    }
+  }, [currentUser]);
 
   // ✅ FIXED: Consistent author name extraction
   const getAuthorName = (assetData) => {
@@ -435,7 +458,13 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
 
     console.log("🚀 Starting download process...");
 
-    // ✅ پہلے چیک کریں کہ user login ہے یا نہیں
+    // ✅ Check if user is contributor - prevent all downloads
+    if (isContributor) {
+      alert("Contributors cannot download files. Please login as a regular user.");
+      return;
+    }
+
+    // ✅ login check
     if (!currentUser) {
       alert("Please login to download");
       navigate("/login");
@@ -687,13 +716,18 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
               <span className="publisher">by {authorName}</span>
 
               <span style={{ display: "flex", gap: "12px" }}>
-                <a
-                  href="#"
-                  onClick={handleDownloadClick}
-                  style={{ cursor: "pointer", color: "inherit" }}
-                >
-                  <i className="fa-solid fa-download"></i>
-                </a>
+<a
+  href="#"
+  onClick={handleDownloadClick}
+  style={{ 
+    cursor: isContributor ? "not-allowed" : "pointer", 
+    color: "inherit",
+    opacity: isContributor ? 0.5 : 1
+  }}
+  title={isContributor ? "Contributors cannot download" : "Download"}
+>
+  <i className="fa-solid fa-download"></i>
+</a>
                 <AddToBookmark assetId={id} />
               </span>
             </div>

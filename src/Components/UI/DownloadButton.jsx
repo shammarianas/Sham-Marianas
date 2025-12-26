@@ -1,7 +1,8 @@
+import React, { useState, useEffect } from "react";
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, increment, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase"; 
 import { getFunctions, httpsCallable } from "firebase/functions"; 
 import { getAuth } from "firebase/auth";
@@ -19,6 +20,29 @@ const DownloadButton = ({
     item
   );
   const navigate = useNavigate();
+  const [isContributor, setIsContributor] = useState(false);
+
+  useEffect(() => {
+    const checkContributorStatus = async () => {
+      if (!userProfile?.uid) {
+        setIsContributor(false);
+        return;
+      }
+
+      try {
+        const contributorRef = doc(db, "Contributors", userProfile.uid);
+        const contributorSnap = await getDoc(contributorRef);
+        setIsContributor(contributorSnap.exists());
+      } catch (error) {
+        console.error("Error checking contributor status:", error);
+        setIsContributor(false);
+      }
+    };
+
+    if (userProfile?.uid) {
+      checkContributorStatus();
+    }
+  }, [userProfile]);
 
   // Check if user has active subscription
   const hasActiveSubscription = () => {
@@ -446,6 +470,15 @@ const DownloadButton = ({
   const handleDownload = async () => {
     console.log("🚀 Starting download process...");
 
+    // ✅ Check if user is contributor - prevent all downloads
+    if (isContributor) {
+      setToastMessage("Contributors cannot download files. Please login as a regular user.");
+      setToastState("warning");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
+      return;
+    }
+
     // ✅ FIXED: Check if item is free or paid
     if (isFree()) {
       console.log("🆓 Free asset - downloading immediately");
@@ -546,9 +579,25 @@ const DownloadButton = ({
   };
 
   // ✅ FIXED: Determine button state and content
-  const getButtonContent = () => {
-    // Free items - always downloadable
-    if (isFree()) {
+   const getButtonContent = () => {
+    // ✅ Check if user is contributor - ALWAYS DISABLE
+    if (isContributor) {
+      return {
+        text: "Not Available",
+        icon: "fas fa-ban",
+        onClick: () => {
+          setToastMessage("Contributors cannot download files.");
+          setToastState("warning");
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 4000);
+        },
+        enabled: false,
+        className: "disabled_btn",
+      };
+    }
+
+    // Paid items with subscription or purchase - downloadable
+    if (hasActiveSubscription() || hasPurchasedItem) {
       return {
         text: isDownloaded ? "Downloaded" : "Download",
         icon: "fas fa-download",
@@ -558,8 +607,7 @@ const DownloadButton = ({
       };
     }
 
-    // Paid items with subscription or purchase - downloadable
-    if (hasActiveSubscription() || hasPurchasedItem) {
+ if (isFree()) {
       return {
         text: isDownloaded ? "Downloaded" : "Download",
         icon: "fas fa-download",
@@ -597,6 +645,11 @@ const DownloadButton = ({
       className={`action_button ${buttonConfig.className}`}
       onClick={buttonConfig.onClick}
       disabled={!buttonConfig.enabled}
+      style={{
+        cursor: buttonConfig.enabled ? "pointer" : "not-allowed",
+        opacity: buttonConfig.enabled ? 1 : 0.6,
+      }}
+      title={isContributor ? "Contributors cannot download" : ""}
     >
       <i className={`icon ${buttonConfig.icon}`}></i>
       {buttonConfig.text}
