@@ -33,6 +33,14 @@ const useSaveToDownloads = (assetId, assetData = null) => {
 
   const addToDownloads = useCallback(
     async (itemData = null) => {
+
+      // ✅ Check if user is contributor - prevent all downloads
+      if (currentUser?.role === "contributor") {
+        setError("Contributors cannot download files. Please login as a regular user.");
+        return;
+      }
+
+      
       if (!currentUser) {
         navigate("/login");
         setError("User not logged in.");
