@@ -180,7 +180,7 @@ function Footer() {
                         <Link to="/seller-guideline">Seller Guidelines</Link>
                       </li>
                       <li className="mb-15">
-                        <Link to="/prices-and-fees">Pricing & Fees</Link>
+                        {/* <Link to="/prices-and-fees">Pricing & Fees</Link> */}
                       </li>
                     </ul>
                   </div>
