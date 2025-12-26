@@ -28,7 +28,6 @@ import { db } from "../../../../firebase";
 import { exportDownloadsData } from "../../../../utils/exportUtils";
 import ExportButton from "../../../ExportButton";
 
-
 const Downloads = () => {
   const { currentUser } = useUser();
   const [timeRange, setTimeRange] = useState("30d");
@@ -39,132 +38,135 @@ const Downloads = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [showModal, setShowModal] = useState(false);
-const [showUsersModal, setShowUsersModal] = useState(false);
-const [selectedAssetUsers, setSelectedAssetUsers] = useState([]);
+  const [showUsersModal, setShowUsersModal] = useState(false);
+  const [selectedAssetUsers, setSelectedAssetUsers] = useState([]);
 
-// Add handler function
-const handleViewUsers = (asset) => {
-  setSelectedAssetUsers(asset.recentUsers || []);
-  setShowUsersModal(true);
-};
+  // Add handler function
+  const handleViewUsers = (asset) => {
+    setSelectedAssetUsers(asset.recentUsers || []);
+    setShowUsersModal(true);
+  };
 
   // Fetch downloads data from Firebase
- useEffect(() => {
-  const fetchDownloadsData = async () => {
-    if (!currentUser) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const profilesRef = collection(db, "Profiles");
-      const profilesSnapshot = await getDocs(profilesRef);
-
-      if (profilesSnapshot.empty) {
-        await fetchUserDownloads();
+  useEffect(() => {
+    const fetchDownloadsData = async () => {
+      if (!currentUser) {
+        setLoading(false);
         return;
       }
 
-      const assetStats = {};
-      const downloadDetails = []; // Store individual download details
+      try {
+        setLoading(true);
 
-      const downloadPromises = profilesSnapshot.docs.map(async (userDoc) => {
-        const userId = userDoc.id;
-        const userData = userDoc.data();
-        const downloadsRef = collection(db, `Profiles/${userId}/downloads`);
-        const downloadsSnapshot = await getDocs(downloadsRef);
-        
-        return { userId, userData, downloadsSnapshot };
-      });
+        const profilesRef = collection(db, "Profiles");
+        const profilesSnapshot = await getDocs(profilesRef);
 
-      const allUsersData = await Promise.all(downloadPromises);
+        if (profilesSnapshot.empty) {
+          await fetchUserDownloads();
+          return;
+        }
 
-      allUsersData.forEach(({ userId, userData, downloadsSnapshot }) => {
-        downloadsSnapshot.forEach((doc) => {
-          const data = doc.data();
-          const assetId = data.assetId || doc.id;
+        const assetStats = {};
+        const downloadDetails = []; // Store individual download details
 
-          // Store individual download details for latest user info
-          downloadDetails.push({
-            assetId,
-            userId,
-            username: userData.username || userData.name || "Unknown User",
-            email: userData.email || "No email",
-            downloadDate: data.downloadDate || new Date()
-          });
+        const downloadPromises = profilesSnapshot.docs.map(async (userDoc) => {
+          const userId = userDoc.id;
+          const userData = userDoc.data();
+          const downloadsRef = collection(db, `Profiles/${userId}/downloads`);
+          const downloadsSnapshot = await getDocs(downloadsRef);
 
-          if (!assetStats[assetId]) {
-            assetStats[assetId] = {
-              id: assetId,
-              assetName: data.title || data.assetName || "Unknown Asset",
-              assetType: data.type || data.assetType || "Unknown",
-              publisher: data.cre || "Unknown",
-              totalDownloads: 0,
-              successfulDownloads: 0,
-              failedDownloads: 0,
-              fileSize: data.fileSize || "0",
-              price: data.price || 0,
-              license: data.licenseType || data.license || "Personal",
-              lastDownload: data.downloadDate || new Date(),
-              category: data.category || "General",
-              rating: data.rating || 4.5,
-              revenue: 0,
-              trend: Math.random() > 0.5 ? "up" : "down",
-              trendPercentage: Math.floor(Math.random() * 30) + 5,
-              // Store recent users who downloaded this asset
-              recentUsers: []
-            };
-          }
-
-          assetStats[assetId].totalDownloads++;
-          
-          // Add user to recent users list (limit to 5)
-          if (assetStats[assetId].recentUsers.length < 5) {
-            assetStats[assetId].recentUsers.push({
-              username: userData.username || userData.name || "Unknown User",
-              email: userData.email || "No email"
-            });
-          }
-
-          if (data.status === "completed" || !data.status) {
-            assetStats[assetId].successfulDownloads++;
-            assetStats[assetId].revenue += data.price || 0;
-          } else {
-            assetStats[assetId].failedDownloads++;
-          }
+          return { userId, userData, downloadsSnapshot };
         });
-      });
 
-      // Convert to array
-      const downloadsArray = Object.values(assetStats)
-        .map((asset) => ({
-          ...asset,
-          successRate:
-            asset.totalDownloads > 0
-              ? Math.round(
-                  (asset.successfulDownloads / asset.totalDownloads) * 100
-                )
-              : 0,
-          // Get the most recent user from downloadDetails
-          latestUser: downloadDetails
-            .filter(d => d.assetId === asset.id)
-            .sort((a, b) => new Date(b.downloadDate) - new Date(a.downloadDate))[0]
-        }))
-        .sort((a, b) => b.totalDownloads - a.totalDownloads);
+        const allUsersData = await Promise.all(downloadPromises);
 
-      setDownloads(downloadsArray);
-    } catch (error) {
-      console.error("Error:", error);
-      await fetchUserDownloads();
-    } finally {
-      setLoading(false);
-    }
-  };
+        allUsersData.forEach(({ userId, userData, downloadsSnapshot }) => {
+          downloadsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            const assetId = data.assetId || doc.id;
 
-  fetchDownloadsData();
-}, [currentUser]);
+            // Store individual download details for latest user info
+            downloadDetails.push({
+              assetId,
+              userId,
+              username: userData.username || userData.name || "Unknown User",
+              email: userData.email || "No email",
+              downloadDate: data.downloadDate || new Date(),
+            });
+
+            if (!assetStats[assetId]) {
+              assetStats[assetId] = {
+                id: assetId,
+                assetName: data.title || data.assetName || "Unknown Asset",
+                assetType: data.type || data.assetType || "Unknown",
+                publisher:
+                  data.author || data.authorName || data.publisher || "Unknown",
+                totalDownloads: 0,
+                successfulDownloads: 0,
+                failedDownloads: 0,
+                fileSize: data.fileSize || "0",
+                price: data.price || 0,
+                license: data.licenseType || data.license || "Personal",
+                lastDownload: data.downloadDate || new Date(),
+                category: data.category || "General",
+                rating: data.rating || 4.5,
+                revenue: 0,
+                trend: Math.random() > 0.5 ? "up" : "down",
+                trendPercentage: Math.floor(Math.random() * 30) + 5,
+                // Store recent users who downloaded this asset
+                recentUsers: [],
+              };
+            }
+
+            assetStats[assetId].totalDownloads++;
+
+            // Add user to recent users list (limit to 5)
+            if (assetStats[assetId].recentUsers.length < 5) {
+              assetStats[assetId].recentUsers.push({
+                username: userData.username || userData.name || "Unknown User",
+                email: userData.email || "No email",
+              });
+            }
+
+            if (data.status === "completed" || !data.status) {
+              assetStats[assetId].successfulDownloads++;
+              assetStats[assetId].revenue += data.price || 0;
+            } else {
+              assetStats[assetId].failedDownloads++;
+            }
+          });
+        });
+
+        // Convert to array
+        const downloadsArray = Object.values(assetStats)
+          .map((asset) => ({
+            ...asset,
+            successRate:
+              asset.totalDownloads > 0
+                ? Math.round(
+                    (asset.successfulDownloads / asset.totalDownloads) * 100
+                  )
+                : 0,
+            // Get the most recent user from downloadDetails
+            latestUser: downloadDetails
+              .filter((d) => d.assetId === asset.id)
+              .sort(
+                (a, b) => new Date(b.downloadDate) - new Date(a.downloadDate)
+              )[0],
+          }))
+          .sort((a, b) => b.totalDownloads - a.totalDownloads);
+
+        setDownloads(downloadsArray);
+      } catch (error) {
+        console.error("Error:", error);
+        await fetchUserDownloads();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDownloadsData();
+  }, [currentUser]);
 
   // Filter downloads based on search and filters
   const filteredDownloads = downloads.filter((download) => {
@@ -331,7 +333,6 @@ const handleViewUsers = (asset) => {
           </span>
         </div>
       </div>
-
       {/* Statistics Cards */}
       <div className="reports-stats-grid">
         {/* Total Downloads */}
@@ -418,7 +419,6 @@ const handleViewUsers = (asset) => {
           </div>
         </div>
       </div>
-
       {/* Charts and Distribution Section */}
       <div className="reports-content-grid">
         {/* Category Distribution Pie Chart */}
@@ -523,7 +523,6 @@ const handleViewUsers = (asset) => {
           </div>
         </div>
       </div>
-
       {/* Filter Bar */}
       <div className="reports-filter-bar">
         <div className="filter-bar-header">
@@ -609,7 +608,6 @@ const handleViewUsers = (asset) => {
           </div>
         </div>
       </div>
-
       {/* Downloads Table */}
       <div className="recent-reports-card">
         <div className="recent-reports-header">
@@ -618,37 +616,55 @@ const handleViewUsers = (asset) => {
             Asset Download Statistics
           </h3>
           <div>
-          <ExportButton
-            data={filteredDownloads.length > 0 ? filteredDownloads : downloads}
-            filename="downloads-analytics"
-            variant="secondary"
-            columns={[
-              { header: "Asset Name", accessor: (d) => d.assetName || "N/A" },
-              { header: "Asset Type", accessor: (d) => d.assetType || "N/A" },
-              // { header: "Publisher", accessor: (d) => d.publisher || "N/A" },
-              { header: "Total Downloads", accessor: (d) => d.totalDownloads || 0 },
-              { header: "Successful", accessor: (d) => d.successfulDownloads || 0 },
-              { header: "Failed", accessor: (d) => d.failedDownloads || 0 },
-              { header: "Success Rate", accessor: (d) => `${d.successRate || 0}%` },
-              { header: "Category", accessor: (d) => d.category || "N/A" },
-              { header: "Revenue", accessor: (d) => `$${(parseFloat(d.revenue) || 0).toFixed(2)}` },
-              { header: "Last Download", accessor: (d) => formatDate(d.lastDownload) },
-            ]}
-            onExport={(format) =>
-              exportDownloadsData(
-                filteredDownloads.length > 0 ? filteredDownloads : downloads,
-                format
-              )
-            }
-          />
-        </div>
+            <ExportButton
+              data={
+                filteredDownloads.length > 0 ? filteredDownloads : downloads
+              }
+              filename="downloads-analytics"
+              variant="secondary"
+              columns={[
+                { header: "Asset Name", accessor: (d) => d.assetName || "N/A" },
+                { header: "Asset Type", accessor: (d) => d.assetType || "N/A" },
+                // { header: "Publisher", accessor: (d) => d.publisher || "N/A" },
+                {
+                  header: "Total Downloads",
+                  accessor: (d) => d.totalDownloads || 0,
+                },
+                {
+                  header: "Successful",
+                  accessor: (d) => d.successfulDownloads || 0,
+                },
+                { header: "Failed", accessor: (d) => d.failedDownloads || 0 },
+                {
+                  header: "Success Rate",
+                  accessor: (d) => `${d.successRate || 0}%`,
+                },
+                { header: "Category", accessor: (d) => d.category || "N/A" },
+                {
+                  header: "Revenue",
+                  accessor: (d) =>
+                    `$${(parseFloat(d.revenue) || 0).toFixed(2)}`,
+                },
+                {
+                  header: "Last Download",
+                  accessor: (d) => formatDate(d.lastDownload),
+                },
+              ]}
+              onExport={(format) =>
+                exportDownloadsData(
+                  filteredDownloads.length > 0 ? filteredDownloads : downloads,
+                  format
+                )
+              }
+            />
+          </div>
         </div>
         <div className="recent-reports-body">
           <table className="report-table">
             <thead>
               <tr>
                 <th>Asset</th>
-                 <th>User</th>
+                <th>User</th>
                 <th>Downloads</th>
                 <th>Category</th>
                 <th>Status</th>
@@ -661,7 +677,6 @@ const handleViewUsers = (asset) => {
                 <tr key={download.id}>
                   <td>
                     <div className="report-user">
-                      
                       <div className="report-user-info">
                         <div className="report-user-name comp-dis">
                           {download.assetName}
@@ -675,27 +690,27 @@ const handleViewUsers = (asset) => {
                       </div>
                     </div>
                   </td>
-                 <td>
-          <div className="user-info-cell">
-            {download.latestUser ? (
-              <>
-                <div className="user-name comp-dis">
-                  {download.latestUser.username}
-                </div>
-                <div className="user-email small-text">
-                  {download.latestUser.email}
-                </div>
-                {download.recentUsers.length > 1 && (
-                  <div className="more-users">
-                    +{download.recentUsers.length - 1} more user(s)
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="no-user-data">No user data</div>
-            )}
-          </div>
-        </td>
+                  <td>
+                    <div className="user-info-cell">
+                      {download.latestUser ? (
+                        <>
+                          <div className="user-name comp-dis">
+                            {download.latestUser.username}
+                          </div>
+                          <div className="user-email small-text">
+                            {download.latestUser.email}
+                          </div>
+                          {download.recentUsers.length > 1 && (
+                            <div className="more-users">
+                              +{download.recentUsers.length - 1} more user(s)
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="no-user-data">No user data</div>
+                      )}
+                    </div>
+                  </td>
                   <td>
                     <div className="download-count">
                       <strong>
@@ -711,7 +726,6 @@ const handleViewUsers = (asset) => {
                       </div>
                     </div>
                   </td>
-                  
 
                   <td>
                     <span className="report-category-badge content">
@@ -733,17 +747,16 @@ const handleViewUsers = (asset) => {
                       </button>
 
                       {download.recentUsers.length > 0 && (
-      <button
-        className="action-button info small"
-        title="View Users"
-        onClick={() => handleViewUsers(download)}
-      >
-        <FiUsers />
-      </button>
-    )}
+                        <button
+                          className="action-button info small"
+                          title="View Users"
+                          onClick={() => handleViewUsers(download)}
+                        >
+                          <FiUsers />
+                        </button>
+                      )}
                     </div>
                   </td>
-
                 </tr>
               ))}
             </tbody>
@@ -766,7 +779,6 @@ const handleViewUsers = (asset) => {
           )}
         </div>
       </div>
-
       {/* Asset Details Modal */}
       {showModal && selectedAsset && (
         <div className="modal-overlay">
@@ -914,38 +926,39 @@ const handleViewUsers = (asset) => {
           </div>
         </div>
       )}
-
-      // Add this modal component before the closing div
-{showUsersModal && (
-  <div className="modal-overlay">
-    <div className="modal">
-      <div className="modal-header">
-        <h3 className="modal-title">
-          <FiUsers className="modal-icon" />
-          Users Who Downloaded This Asset
-        </h3>
-        <button className="close-button" onClick={() => setShowUsersModal(false)}>
-          <FiX />
-        </button>
-      </div>
-      <div className="modal-body">
-        <div className="users-list">
-          {selectedAssetUsers.map((user, index) => (
-            <div key={index} className="user-item">
-              <div className="user-avatar">
-                {user.username.charAt(0).toUpperCase()}
-              </div>
-              <div className="user-info">
-                <div className="user-name">{user.username}</div>
-                <div className="user-email">{user.email}</div>
+      {showUsersModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3 className="modal-title">
+                <FiUsers className="modal-icon" />
+                Users Who Downloaded This Asset
+              </h3>
+              <button
+                className="close-button"
+                onClick={() => setShowUsersModal(false)}
+              >
+                <FiX />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="users-list">
+                {selectedAssetUsers.map((user, index) => (
+                  <div key={index} className="user-item">
+                    <div className="user-avatar">
+                      {user.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="user-info">
+                      <div className="user-name">{user.username}</div>
+                      <div className="user-email">{user.email}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 };
