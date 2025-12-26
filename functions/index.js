@@ -123,6 +123,78 @@ const PER_DOWNLOAD_VALUE_TEAM = 0.035; // $0.035 per download for team plan
 const SELLER_SHARE_TEAM = 0.014; // Seller gets $0.014 per download
 const COMPANY_SHARE_TEAM = 0.021; // Platform gets $0.021 per download
 
+async function validateAndUpdateSubscription(
+  db,
+  buyerId,
+  paymentIntent,
+  plan,
+  billingCycle
+) {
+  const userRef = db.collection("Profiles").doc(buyerId);
+  const userDoc = await userRef.get();
+
+  if (!userDoc.exists) {
+    return {
+      action: "create",
+      message: `User ${buyerId} not found, will create new`,
+      currentData: null,
+    };
+  }
+
+  const userData = userDoc.data();
+  const now = new Date();
+
+  // اگر subscription موجود نہیں
+  if (!userData.subscription) {
+    return { action: "create", currentData: null };
+  }
+
+  // اگر subscription موجود ہے
+  if (userData.subscription.expiresAt) {
+    const expiresAt = userData.subscription.expiresAt.toDate();
+
+    // Check if this is a duplicate payment
+    if (userData.subscription.paymentIntentId === paymentIntent.id) {
+      return { action: "duplicate", currentData: userData.subscription };
+    }
+
+    if (expiresAt > now) {
+      // Subscription still active
+      return { action: "active", currentData: userData.subscription };
+    } else {
+      // Subscription expired
+      return { action: "renew", currentData: userData.subscription };
+    }
+  }
+
+  return { action: "create", currentData: null };
+}
+
+async function ensureUserProfileExists(db, userId, metadata = {}) {
+  const userRef = db.collection("Profiles").doc(userId);
+  const userSnap = await userRef.get();
+
+  if (!userSnap.exists) {
+    console.log(`🆕 Creating new user profile for: ${userId}`);
+
+    await userRef.set({
+      userId: userId,
+      email: metadata.email || "",
+      name: metadata.name || "",
+      role: "user",
+      subscription: null,
+      earnings: 0,
+      totalEarnings: 0,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return { isNew: true, userData: { subscription: null } };
+  }
+
+  return { isNew: false, userData: userSnap.data() };
+}
+
 exports.stripeWebhook = functions.https.onRequest(
   { rawBody: true },
   async (req, res) => {
@@ -376,9 +448,43 @@ exports.stripeWebhook = functions.https.onRequest(
 
         // ============ SUBSCRIPTION HANDLING ============
         if (plan && buyerId && buyerId !== "guest") {
+          // ✅ 1. Ensure user profile exists
+          const userProfileResult = await ensureUserProfileExists(
+            db,
+            buyerId,
+            metadata
+          );
+          console.log(
+            `👤 User profile check: ${
+              userProfileResult.isNew ? "Created new" : "Already exists"
+            }`
+          );
+
+          const userRef = db.collection("Profiles").doc(buyerId);
+          const userData = userProfileResult.userData;
+
+          // ✅ 2. Validate subscription status
+          const validationResult = await validateAndUpdateSubscription(
+            db,
+            buyerId,
+            paymentIntent,
+            plan,
+            billingCycle
+          );
+
+          console.log(`📝 Subscription action: ${validationResult.action}`);
+
+          // ✅ 3. Handle duplicate payment
+          if (validationResult.action === "duplicate") {
+            console.log(
+              `⚠️ Duplicate payment detected for ${buyerId}, skipping...`
+            );
+            return res.json({ received: true });
+          }
+
           const now = Date.now();
 
-          // ✅ FIXED: Calculate expiration based on billing cycle
+          // ✅ 4. Calculate expiration based on billing cycle
           let expiresAt;
           let monthlyResetDate;
           let subscriptionPrice;
@@ -418,13 +524,14 @@ exports.stripeWebhook = functions.https.onRequest(
             }
           }
 
-          // Get the current user profile first
-          const userProfileRef = db.collection("Profiles").doc(buyerId);
-          const userProfileSnap = await userProfileRef.get();
-          let userProfile = {};
-
-          if (userProfileSnap.exists) {
-            userProfile = userProfileSnap.data();
+          // ✅ 5. Determine start date
+          let startDate;
+          if (userData.subscription && userData.subscription.startDate) {
+            startDate = userData.subscription.startDate;
+            console.log(`📅 Using existing start date: ${startDate}`);
+          } else {
+            startDate = admin.firestore.FieldValue.serverTimestamp();
+            console.log(`📅 Setting new start date`);
           }
 
           // INDIVIDUAL SUBSCRIPTION
@@ -433,7 +540,6 @@ exports.stripeWebhook = functions.https.onRequest(
               status: "active",
               plan: "individual",
               type: "individual",
-              startDate: admin.firestore.FieldValue.serverTimestamp(),
               expiresAt: expiresAt,
               downloadsUsed: 0,
               downloadLimit: 200,
@@ -444,10 +550,13 @@ exports.stripeWebhook = functions.https.onRequest(
               isYearly: billingCycle === "yearly",
               yearlyPrice: billingCycle === "yearly" ? 108 : null,
               monthlyPrice: billingCycle === "monthly" ? 9 : null,
+              paymentIntentId: paymentIntent.id,
+              startDate: startDate,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
             };
 
-            // ✅ ULTRA-SIMPLE: Use set with merge for subscription field only
-            await userProfileRef.set(
+            // ✅ FIXED: Use set with merge to handle both new and existing users
+            await userRef.set(
               {
                 subscription: subscriptionData,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -455,13 +564,40 @@ exports.stripeWebhook = functions.https.onRequest(
               { merge: true }
             );
 
-            console.log(`✅ Individual subscription saved for ${buyerId}`);
+            console.log(
+              `✅ Individual ${billingCycle} subscription activated for ${buyerId}`
+            );
+            console.log(
+              "📋 Subscription data:",
+              JSON.stringify(subscriptionData, null, 2)
+            );
           }
 
           // TEAM SUBSCRIPTION
           else if (plan === "team") {
             const teamId = `team_${buyerId}_${Date.now()}`;
             const downloadsPerMember = 200; // 200 per month even for yearly
+
+            const subscriptionData = {
+              status: "active",
+              plan: "team",
+              type: "team",
+              teamId: teamId,
+              expiresAt: expiresAt,
+              downloadsUsed: 0,
+              totalMembers: teamSize,
+              downloadLimit: downloadsPerMember,
+              billingCycle: billingCycle,
+              monthlyReset: monthlyResetDate,
+              price: subscriptionPrice,
+              perDownloadValue: PER_DOWNLOAD_VALUE_TEAM,
+              isYearly: billingCycle === "yearly",
+              yearlyPrice: billingCycle === "yearly" ? 96 * teamSize : null,
+              monthlyPrice: billingCycle === "monthly" ? 8 * teamSize : null,
+              paymentIntentId: paymentIntent.id,
+              startDate: startDate,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
 
             // Create team document
             await db
@@ -484,30 +620,11 @@ exports.stripeWebhook = functions.https.onRequest(
                 isYearly: billingCycle === "yearly",
                 yearlyPrice: billingCycle === "yearly" ? 96 * teamSize : null,
                 monthlyPrice: billingCycle === "monthly" ? 8 * teamSize : null,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
               });
 
-            // ✅ FIXED: Use set() with merge: true to preserve all existing fields
-            const subscriptionData = {
-              status: "active",
-              plan: "team",
-              type: "team",
-              teamId: teamId,
-              startDate: admin.firestore.FieldValue.serverTimestamp(),
-              expiresAt: expiresAt,
-              downloadsUsed: 0,
-              totalMembers: teamSize,
-              downloadLimit: 200,
-              billingCycle: billingCycle,
-              monthlyReset: monthlyResetDate,
-              price: subscriptionPrice,
-              perDownloadValue: PER_DOWNLOAD_VALUE_TEAM,
-              isYearly: billingCycle === "yearly",
-              yearlyPrice: billingCycle === "yearly" ? 96 * teamSize : null,
-              monthlyPrice: billingCycle === "monthly" ? 8 * teamSize : null,
-            };
-
-            // ✅ ULTRA-SIMPLE: Use set with merge for subscription field only
-            await userProfileRef.set(
+            // ✅ FIXED: Use set with merge for user profile
+            await userRef.set(
               {
                 subscription: subscriptionData,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -535,7 +652,7 @@ exports.stripeWebhook = functions.https.onRequest(
             );
           }
 
-          // Update platform stats
+          // ✅ 6. Update platform stats
           await db
             .collection("PlatformStats")
             .doc("revenue")
@@ -2200,12 +2317,8 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       });
     }
 
-    // CRITICAL FIX: Get totalMembers from subscription plan, not from team.members
-    // The subscription price determines how many members can be added
-
-    // Extract team size from subscription plan name/price
-    // Example: If admin paid for 3 members, team.memberLimit should be 3
-    const teamSize = team.memberLimit || 1; // This should be from subscription (e.g., 2, 3, 4 members)
+    // CRITICAL FIX: Get totalMembers from subscription plan
+    const teamSize = team.memberLimit || 1;
     const currentTeamMembers = team.members || [];
     const currentMemberCount = currentTeamMembers.length;
 
@@ -2213,10 +2326,7 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
       `📊 Team Stats: Size=${teamSize}, Current=${currentMemberCount}, Owner=${team.ownerId}`
     );
 
-    // Calculate available slots: teamSize - 1 (owner doesn't count as a slot)
-    // If teamSize = 2: owner + 1 member = 1 available slot
-    // If teamSize = 3: owner + 2 members = 2 available slots
-    // If teamSize = 4: owner + 3 members = 3 available slots
+    // Calculate available slots
     const maxInvitableMembers = Math.max(0, teamSize - 1);
     const availableSlots = Math.max(
       0,
@@ -2295,7 +2405,22 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
     const approvalToken = Math.random().toString(36).substr(2, 20);
     const inviteId = `invite_${Date.now()}_${approvalToken.substring(0, 8)}`;
 
-    // Create invitation
+    // Determine URLs for local vs production
+    const isLocal = process.env.FUNCTIONS_EMULATOR === "true";
+    const baseUrl = isLocal
+      ? `http://localhost:5001/${process.env.GCLOUD_PROJECT}/us-central1`
+      : "https://us-central1-sham-marianas.cloudfunctions.net";
+
+    const frontendUrl = isLocal
+      ? "http://localhost:3000"
+      : "https://shammarianas.vercel.app";
+
+    // Create the magic link for one-click approval
+    const magicLink = `${baseUrl}/oneClickJoinTeam?token=${approvalToken}&email=${encodeURIComponent(
+      memberEmail
+    )}`;
+
+    // ✅ CREATE THE INVITATION FIRST
     await db
       .collection("TeamInvites")
       .doc(inviteId)
@@ -2320,26 +2445,150 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
         teamSize: teamSize,
         currentMemberCount: currentMemberCount,
         autoApprove: true,
+        magicLink: magicLink, // Store the link
       });
 
-    console.log(
-      `✅ Invitation created for ${memberEmail}. Available slots: ${availableSlots}`
-    );
+    console.log(`✅ Invitation created for ${memberEmail}`);
 
-    // Determine URLs for local vs production
-    const isLocal = process.env.FUNCTIONS_EMULATOR === "true";
-    const baseUrl = isLocal
-      ? `http://localhost:5001/${process.env.GCLOUD_PROJECT}/us-central1`
-      : "https://us-central1-sham-marianas.cloudfunctions.net";
+    // ✅ SEND EMAIL NOTIFICATION (CRITICAL PART THAT'S MISSING!)
+    try {
+      const adminDisplayName =
+        `${adminProfile.firstName || ""} ${
+          adminProfile.lastName || ""
+        }`.trim() || "Team Admin";
 
-    const frontendUrl = isLocal
-      ? "http://localhost:3000"
-      : "https://shammarianas.vercel.app";
+      // Create email content
+      const mailOptions = {
+        from: `"Sham Marianas Team" <${process.env.LOGIN_EMAIL_USER}>`,
+        to: memberEmail,
+        subject: `🎉 ${adminDisplayName} invited you to join their team on Shammarianas`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+              .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+              .content { padding: 30px; }
+              .cta-button { display: inline-block; background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+              .details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+              .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🎉 Team Invitation</h1>
+                <p>You've been invited to join a team on Shammarianas</p>
+              </div>
+              
+              <div class="content">
+                <h2>Hello!</h2>
+                <p><strong>${adminDisplayName}</strong> (${
+          adminProfile.email
+        }) has invited you to join their team on Shammarianas.</p>
+                
+                <div class="details">
+                  <h3>📋 Invitation Details:</h3>
+                  <p><strong>Invited by:</strong> ${adminDisplayName}</p>
+                  <p><strong>Admin Email:</strong> ${adminProfile.email}</p>
+                  <p><strong>Expires in:</strong> 7 days</p>
+                  <p><strong>Available slots:</strong> ${availableSlots}</p>
+                </div>
+                
+                <div style="text-align: center;">
+                  <a href="${magicLink}" class="cta-button">
+                    🚀 Accept Team Invitation
+                  </a>
+                  <p><small>This link will expire in 7 days</small></p>
+                </div>
+                
+                <div class="details">
+                  <h3>✨ What you'll get:</h3>
+                  <ul>
+                    <li>✅ <strong>${
+                      team.downloadsPerMember || 200
+                    } downloads/month</strong></li>
+                    <li>✅ Premium assets & templates</li>
+                    <li>✅ Team collaboration features</li>
+                    <li>✅ 4K quality downloads</li>
+                    <li>✅ Commercial license</li>
+                  </ul>
+                </div>
+                
+                <p><strong>Note:</strong> If you don't have an account, we'll create one for you automatically.</p>
+              </div>
+              
+              <div class="footer">
+                <p>© ${new Date().getFullYear()} Sham Marianas. All rights reserved.</p>
+                <p>This email was sent to ${memberEmail}. If you didn't expect this invitation, please ignore it.</p>
+                <p>Dubai Office: +971 52 803 6012 | Pakistan Office: +92 311 678 8423</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: `
+          TEAM INVITATION - Shammarianas
+          ================================
+          
+          Hello!
+          
+          ${adminDisplayName} (${
+          adminProfile.email
+        }) has invited you to join their team on Shammarianas.
+          
+          Invitation Details:
+          -------------------
+          • Invited by: ${adminDisplayName}
+          • Admin Email: ${adminProfile.email}
+          • Expires in: 7 days
+          • Available slots: ${availableSlots}
+          
+          Accept Team Invitation:
+          -----------------------
+          Click this link to join: ${magicLink}
+          (Link expires in 7 days)
+          
+          What you'll get:
+          ----------------
+          • ${team.downloadsPerMember || 200} Premium Downloads/Month
+          • Premium assets & templates
+          • Team collaboration features
+          • 4K quality downloads
+          • Commercial license
+          
+          Note: If you don't have an account, we'll create one for you automatically.
+          
+          ================================
+          © ${new Date().getFullYear()} Sham Marianas
+          Dubai Office: +971 52 803 6012
+          Pakistan Office: +92 311 678 8423
+          Email: info@shammarianas.com
+          Website: https://shammarianas.com
+        `,
+      };
 
-    // Create the magic link for one-click approval
-    const magicLink = `${baseUrl}/oneClickJoinTeam?token=${approvalToken}&email=${encodeURIComponent(
-      memberEmail
-    )}`;
+      // Send the email
+      await mailTransport.sendMail(mailOptions);
+      console.log(`📧 Email sent successfully to: ${memberEmail}`);
+
+      // Log email sent status
+      await db.collection("TeamInvites").doc(inviteId).update({
+        emailSent: true,
+        emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (emailError) {
+      console.error("❌ Failed to send email:", emailError);
+      // Log email failure but don't fail the whole function
+      await db.collection("TeamInvites").doc(inviteId).update({
+        emailSent: false,
+        emailError: emailError.message,
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -2352,7 +2601,9 @@ exports.addTeamMember = functions.https.onRequest(async (req, res) => {
         availableSlots: availableSlots,
         maxInvitableMembers: maxInvitableMembers,
       },
-      message: `Invitation sent! You have ${availableSlots} slot(s) remaining.`,
+      message: `Invitation sent to ${memberEmail}! You have ${availableSlots} slot(s) remaining.`,
+      // For debugging/local testing
+      ...(isLocal && { magicLink: magicLink }),
     });
   } catch (err) {
     console.error("Add team member error:", err);
