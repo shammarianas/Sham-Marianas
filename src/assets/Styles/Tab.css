@@ -302,7 +302,7 @@
 .modal-actions {
     display: flex;
     gap: 10px;
-    justify-content: flex-end;
+    /* justify-content: flex-end; */
 }
 
 .action-button {

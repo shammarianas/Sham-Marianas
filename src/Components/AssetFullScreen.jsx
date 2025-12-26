@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FiX, FiPlay, FiPause, FiMaximize2, FiMinimize2, FiDownload } from "react-icons/fi";
+import { useUser } from "../Context/UserProvider";
 // import { saveAs } from "file-saver";
 
 const AssetFullScreen = ({ 
@@ -9,6 +10,7 @@ const AssetFullScreen = ({
   assetType,
   onDownload 
 }) => {
+  const { currentUser } = useUser();
   const videoRef = useRef(null);
   const imageRef = useRef(null);
   const containerRef = useRef(null);
@@ -99,6 +101,12 @@ const AssetFullScreen = ({
 
   // Download handler
   const handleDownload = async () => {
+    // ✅ Check if user is contributor - prevent all downloads
+    if (currentUser?.role === "contributor") {
+      alert("Contributors cannot download files. Please login as a regular user.");
+      return;
+    }
+
     if (onDownload) {
       onDownload();
     } else {
