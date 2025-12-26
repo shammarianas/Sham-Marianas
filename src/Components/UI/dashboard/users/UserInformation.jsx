@@ -1,6 +1,3 @@
-/* ─────────────────────────────────────────────────────────────────────────────
-   UserInformation.tsx  (UI UNCHANGED – only logic + setUsers added)
-   ───────────────────────────────────────────────────────────────────────────── */
 import React, { useState, useEffect } from "react";
 import {
   FiUsers,
@@ -20,6 +17,7 @@ import {
   FiDollarSign,
   FiDownload,
   FiCalendar,
+  FiSettings,
   FiChevronDown,
 } from "react-icons/fi";
 
@@ -897,7 +895,7 @@ const UserCard = ({
 };
 
 /* ────────────────────────────────────────────────────────────────────────
-   UserDetailsModal – UI unchanged
+   UserDetailsModal – Updated with all requested fields
    ──────────────────────────────────────────────────────────────────────── */
 const UserDetailsModal = ({
   user,
@@ -908,25 +906,25 @@ const UserDetailsModal = ({
   formatCurrency,
   formatDate,
 }) => {
-  const name =
-    user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
+  const name = user.name || user.displayName || user.email?.split("@")[0] || "Unknown";
   const status = (user.status || "active").toLowerCase();
   const isActive = status === "active";
 
   return (
-    <div className="modal-overlay">
-      <div className="modal enhanced-modal">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">
             <FiUser className="modal-icon" /> User Details
           </h3>
-          <button onClick={onClose} className="close-button">
+          <button className="modal-close" onClick={onClose}>
             <FiX />
           </button>
         </div>
-
-        <div className="modal-body enhanced-modal-body">
-          <div className="user-profile-header">
+        
+        <div className="modal-body">
+          {/* Profile Header */}
+                 <div className="user-profile-header">
             <div className="profile-avatar">
               {user.photoURL ? (
                 <img
@@ -948,9 +946,7 @@ const UserDetailsModal = ({
                   {user.role || "user"}
                 </span>
                 <span
-                  className={`status-badge enhanced ${
-                    isActive ? "active" : "inactive"
-                  }`}
+                  className={`status-badge enhanced ${isActive ? "active" : "inactive"}`}
                 >
                   {isActive ? "Active" : "Inactive"}
                 </span>
@@ -958,153 +954,177 @@ const UserDetailsModal = ({
             </div>
           </div>
 
-          <div className="location-section">
-            <h4 className="section-title">
-              <FiMapPin className="section-icon" /> Location Information
-            </h4>
-            <div className="location-details">
-              <div className="location-item">
-                <span className="location-label">Detected Country:</span>
-                <span className="location-value">
-                  <span className="country-flag-large"></span>
+          <div className="report-detail-grid">
+            {/* Personal Information Section */}
+            <div className="detail-section">
+              <h4>Personal Information</h4>
+              <div className="detail-item">
+                <span className="detail-label">Full Name:</span>
+                <span className="detail-value">{user.name || "Not provided"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Email:</span>
+                <span className="detail-value">{user.email || "Not provided"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Username:</span>
+                <span className="detail-value">{user.username || "Not provided"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Phone Number:</span>
+                <span className="detail-value">{user.phoneNumber || user.phone || "Not provided"}</span>
+              </div>
+            </div>
+
+            {/* Location Information */}
+            <div className="detail-section">
+              <h4>Location Information</h4>
+              <div className="detail-item">
+                <span className="detail-label">Country:</span>
+                <span className="detail-value">{user.country || "Not provided"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">City:</span>
+                <span className="detail-value">{user.city || "Not provided"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Date of Birth:</span>
+                <span className="detail-value">
+                  {user.dateOfBirth || user.birthday 
+                    ? formatDate(user.dateOfBirth || user.birthday)
+                    : "Not provided"}
                 </span>
               </div>
-
-              {user.phoneNumber && (
-                <div className="location-item">
-                  <span className="location-label">Phone Number:</span>
-                  <span className="location-value">
-                    {user.phoneNumber}
-                    <span className="phone-country-detected"></span>
-                  </span>
-                </div>
-              )}
-
-              {user.country && (
-                <div className="location-item">
-                  <span className="location-label">Manual Country:</span>
-                  <span className="location-value">{user.country}</span>
-                </div>
-              )}
-
-              {user.location && (
-                <div className="location-item">
-                  <span className="location-label">Location:</span>
-                  <span className="location-value">{user.location}</span>
-                </div>
-              )}
             </div>
-          </div>
 
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-value">{user.totalPurchases || 0}</div>
-              <div className="stat-label">
-                <FiShoppingCart className="stat-icon" />
-                Total Purchases
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value currency">
-                {formatCurrency(user.totalSpent || 0)}
-              </div>
-              <div className="stat-label">
-                <FiDollarSign className="stat-icon" />
-                Total Spent
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value downloads">
-                {user.totalDownloads || 0}
-              </div>
-              <div className="stat-label">
-                <FiDownload className="stat-icon" />
-                Downloads
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">
-                {user.isEmailVerified ? "Yes" : "No"}
-              </div>
-              <div className="stat-label">
-                <FiCheckCircle className="stat-icon" />
-                Email Verified
-              </div>
-            </div>
-          </div>
-
-          <div className="user-details-section">
-            <div className="details-grid">
+            {/* Account Information */}
+            <div className="detail-section">
+              <h4>Account Information</h4>
               <div className="detail-item">
-                <div className="detail-label">Join Date</div>
-                <div className="detail-value">
-                  <FiCalendar className="detail-icon" />
-                  <span>{formatDate(user.createdAt || user.joinDate)}</span>
-                </div>
-              </div>
-              {user.lastLogin && (
-                <div className="detail-item">
-                  <div className="detail-label">Last Login</div>
-                  <div className="detail-value">
-                    <FiCalendar className="detail-icon" />
-                    <span>{formatDate(user.lastLogin)}</span>
-                  </div>
-                </div>
-              )}
-              {user.location && (
-                <div className="detail-item">
-                  <div className="detail-label">Location</div>
-                  <div className="detail-value">
-                    <FiMapPin className="detail-icon" />
-                    <span>{user.location}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="modal-actions">
-            <button
-              className="action-button secondary"
-              onClick={() => onStatusToggle(user.id)}
-            >
-              {isActive ? (
-                <FiX className="button-icon" />
-              ) : (
-                <FiUserCheck className="button-icon" />
-              )}
-              {isActive ? "Deactivate" : "Activate"}
-            </button>
-
-            {user.role !== "admin" && (
-              <>
-                <button
-                  className="action-button"
-                  onClick={() => onRoleChange(user.id, "admin")}
-                >
-                  <FiShield className="button-icon" />
-                  Make Admin
-                </button>
-
-                <button
-                  className="action-button danger"
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        `Delete user "${name}"? This action cannot be undone.`
-                      )
-                    ) {
-                      onDelete(user.id, user.email);
-                      onClose();
-                    }
+                <span className="detail-label">User ID:</span>
+                <span 
+                  className="detail-value" 
+                  style={{ 
+                    fontFamily: 'monospace', 
+                    fontWeight: 'bold', 
+                    color: '#3b82f6',
+                    fontSize: '14px'
                   }}
                 >
-                  <FiTrash2 className="button-icon" />
-                  Delete User
-                </button>
+                  {user.uid || user.id}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Join Date:</span>
+                <span className="detail-value">
+                  {formatDate(user.createdAt || user.joinDate)}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Last Login:</span>
+                <span className="detail-value">
+                  {user.lastLogin ? formatDate(user.lastLogin) : "Never"}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Email Verified:</span>
+                <span 
+                  className="detail-value"
+                  style={{ 
+                    color: user.emailVerified ? '#10b981' : '#ef4444',
+                    fontWeight: '600'
+                  }}
+                >
+                  {user.emailVerified ? "Yes" : "No"}
+                </span>
+              </div>
+            </div>
+
+            {/* Statistics Section */}
+            <div className="detail-section">
+              <h4>User Statistics</h4>
+              <div className="detail-item">
+                <span className="detail-label">Total Purchases:</span>
+                <span className="detail-value">{user.totalPurchases || 0}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Total Spent:</span>
+                <span className="detail-value">{formatCurrency(user.totalSpent || 0)}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Downloads:</span>
+                <span className="detail-value">{user.totalDownloads || 0}</span>
+              </div>
+            </div>
+
+            {/* Role Change Section */}
+            <div className="detail-section">
+              <h4>Account Actions</h4>
+              <div className="detail-item">
+                <span className="detail-label">Change Role:</span>
+                <select
+                  className="role-select"
+                  value={user.role || "user"}
+                  onChange={(e) => onRoleChange(user.id, e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    width: '100%',
+                    maxWidth: '200px'
+                  }}
+                >
+                  <option value="user">User</option>
+                  <option value="moderator">Moderator</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="action-button secondary" onClick={onClose}>
+            Close
+          </button>
+          
+          <button
+            className={`action-button ${isActive ? "warning" : "success"}`}
+            onClick={() => onStatusToggle(user.id)}
+            style={{
+              backgroundColor: isActive ? '#52B0B4' : '#10b981',
+              color: 'white'
+            }}
+          >
+            {isActive ? (
+              <>
+                <FiX className="button-icon" /> Deactivate
+              </>
+            ) : (
+              <>
+                <FiUserCheck className="button-icon" /> Activate
               </>
             )}
-          </div>
+          </button>
+
+          {user.role !== "admin" && (
+            <button
+              className="action-button danger"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Are you sure you want to delete "${name}"? This action cannot be undone.`
+                  )
+                ) {
+                  onDelete(user.id);
+                  onClose();
+                }
+              }}
+            >
+              <FiTrash2 className="button-icon" /> Delete
+            </button>
+          )}
         </div>
       </div>
     </div>
