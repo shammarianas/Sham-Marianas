@@ -696,9 +696,11 @@ const Navbar = () => {
                       <Link to="/contributordashboard">Dashboard</Link>
                     </li>
                   )}
-                  <li>
-                    <Link to="/MyDownloads">My Downloads</Link>
-                  </li>
+                 {!isContributor && (
+      <li>
+        <Link to="/MyDownloads">My Downloads</Link>
+      </li>
+    )}
                   <li>
                     <Link to="/Favorites">My Favorites</Link>
                   </li>
