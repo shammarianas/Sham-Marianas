@@ -839,12 +839,7 @@ const UserCard = ({
                       </select>
                     </div>
 
-                    <div className="verification-badge">
-                      <FiCheckCircle className="verify-icon" />
-                      <span>
-                        Email Verified: {user.emailVerified ? "Yes" : "No"}
-                      </span>
-                    </div>
+                    
                   </div>
                 </div>
               </div>
@@ -1031,18 +1026,7 @@ const UserDetailsModal = ({
                   {user.lastLogin ? formatDate(user.lastLogin) : "Never"}
                 </span>
               </div>
-              <div className="detail-item">
-                <span className="detail-label">Email Verified:</span>
-                <span 
-                  className="detail-value"
-                  style={{ 
-                    color: user.emailVerified ? '#10b981' : '#ef4444',
-                    fontWeight: '600'
-                  }}
-                >
-                  {user.emailVerified ? "Yes" : "No"}
-                </span>
-              </div>
+              
             </div>
 
             {/* Statistics Section */}
