@@ -13,7 +13,7 @@ import {
   FiEye,
   FiCheckCircle,
   FiXCircle,
-  FiClock,
+  FiTrendingDown,
   FiBarChart2,
   FiPieChart,
   FiVideo,
@@ -366,8 +366,7 @@ const Statistics = ({ setActiveTab }) => {
         Statistics.totalAssets > 0 ? (count / Statistics.totalAssets) * 100 : 0,
     }));
   }, [filteredAssets, Statistics.totalAssets, loading]);
-
-  // ✅ UPDATED: All categories from upload form
+  
   // ✅ UPDATED: Category Distribution - Only show categories that have assets
   const categoryDistribution = useMemo(() => {
     if (loading) return [];
@@ -904,15 +903,15 @@ const Statistics = ({ setActiveTab }) => {
               Assets
             </h3>
           </div>
-          <div className="recent-reports-body">
-            <table className="report-table">
+          <div className="recent-reports-body h-100">
+            <div>
+              <table className="report-table">
               <thead>
                 <tr>
                   <th>Asset</th>
                   <th>Category</th>
                   <th>Downloads</th>
                   <th>Earnings</th>
-                  <th>Rating</th>
                 </tr>
               </thead>
               <tbody>
@@ -936,10 +935,10 @@ const Statistics = ({ setActiveTab }) => {
                     <td>
                       <span
                         className={`report-category-badge ${
-                          asset.type || "other"
+                          asset.category || asset.type || "other"
                         }`}
                       >
-                        {getCategoryDisplayName(asset.type)}
+                        {asset.category || "No category"}
                       </span>
                     </td>
                     <td>
@@ -954,17 +953,7 @@ const Statistics = ({ setActiveTab }) => {
                         {formatCurrency(asset.earnings || 0)}
                       </div>
                     </td>
-                    <td>
-                      <span
-                        className={`report-rating ${
-                          asset.rating ? "rated" : "not-rated"
-                        }`}
-                      >
-                        {asset.rating
-                          ? `★ ${asset.rating.toFixed(1)}`
-                          : "No ratings"}
-                      </span>
-                    </td>
+                   
                   </tr>
                 ))}
                 {topPerformingAssets.length === 0 && !loading && (
@@ -976,6 +965,7 @@ const Statistics = ({ setActiveTab }) => {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
@@ -993,8 +983,6 @@ const Statistics = ({ setActiveTab }) => {
                   <th>Asset</th>
                   <th>Category</th>
                   <th>Downloads</th>
-                  <th>Rating</th>
-                  <th>Trend Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -1018,10 +1006,10 @@ const Statistics = ({ setActiveTab }) => {
                     <td>
                       <span
                         className={`report-category-badge ${
-                          asset.type || "other"
+                          asset.category || asset.type || "other"
                         }`}
                       >
-                        {getCategoryDisplayName(asset.type)}
+                        {asset.category || "No category"}
                       </span>
                     </td>
                     <td>
@@ -1031,25 +1019,7 @@ const Statistics = ({ setActiveTab }) => {
                         </span>
                       </div>
                     </td>
-                    <td>
-                      <span
-                        className={`report-rating ${
-                          asset.rating ? "rated" : "not-rated"
-                        }`}
-                      >
-                        {asset.rating
-                          ? `★ ${asset.rating.toFixed(1)}`
-                          : "No ratings"}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="metric-value">
-                        {Math.round(
-                          (asset.downloads || 0) * 0.7 +
-                            (asset.rating || 0) * 30
-                        )}
-                      </div>
-                    </td>
+                    
                   </tr>
                 ))}
                 {topTrendingAssets.length === 0 && !loading && (

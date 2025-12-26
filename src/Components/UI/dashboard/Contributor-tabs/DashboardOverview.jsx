@@ -452,7 +452,7 @@ const DashboardOverview = ({
                 <th>Downloads</th>
                 <th>Earnings</th>
                 <th>Date</th>
-                <th>Actions</th>
+                {/* <th>Actions</th> */}
               </tr>
             </thead>
             <tbody>
@@ -500,7 +500,7 @@ const DashboardOverview = ({
                     </div>
                   </td>
                   <td>{formatDate(asset.createdAt)}</td>
-                  <td>
+                  {/* <td>
                     <div className="report-actions">
                       <button
                         className="action-button secondary small"
@@ -510,7 +510,7 @@ const DashboardOverview = ({
                         <FiEye />
                       </button>
                     </div>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
               {recentAssets.length === 0 && (
@@ -741,9 +741,9 @@ const DashboardOverview = ({
                 <li className="mb-15">
                   <Link to="/contributor-policies">Contributer Terms & Conditions</Link>
                 </li>
-                <li className="mb-15">
+                {/* <li className="mb-15">
                   <Link to="/prices-and-fees">Prices & Fees</Link>
-                </li>
+                </li> */}
               </ul>
             </div>
 
