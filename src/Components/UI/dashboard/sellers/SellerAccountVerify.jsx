@@ -64,6 +64,38 @@ const SellerAccountVerify = () => {
     { header: "Status", accessor: (item) => item.status || "Pending" },
   ];
 
+  // Helper functions for date formatting
+const normalizeDate = (value) => {
+  if (!value) return null;
+
+  // Handle Firestore Timestamp
+  if (value.toDate) {
+    try {
+      return value.toDate();
+    } catch {
+      return null;
+    }
+  }
+
+  // Handle string dates
+  if (typeof value === 'string') {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  // Handle Date objects
+  if (value instanceof Date) {
+    return isNaN(value.getTime()) ? null : value;
+  }
+
+  return null;
+};
+
+const formatDate = (date) => {
+  if (!date) return "N/A";
+  const d = normalizeDate(date);
+  return d ? d.toLocaleDateString() : "N/A";
+};
   useEffect(() => {
     const fetchSellers = async () => {
       try {
@@ -82,7 +114,7 @@ const SellerAccountVerify = () => {
             username: sellerData.username || "N/A",
             email: sellerData.email || "N/A",
             phone: sellerData.phone || "N/A",
-            dob: formatDate(sellerData.dob),
+           birthday: formatDate(sellerData.birthday),
             
             // Location Information
             city: sellerData.city || "N/A",
@@ -583,7 +615,7 @@ const SellerAccountVerify = () => {
                     <span className="detail-label">Date of Birth:</span>
                     <span className="detail-value">
                       <FiCalendar style={{ marginRight: "6px" }} />
-                      {selectedSeller.dob}
+                      {selectedSeller.birthday}
                     </span>
                   </div>
                 </div>
