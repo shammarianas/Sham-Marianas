@@ -849,8 +849,6 @@ const AdminDashboard = () => {
       return;
     }
     try {
-      // Your status update logic here
-      // ...
     } catch (error) {
       setError(`Failed to update status: ${error.message}`);
     }
