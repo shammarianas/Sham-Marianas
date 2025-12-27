@@ -54,13 +54,13 @@ function Team() {
             </div>
           ))}
 
-          <a href="/contact" className="col-lg-3 col-md-6">
+          <a href="/contact-us" className="col-lg-3 col-md-6">
             <div className="item-bord d-flex align-items-center justify-content-center mb-50">
                <div>
                 <h5>
                   Become <br /> Our Member
                 </h5>
-                <a href="/contact" className="mt-30">
+                <a href="/contact-us" className="mt-30">
                   <span className="ti-arrow-top-right fz-30"></span>
                 </a>
               </div> 

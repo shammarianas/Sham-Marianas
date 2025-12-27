@@ -8,7 +8,7 @@ import Team from "../Components/landing/Team";
 import Cursor from "../common/cusor";
 import ProgressScroll from "../common/ProgressScroll";
 import Clients from "../Components/landing/Clients";
-import Contact from "../Components/landing/Contact";
+import Contact from "../Components/landing/contact";
 import Marq2 from "../Components/marq2";
 import WhatsAppButton from "../Components/whatsappButton";
 const LoadingScreen = lazy(() => import("../common/loader"));

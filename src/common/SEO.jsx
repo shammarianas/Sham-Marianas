@@ -29,12 +29,6 @@ const SEO = ({
   const siteTitle = "Shammarianas";
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
 
-  // ✅ Debug console log
-  console.log("SEO Component Debug:");
-  console.log("  - Title:", title);
-  console.log("  - Current Path:", location.pathname);
-  console.log("  - Canonical URL:", canonicalUrl);
-
   return (
     <Helmet>
       {/* Basic Meta Tags */}

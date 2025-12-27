@@ -16,7 +16,7 @@ function Team() {
               </h3>
             </div>
             <div className="ml-auto vi-more">
-              <Link to="/contact" className="butn butn-sm butn-bord radius-30">
+              <Link to="/contact-us" className="butn butn-sm butn-bord radius-30">
                 <span>Join to us</span>
              </Link>
               <span className="icon ti-arrow-top-right"></span>
