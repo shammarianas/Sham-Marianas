@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, Suspense, lazy  } from "react";
 import AOS from "aos"; // Import AOS (Animate On Scroll) library
 import FirstPage from "../Components/landing/firstPage";
 import Intro from "../Components/landing/Intro";
@@ -11,7 +11,7 @@ import Clients from "../Components/landing/Clients";
 import Contact from "../Components/landing/Contact";
 import Marq2 from "../Components/marq2";
 import WhatsAppButton from "../Components/whatsappButton";
-import LoadingScreen from "../common/loader";
+const LoadingScreen = lazy(() => import("../common/loader"));
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SEO from "../common/SEO.jsx";
 
