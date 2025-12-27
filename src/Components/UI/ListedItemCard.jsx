@@ -76,156 +76,156 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
   // Check if user has purchased this specific item
   const hasPurchasedItem = currentUser?.purchasedItems?.includes(id);
 
- const getAssetUrls = () => {
-  const urls = [];
-  
-  switch ((data.type || "").toLowerCase()) {
-    case "models":
-    case "printables":
-      if (data.model) urls.push(data.model);
-      break;
-    case "scripts":
-      if (data.script) urls.push(data.script);
-      break;
-    case "videos":
-      if (data.video) urls.push(data.video);
-      break;
-    case "graphics":
-      if (data.graphicsTemplate) urls.push(data.graphicsTemplate);
-      break;
-    case "mockups":
-      if (data.mockupFile) urls.push(data.mockupFile);
-      break;
-    case "fonts":
-      if (data.fontFile) urls.push(data.fontFile);
-      break;
-    case "video-templates":
-      if (data.videoTemplateFile) urls.push(data.videoTemplateFile);
-      break;
-    case "hdris":
-      if (data.hdri) urls.push(data.hdri);
-      break;
-    case "icons":
-      if (Array.isArray(data.icons)) {
-        data.icons.forEach(item => {
-          if (typeof item === 'string') urls.push(item);
-          else if (item && typeof item === 'object') {
-            // Handle icon objects with sizes
-            if (item.sizes && typeof item.sizes === 'object') {
-              const original = item.sizes.original || Object.values(item.sizes)[0];
-              urls.push(original);
-            } else if (item.url) {
-              urls.push(item.url);
+  const getAssetUrls = () => {
+    const urls = [];
+
+    switch ((data.type || "").toLowerCase()) {
+      case "models":
+      case "printables":
+        if (data.model) urls.push(data.model);
+        break;
+      case "scripts":
+        if (data.script) urls.push(data.script);
+        break;
+      case "videos":
+        if (data.video) urls.push(data.video);
+        break;
+      case "graphics":
+        if (data.graphicsTemplate) urls.push(data.graphicsTemplate);
+        break;
+      case "mockups":
+        if (data.mockupFile) urls.push(data.mockupFile);
+        break;
+      case "fonts":
+        if (data.fontFile) urls.push(data.fontFile);
+        break;
+      case "video-templates":
+        if (data.videoTemplateFile) urls.push(data.videoTemplateFile);
+        break;
+      case "hdris":
+        if (data.hdri) urls.push(data.hdri);
+        break;
+      case "icons":
+        if (Array.isArray(data.icons)) {
+          data.icons.forEach(item => {
+            if (typeof item === 'string') urls.push(item);
+            else if (item && typeof item === 'object') {
+              // Handle icon objects with sizes
+              if (item.sizes && typeof item.sizes === 'object') {
+                const original = item.sizes.original || Object.values(item.sizes)[0];
+                urls.push(original);
+              } else if (item.url) {
+                urls.push(item.url);
+              }
             }
-          }
-        });
-      } else if (data.icons) {
-        urls.push(data.icons);
-      }
-      break;
-    case "images":
-      if (Array.isArray(data.images)) {
-        data.images.forEach(item => {
-          if (typeof item === 'string') {
-            urls.push(item);
-          } else if (item && typeof item === 'object') {
-            // ✅ FIXED: Handle image objects with sizes property
-            if (item.sizes && typeof item.sizes === 'object') {
-              // Get the original size or first available size
-              const original = item.sizes.original || Object.values(item.sizes)[0];
-              urls.push(original);
-            } else if (item.url) {
-              urls.push(item.url);
+          });
+        } else if (data.icons) {
+          urls.push(data.icons);
+        }
+        break;
+      case "images":
+        if (Array.isArray(data.images)) {
+          data.images.forEach(item => {
+            if (typeof item === 'string') {
+              urls.push(item);
+            } else if (item && typeof item === 'object') {
+              // ✅ FIXED: Handle image objects with sizes property
+              if (item.sizes && typeof item.sizes === 'object') {
+                // Get the original size or first available size
+                const original = item.sizes.original || Object.values(item.sizes)[0];
+                urls.push(original);
+              } else if (item.url) {
+                urls.push(item.url);
+              }
             }
-          }
-        });
-      } else if (data.images) {
-        urls.push(data.images);
-      }
-      break;
-    case "textures":
-      if (data.maps && typeof data.maps === "object") {
-        urls.push(...Object.values(data.maps).filter(Boolean));
-      }
-      break;
-    default:
-      if (data.other) urls.push(data.other);
-      break;
-  }
-  
-  return urls.filter(Boolean);
-};
-
- const downloadURL = async (urlOrObj) => {
-  try {
-    let url = urlOrObj;
-    let filename = "download";
-
-    // ✅ FIXED: Handle image objects with sizes
-    if (typeof urlOrObj === "object") {
-      if (urlOrObj.sizes && typeof urlOrObj.sizes === "object") {
-        // Get the original size or first available size
-        url = urlOrObj.sizes.original || Object.values(urlOrObj.sizes)[0];
-      } else if (urlOrObj.url) {
-        url = urlOrObj.url;
-      }
-      
-      // Try to get filename from originalName property
-      if (urlOrObj.originalName) {
-        filename = urlOrObj.originalName;
-      }
+          });
+        } else if (data.images) {
+          urls.push(data.images);
+        }
+        break;
+      case "textures":
+        if (data.maps && typeof data.maps === "object") {
+          urls.push(...Object.values(data.maps).filter(Boolean));
+        }
+        break;
+      default:
+        if (data.other) urls.push(data.other);
+        break;
     }
 
-    if (typeof url !== "string") {
-      console.warn("Invalid URL for download:", urlOrObj);
-      return;
-    }
+    return urls.filter(Boolean);
+  };
 
-    console.log("⬇️ Downloading:", url);
-
-    // Extract filename from URL if not already set
-    if (filename === "download") {
-      filename = url.split("/").pop().split("?")[0] || "download";
-    }
-
+  const downloadURL = async (urlOrObj) => {
     try {
-      // Use fetch-blob method for better compatibility
-      const response = await fetch(url);
-      if (!response.ok)
-        throw new Error(`Failed to fetch: ${response.status}`);
+      let url = urlOrObj;
+      let filename = "download";
 
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
+      // ✅ FIXED: Handle image objects with sizes
+      if (typeof urlOrObj === "object") {
+        if (urlOrObj.sizes && typeof urlOrObj.sizes === "object") {
+          // Get the original size or first available size
+          url = urlOrObj.sizes.original || Object.values(urlOrObj.sizes)[0];
+        } else if (urlOrObj.url) {
+          url = urlOrObj.url;
+        }
 
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = filename;
+        // Try to get filename from originalName property
+        if (urlOrObj.originalName) {
+          filename = urlOrObj.originalName;
+        }
+      }
 
-      document.body.appendChild(a);
-      a.click();
+      if (typeof url !== "string") {
+        console.warn("Invalid URL for download:", urlOrObj);
+        return;
+      }
 
-      // Clean up
-      setTimeout(() => {
+      console.log("⬇️ Downloading:", url);
+
+      // Extract filename from URL if not already set
+      if (filename === "download") {
+        filename = url.split("/").pop().split("?")[0] || "download";
+      }
+
+      try {
+        // Use fetch-blob method for better compatibility
+        const response = await fetch(url);
+        if (!response.ok)
+          throw new Error(`Failed to fetch: ${response.status}`);
+
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+
+        document.body.appendChild(a);
+        a.click();
+
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+
+        console.log("✅ Download initiated:", filename);
+      } catch (fetchError) {
+        console.log("🔄 Using direct method as fallback");
+        // Fallback to original method
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
         document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-      }, 100);
-
-      console.log("✅ Download initiated:", filename);
-    } catch (fetchError) {
-      console.log("🔄 Using direct method as fallback");
-      // Fallback to original method
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      }
+    } catch (e) {
+      console.error("❌ Download error:", e);
+      if (typeof urlOrObj === "string") window.open(urlOrObj, "_blank");
     }
-  } catch (e) {
-    console.error("❌ Download error:", e);
-    if (typeof urlOrObj === "string") window.open(urlOrObj, "_blank");
-  }
-};
+  };
 
   // ✅ Check subscription validity
   const hasActiveSubscriptionCheck = () => {
@@ -690,7 +690,7 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
               }
 
               // ✅ Image fallback (normal case)
-              return <img  loading="lazy"  src={src} alt="placeholder" />;
+              return <img loading="lazy" src={src} alt="placeholder" />;
             })()}
           </Link>
         </div>
@@ -716,18 +716,18 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
               <span className="publisher">by {authorName}</span>
 
               <span style={{ display: "flex", gap: "12px" }}>
-<a
-  href="#"
-  onClick={handleDownloadClick}
-  style={{ 
-    cursor: isContributor ? "not-allowed" : "pointer", 
-    color: "inherit",
-    opacity: isContributor ? 0.5 : 1
-  }}
-  title={isContributor ? "Contributors cannot download" : "Download"}
->
-  <i className="fa-solid fa-download"></i>
-</a>
+                <a
+                  href="#"
+                  onClick={handleDownloadClick}
+                  style={{
+                    cursor: isContributor ? "not-allowed" : "pointer",
+                    color: "inherit",
+                    opacity: isContributor ? 0.5 : 1
+                  }}
+                  title={isContributor ? "Contributors cannot download" : "Download"}
+                >
+                  <i className="fa-solid fa-download"></i>
+                </a>
                 <AddToBookmark assetId={id} />
               </span>
             </div>

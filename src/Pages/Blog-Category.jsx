@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
 import { SEO_CONFIG } from "../utils/seoConfig";
+import SEO from "../common/SEO";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
@@ -141,11 +142,11 @@ const BlogCategory = () => {
 
   return (
     <>
-     {SEO_CONFIG.blogCategories[category] ? (
-        <SEO {...SEO_CONFIG.blogCategories[category]} />
-      ) : (
-        <SEO {...SEO_CONFIG.blogHome} />
-      )}
+     {SEO_CONFIG?.blogCategories?.[urlCategory] ? (
+      <SEO {...SEO_CONFIG.blogCategories[urlCategory]} />
+    ) : (
+      <SEO {...SEO_CONFIG?.blogHome || {}} />
+    )}
       
     <section className="blog-main section-padding">
       <div className="container">

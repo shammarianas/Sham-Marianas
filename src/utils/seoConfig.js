@@ -79,12 +79,45 @@ export const SEO_CONFIG = {
   },
 
   // =========================================================
-  //   Blog Pages SEO
+  //   Blog Categories SEO
   // =========================================================
-  blogHome: {
-    title: "Sham Marianas Blog | Advertising Insights Dubai UAE",
-    description: "Explore Sham Marianas blog for expert insights on advertising, branding, AI automation, and UAE growth from Dubai's top agency.",
-    keywords: "advertising blog Dubai, advertising insights UAE,AI automation blog, business growth UAE",
+  blogCategories: {
+    business: {
+      title: "Business Strategy & Growth Insights | Shammarianas Blog",
+      description: "Explore expert business strategy, growth hacking, and entrepreneurial insights from Dubai's leading advertising agency.",
+      keywords: "business strategy Dubai, business growth UAE, entrepreneurship tips, startup advice Dubai",
+    },
+    technology: {
+      title: "Technology Trends & Digital Innovation | Shammarianas Blog",
+      description: "Stay updated with latest technology trends, digital innovation, and tech insights from UAE's top advertising experts.",
+      keywords: "technology trends UAE, digital innovation Dubai, tech insights, digital transformation",
+    },
+    design: {
+      title: "Design Tips & Creative Strategies | Shammarianas Blog",
+      description: "Discover creative design tips, branding strategies, and visual communication insights from Dubai's creative agency.",
+      keywords: "design tips Dubai, creative strategy UAE, branding design, visual communication",
+    },
+    lifestyle: {
+      title: "Lifestyle & Creative Living Insights | Shammarianas Blog",
+      description: "Explore lifestyle insights, creative living tips, and personal development strategies from Dubai's creative community.",
+      keywords: "lifestyle Dubai, creative living UAE, personal development, wellness tips",
+    },
+    ai: {
+      title: "AI & Automation Insights | Shammarianas Blog",
+      description: "Learn about Artificial Intelligence, automation strategies, and AI tools for business growth from Dubai's tech experts.",
+      keywords: "artificial intelligence Dubai, AI automation UAE, machine learning, AI tools for business",
+    },
+    marketing: {
+      title: "Marketing Strategies & Advertising Insights | Shammarianas Blog",
+      description: "Get expert marketing strategies, advertising insights, and digital marketing tips from Dubai's top advertising agency.",
+      keywords: "marketing strategies Dubai, advertising insights UAE, digital marketing tips, social media marketing",
+    },
+    // Default for any other category
+    default: {
+      title: "Blog Category | Shammarianas Blog",
+      description: "Explore insightful articles and expert advice from Dubai's leading advertising agency.",
+      keywords: "blog articles, expert insights, Dubai advertising agency, UAE business tips",
+    }
   },
 
   // Dynamic Blog SEO Template

@@ -24,13 +24,6 @@ function ProductList() {
             </div>
           </div>
         </div>
-
-        {/* <div className="page_content">
-          <PageTitle title="/Hot" />
-          <div className="listing_section">
-            <ItemsListing />
-          </div>
-      </div> */}
         <div className="page_content">
           <PageTitle title="Models" />
           <div className="listing_section">
