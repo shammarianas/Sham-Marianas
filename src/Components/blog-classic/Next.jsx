@@ -37,8 +37,22 @@ function Next() {
   }, [id]);
 
   useEffect(() => {
-    if (blogs.length > 0) loadBackgroudImages();
-  }, [blogs]);
+    if (blogs.length > 0) {
+      // Set data-background attributes manually
+      const prevBox = document.querySelector('.col-md-6.rest:first-child .bg-img');
+      const nextBox = document.querySelector('.col-md-6.rest:last-child .bg-img');
+      
+      if (prevBlog && prevBox) {
+        prevBox.setAttribute('data-background', prevBlog.imageUrl || "https://via.placeholder.com/600x400?text=No+Image");
+      }
+      
+      if (nextBlog && nextBox) {
+        nextBox.setAttribute('data-background', nextBlog.imageUrl || "https://via.placeholder.com/600x400?text=No+Image");
+      }
+      
+      loadBackgroudImages();
+    }
+  }, [blogs, currentIndex]);
 
   const prevBlog = currentIndex > 0 ? blogs[currentIndex - 1] : null;
   const nextBlog = currentIndex < blogs.length - 1 ? blogs[currentIndex + 1] : null;

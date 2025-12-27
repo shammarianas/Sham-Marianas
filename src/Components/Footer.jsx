@@ -11,7 +11,7 @@ function Footer() {
     "/",
     "/services",
     "/about",
-    "/contact",
+    "/contact-us",
     "/blog",
     "/portfolio",
     "/support",
@@ -34,7 +34,7 @@ function Footer() {
     "/seller-guideline",
     "/prices-and-fees",
     "/contributor-policies",
-    "/comming-soon",
+    "/coming-soon",
     "/blogs",
     "/subscription",
     "/login",
@@ -59,6 +59,7 @@ function Footer() {
     path === "/seller-guideline" ||
     path === "/contributor-policies" ||
     path === "/prices-and-fees" ||
+    path === "/coming-soon" ||
     path.startsWith("/profile") ||
     path.startsWith("/error") ||
     path.startsWith("/category/fonts") ||
@@ -92,13 +93,10 @@ function Footer() {
     path === '/company' ||
     path === '/contributor';
 
-  // Debug: Console log to check what's happening
-  console.log('Current path:', path);
-  console.log('Is dashboard page:', isDashboardPage);
+    
 
   // Agar dashboard page hai to footer show nahi karo
   if (isDashboardPage) {
-    console.log('Footer hidden for dashboard page');
     return null;
   }
 
@@ -152,19 +150,19 @@ function Footer() {
                     <h6 className="sub-title mb-30">AI Tools</h6>
                     <ul className="rest fz-14 opacity-7">
                       <li className="mb-15">
-                        <Link to="/ai-image-generator">AI Image Generator</Link>
+                        <Link to="/coming-soon">AI Image Generator</Link>
                       </li>
                       <li className="mb-15">
-                        <Link to="/ai-video-generator">AI Video Generator</Link>
+                        <Link to="/coming-soon">AI Video Generator</Link>
                       </li>
                       <li className="mb-15">
-                        <Link to="/ai-3d-generator">AI 3D Model Generator</Link>
+                        <Link to="/coming-soon">AI 3D Model Generator</Link>
                       </li>
                       <li className="mb-15">
-                        <Link to="/ai-script-generator">AI Script Generator</Link>
+                        <Link to="/coming-soon">AI Script Generator</Link>
                       </li>
                       <li className="mb-15">
-                        <Link to="/ai-tools">All AI Tools</Link>
+                        <Link to="/coming-soon">All AI Tools</Link>
                       </li>
                     </ul>
                   </div>
@@ -197,7 +195,7 @@ function Footer() {
                       <li className="mb-15"><Link to="/templates">Templates</Link></li>
                       <li className="mb-15"><Link to="/about">About us</Link></li>
                       <li className="mb-15"><Link to="/blog">Blog</Link></li>
-                      <li><Link to="/contact">Contact us</Link></li>
+                      <li><Link to="/contact-us">Contact us</Link></li>
                     </ul>
                   </div>
 

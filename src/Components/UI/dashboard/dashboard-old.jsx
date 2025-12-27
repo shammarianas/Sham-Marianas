@@ -859,9 +859,8 @@ const AdminDashboard = () => {
       setError("Only admins can delete users");
       return;
     }
-    try {
-      // Your delete user logic here
-      // ...
+    try {      
+      await deleteDoc(doc(db, "Profiles", userId));
     } catch (error) {
       setError(`Failed to delete user: ${error.message}`);
     }

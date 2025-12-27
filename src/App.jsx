@@ -26,7 +26,7 @@ import Group from "./Pages/Group";
 import Analytics from "./Pages/Analytics";
 import Terms from "./Pages/Terms";
 import Privacy from "./Pages/Privacy";
-import Contact from "./Pages/Contact";
+import Contact from "./Pages/contact";
 import Blog from "./Pages/Blog";
 import BlogDetails from "./Pages/Blog-details";
 import Portfolio from "./Pages/portfolio";
@@ -112,7 +112,7 @@ export const AppRoutes = () => (
     <Route path="/analytics" element={<Analytics />} />
     <Route path="/Terms" element={<Terms />} />
     <Route path="/Privacy" element={<Privacy />} />
-    <Route path="/contact" element={<Contact />} />
+    <Route path="/contact-us" element={<Contact />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="/portfolio" element={<Portfolio />} />
     <Route path="/Support" element={<Support />} />
@@ -152,7 +152,7 @@ export const AppRoutes = () => (
     <Route path="/seller-guideline" element={<SellerGuideline />} />
     <Route path="/prices-and-fees" element={<PricingAndFees />} />
     <Route path="/contributor-policies" element={<ContributorPolicies />} />
-    <Route path="/comming-soon" element={<CommingSoon />} />
+    <Route path="/coming-soon" element={<CommingSoon />} />
     <Route path="/blogs" element={<BlogCategory />} />
     <Route path="/subscription" element={<Subscription />} />
     {/* Dynamic routes with parameters - order matters! */}
