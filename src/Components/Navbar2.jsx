@@ -25,7 +25,7 @@ const Navbar = () => {
     "/services",
     "/portfolio",
     "/blog",
-    "/contact",
+    "/contact-us",
     "/project-details",
     "/Blog-details",
   ].some((path) =>
@@ -319,7 +319,7 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/contact">
+                  <Link className="nav-link" to="/contact-us">
                     <span className="rolling-text">Contact Us</span>
                   </Link>
                 </li>
