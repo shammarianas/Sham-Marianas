@@ -246,40 +246,17 @@ const HeroSection = () => {
                     </span>
                   </h3>
                 </div>
-                {/* <div className="ml-auto vi-more">
-                  <a href="#Hot" className="butn butn-sm butn-bord radius-30">
-                    <span>View All</span>
-                  </a>
-                  <span className="icon ti-arrow-top-right"></span>
-                </div> */}
               </div>
             </div>
 
-            {/* <div className="page_content">
-            <div style={{display: 'flex', width: "100%", justifyContent: 'space-between'}}>
-            <PageTitle title="Hot" />
-            <Link to="" style={{width: '100px', display: 'flex', flexWrap: 'nowrap', alignSelf: 'center'}}>{'See All'}</Link>
-            </div>
-            <ItemsListing limit={4} />
-          </div>
-
-          
-          <div className="page_content">
-            <div style={{display: 'flex', width: "100%", justifyContent: 'space-between'}}>
-            <PageTitle title="Video Templates" />
-            <Link to="" style={{width: '100px', display: 'flex', flexWrap: 'nowrap', alignSelf: 'center'}}>{'See All'}</Link>
-            </div>
-            <ItemsListing limit={4} category={'models'} />
-          </div> */}
-
-            {/* Images */}
+           
             {[
               { title: "Videos", category: "videos" },
               { title: "Video Templates", category: "video-templates" },
               { title: "Images", category: "images" },
-              { title: "Graphic Templates", category: "graphics-templates" },
+              { title: "Graphic Templates", category: "graphics" },
               { title: "Mockups", category: "mockups" },
-              { title: "3D Models", category: "3D-models" },
+              { title: "3D Models", category: "models" },
               { title: "Fonts", category: "fonts" },
               { title: "Icons", category: "icons" },
             ].map(({ title, category }) => (
