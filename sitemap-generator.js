@@ -21,7 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const WEBSITE = 'https://shammarianas.com';
+const WEBSITE = 'https://www.shammarianas.com';
 const TODAY = new Date().toISOString().split('T')[0];
 
 // Define all routes from your AppRoutes component
@@ -53,10 +53,10 @@ const ROUTES_CONFIG = [
   
   // Dynamic routes - will be fetched from database
   { path: '/view/:slug', dynamic: true, collection: 'Assets', field: 'slug' },
-  { path: '/blog/:id', dynamic: true, collection: 'blogs', field: 'id' },
-  { path: '/project-details/:id', dynamic: true, collection: 'projects', field: 'id' },
+  { path: '/blog/:slug', dynamic: true, collection: 'blogs', field: 'slug' },
+  { path: '/project-details/:slug', dynamic: true, collection: 'projects', field: 'slug' },
   { path: '/blog-category/:category', dynamic: true, samples: ['technology', 'design', 'marketing'] },
-  { path: '/profile/:username', dynamic: true, collection: 'Contributors', field: 'username' },
+  // { path: '/profile/:username', dynamic: true, collection: 'Contributors', field: 'username' },
   { path: '/:username', dynamic: true, collection: 'Contributors', field: 'username' },
 ];
 

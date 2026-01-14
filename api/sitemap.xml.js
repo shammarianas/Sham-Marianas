@@ -14,7 +14,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const WEBSITE = process.env.WEBSITE_URL || 'https://shammarianas.com';
+const WEBSITE = process.env.WEBSITE_URL || 'https://www.shammarianas.com';
 const TODAY = new Date().toISOString().split('T')[0];
 
 const ROUTES_CONFIG = [
