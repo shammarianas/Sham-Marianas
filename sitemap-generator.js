@@ -29,9 +29,8 @@ const ROUTES_CONFIG = [
   // Static routes
   { path: '/', dynamic: false },
   { path: '/login', dynamic: false },
-  { path: '/cart', dynamic: false },
   { path: '/upload', dynamic: false },
-  { path: '/checkout', dynamic: false },
+  // { path: '/checkout', dynamic: false },
   { path: '/blog', dynamic: false },
   { path: '/portfolio', dynamic: false },
   { path: '/contact', dynamic: false },
