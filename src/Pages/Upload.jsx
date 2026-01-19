@@ -566,7 +566,7 @@ const Upload = ({
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
-    thumbnail: "",
+    thumbnail: null,
     description: "",
     is3d: false,
     price: "free",
@@ -580,23 +580,17 @@ const Upload = ({
       .replace(/ /g, ", "),
     category: "",
     type: "",
-    model: "",
-    images: "",
-    video: "",
-    icons: "",
-    script: "",
-    scriptSize: "",
-    hdri: "",
-    hdriSize: "",
-    graphicsTemplate: "",
-    graphicsTemplateSize: "",
-    mockupFile: "",
-    mockupFileSize: "",
-    fontFile: "",
-    fontFileSize: "",
-    videoTemplateFile: "",
-    videoTemplateFileSize: "",
-    other: "",
+    model: null,
+    images: [],
+    video: null,
+    icons: [],
+    script: null,
+    hdri: null,
+    graphicsTemplate: null,
+    mockupFile: null,
+    fontFile: null,
+    videoTemplateFile: null,
+    other: null,
     otherSize: "",
     ambientOcclusion: "",
     baseColor: "",
@@ -610,7 +604,7 @@ const Upload = ({
     physicalSize: "",
     lods: "",
     vertices: "",
-    textures: "",
+    textures: [],
     materials: "",
     uvMapping: false,
     rigged: false,
@@ -1532,75 +1526,41 @@ const Upload = ({
   }
 
   // Main form change handler - UPDATED for title to slug conversion
-  const handleChange = (event) => {
-    const target = event.target;
-    const name = target.name;
-    let value = target.type === "checkbox" ? target.checked : target.value;
+  const handleChange = (e) => {
+    const { name, files, value, type } = e.target;
 
-    if (target.type === "file") {
+    if (type === "file") {
+      if (!files?.length) return;
+
       if (name === "thumbnail") {
-        handleThumbnailChange(event);
-      } else if (name === "images" || name === "icons" || name === "textures") {
-        const files = target.files;
-        if (files && files.length > 0) {
-          setFormData((prev) => ({
-            ...prev,
-            [name]: Array.from(files),
-            [`${name}Size`]: Array.from(files).map((file) => file.size),
-          }));
-          handleMultipleFilesPreview(files, name);
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            [name]: [],
-            [`${name}Size`]: [],
-          }));
-          setFilePreviews((prev) => ({ ...prev, [name]: [] }));
-        }
-      } else {
-        const file = target.files[0];
-        if (file) {
-          setFormData((prev) => ({
-            ...prev,
-            [name]: file,
-            [`${name}Size`]: file.size,
-          }));
-          handleFilePreview(file, name);
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            [name]: "",
-            [`${name}Size`]: "",
-          }));
-          setFilePreviews((prev) => ({ ...prev, [name]: null }));
-          setFilePreviewTypes((prev) => ({ ...prev, [name]: null }));
-        }
+        handleThumbnailChange(e);
+        return;
       }
-    } else if (
-      ["properties", "applicationsSupported", "integrationReady"].includes(name)
-    ) {
-      const options = Array.from(target.selectedOptions).map(
-        (option) => option.value
-      );
-      setFormData((prev) => ({
-        ...prev,
-        [name]: options,
-      }));
+
+      // 10MB limit for all main files
+      const file = files[0];
+      if (file && file.size > 10 * 1024 * 1024) {
+        alert(`${name} file size must be under 10MB!`);
+        e.target.value = "";
+        return;
+      }
+
+      if (["images", "icons", "textures"].includes(name)) {
+        const fileArray = Array.from(files).filter(f => f.size <= 10 * 1024 * 1024);
+        if (fileArray.length !== files.length) {
+          alert("Some files were skipped because they exceed 10MB limit.");
+        }
+        setFormData(prev => ({ ...prev, [name]: fileArray }));
+      } else {
+        setFormData(prev => ({ ...prev, [name]: file }));
+      }
+      return;
+    }
+
+    if (name === "title") {
+      setFormData(prev => ({ ...prev, title: value, slug: generateSlug(value) }));
     } else {
-      // Auto-generate slug when title changes
-      if (name === "title") {
-        const slug = generateSlug(value);
-        setFormData((prev) => ({
-          ...prev,
-          [name]: value,
-          slug: slug, // Automatically set slug based on title
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: value,
-        }));
-      }
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -1766,578 +1726,138 @@ const Upload = ({
   };
 
   // ✅ MAIN SUBMIT FUNCTION - UPDATED WITH getUserProfileData
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if contributor is trying to upload wrong type
+    if (!formData.title.trim() || !formData.type) {
+      alert("Title and Asset Type are required!");
+      return;
+    }
+
     if (userRole !== "admin" && specialization) {
-      const allowedTypes = specializationToAssetTypes[specialization] || [];
-      if (!allowedTypes.includes(formData.type)) {
-        alert(
-          `You can only upload ${specialization} assets based on your specialization.`
-        );
+      const allowed = specializationToAssetTypes[specialization] || [];
+      if (!allowed.includes(formData.type)) {
+        alert(`You can only upload ${specialization} assets.`);
         return;
       }
     }
 
-    const notificationStatus = "pending";
-
-    if (editMode) setIsUpdating(true);
-    else setIsSubmitting(true);
-
-    setLoadingState(editMode ? "Updating asset..." : "Uploading asset...");
+    setIsSubmitting(true);
 
     try {
-      const currentUserRole = await fetchUserRole();
-      console.log("Current user role:", currentUserRole);
-
-      // ✅ Get user profile data
       const userProfile = await getUserProfileData();
-      const userName =
-        userProfile?.displayName ||
-        userProfile?.name ||
-        currentUser?.displayName ||
-        "Unknown Author";
+      const userName = userProfile?.displayName || userProfile?.name || currentUser?.displayName || "Unknown";
 
-      let assetStatus = "approved"; // default
-      if (await isContributor(currentUser.uid)) {
-        assetStatus = "pending";
-      } else if (currentUserRole === "admin") {
-        assetStatus = "approved";
-      } else {
-        assetStatus = "pending";
-      }
+      const isContrib = await isContributor(currentUser.uid);
+      const status = isContrib ? "pending" : "approved";
 
       let docData = {
-        title: formData.title,
+        title: formData.title.trim(),
         slug: formData.slug || generateSlug(formData.title),
-        description: formData.description,
+        description: formData.description?.trim() || "",
         type: formData.type,
         price: formData.price,
         tags,
-        is3d: formData.is3d,
-        licenseType: formData.licenseType,
-        category: formData.category,
-        properties: formData.properties,
-        applicationsSupported: formData.applicationsSupported,
-        orientation: formData.orientation,
-        vertices: formData.vertices,
-        surfaceMaterial: formData.surfaceMaterial,
-        style: formData.style,
-        environmentType: formData.environmentType,
-        lightingCondition: formData.lightingCondition,
-        scriptType: formData.scriptType,
-        programmingLanguage: formData.programmingLanguage,
-        framework: formData.framework,
-        integrationReady: formData.integrationReady,
-        colorSpace: formData.colorSpace,
-        objectType: formData.objectType,
-        fileFormat: formData.fileFormat,
-        aiGenerated: formData.aiGenerated,
-        resolution: formData.resolution,
-        frameRate: formData.frameRate,
-        date: formData.date,
-        userId: currentUser?.uid ?? "anonymous",
-
+        category: formData.category || "",
+        licenseType: formData.licenseType || "",
+        userId: currentUser.uid,
         ownerId: currentUser.uid,
-        status: assetStatus,
-
-        // ✅ CONSISTENT NAME FIELD
         authorName: userName,
-        author: userName,
-        createdBy: userName,
-        updatedBy: userName,
-
-        // Timestamps
-        createdAt: editMode ? assetToEdit.createdAt : serverTimestamp(),
+        status,
+        createdAt: editMode ? assetToEdit?.createdAt : serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
 
-      // ✅ For new assets, also set createdBy with displayName
-      if (!editMode) {
-        docData.createdBy = userName;
-        docData.createdAt = serverTimestamp();
-      }
-
-      if (formData.thumbnail && typeof formData.thumbnail !== "string") {
-        const is3DFile = formData.thumbnail.name
-          .toLowerCase()
-          .match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
-
-        if (is3DFile && formData.type === "models") {
-          console.log("🔄 Thumbnail se 3D model - PREVIEW ke liye");
-
-          const thumbnailModelUrl = await uploadFile(
-            formData.thumbnail,
-            "models"
-          );
-          docData.thumbnailModel = thumbnailModelUrl;
-
+      // 1. Upload Thumbnail
+      if (formData.thumbnail instanceof File) {
+        const is3D = /\.(gltf|glb|obj|stl|fbx|blend)$/i.test(formData.thumbnail.name);
+        if (is3D && formData.type === "models") {
+          const uploaded = await uploadFile(formData.thumbnail, "models", currentUser.uid);
+          docData.thumbnailModel = uploaded?.url;
           docData.thumbnail = "/default-model-thumbnail.jpg";
-
-          console.log("✅ ThumbnailModel saved:", docData.thumbnailModel);
         } else {
-          console.log("🖼️ Uploading regular thumbnail");
           docData.thumbnail = await uploadThumbnail(formData.thumbnail);
         }
-      } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
+      } else if (editMode && assetToEdit?.thumbnail) {
         docData.thumbnail = assetToEdit.thumbnail;
       }
 
-      // ✅ MODEL FIELD - SIRF DOWNLOAD KE LIYE
-      if (formData.model && formData.model instanceof File) {
-        console.log("📥 Uploading model for DOWNLOAD:", formData.model.name);
-        docData.model = await uploadFile(formData.model, "models");
-      } else if (editMode && assetToEdit.model && !formData.model) {
-        docData.model = assetToEdit.model;
+      // 2. Upload Main Asset File(s)
+      const uploadResult = await uploadMainAsset(formData.type, formData, currentUser.uid);
+      if (uploadResult) {
+        Object.assign(docData, uploadResult.docFields);
+        docData.downloadUrl = uploadResult.downloadUrl;
+        docData.fileName = uploadResult.fileName;
       }
 
-      // ✅ FIXED: handle assets by type
-      if (formData.type === "images") {
-        if (Array.isArray(formData.images) && formData.images.length > 0) {
-          console.log("🖼️ Uploading OPTIMIZED images...");
+      console.log("Final document to save:", docData);
 
-          // Use optimized upload function
-          const uploadedImages = await uploadImages(
-            formData.images,
-            "images",
-            currentUser?.uid || "anonymous"
-          );
-
-          docData.images = uploadedImages;
-          docData.hasMultipleSizes = true;
-          docData.imageFormats = "webp";
-        }
-      }
-
-      if (formData.type === "videos") {
-        console.log("🎥 Processing video...", {
-          hasVideo: !!formData.video,
-          isFile: formData.video instanceof File,
-        });
-
-        if (formData.video && formData.video instanceof File) {
-          console.log("🎥 Uploading NEW video");
-          docData.video = await uploadFile(formData.video, "videos");
-        } else if (editMode && assetToEdit.video) {
-          console.log("🎥 Keeping EXISTING video");
-          docData.video = assetToEdit.video;
-        }
-      }
-
-      // ✅ THUMBNAIL FIELD - SIRF PREVIEW KE LIYE (IMAGE/VIDEO/3D MODEL)
-      if (formData.thumbnail && typeof formData.thumbnail !== "string") {
-        const is3DFile = formData.thumbnail.name
-          .toLowerCase()
-          .match(/\.(gltf|glb|obj|stl|fbx|blend)$/);
-
-        if (is3DFile && formData.type === "models") {
-          console.log("🔄 Thumbnail se 3D model - PREVIEW ke liye");
-          docData.thumbnailModel = await uploadFile(
-            formData.thumbnail,
-            "models"
-          );
-          docData.thumbnail = "/default-model-thumbnail.jpg";
-        } else {
-          console.log("🖼️ Uploading regular thumbnail");
-          docData.thumbnail = await uploadThumbnail(formData.thumbnail);
-        }
-      } else if (editMode && assetToEdit.thumbnail && !formData.thumbnail) {
-        docData.thumbnail = assetToEdit.thumbnail;
-      }
-
-      // ✅ MODEL FIELD - SIRF DOWNLOAD KE LIYE (ALAG SE)
-      if (formData.model && formData.model instanceof File) {
-        console.log("📥 Uploading model for DOWNLOAD:", formData.model.name);
-        docData.model = await uploadFile(formData.model, "models");
-      } else if (editMode && assetToEdit.model && !formData.model) {
-        docData.model = assetToEdit.model;
-      }
-
-      if (formData.type === "scripts" && formData.script) {
-        docData.script = await uploadFile(formData.script, "scripts");
-      } else if (editMode && assetToEdit.script && !formData.script) {
-        docData.script = assetToEdit.script;
-      }
-
-      if (formData.type === "hdris" && formData.hdri) {
-        docData.hdri = await uploadFile(formData.hdri, "hdris");
-      } else if (editMode && assetToEdit.hdri && !formData.hdri) {
-        docData.hdri = assetToEdit.hdri;
-      }
-
-      if (formData.type === "graphics" && formData.graphicsTemplate) {
-        docData.graphicsTemplate = await uploadFile(
-          formData.graphicsTemplate,
-          "graphics"
-        );
-      } else if (
-        editMode &&
-        assetToEdit.graphicsTemplate &&
-        !formData.graphicsTemplate
-      ) {
-        docData.graphicsTemplate = assetToEdit.graphicsTemplate;
-      }
-
-      if (formData.type === "mockups" && formData.mockupFile) {
-        docData.mockupFile = await uploadFile(formData.mockupFile, "mockups");
-      } else if (editMode && assetToEdit.mockupFile && !formData.mockupFile) {
-        docData.mockupFile = assetToEdit.mockupFile;
-      }
-
-      if (formData.type === "fonts" && formData.fontFile) {
-        docData.fontFile = await uploadFile(formData.fontFile, "fonts");
-      } else if (editMode && assetToEdit.fontFile && !formData.fontFile) {
-        docData.fontFile = assetToEdit.fontFile;
-      }
-
-      if (formData.type === "video-templates" && formData.videoTemplateFile) {
-        docData.videoTemplateFile = await uploadFile(
-          formData.videoTemplateFile,
-          "video-templates"
-        );
-      } else if (
-        editMode &&
-        assetToEdit.videoTemplateFile &&
-        !formData.videoTemplateFile
-      ) {
-        docData.videoTemplateFile = assetToEdit.videoTemplateFile;
-      }
-
-      if (formData.type === "icons" && formData.icons) {
-        if (Array.isArray(formData.icons) && formData.icons.length > 0) {
-          docData.icons = await uploadImages(formData.icons, "icons");
-        }
-      } else if (editMode && assetToEdit.icons && !formData.icons) {
-        docData.icons = assetToEdit.icons;
-      }
-
-      if (formData.type === "textures" && formData.textures) {
-        if (Array.isArray(formData.textures) && formData.textures.length > 0) {
-          docData.textures = await uploadImages(formData.textures, "textures");
-        }
-      } else if (editMode && assetToEdit.textures && !formData.textures) {
-        docData.textures = assetToEdit.textures;
-      }
-
-      if (formData.type === "other" && formData.other) {
-        docData.other = await uploadFile(formData.other, "other");
-      } else if (editMode && assetToEdit.other && !formData.other) {
-        docData.other = assetToEdit.other;
-      }
-      console.log("🔍 Extracting download URL for asset type:", formData.type);
-
-      // Function to extract download URL
-      const extractDownloadInfo = () => {
-        switch (formData.type) {
-          case "images":
-            if (docData.images && docData.images.length > 0) {
-              const firstImage = docData.images[0];
-              console.log("🖼️ First image structure:", firstImage);
-
-              // Check for URL in primary field
-              if (firstImage.primary && firstImage.primary.url) {
-                console.log("✅ Found URL in images[0].primary.url");
-                return {
-                  url: firstImage.primary.url,
-                  fileName: firstImage.originalName || "image.webp",
-                };
-              }
-              // Check for URL in sizes array
-              else if (
-                firstImage.sizes &&
-                firstImage.sizes.length > 0 &&
-                firstImage.sizes[0].url
-              ) {
-                console.log("✅ Found URL in images[0].sizes[0].url");
-                return {
-                  url: firstImage.sizes[0].url,
-                  fileName: firstImage.originalName || "image.webp",
-                };
-              }
-            }
-            break;
-
-          case "videos":
-            if (docData.video && docData.video.url) {
-              console.log("✅ Found URL in video.url");
-              return {
-                url: docData.video.url,
-                fileName: docData.video.fileName || "video.mp4",
-              };
-            }
-            break;
-
-          case "models":
-            if (docData.model && docData.model.url) {
-              console.log("✅ Found URL in model.url");
-              return {
-                url: docData.model.url,
-                fileName: docData.model.fileName || "model.glb",
-              };
-            }
-            break;
-
-          case "scripts":
-            if (docData.script && docData.script.url) {
-              console.log("✅ Found URL in script.url");
-              return {
-                url: docData.script.url,
-                fileName: docData.script.fileName || "script.js",
-              };
-            }
-            break;
-
-          case "hdris":
-            if (docData.hdri && docData.hdri.url) {
-              console.log("✅ Found URL in hdri.url");
-              return {
-                url: docData.hdri.url,
-                fileName: docData.hdri.fileName || "hdri.hdr",
-              };
-            }
-            break;
-
-          case "graphics":
-            if (docData.graphicsTemplate && docData.graphicsTemplate.url) {
-              console.log("✅ Found URL in graphicsTemplate.url");
-              return {
-                url: docData.graphicsTemplate.url,
-                fileName: docData.graphicsTemplate.fileName || "template.psd",
-              };
-            }
-            break;
-
-          case "mockups":
-            if (docData.mockupFile && docData.mockupFile.url) {
-              console.log("✅ Found URL in mockupFile.url");
-              return {
-                url: docData.mockupFile.url,
-                fileName: docData.mockupFile.fileName || "mockup.psd",
-              };
-            }
-            break;
-
-          case "fonts":
-            if (docData.fontFile && docData.fontFile.url) {
-              console.log("✅ Found URL in fontFile.url");
-              return {
-                url: docData.fontFile.url,
-                fileName: docData.fontFile.fileName || "font.ttf",
-              };
-            }
-            break;
-
-          case "video-templates":
-            if (docData.videoTemplateFile && docData.videoTemplateFile.url) {
-              console.log("✅ Found URL in videoTemplateFile.url");
-              return {
-                url: docData.videoTemplateFile.url,
-                fileName: docData.videoTemplateFile.fileName || "template.mp4",
-              };
-            }
-            break;
-
-          case "icons":
-            if (
-              docData.icons &&
-              docData.icons.length > 0 &&
-              docData.icons[0].primary &&
-              docData.icons[0].primary.url
-            ) {
-              console.log("✅ Found URL in icons[0].primary.url");
-              return {
-                url: docData.icons[0].primary.url,
-                fileName: docData.icons[0].originalName || "icon.webp",
-              };
-            }
-            break;
-
-          case "textures":
-            if (
-              docData.textures &&
-              docData.textures.length > 0 &&
-              docData.textures[0].primary &&
-              docData.textures[0].primary.url
-            ) {
-              console.log("✅ Found URL in textures[0].primary.url");
-              return {
-                url: docData.textures[0].primary.url,
-                fileName: docData.textures[0].originalName || "texture.webp",
-              };
-            }
-            break;
-
-          case "other":
-            if (docData.other && docData.other.url) {
-              console.log("✅ Found URL in other.url");
-              return {
-                url: docData.other.url,
-                fileName: docData.other.fileName || "asset.file",
-              };
-            }
-            break;
-        }
-
-        console.log("⚠️ No download URL found for asset type:", formData.type);
-        return null;
-      };
-
-      // Extract and add download URL
-      const downloadInfo = extractDownloadInfo();
-      if (downloadInfo) {
-        // ✅ Add downloadUrl field (REQUIRED by Cloud Function)
-        docData.downloadUrl = downloadInfo.url;
-        docData.fileName = downloadInfo.fileName;
-
-        // ✅ For paid assets, add extra fields
-        if (formData.price === "paid") {
-          docData.paidDownloadUrl = downloadInfo.url;
-          docData.paidFileName = downloadInfo.fileName;
-          docData.isPaidAsset = true;
-          console.log("💰 Added paid asset download fields");
-        }
-
-        console.log("✅ Added downloadUrl to asset:", downloadInfo.url);
-      } else {
-        console.warn(
-          "⚠️ Warning: No download URL could be extracted for asset"
-        );
-      }
-
-      // ✅ Log final data for debugging
-      console.log("📦 Final asset data before saving:", {
-        type: formData.type,
-        price: formData.price,
-        hasDownloadUrl: !!docData.downloadUrl,
-        downloadUrl: docData.downloadUrl,
-        hasImages: !!docData.images,
-        imagesCount: docData.images?.length || 0,
-      });
-
-      // ✅ Clean empty fields but preserve existing data in edit mode
-      docData = Object.fromEntries(
-        Object.entries(docData).filter(([k, v]) => {
-          if (v === undefined || v === null) return false;
-          if (Array.isArray(v) && v.length === 0) return false;
-          if (typeof v === "string" && v.trim() === "") return false;
-          return true;
-        })
-      );
-
-      // ✅ Update Mode
       if (editMode && assetToEdit?.id) {
         await updateDoc(doc(db, "Assets", assetToEdit.id), docData);
-        setLoadingState("success");
-        if (onUploadSuccess) onUploadSuccess();
       } else {
-        // ✅ Create new asset
         const newAssetRef = await addDoc(collection(db, "Assets"), docData);
 
-        // ✅ ADDED: Create admin notification for asset approval if user is contributor
-        if (!editMode && (await isContributor(currentUser.uid))) {
-          await createAdminAssetNotification(
-            newAssetRef.id,
-            formData.title,
-            userName,
-            currentUser.uid
-          );
-          console.log("✅ Admin notification for new asset created");
+        if (isContrib) {
+          await createAdminAssetNotification(newAssetRef.id, formData.title, userName, currentUser.uid);
+          await saveContributorNotification(newAssetRef.id, formData.title, currentUser.uid, userName, "pending");
         }
-
-        //notification
-        if (!editMode && (await isContributor(currentUser.uid))) {
-          await saveContributorNotification(
-            newAssetRef.id,
-            formData.title,
-            currentUser.uid,
-            userName,
-            notificationStatus
-          );
-          console.log("✅ Contributor notification for new asset created");
-        }
-
-        setLoadingState("success");
-
-        if (onUploadSuccess) onUploadSuccess();
-        // Reset form for new upload
-        setFormData({
-          title: "",
-          slug: "",
-          description: "",
-          thumbnail: "",
-          type: "",
-          images: "",
-          video: "",
-          model: "",
-          script: "",
-          tags: "",
-          category: "",
-          is3d: false,
-          price: "",
-          date: new Date()
-            .toLocaleDateString("en-US", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })
-            .replace(/ /g, ", "),
-          aiGenerated: "",
-          resolution: "",
-          frameRate: "",
-          properties: [],
-          applicationsSupported: [],
-          orientation: "",
-          licenseType: "",
-          surfaceMaterial: "",
-          style: "",
-          environmentType: "",
-          lightingCondition: "",
-          scriptType: "",
-          programmingLanguage: "",
-          framework: "",
-          integrationReady: [],
-          colorSpace: "",
-          objectType: "",
-          fileFormat: "",
-        });
-        setTags([]);
-        setThumbnailPreview(null);
-        setFilePreviews({
-          model: null,
-          video: null,
-          script: null,
-          hdri: null,
-          graphicsTemplate: null,
-          mockupFile: null,
-          fontFile: null,
-          videoTemplateFile: null,
-          other: null,
-          images: [],
-          icons: [],
-          textures: [],
-        });
-        setFilePreviewTypes({
-          model: null,
-          video: null,
-          script: null,
-          hdri: null,
-          graphicsTemplate: null,
-          mockupFile: null,
-          fontFile: null,
-          videoTemplateFile: null,
-          other: null,
-        });
       }
-    } catch (error) {
-      console.error("UPLOAD ERROR →", error);
-      setLoadingState("error");
-      alert(
-        `Error ${editMode ? "updating" : "uploading"} asset: ${error.message}`
-      );
+
+      alert("Asset uploaded successfully!");
+      onUploadSuccess?.();
+    } catch (err) {
+      console.error("UPLOAD FAILED:", err);
+      alert("Failed to upload: " + (err.message || "Unknown error"));
     } finally {
-      if (editMode) setIsUpdating(false);
-      else setIsSubmitting(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  // Centralized main asset upload logic
+  const uploadMainAsset = async (type, formData, uid) => {
+    const config = {
+      images: { field: "images", multiple: true, folder: "images" },
+      icons: { field: "icons", multiple: true, folder: "icons" },
+      textures: { field: "textures", multiple: true, folder: "textures" },
+      videos: { field: "video", multiple: false, folder: "videos" },
+      models: { field: "model", multiple: false, folder: "models" },
+      scripts: { field: "script", multiple: false, folder: "scripts" },
+      hdris: { field: "hdri", multiple: false, folder: "hdris" },
+      graphics: { field: "graphicsTemplate", multiple: false, folder: "graphics" },
+      mockups: { field: "mockupFile", multiple: false, folder: "mockups" },
+      fonts: { field: "fontFile", multiple: false, folder: "fonts" },
+      "video-templates": { field: "videoTemplateFile", multiple: false, folder: "video-templates" },
+      other: { field: "other", multiple: false, folder: "other" },
+    }[type];
+
+    if (!config) return null;
+
+    const { field, multiple, folder } = config;
+
+    if (multiple) {
+      const files = formData[field] || [];
+      if (!files.length) return null;
+
+      const uploaded = await uploadImages(files, folder, uid); // Keep your existing uploadImages
+      if (!uploaded?.length) return null;
+
+      return {
+        docFields: { [field]: uploaded },
+        downloadUrl: uploaded[0]?.url || uploaded[0]?.primary?.url,
+        fileName: uploaded[0]?.originalName
+      };
+    } else {
+      const file = formData[field];
+      if (!(file instanceof File)) return null;
+
+      const uploaded = await uploadFile(file, folder, uid);
+      if (!uploaded) return null;
+
+      return {
+        docFields: { [field]: uploaded },
+        downloadUrl: uploaded.url,
+        fileName: uploaded.fileName || file.name
+      };
     }
   };
 
