@@ -11,7 +11,8 @@ import Clients from "../Components/landing/Clients";
 import Contact from "../Components/landing/contact";
 import Marq2 from "../Components/marq2";
 import WhatsAppButton from "../Components/whatsappButton";
-const LoadingScreen = lazy(() => import("../common/loader"));
+// const LoadingScreen = lazy(() => import("../common/loader"));
+import LoadingScreen from "../common/loader";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SEO from "../common/SEO.jsx";
 
@@ -29,7 +30,7 @@ const Home = () => {
   return (
     <>
     <SEO {...SEO_CONFIG.home} />
-      <LoadingScreen />
+        <LoadingScreen />
       <Cursor />  
       <ProgressScroll />
       <div id="smooth-wrapper" ref={main}>
