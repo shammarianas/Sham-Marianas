@@ -754,7 +754,7 @@ const DashboardOverview = ({
                   <Link to="/support">Support Center</Link>
                 </li>
                 <li className="mb-15">
-                  <a href="/contect">Contact</a>
+                  <a href="/contact-us">Contact</a>
                 </li>
               </ul>
             </div>

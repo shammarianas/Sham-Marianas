@@ -3,21 +3,11 @@ import React, { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-// ✅ CHANGE 1: Remove unused imports
-// ❌ Remove these lines:
-// import { useGSAP } from "@gsap/react";
-// import { useRef } from "react";
-
 // ✅ CHANGE 2: Move gsap.registerPlugin outside component
 gsap.registerPlugin(ScrollTrigger);
 
 function LoadingScreen() {
   useEffect(() => {
-    // ✅ CHANGE 3: Remove interval and run immediately
-    // Remove the entire interval logic
-    // const interval = setInterval(() => {
-    //   if (typeof gsap !== "undefined") {
-    //     clearInterval(interval);
     
     // Direct animation without delay
     const svg = document.getElementById("svg");
@@ -58,13 +48,7 @@ function LoadingScreen() {
       }
     });
     
-    // Remove these extra animations
-    // tl.to(".loader-wrap", { zIndex: -1, display: "none" });
-    // tl.from("header", { y: 0 }, "-=1.5");
-    // tl.from("header .container", { y: 40, opacity: 1, delay: 0.3 }, "-=1.5");
-    
-    // }, 100);
-    
+
     // ✅ CHANGE 7: Safety cleanup
     return () => {
       // Make sure loader is hidden on unmount
@@ -83,15 +67,16 @@ function LoadingScreen() {
 
       <div className="loader-wrap-heading">
         <div className="load-text">
-          <span>L</span>
+          {/* <span>L</span>
           <span>o</span>
           <span>a</span>
           <span>d</span>
           <span>i</span>
           <span>n</span>
-          <span>g</span>
+          <span>g</span> */}
         </div>
       </div>
+
     </div>
   );
 }
