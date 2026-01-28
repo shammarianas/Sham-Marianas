@@ -6,16 +6,14 @@ import SEO from "../common/SEO.jsx";
 
 import FirstPage from "../Components/landing/firstPage";
 import Intro from "../Components/landing/Intro";
+import Marq from "../Components/landing/marq";
+import Services from "../Components/landing/Services";
 
-// ✅ 1. Sabhi heavy components ko LAZY load karein
-const Marq = lazy(() => import("../Components/landing/marq"));
-const Services = lazy(() => import("../Components/landing/Services"));
-const Team = lazy(() => import("../Components/landing/Team"));
-const Clients = lazy(() => import("../Components/landing/Clients"));
-const Contact = lazy(() => import("../Components/landing/contact"));
-const Marq2 = lazy(() => import("../Components/marq2"));
+import Team from "../Components/landing/Team";
+import Clients from "../Components/landing/Clients";
+import Contact from "../Components/landing/contact";
+import Marq2 from "../Components/marq2";
 
-// Common components (chote hain toh direct rehne dein)
 import Cursor from "../common/cusor";
 import ProgressScroll from "../common/ProgressScroll";
 import WhatsAppButton from "../Components/whatsappButton";

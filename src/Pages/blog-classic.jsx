@@ -1,16 +1,9 @@
 import Lines from '../common/Lines';
 import ProgressScroll from '../common/ProgressScroll';
-// import Cursor from '../common/cusor';
-// import Footer from "../Components/Footer";
-// import Navbar from '../components/Navbar';
-// import { Helmet } from 'react-helmet';
-// import Header from '../components/blog-classic/Header';
 import Blogs from '../Components/blog-classic/Blogs';
-// import WOW from 'wowjs';
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-// import { ScrollSmoother } from 'gsap-trial/ScrollSmoother';
 
 import { useGSAP } from '@gsap/react';
 import { useEffect, useRef } from 'react';
@@ -18,7 +11,6 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function BlogClassic() {
   const main = useRef();
-  // const smoother = useRef();
 
   useEffect(() => {
     const loadScript = (src) => {
@@ -52,49 +44,11 @@ export default function BlogClassic() {
         console.error(error.message);
       });
 
-    // // Cleanup function
-    // return () => {
-    //   document.body.removeChild(script);
-    // };
   }, []);
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     new WOW.WOW({
-  //       animateClass: 'animated',
-  //       offset: 100,
-  //     }).init();
-  //   }
-  // }, []);
+
   return (
     <>
-      {/* <Helmet>
-        <title>webfolio</title>
-        <link rel="icon" href="/assets/imgs/favicon.ico" />
-        <link rel="shortcut icon" href="/assets/imgs/favicon.ico" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/plugins.css" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/style.css" />
-
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900&display=swap"
-        />
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap"
-        />
-        <script src="/assets/js/ScrollTrigger.min.js" defer />
-        <script src="/assets/js/ScrollSmoother.min.js" defer />
-        <script defer src="/assets/js/gsap.min.js"></script>
-
-        <script defer src="/assets/js/splitting.min.js"></script>
-        <script defer src="/assets/js/isotope.pkgd.min.js"></script>
-        <script defer src="/assets/js/plugins.js"></script>
-        <script defer src="/assets/js/TweenMax.min.js"></script>
-        <script defer src="/assets/js/charming.min.js"></script>
-        <script defer src="/assets/js/countdown.js"></script>
-      </Helmet> */}
+      
       <body>
         {/* <Cursor /> */}
         <ProgressScroll />

@@ -353,7 +353,11 @@ const AssetFullScreen = ({
         `}
       </style>
 
-      <div className="asset-fullscreen-overlay" onClick={onClose}>
+      <div className="asset-fullscreen-overlay" 
+        onClick={onClose}
+        role="button"          
+        tabIndex={-1}           
+        aria-label="Close preview">
         <div 
           ref={containerRef}
           className="asset-fullscreen-container" 
@@ -365,6 +369,7 @@ const AssetFullScreen = ({
               
               <button 
                 className="asset-fullscreen-btn"
+                type="button"
                 onClick={toggleFullscreen}
                 aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
               >
@@ -373,6 +378,7 @@ const AssetFullScreen = ({
               <button 
                 className="asset-fullscreen-btn"
                 onClick={onClose}
+                type="button"
                 aria-label="Close"
               >
                 <FiX size={18} />

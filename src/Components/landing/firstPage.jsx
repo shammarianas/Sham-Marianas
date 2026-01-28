@@ -11,8 +11,10 @@ function FirstPage() {
   return (
     <header
       className="main-header bg-img valign"
+      rel="preload" as="image"
       data-background="/assets/imgs/background/bg5.webp"
       data-overlay-dark="7"
+      fetchpriority="high"
     >
       <div className="container ontop" data-aos="fade-up"
      data-aos-duration="3000">
