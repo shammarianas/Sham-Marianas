@@ -302,7 +302,7 @@ const Navbar = () => {
                         <Link to="/Support">Support</Link>
                       </li>
                       <li>
-                        <Link className="logout" to="/templates">
+                        <Link className="logout" to="/logout">
                           Logout
                         </Link>
                       </li>
