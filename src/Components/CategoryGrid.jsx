@@ -15,7 +15,7 @@ const CategoryGrid = () => {
         <CategoryGridCard title="Food" image="food" />
       </div>
 
-      <button className="view_all_btn">View All</button>
+      <button className="view_all_btn"  aria-label="View All Categories">View All</button>
     </div>
   );
 };

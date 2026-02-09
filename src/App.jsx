@@ -69,13 +69,13 @@ import SellerGuideline from "./Pages/Get Started/SellerGuidelines";
 import PricingAndFees from "./Pages/Get Started/pricing&fee";
 import ContributorPolicies from "./Pages/Get Started/ContributorPolicies";
 // STRIPE IMPORTS - ADDED
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
+// import { loadStripe } from "@stripe/stripe-js";
+// import { Elements } from "@stripe/react-stripe-js";
 
 // THIS IS STRIPE'S OFFICIAL PUBLIC TEST KEY - 100% SAFE & WORKS FOR EVERYONE
-const stripePromise = loadStripe(
-  "pk_test_51Qp2sLFRNVbhydxG8zAsORIhUy8ZS7nNCl9omwJQ7PJYSHmfyvqj6mIxk1ATxvT2sl9HyiEzdA60UndoF9mAejSM00ZF8DHsip"
-);
+// const stripePromise = loadStripe(
+//   "pk_test_51Qp2sLFRNVbhydxG8zAsORIhUy8ZS7nNCl9omwJQ7PJYSHmfyvqj6mIxk1ATxvT2sl9HyiEzdA60UndoF9mAejSM00ZF8DHsip"
+// );
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -201,10 +201,10 @@ function App() {
     <BrowserRouter>
       <ScrollToTop />
       <FilterProvider>
-        {/* THIS WRAPS YOUR ENTIRE APP - REQUIRED FOR STRIPE */}
-        <Elements stripe={stripePromise}>
+        {/* THIS WRAPS YOUR ENTIRE APP - REQUIRED FOR STRIPE  */}
+        {/* <Elements stripe={stripePromise}> */}
           <Layout />
-        </Elements>
+        {/* </Elements> */}
       </FilterProvider>
     </BrowserRouter>
   );

@@ -696,14 +696,14 @@ const DashboardOverview = ({
               <li className="hover-this cursor-pointer ml-10">
                 <a href="#" target="_blank" rel="noreferrer">
                   <div className="hover-anim circle-a">
-                    <i className="fa-brands fa-youtube"></i>
+                    <i className="fab fa-youtube"></i>
                   </div>
                 </a>
               </li>
               <li className="hover-this cursor-pointer ml-10">
                 <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
                   <div className="hover-anim circle-a">
-                    <i className="fa-brands fa-pinterest"></i>
+                    <i className="fab fa-pinterest"></i>
                   </div>
                 </a>
               </li>
@@ -767,14 +767,14 @@ const DashboardOverview = ({
                   <li className="hover-this cursor-pointer ml-10">
                     <a href="#" target="_blank" rel="noreferrer">
                       <div className="hover-anim circle-a">
-                        <i className="fa-brands fa-youtube"></i>
+                        <i className="fab fa-youtube"></i>
                       </div>
                     </a>
                   </li>
                   <li className="hover-this cursor-pointer ml-10">
                     <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
                       <div className="hover-anim circle-a">
-                        <i className="fa-brands fa-pinterest"></i>
+                        <i className="fab fa-pinterest"></i>
                       </div>
                     </a>
                   </li>
@@ -788,7 +788,7 @@ const DashboardOverview = ({
                   <li className="hover-this cursor-pointer ml-10">
                     <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer">
                       <div className="hover-anim circle-a">
-                        <i className="fa-brands fa-dribbble"></i>
+                        <i className="fab fa-dribbble"></i>
                       </div>
                     </a>
                   </li>

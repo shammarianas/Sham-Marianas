@@ -8,7 +8,6 @@ import Marq2 from "../Components/marq2";
 import Header from "../Components/services/Header";
 // import Numbers from "../Components/services/Numbers";
 import Intro2 from "../Components/services/Intro2";
-// import Services from "../Components/landing/Services";
 import Services from "./../Components/services/Services";
 import Contact from "../Components/landing/contact";
 import Testimonials from "../Components/services/Testimonials";
@@ -31,6 +30,7 @@ export default function PageServices() {
     <>
       {/* <Cursor /> */}
       <SEO {...SEO_CONFIG.services} />
+      
       <ProgressScroll />
       <Lines />
       <div id="smooth-wrapper" ref={main}>

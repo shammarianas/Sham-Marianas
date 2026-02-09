@@ -229,7 +229,7 @@ function Footer() {
                 <h6 className="sub-title mb-30">Newsletter</h6>
                 <div className="form-group mb-40">
                   <input type="text" name="subscrib" placeholder="Your Email" />
-                  <button>
+                  <button  aria-label="Subscribe to Newsletter">
                     <span className="ti-location-arrow"></span>
                   </button>
                 </div>
@@ -242,14 +242,14 @@ function Footer() {
                       <li className="hover-this cursor-pointer ml-10">
                         <a href="#" target="_blank" rel="noreferrer">
                           <div className="hover-anim circle-a">
-                            <i className="fa-brands fa-youtube"></i>
+                            <i className="fab fa-youtube"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
                         <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
                           <div className="hover-anim circle-a">
-                            <i className="fa-brands fa-pinterest"></i>
+                            <i className="fab fa-pinterest"></i>
                           </div>
                         </a>
                       </li>
@@ -263,7 +263,7 @@ function Footer() {
                       <li className="hover-this cursor-pointer ml-10">
                         <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer">
                           <div className="hover-anim circle-a">
-                            <i className="fa-brands fa-dribbble"></i>
+                            <i className="fab fa-dribbble"></i>
                           </div>
                         </a>
                       </li>
@@ -281,7 +281,7 @@ function Footer() {
                       <li className="hover-this cursor-pointer ml-10">
                         <a href="https://www.youtube.com/c/ShamMarianasSM" target="_blank" rel="noreferrer">
                           <div className="hover-anim circle-a">
-                            <i className="fa-brands fa-youtube"></i>
+                            <i className="fab fa-youtube"></i>
                           </div>
                         </a>
                       </li>
@@ -302,7 +302,7 @@ function Footer() {
                       <li className="hover-this cursor-pointer ml-10">
                         <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
                           <div className="hover-anim circle-a">
-                            <i className="fa-brands fa-pinterest"></i>
+                            <i className="fab fa-pinterest"></i>
                           </div>
                         </a>
                       </li>

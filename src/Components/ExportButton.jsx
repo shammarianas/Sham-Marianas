@@ -74,6 +74,7 @@ const ExportButton = ({
       title={
         disabled ? "No data to export" : `Export ${data?.length || 0} records`
       }
+       aria-label="Export Data"
     >
       {exportLoading ? (
         <>

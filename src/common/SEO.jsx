@@ -28,15 +28,15 @@ const SEO = ({
   };
   
   // ✅ 1. Decide schema type based on ogType
-  let schemaType = "agency";
-  if (ogType === "article") schemaType = "blog";
+  // let schemaType = "agency";
+  // if (ogType === "article") schemaType = "blog";
   // Agar page main agency page nahi hai to use service schema
-  else if (location.pathname !== "/") schemaType = "service";
+  // else if (location.pathname !== "/") schemaType = "service";
 
   // ✅ 2. Get the schema data from config
-  const schemaData = SEO_CONFIG.getSchema(schemaType, {
-    title, description, ogImage, publishedTime, author
-  });
+  // const schemaData = SEO_CONFIG.getSchema(schemaType, {
+  //   title, description, ogImage, publishedTime, author
+  // });
 
   const canonicalUrl = getCanonicalUrl();
   const siteTitle = "Shammarianas";
@@ -90,9 +90,9 @@ const SEO = ({
         })}
       </script> */}
 
-      <script type="application/ld+json">
+      {/* <script type="application/ld+json">
           {JSON.stringify(schemaData)}
-        </script>
+        </script> */}
     </Helmet>
   );
 };

@@ -219,7 +219,7 @@ function Contact() {
                       rel="noopener noreferrer"
                     >
                       <div className="hover-anim">
-                        <i className="fa-brands fa-pinterest"></i>
+                        <i className="fab fa-pinterest"></i>
                       </div>
                     </a>
                   </div>
