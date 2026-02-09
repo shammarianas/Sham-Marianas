@@ -27,7 +27,7 @@ const ContentViewer = ({ fileUrl, fileName, fileType, price, id }) => {
         <h2 className="text-lg font-semibold">{fileName}</h2>
 
         {purchased && (
-          <button onClick={handleCopy} className="copy_btn">
+          <button onClick={handleCopy} className="copy_btn"  aria-label="Copy File URL">
             {copied ? (
               <Check className="w-5 h-5" />
             ) : (

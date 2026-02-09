@@ -545,63 +545,6 @@ export const SEO_CONFIG = {
     title: "Terms & Conditions Template | Shammarianas",
     description: "Shammarianas terms template covers payments, liabilities, conduct for asset platform. Essential legal clauses protect operations and users.",
     keywords: "service terms template, platform rules agreement"
-  },
-
-
-
-  getSchema: (type, data) => {
-    const baseSchema = {
-      "@context": "https://schema.org",
-    };
-
-    if (type === "agency") {
-      return {
-        ...baseSchema,
-        "@type": "AdvertisingAgency",
-        "name": "Sham Marianas",
-        "url": "https://www.shammarianas.com",
-        "logo": "https://www.shammarianas.com/logo.png",
-        "image": "https://www.shammarianas.com/assets/imgs/arrow-image.webp",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Dubai",
-          "addressCountry": "AE"
-        },
-        "sameAs": [
-          "https://facebook.com/shammarianas",
-          "https://instagram.com/shammarianas",
-          "https://www.linkedin.com/company/shammarianas"
-        ]
-      };
-    }
-
-    if (type === "blog") {
-      return {
-        ...baseSchema,
-        "@type": "BlogPosting",
-        "headline": data.title,
-        "image": data.ogImage,
-        "author": { "@type": "Person", "name": data.author || "Sham Marianas" },
-        "datePublished": data.publishedTime || new Date().toISOString(),
-        "description": data.description
-      };
-    }
-
-    // ✅ Added for your specific Sitemap Services (VFX, AI, Web Dev)
-    if (type === "service") {
-      return {
-        ...baseSchema,
-        "@type": "Service",
-        "serviceType": data.title,
-        "provider": {
-          "@type": "LocalBusiness",
-          "name": "Sham Marianas",
-          "address": { "@type": "PostalAddress", "addressLocality": "Dubai", "addressCountry": "AE" }
-        },
-        "description": data.description
-      };
-    }
-    return null;
   }
 };
 

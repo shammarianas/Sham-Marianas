@@ -17,6 +17,7 @@ import Marq2 from "../Components/marq2";
 import Cursor from "../common/cusor";
 import ProgressScroll from "../common/ProgressScroll";
 import WhatsAppButton from "../Components/whatsappButton";
+import SchemaMarkup from '../Components/SchemaMarkup.jsx';
 
 const Home = () => {
   const main = useRef();
@@ -32,7 +33,7 @@ const Home = () => {
   return (
     <>
       <SEO {...SEO_CONFIG.home} />
-      
+      <SchemaMarkup type="homepage" />
       {/* ✅ 2. Suspense ke andar saara main content rakhen */}
       <Suspense fallback={<LoadingScreen />}>
         <Cursor />

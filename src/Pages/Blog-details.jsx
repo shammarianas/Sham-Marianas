@@ -20,6 +20,7 @@ import Next from "../Components/blog-classic/Next";
 import Marq2 from "../Components/marq2";
 import sanitizeHtml from "sanitize-html";
 import { SEO_CONFIG } from "../utils/seoConfig";
+import SchemaMarkup from "../Components/SchemaMarkup";
 import SEO from "../common/SEO";
 
 function BlogDetails() {
@@ -286,6 +287,7 @@ function BlogDetails() {
         }
       `}</style>
 
+  {/* SEO Meta Tags */}
       {blog && (
         <SEO
           title={`${blog.title} | Shammarianas Blog`}
@@ -294,6 +296,22 @@ function BlogDetails() {
         />
       )}
 
+ {/* Schema Markup */}
+      {blog && (
+        <>
+          <SchemaMarkup type="agency" />
+          <SchemaMarkup 
+            type="blog" 
+            data={{
+              ...blog,
+              slug: blog.slug || blog.id,
+              publishedTime: blog.publishedAt ? blog.publishedAt.toDate().toISOString() : new Date().toISOString(),
+              description: blog.excerpt || SEO_CONFIG.getBlogSEO(blog)?.description || "",
+              keywords: blog.tags?.join(', ') || blog.category
+            }}
+          />
+        </>
+      )}
       <Cursor />
       <ProgressScroll />
 

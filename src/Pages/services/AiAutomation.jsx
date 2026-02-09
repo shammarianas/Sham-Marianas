@@ -10,6 +10,7 @@ import Header from "../../Components/AiAutomation/Header";
 import AiAutomation from "../../Components/AiAutomation/AiAutomation";
 import SEO from "../../common/SEO";
 import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../common/SchemaMarkup";
 
 export default function PageServicesDetails() {
   const main = useRef();

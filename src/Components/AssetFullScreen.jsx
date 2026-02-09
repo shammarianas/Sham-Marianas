@@ -427,6 +427,7 @@ const AssetFullScreen = ({
               <div className="asset-fullscreen-unsupported">
                 <p>This asset type cannot be previewed in fullscreen.</p>
                 <button 
+                 aria-label="Download Asset"
                   className="asset-fullscreen-btn"
                   onClick={handleDownload}
                   style={{ marginTop: '1rem' }}

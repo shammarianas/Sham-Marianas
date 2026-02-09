@@ -11,9 +11,15 @@ import {
   CardCvcElement,
   useStripe,
   useElements,
+  Elements,
 } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 
-const Checkout = () => {
+// Stripe promise create karein
+const stripePromise = loadStripe("pk_test_51Qp2sLFRNVbhydxG8zAsORIhUy8ZS7nNCl9omwJQ7PJYSHmfyvqj6mIxk1ATxvT2sl9HyiEzdA60UndoF9mAejSM00ZF8DHsip");
+
+// 1. CheckoutForm component - Ye wahi component hai jismein saari logic hai
+const CheckoutForm = () => {
   const { currentUser } = useUser();
   const location = useLocation();
   const navigate = useNavigate();
@@ -85,7 +91,6 @@ const Checkout = () => {
     return totalNum.toFixed(2);
   }, [cartItems, isSubscription, subscriptionItem, freeTrial]);
 
-  // آپ کے Checkout.js میں line 115 کے قریب
   const updateUserSubscription = async () => {
     if (!currentUser) return;
 
@@ -95,12 +100,10 @@ const Checkout = () => {
         localStorage.getItem("pendingSubscription") || "{}"
       );
 
-      // بس status اور basic info update کریں
       const basicUpdate = {
         subscription: {
           status: freeTrial ? "trial" : "active",
           startDate: new Date().toISOString(),
-          // Webhook باقی details fill کرے گا
         },
         updatedAt: new Date().toISOString(),
       };
@@ -110,7 +113,6 @@ const Checkout = () => {
       console.log("✅ Basic subscription status updated");
     } catch (error) {
       console.error("Error updating subscription:", error);
-      // Ignore error - webhook will handle
     }
   };
 
@@ -122,7 +124,6 @@ const Checkout = () => {
     setBillingAddress({ ...billingAddress, [e.target.name]: e.target.value });
   };
 
-  // MAIN FIX YAHAN HAI — TERA PURA handleSubmit FIXED!
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -133,7 +134,6 @@ const Checkout = () => {
 
     setLoading(true);
 
-    // 🆕 ADD: Payment processing state کو localStorage میں save کریں
     localStorage.setItem("paymentProcessing", "true");
 
     if (freeTrial) {
@@ -149,20 +149,16 @@ const Checkout = () => {
     try {
       const totalAmount = parseFloat(calculateTotal()) * 1.03;
 
-      // ============ FIXED METADATA LOGIC ============
       let metadata = {
         userId: currentUser?.uid || "guest",
-        timestamp: new Date().toISOString(), // 🆕 ADD: Timestamp for tracking
+        timestamp: new Date().toISOString(),
       };
 
-      // 1. INDIVIDUAL vs TEAM SUBSCRIPTION IDENTIFICATION
       if (isSubscription) {
-        // 🆕 IMPROVED: localStorage سے direct data لینا
         const pendingSub = JSON.parse(
           localStorage.getItem("pendingSubscription") || "{}"
         );
 
-        // 🆕 BETTER DETECTION: Multiple ways to detect team plan
         const isTeamPlan =
           pendingSub?.isTeamPlan ||
           pendingSub?.plan === "team" ||
@@ -175,8 +171,8 @@ const Checkout = () => {
 
         metadata = {
           ...metadata,
-          plan: isTeamPlan ? "team" : "individual", // "individual" OR "team"
-          type: isTeamPlan ? "team" : "individual", // same for webhook
+          plan: isTeamPlan ? "team" : "individual",
+          type: isTeamPlan ? "team" : "individual",
           teamSize: teamSize,
           billingCycle:
             pendingSub?.billingCycle ||
@@ -184,23 +180,20 @@ const Checkout = () => {
             "monthly",
           subscriptionName:
             pendingSub?.name || subscriptionItem?.name || "Individual Plan",
-          subscriptionId: pendingSub?.id, // 🆕 ADD: Subscription ID for tracking
+          subscriptionId: pendingSub?.id,
         };
-      }
-      // 2. SINGLE ASSET PURCHASE
-      else if (cartItems.length > 0) {
+      } else if (cartItems.length > 0) {
         metadata = {
           ...metadata,
           assetId: cartItems[0]?.id || cartItems[0]?.assetId,
           assetName: cartItems[0]?.name || "Asset Purchase",
           assetType: "single_purchase",
-          cartItemsCount: cartItems.length, // 🆕 ADD: Total items in cart
+          cartItemsCount: cartItems.length,
         };
       }
 
-      console.log("📦 Sending metadata to Stripe:", metadata); // Debug log
+      console.log("📦 Sending metadata to Stripe:", metadata);
 
-      // 🆕 ADD: Retry logic for network issues
       let response;
       let retryCount = 0;
       const maxRetries = 2;
@@ -215,7 +208,7 @@ const Checkout = () => {
                 "Content-Type": "application/json",
                 "X-Request-ID": `req_${Date.now()}_${Math.random()
                   .toString(36)
-                  .substr(2, 9)}`, // 🆕 ADD: Request ID
+                  .substr(2, 9)}`,
               },
               body: JSON.stringify({
                 amount: totalAmount,
@@ -223,14 +216,14 @@ const Checkout = () => {
               }),
             }
           );
-          break; // Success, exit loop
+          break;
         } catch (fetchError) {
           retryCount++;
           if (retryCount > maxRetries) throw fetchError;
           console.log(`Retrying fetch (${retryCount}/${maxRetries})...`);
           await new Promise((resolve) =>
             setTimeout(resolve, 1000 * retryCount)
-          ); // Exponential backoff
+          );
         }
       }
 
@@ -240,13 +233,12 @@ const Checkout = () => {
         throw new Error(`Failed to create payment intent: ${response.status}`);
       }
 
-      const { clientSecret, paymentIntentId } = await response.json(); // 🆕 ADD: paymentIntentId اگر server سے آئے
+      const { clientSecret, paymentIntentId } = await response.json();
 
       if (!clientSecret) {
         throw new Error("No client secret received from server");
       }
 
-      // 🆕 ADD: Save payment intent ID for recovery
       localStorage.setItem(
         "lastPaymentIntent",
         JSON.stringify({
@@ -257,7 +249,6 @@ const Checkout = () => {
         })
       );
 
-      // STRIPE PAYMENT CONFIRMATION
       const { paymentIntent, error } = await stripe.confirmCardPayment(
         clientSecret,
         {
@@ -280,7 +271,6 @@ const Checkout = () => {
               },
             },
           },
-          // 🆕 ADD: Return URL اگر payment fail ہو
           return_url: window.location.origin + "/checkout?payment_restart=true",
         }
       );
@@ -288,7 +278,6 @@ const Checkout = () => {
       if (error) {
         console.error("Stripe error:", error);
 
-        // 🆕 IMPROVED: Specific error handling
         if (error.type === "card_error") {
           alert(
             `Card error: ${error.message}. Please check your card details.`
@@ -307,7 +296,6 @@ const Checkout = () => {
       if (paymentIntent.status === "succeeded") {
         console.log("✅ Payment succeeded! PaymentIntent:", paymentIntent.id);
 
-        // 🆕 ADD: Payment success کو localStorage میں save کریں
         localStorage.setItem(
           "lastSuccessfulPayment",
           JSON.stringify({
@@ -318,18 +306,15 @@ const Checkout = () => {
           })
         );
 
-        // Update subscription in Firestore
         if (isSubscription) {
           await updateUserSubscription();
           localStorage.removeItem("pendingSubscription");
         }
 
-        // Clear cart if it was a purchase
         if (!isSubscription && cartItems.length > 0) {
           localStorage.removeItem("cart");
         }
 
-        // 🆕 CLEAR: Processing states
         localStorage.removeItem("paymentProcessing");
         localStorage.removeItem("lastPaymentIntent");
 
@@ -339,12 +324,11 @@ const Checkout = () => {
             type: isSubscription ? "subscription" : "purchase",
             paymentId: paymentIntent.id,
             amount: totalAmount,
-            metadata: metadata, // 🆕 ADD: Metadata بھیجنے کے لیے
+            metadata: metadata,
           },
-          replace: true, // 🆕 ADD: Browser history میں replace کریں
+          replace: true,
         });
       } else {
-        // 🆕 IMPROVED: Other statuses handling
         const statusMessages = {
           processing: "Your payment is processing. Please wait...",
           requires_action:
@@ -358,7 +342,6 @@ const Checkout = () => {
             `Payment status: ${paymentIntent.status}`
         );
 
-        // 🆕 اگر processing ہے تو user کو inform کریں
         if (paymentIntent.status === "processing") {
           localStorage.setItem("pendingPaymentCheck", paymentIntent.id);
         }
@@ -369,7 +352,6 @@ const Checkout = () => {
     } catch (err) {
       console.error("Payment Error:", err);
 
-      // 🆕 IMPROVED: Network error detection
       if (
         err.message.includes("Failed to fetch") ||
         err.message.includes("NetworkError")
@@ -385,6 +367,7 @@ const Checkout = () => {
       setLoading(false);
     }
   };
+
   const nextStep = () => setActiveStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setActiveStep((prev) => Math.max(prev - 1, 1));
 
@@ -394,7 +377,6 @@ const Checkout = () => {
     return "Complete Your Purchase";
   };
 
-  // Progress steps similar to ContributorLogin
   const renderProgressSteps = () => (
     <div
       className="progress-steps"
@@ -459,6 +441,18 @@ const Checkout = () => {
     "Japan",
     "India",
   ];
+
+  // Stripe Elements ke liye options
+  const elementOptions = {
+    style: {
+      base: {
+        fontSize: "16px",
+        color: "#f5f5f5",
+        "::placeholder": { color: "#aab7c4" },
+        backgroundColor: "transparent",
+      },
+    },
+  };
 
   return (
     <div className="checkout-page" style={{ padding: "2rem" }}>
@@ -1068,21 +1062,14 @@ const Checkout = () => {
                           borderRadius: "4px",
                           color: "rgb(245, 245, 245)",
                           fontSize: "14px",
+                          padding: "0",
                         }}
                       >
-                        <div className="stripe-input">
-                          <CardNumberElement
-                            options={{
-                              style: {
-                                base: {
-                                  fontSize: "16px",
-                                  color: "#f5f5f5",
-                                  "::placeholder": { color: "#aab7c4" },
-                                  backgroundColor: "transparent",
-                                },
-                              },
-                            }}
-                          />
+                        <div
+                          className="stripe-input"
+                          style={{ padding: "12px" }}
+                        >
+                          <CardNumberElement options={elementOptions} />
                         </div>
                         <i
                           className="fas fa-credit-card"
@@ -1122,20 +1109,14 @@ const Checkout = () => {
                             borderRadius: "4px",
                             color: "rgb(245, 245, 245)",
                             fontSize: "14px",
+                            padding: "0",
                           }}
                         >
-                          <div className="stripe-input">
-                            <CardExpiryElement
-                              options={{
-                                style: {
-                                  base: {
-                                    fontSize: "16px",
-                                    color: "#f5f5f5",
-                                    backgroundColor: "transparent",
-                                  },
-                                },
-                              }}
-                            />
+                          <div
+                            className="stripe-input"
+                            style={{ padding: "12px" }}
+                          >
+                            <CardExpiryElement options={elementOptions} />
                           </div>
                         </div>
                       </div>
@@ -1163,20 +1144,14 @@ const Checkout = () => {
                             borderRadius: "4px",
                             color: "rgb(245, 245, 245)",
                             fontSize: "14px",
+                            padding: "0",
                           }}
                         >
-                          <div className="stripe-input">
-                            <CardCvcElement
-                              options={{
-                                style: {
-                                  base: {
-                                    fontSize: "16px",
-                                    color: "#f5f5f5",
-                                    backgroundColor: "transparent",
-                                  },
-                                },
-                              }}
-                            />
+                          <div
+                            className="stripe-input"
+                            style={{ padding: "12px" }}
+                          >
+                            <CardCvcElement options={elementOptions} />
                           </div>
                           <i
                             className="fas fa-lock"
@@ -1687,7 +1662,7 @@ const Checkout = () => {
                   }}
                 >
                   <i
-                    className="fas fa-shield-check"
+                    className="fas fa-check"
                     style={{ color: "#52b0b4", fontSize: "1rem" }}
                   ></i>
                   <span
@@ -1758,7 +1733,6 @@ const Checkout = () => {
       <style jsx="true">{`
         .stripe-input {
           width: 100%;
-          padding: 12px;
           background-color: transparent;
           color: #f5f5f5;
         }
@@ -1776,6 +1750,15 @@ const Checkout = () => {
         }
       `}</style>
     </div>
+  );
+};
+
+// 2. Main Checkout component jo export hoga - Ye wrapper hai
+const Checkout = () => {
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm />
+    </Elements>
   );
 };
 
