@@ -1,7 +1,8 @@
 // components/common/SEO.jsx - CORRECTED
 import React from 'react'; 
 import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom'; // ✅ USE THIS
+import { useLocation } from 'react-router-dom'; // USE THIS
+import { SEO_CONFIG } from '../utils/seoConfig';
 
 const SEO = ({ 
   title = "Shammarianas",
@@ -10,9 +11,10 @@ const SEO = ({
   canonical, 
   ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.webp",
   ogType = "website",
-  twitterCard = "summary_large_image"
+  twitterCard = "summary_large_image", 
+  publishedTime, author
 }) => {
-  const location = useLocation(); // ✅ Get current URL path
+  const location = useLocation(); // Get current URL path
   const siteUrl = "https://www.shammarianas.com";
   
   // ✅ DYNAMIC CANONICAL URL
@@ -25,6 +27,17 @@ const SEO = ({
     return `${siteUrl}${path}`;
   };
   
+  // ✅ 1. Decide schema type based on ogType
+  // let schemaType = "agency";
+  // if (ogType === "article") schemaType = "blog";
+  // Agar page main agency page nahi hai to use service schema
+  // else if (location.pathname !== "/") schemaType = "service";
+
+  // ✅ 2. Get the schema data from config
+  // const schemaData = SEO_CONFIG.getSchema(schemaType, {
+  //   title, description, ogImage, publishedTime, author
+  // });
+
   const canonicalUrl = getCanonicalUrl();
   const siteTitle = "Shammarianas";
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
@@ -60,7 +73,7 @@ const SEO = ({
       <meta name="author" content="Shammarianas" />
       
       {/* Structured Data */}
-      <script type="application/ld+json">
+      {/* <script type="application/ld+json">
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
@@ -75,7 +88,11 @@ const SEO = ({
             "addressCountry": "Your Country"
           }
         })}
-      </script>
+      </script> */}
+
+      {/* <script type="application/ld+json">
+          {JSON.stringify(schemaData)}
+        </script> */}
     </Helmet>
   );
 };

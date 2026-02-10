@@ -64,7 +64,7 @@ const ContentServicePage = () => {
     <>
       <HeaderSection
         title="Content Writing"
-        backgroundImage="/assets/imgs/background/bg5.jpg"
+        backgroundImage="/assets/imgs/background/bg5.webp"
         overlayDark="8"
       />
       <IntroSection

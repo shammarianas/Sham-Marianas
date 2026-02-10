@@ -219,7 +219,7 @@ function Contact() {
                       rel="noopener noreferrer"
                     >
                       <div className="hover-anim">
-                        <i className="fa-brands fa-pinterest"></i>
+                        <i className="fab fa-pinterest"></i>
                       </div>
                     </a>
                   </div>
@@ -371,7 +371,7 @@ function Contact() {
       <div className="google-map">
         <iframe
           id="gmap_canvas"
-          src="https://www.google.com/maps/embed?pb=!1m23!1m12!1m3!1d110360.73535330701!2d71.40617851104531!3d30.18647833761359!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m8!3e0!4m5!1s0x393b315778dea7d9%3A0xbad72fc74e55d42f!2sMultan!3m2!1d30.1863557!2d71.4885808!4m0!5e0!3m2!1sen!2s!4v1761715617492!5m2!1sen!2s"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d462560.682833583!2d54.89781208970431!3d25.076280444810326!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43496ad9c645%3A0xbde66e5084295162!2sDubai%20-%20United%20Arab%20Emirates!5e0!3m2!1sen!2s!4v1768805337767!5m2!1sen!2s"
           title="Multan Location"
           loading="lazy"
         ></iframe>

@@ -86,8 +86,8 @@ Notes:
 
 ---
 ## 7) Post‑Deploy Checklist
-- Visit https://shammarianas.com/
-- Test deep links: https://shammarianas.com/portfolio, /blog, /services, /contact, /Login
+- Visit https://www.shammarianas.com/
+- Test deep links: https://www.shammarianas.com/portfolio, /blog, /services, /contact, /Login
 - Sign‑in flows:
   - Providers enabled in Firebase (Google/GitHub/etc.)
   - Authorized domains include your domain(s)

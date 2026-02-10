@@ -545,6 +545,9 @@ export const SEO_CONFIG = {
     title: "Terms & Conditions Template | Shammarianas",
     description: "Shammarianas terms template covers payments, liabilities, conduct for asset platform. Essential legal clauses protect operations and users.",
     keywords: "service terms template, platform rules agreement"
-  },
-
+  }
 };
+
+
+
+
