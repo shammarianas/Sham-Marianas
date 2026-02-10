@@ -16,7 +16,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <h3 className="mb-30">
-                    Sham Marianas{" "}
+                    Sham Marianas F.Z.C{" "}
                     <span className="fw-300">
                       Powering Creativity & Boosting Digital Growth with Top
                       Advertising Strategies
@@ -25,7 +25,7 @@ function Intro() {
                   <p className="align-text">
                     <span className="text-bold underline main-color ">
                       {" "}
-                      Sham Marianas
+                      Sham Marianas F.Z.C
                     </span>{" "}
                     is a top advertising agency that helps businesses grow with
                     digital marketing, brand building, and ROI-focused

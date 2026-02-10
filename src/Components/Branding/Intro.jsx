@@ -21,7 +21,7 @@ function Intro() {
                   <p className="mb-15 text-left align-text">
                     At{" "}
                     <span className="text-bold text-left underline main-color">
-                      Sham Marianas
+                      Sham Marianas F.Z.C
                     </span>
                      , we craft branding and designs that go beyond just visuals we
                     create identities. Your brand is your story, and we help you

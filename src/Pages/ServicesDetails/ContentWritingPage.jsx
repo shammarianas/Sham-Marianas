@@ -14,7 +14,7 @@ const ContentServicePage = () => {
         Good design gets attention, but great content keeps it. Your message
         must be concise, compelling, and packed with keywords in the fast-paced
         digital world of today. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         we write content that not only ranks on search engines but also builds
         emotional connections with your readers.
       </>,
@@ -75,7 +75,7 @@ const ContentServicePage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, we turn words into experiences, crafting powerful, engaging content
             that speaks your brand’s truth and connects with your audience. From
             attention-grabbing web copy to SEO-friendly blogs, we create content

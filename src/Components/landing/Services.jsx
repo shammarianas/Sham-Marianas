@@ -19,7 +19,7 @@ const data = [
   {
     title: "3. Web Development",
     img: "/assets/imgs/serv-icons/4.png",
-    desc: "At Sham Marianas, we build cutting-edge web development solutions that blend innovation, performance, and seamless user experiences to help businesses thrive online.",
+    desc: "At Sham Marianas F.Z.C, we build cutting-edge web development solutions that blend innovation, performance, and seamless user experiences to help businesses thrive online.",
     link: "/services/web-development",
   },
   {

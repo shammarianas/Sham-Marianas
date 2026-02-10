@@ -13,7 +13,7 @@ const VfxAndAdsPage = () => {
       <>
         Every VFX and CGI project we create starts with purpose and ends with
         performance. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         we don’t just make things look amazing,  we make them work. Each frame
         is part of a bigger plan to grab attention, spark engagement, and drive
         results.
@@ -28,7 +28,7 @@ const VfxAndAdsPage = () => {
     title: "From Bold Ideas to Breathtaking Visuals",
     paragraphs: [
       <>
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we bring ambitious ideas to life through cinematic visuals that
         captivate, connect, and convert. Whether it's a surreal animation, a
         stylized brand story, or a hyper-real visual experience, every project
@@ -83,7 +83,7 @@ const VfxAndAdsPage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, we turn imagination into impact, crafting cinematic visuals that
             not only dazzle the eye but also drive real results. Our VFX (visual
             effects) and CGI (computer-generated imagery) services merge

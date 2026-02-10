@@ -107,7 +107,7 @@ function Testimonials() {
                   </h6>
                   <div className="text">
                     <p>
-                      Working with Sham Marianas has been an absolute
+                      Working with Sham Marianas F.Z.C has been an absolute
                       game-changer! Their team’s creativity and strategic
                       brilliance completely transformed our brand identity
                     </p>

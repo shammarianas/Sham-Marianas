@@ -25,7 +25,7 @@ function WebDev() {
               In today&apos;s fast-moving digital world, your website is your
               24/7 storefront. A well-developed website builds trust, shows
               credibility, and gives visitors a smooth, satisfying experience,
-              no matter the device or browser. At Sham Marianas, we combine fast
+              no matter the device or browser. At Sham Marianas F.Z.C, we combine fast
               performance, modern design, and strong SEO foundations to build
               websites that attract, engage, and convert. Whether it&apos;s your
               first site or a full redesign, we help you stay ahead of the
@@ -53,7 +53,7 @@ function WebDev() {
                     In today&apos;s fast-moving digital world, your website is
                     the face of your business online. With attention spans
                     shrinking and competition growing, having a well-designed
-                    website can make all the difference. At Sham Marianas, we
+                    website can make all the difference. At Sham Marianas F.Z.C, we
                     build websites that not only look amazing but also work
                     flawlessly. We focus on fast load times, mobile-friendly
                     designs, and smooth navigation. Plus, our websites are

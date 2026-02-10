@@ -12,7 +12,7 @@ const WebDevelopmentPage = () => {
     paragraphs: [
       "In today’s fast-moving digital world, your website is your 24/7 storefront. A well-developed website builds trust, shows credibility, and gives visitors a smooth, satisfying experience,  no matter the device or browser.",
       <>
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we combine fast performance, modern design, and strong SEO foundations
         to build websites that attract, engage, and convert. Whether it’s your
         first site or a full redesign, we help you stay ahead of the competition
@@ -29,7 +29,7 @@ const WebDevelopmentPage = () => {
 
       <>
         {" "}
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we build websites that not only look amazing but also work flawlessly.
         We focus on fast load times, mobile-friendly designs, and smooth
         navigation. Plus, our websites are search engine optimized (SEO), so
@@ -84,7 +84,7 @@ const WebDevelopmentPage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, we create websites that do more than just look great they load fast,
             run smoothly on all devices, and leave a strong first impression.
             With responsive layouts, clean code, and SEO-friendly structures,

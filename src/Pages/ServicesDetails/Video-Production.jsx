@@ -22,7 +22,7 @@ const VideoProductionPage = () => {
       "Framing Brands with Purpose,  Photography & Video Production That Converts",
     paragraphs: [
       <>
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , it’s more than just visuals,  it’s about crafting high-impact photo
         and video content that tells your story, connects with your audience,
         and fuels business growth. Our photography & video production services
@@ -83,7 +83,7 @@ const VideoProductionPage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, photography & video production is where storytelling meets strategy, capturing emotion, building connection, and elevating your brand.
             From stunning product shoots to cinematic brand videos, we create
             visuals that your audience won’t forget.
@@ -167,7 +167,7 @@ const VideoProductionPage = () => {
                   <p className="mb-15 align-text">
                     At{" "}
                     <span className="text-bold underline main-color">
-                      Sham Marianas
+                      Sham Marianas F.Z.C
                     </span>
                     , it’s more than just visuals,  it’s about crafting
                     high-impact photo and video content that tells your story,

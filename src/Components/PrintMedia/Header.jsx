@@ -9,7 +9,7 @@ function Header() {
   return (
     <header
       className=" page-header bg-img section-padding valign"
-      data-background="/assets/imgs/background/bg4.jpg"
+      data-background="/assets/imgs/background/bg4.webp"
       data-overlay-dark="8"
     >
       <div className="container pt-80">

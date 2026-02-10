@@ -18,7 +18,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, we turn imagination into impact crafting
+                    At Sham Marianas F.Z.C, we turn imagination into impact crafting
                     cinematic visuals that not only dazzle the eye but also
                     drive real results. Our VFX (visual effects) and CGI
                     (computer-generated imagery) services merge storytelling

@@ -14,7 +14,7 @@ const ContributorPolicies = () => {
                     <strong>1. Acceptance of Terms</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-8">
-                    By accessing, registering for, or using the contributor services ("Services") provided by <span className="text-bold underline main-color">Sham Marianas</span>, ("Platform," "we," "us," or "our") at www.shammarianas.com, you ("Contributor," "you," or "your") agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to all Terms, you may not access or use our Services.
+                    By accessing, registering for, or using the contributor services ("Services") provided by <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, ("Platform," "we," "us," or "our") at www.shammarianas.com, you ("Contributor," "you," or "your") agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to all Terms, you may not access or use our Services.
                 </p>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
@@ -23,7 +23,7 @@ const ContributorPolicies = () => {
                 <ul className="fotter-police-p p-color mb-8 list-disc p-0">
                     <li className="relative pl-6 p-color mb-2">You must provide accurate and complete registration information and keep this information updated.</li>
                     <li className="relative pl-6 p-color mb-2">You are solely responsible for maintaining the confidentiality of your account login credentials and for all activities that occur under your account.</li>
-                    <li className="relative pl-6 p-color mb-2"><span className="text-bold underline main-color">Sham Marianas</span>, reserves the right to suspend or terminate accounts that provide false information, are used for fraudulent purposes, or violate these Terms.</li>
+                    <li className="relative pl-6 p-color mb-2"><span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, reserves the right to suspend or terminate accounts that provide false information, are used for fraudulent purposes, or violate these Terms.</li>
                 </ul>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
@@ -31,7 +31,7 @@ const ContributorPolicies = () => {
                 </h3>
                 <h4 className="fz-24 fw-400 mb-2 letter-spacing-1">Ownership & Grant of License</h4>
                 <p className="fotter-police-p p-color mb-4">
-                    You retain ownership of all intellectual property rights in the content you submit ("Assets"). By submitting an Asset, you grant <span className="text-bold underline main-color">Sham Marianas</span>, a worldwide, non-exclusive, royalty-free, sublicensable, and transferable license to host, store, reproduce, modify for technical purposes, publicly display, and distribute the Asset for operating, marketing, and licensing the Asset through the Platform.
+                    You retain ownership of all intellectual property rights in the content you submit ("Assets"). By submitting an Asset, you grant <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, a worldwide, non-exclusive, royalty-free, sublicensable, and transferable license to host, store, reproduce, modify for technical purposes, publicly display, and distribute the Asset for operating, marketing, and licensing the Asset through the Platform.
                 </p>
 
                 <h4 className="fz-24 fw-400 mb-2 letter-spacing-1"><strong>Your Warranties</strong></h4>
@@ -49,7 +49,7 @@ const ContributorPolicies = () => {
                     <strong>4. Review, Rejection, & Removal</strong>
                 </h3>
                 <ul className="fotter-police-p p-color mb-8 list-disc p-0">
-                    <li className="relative pl-6 p-color mb-2">All Assets are subject to a review process by <span className="text-bold underline main-color">Sham Marianas</span>. We reserve the right, at our sole discretion, to accept or reject any submission for any reason, including but not limited to perceived quality, marketability, or legal concerns.</li>
+                    <li className="relative pl-6 p-color mb-2">All Assets are subject to a review process by <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>. We reserve the right, at our sole discretion, to accept or reject any submission for any reason, including but not limited to perceived quality, marketability, or legal concerns.</li>
                     <li className="relative pl-6 p-color mb-2">We may remove any published Asset from the Platform at any time if we believe it violates these Terms, our policies, or applicable law.</li>
                 </ul>
 
@@ -58,7 +58,7 @@ const ContributorPolicies = () => {
                 </h3>
                 <ul className="fotter-police-p p-color mb-8 list-disc p-0">
                     <li className="relative pl-6 p-color mb-2">The commission rate payable to you for licensed Assets is detailed in your Contributor Dashboard and may vary based on your contributor tier and other factors.</li>
-                    <li className="relative pl-6 p-color mb-2">Payments are issued monthly for accrued earnings that meet the minimum payout threshold ($50). <span className="text-bold underline main-color">Sham Marianas</span>, reserves the right to modify commission structures, payout thresholds, and payment methods with a 30-day advance notice to contributors.</li>
+                    <li className="relative pl-6 p-color mb-2">Payments are issued monthly for accrued earnings that meet the minimum payout threshold ($50). <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, reserves the right to modify commission structures, payout thresholds, and payment methods with a 30-day advance notice to contributors.</li>
                     <li className="relative pl-6 p-color mb-2">You are responsible for any taxes or fees associated with your earnings from the Platform.</li>
                 </ul>
 
@@ -66,7 +66,7 @@ const ContributorPolicies = () => {
                     <strong>6. Platform Rights & Modifications</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-2">
-                    <span className="text-bold underline main-color">Sham Marianas</span>, reserves the right to:
+                    <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, reserves the right to:
                 </p>
                 <ul className="fotter-police-p p-color mb-8 list-disc p-0">
                     <li className="relative pl-6 p-color mb-2">Modify, update, or discontinue the Services or any part thereof at any time.</li>
@@ -91,22 +91,22 @@ const ContributorPolicies = () => {
                     <strong>8. Disclaimer of Warranties & Limitation of Liability</strong>
                 </h3>
                 <ul className="fotter-police-p p-color mb-8 list-disc p-0">
-                    <li className="relative pl-6 p-color mb-2">THE SERVICES ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. <span className="text-bold underline main-color">SHAM MARIANAS</span> MAKES NO WARRANTIES, EXPRESS OR IMPLIED, REGARDING THE SERVICES, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.</li>
-                    <li className="relative pl-6 p-color mb-2">TO THE FULLEST EXTENT PERMITTED BY LAW, <span className="text-bold underline main-color">SHAM MARIANAS</span>, SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SERVICES.</li>
+                    <li className="relative pl-6 p-color mb-2">THE SERVICES ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. <span className="text-bold underline main-color">Sham Marianas F.Z.C</span> MAKES NO WARRANTIES, EXPRESS OR IMPLIED, REGARDING THE SERVICES, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.</li>
+                    <li className="relative pl-6 p-color mb-2">TO THE FULLEST EXTENT PERMITTED BY LAW, <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SERVICES.</li>
                 </ul>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
                     <strong>9. Indemnification</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-8">
-                    You agree to indemnify, defend, and hold harmless <span className="text-bold underline main-color">Sham Marianas</span>, its affiliates, and their respective officers and employees from any claims, damages, or expenses (including legal fees) arising from your breach of these Terms, your submitted Assets, or your use of the Services.
+                    You agree to indemnify, defend, and hold harmless <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, its affiliates, and their respective officers and employees from any claims, damages, or expenses (including legal fees) arising from your breach of these Terms, your submitted Assets, or your use of the Services.
                 </p>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
                     <strong>10. Termination</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-8">
-                    Either party may terminate these Terms at any time by providing notice. Upon termination, the license granted in Section 3 will persist for Assets already licensed to customers. <span className="text-bold underline main-color">Sham Marianas</span>, may withhold final payments for a reasonable period to cover potential chargebacks or legal claims.
+                    Either party may terminate these Terms at any time by providing notice. Upon termination, the license granted in Section 3 will persist for Assets already licensed to customers. <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, may withhold final payments for a reasonable period to cover potential chargebacks or legal claims.
                 </p>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
@@ -119,7 +119,7 @@ const ContributorPolicies = () => {
 
                 <h4 className="fz-24 fw-400 mb-2 letter-spacing-1"><strong>Entire Agreement</strong></h4>
                 <p className="fotter-police-p p-color mb-4">
-                    These Terms constitute the entire agreement between you and <span className="text-bold underline main-color">Sham Marianas</span>, regarding the Services.
+                    These Terms constitute the entire agreement between you and <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, regarding the Services.
                 </p>
 
                 <h4 className="fz-24 fw-400 mb-2 letter-spacing-1"><strong>Contact</strong></h4>

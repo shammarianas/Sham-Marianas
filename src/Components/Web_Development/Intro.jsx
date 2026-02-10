@@ -33,7 +33,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, we create websites that do more than just
+                    At Sham Marianas F.Z.C, we create websites that do more than just
                     look great, they load fast, run smoothly on all devices,
                     and leave a strong first impression. With responsive
                     layouts, clean code, and SEO-friendly structures, your site

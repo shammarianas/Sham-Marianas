@@ -25,7 +25,7 @@ const faqs = [
   {
     question: "How do I get started with your branding design services?",
     answer:
-      "To get started, simply contact us through our website or reach out to our team at Sham Marianas. We’ll schedule a consultation to understand your needs and begin the process of crafting your unique brand identity.",
+      "To get started, simply contact us through our website or reach out to our team at Sham Marianas F.Z.C. We’ll schedule a consultation to understand your needs and begin the process of crafting your unique brand identity.",
   },
 ];
 

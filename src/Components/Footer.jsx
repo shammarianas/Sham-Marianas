@@ -326,7 +326,7 @@ function Footer() {
                 © 2025 All Rights Reserved By{" "}
                 <span className="underline main-color">
                   <a href="/" target="_blank" rel="noreferrer">
-                    Sham Marianas
+                    Sham Marianas F.Z.C
                   </a>
                 </span>
               </p>

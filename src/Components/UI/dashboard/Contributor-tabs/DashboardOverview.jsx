@@ -719,7 +719,7 @@ const DashboardOverview = ({
         </div>
 
         <div className="footer-bottom">
-          <p>Copyright &copy; 2026 Sham Marianas. All rights reserved.</p>
+          <p>Copyright &copy; 2026 Sham Marianas F.Z.C. All rights reserved.</p>
         </div>
       </div> */}
 
@@ -811,7 +811,7 @@ const DashboardOverview = ({
                 © 2025 All Rights Reserved By{" "}
                 <span className="underline main-color">
                   <a href="/" target="_blank" rel="noreferrer">
-                    Sham Marianas
+                    Sham Marianas F.Z.C
                   </a>
                 </span>
               </p>

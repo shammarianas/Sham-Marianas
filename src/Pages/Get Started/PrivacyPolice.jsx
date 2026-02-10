@@ -17,7 +17,7 @@ const PrivacyPolicy = () => {
         </h3>
 
          <p className="fotter-police-p p-color ">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, your personal information is more than details it’s a reflection of you. We protect it like it's our own, with full transparency and next-level security.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, your personal information is more than details it’s a reflection of you. We protect it like it's our own, with full transparency and next-level security.
         </p>
        <ul className="list-disc">
 
