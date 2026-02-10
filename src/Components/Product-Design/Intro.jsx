@@ -20,7 +20,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, we do more than product design, we bring
+                    At Sham Marianas F.Z.C, we do more than product design, we bring
                     bold ideas to life. Whether it&apos;s a sleek gadget or a smart
                     everyday solution, we turn your vision into a tangible
                     product that looks incredible, feels right, and works

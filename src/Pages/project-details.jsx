@@ -202,7 +202,7 @@ export default function ProjectDetails() {
 
       <Cursor />
       <ProgressScroll />
-      <header className="header-project bg-img d-flex align-items-end" data-background={project.featureImgUrl || "/assets/imgs/background/bg4.jpg"} data-overlay-dark="9">
+      <header className="header-project bg-img d-flex align-items-end" data-background={project.featureImgUrl || "/assets/imgs/background/bg4.webp"} data-overlay-dark="9">
         <div className="container">
           <div className="row">
             <div className="col-12">

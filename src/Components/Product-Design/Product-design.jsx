@@ -22,7 +22,7 @@ function ProductDesign() {
 
           <div className="text">
             <p className="mb-15">
-              True product design lives in the details, at Sham Marianas, we
+              True product design lives in the details, at Sham Marianas F.Z.C, we
               transform bold ideas into beautifully crafted physical products
               that look stunning, feel right, and work effortlessly. Every curve
               and edge is thoughtfully designed for maximum comfort and
@@ -53,7 +53,7 @@ function ProductDesign() {
                     Designs That Transform Ideas into Iconic Products
                   </h6>
                   <p>
-                    At Sham Marianas, we believe great products start with bold
+                    At Sham Marianas F.Z.C, we believe great products start with bold
                     ideas and end with unforgettable designs. Whether it&apos;s
                     an innovative gadget or a practical everyday item, we
                     specialize in creating products that look stunning, feel
@@ -64,7 +64,7 @@ function ProductDesign() {
                     your product isn&apos;t just visually appealing but also
                     practical and durable. Every detail, from materials to user
                     interaction, is crafted to enhance the experience and create
-                    lasting impressions. With Sham Marianas, your product
+                    lasting impressions. With Sham Marianas F.Z.C, your product
                     won&apos;t just fit in, it will stand out, engage users, and
                     make a lasting impact in the market.
                   </p>
@@ -102,7 +102,7 @@ function ProductDesign() {
                     </div>
                     <div className="accordion-info">
                       <p className="">
-                        At Sham Marianas, we place the user at the heart of
+                        At Sham Marianas F.Z.C, we place the user at the heart of
                         every design. Through user-centered design principles,
                         we craft products that are not only intuitive to use but
                         also comfortable and functional. We carefully consider
@@ -115,12 +115,12 @@ function ProductDesign() {
 
                   <div className="item wow fadeInUp" data-wow-delay=".5s">
                     <div onClick={openAccordion} className="title">
-                      <h6>What makes Sham Marianas design process unique?</h6>
+                      <h6>What makes Sham Marianas F.Z.C design process unique?</h6>
                       <span className="ico ti-plus"></span>
                     </div>
                     <div className="accordion-info">
                       <p className="">
-                        At Sham Marianas, we place the user at the heart of
+                        At Sham Marianas F.Z.C, we place the user at the heart of
                         every design. Through user-centered design principles,
                         we craft products that are not only intuitive to use but
                         also comfortable and functional. We carefully consider
@@ -132,7 +132,7 @@ function ProductDesign() {
                   </div>
                   <div className="item wow fadeInUp" data-wow-delay=".5s">
                     <div onClick={openAccordion} className="title">
-                      <h6>What makes Sham Marianas design process unique?</h6>
+                      <h6>What makes Sham Marianas F.Z.C design process unique?</h6>
                       <span className="ico ti-plus"></span>
                     </div>
                     <div className="accordion-info">

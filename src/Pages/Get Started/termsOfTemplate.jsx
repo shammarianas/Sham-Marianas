@@ -11,33 +11,33 @@ const TermsandConditionTemplate = () => {
         <h1 className="text-4xl fw-500 mb-8 text-center">Terms & Conditions Template's</h1>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
-          <strong>Welcome to <span className="main-color">Sham Marianas</span></strong>
+          <strong>Welcome to <span className="main-color">Sham Marianas F.Z.C</span></strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Hello and a warm welcome to <span className="text-bold underline main-color">Sham Marianas</span>! We're thrilled to have you here and excited to be a part of your journey. We hope you find everything you need, and a little inspiration along the way.
+          Hello and a warm welcome to <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>! We're thrilled to have you here and excited to be a part of your journey. We hope you find everything you need, and a little inspiration along the way.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
           <strong>Who We Are</strong>
         </h3>
         <p className="fotter-police-p p-color mb-2">
-          This template is part of our professionally designed digital asset collection created by <span className="text-bold underline main-color">Sham Marianas</span>. Each template is crafted with precision, creativity, and functionality in mind, helping you create stunning designs without having to start from scratch.
+          This template is part of our professionally designed digital asset collection created by <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>. Each template is crafted with precision, creativity, and functionality in mind, helping you create stunning designs without having to start from scratch.
         </p>
         <p className="fotter-police-p p-color mb-2">
           Our templates are built to save your time and elevate your projects. Whether you're designing for social media, branding, presentations, websites, or marketing campaigns, this template provides a high-quality foundation that you can easily customize to match your brand style.
         </p>
         <p className="fotter-police-p p-color mb-8">
-          When you download or use this template, you're granted a usage license, which allows you to use, edit, and apply the template in your projects. However, please note that the ownership of the template remains with <span className="text-bold underline main-color">Sham Marianas</span>,. You are licensing the digital asset, not acquiring full ownership rights.
+          When you download or use this template, you're granted a usage license, which allows you to use, edit, and apply the template in your projects. However, please note that the ownership of the template remains with <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,. You are licensing the digital asset, not acquiring full ownership rights.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
           <strong>Terms of Use</strong>
         </h3>
         <p className="fotter-police-p p-color mb-2">
-          By using <span className="text-bold underline main-color">Sham Marianas</span>, you agree to follow these important terms:
+          By using <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, you agree to follow these important terms:
         </p>
         <ul className="fotter-police-p p-color mb-2 list-disc p-0">
-          <li className="relative pl-6 p-color mb-2">These <span className="text-bold underline main-color">Sham Marianas</span>, User Terms;</li>
+          <li className="relative pl-6 p-color mb-2">These <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, User Terms;</li>
           <li className="relative pl-6 p-color mb-2">Our Service License Agreement;</li>
           <li className="relative pl-6 p-color mb-2">Our Acceptable Use Policy;</li>
           <li className="relative pl-6 p-color mb-2">Our Fair Usage Policy;</li>
@@ -52,14 +52,14 @@ const TermsandConditionTemplate = () => {
           <li className="relative pl-6 p-color mb-2">You'll only be able to seek relief individually, not as part of a group.</li>
         </ul>
         <p className="fotter-police-p p-color mb-8">
-          Your continued use of <span className="text-bold underline main-color">Sham Marianas</span>, means you accept and agree to these terms.
+          Your continued use of <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, means you accept and agree to these terms.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
           <strong>Your Legal Agreement with Us</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          These user terms constitute a contractual contract between <span className="text-bold underline main-color">Sham Marianas</span>, and you. If you are using our services on behalf of a business, organization, or someone else, you confirm that you have the authority to accept these terms on their behalf.
+          These user terms constitute a contractual contract between <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, and you. If you are using our services on behalf of a business, organization, or someone else, you confirm that you have the authority to accept these terms on their behalf.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -73,12 +73,12 @@ const TermsandConditionTemplate = () => {
           <strong>Your Privacy Matters</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          We care about your privacy. Read our Privacy Policy to learn more about how we gather, use, and safeguard your information. By using <span className="text-bold underline main-color">Sham Marianas</span>, you agree to the way we handle your personal and business information.
+          We care about your privacy. Read our Privacy Policy to learn more about how we gather, use, and safeguard your information. By using <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, you agree to the way we handle your personal and business information.
         </p>
 
         <h2 className="text-3xl fw-500 mb-2">Access & Boundaries</h2>
         <p className="fotter-police-p p-color mb-8">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, we welcome you with open arms, but with great access comes great responsibility.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, we welcome you with open arms, but with great access comes great responsibility.
           Here's what you're allowed to explore, and the boundaries you must respect to keep our world thriving.
         </p>
 
@@ -86,7 +86,7 @@ const TermsandConditionTemplate = () => {
           <strong>1. Your Exclusive Access Pass</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          By accepting our User Terms, you unlock a special, limited-time, non-exclusive, non-transferable, and revocable license, your personal gateway into the world of <span className="text-bold underline main-color">Sham Marianas</span>,.
+          By accepting our User Terms, you unlock a special, limited-time, non-exclusive, non-transferable, and revocable license, your personal gateway into the world of <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,.
           Whether you're chasing bold dreams or building your empire, this pass is your golden ticket.
           We're excited to hand you the keys, but remember: anything not clearly gifted to you still stays in our treasure chest.
         </p>
@@ -95,7 +95,7 @@ const TermsandConditionTemplate = () => {
           <strong>2. Boundaries You Must Respect</strong>
         </h3>
         <p className="fotter-police-p p-color mb-2">
-          To keep <span className="text-bold underline main-color">Sham Marianas</span>, vibrant, secure, and inspiring for everyone, here's what's off-limits:
+          To keep <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, vibrant, secure, and inspiring for everyone, here's what's off-limits:
         </p>
         <ul className="fotter-police-p p-color mb-8 list-disc p-0">
           <li className="relative pl-6 p-color mb-2"><strong>No Disruptions:</strong> Don't flood our systems, spread viruses, or slow us down with any digital mischief.</li>
@@ -104,9 +104,9 @@ const TermsandConditionTemplate = () => {
           <li className="relative pl-6 p-color mb-2"><strong>No Platform Building on Our Back:</strong> Don't use our creativity to power another product or service.</li>
           <li className="relative pl-6 p-color mb-2"><strong>No Digital Break-ins:</strong> Running security scans, probing, or testing our website without permission? Strictly forbidden.</li>
           <li className="relative pl-6 p-color mb-2"><strong>No Data Hunters:</strong> Using bots, scrapers, or any auto-tools to grab data from our website is not allowed.</li>
-          <li className="relative pl-6 p-color mb-2"><strong>No Rival Creations:</strong> You cannot use <span className="text-bold underline main-color">Sham Marianas</span>, to fuel a competing brand, service, or website.</li>
+          <li className="relative pl-6 p-color mb-2"><strong>No Rival Creations:</strong> You cannot use <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, to fuel a competing brand, service, or website.</li>
           <li className="relative pl-6 p-color mb-2"><strong>No Copy-Paste Crime:</strong> Copying, modifying, republishing, reverse-engineering, or stealing any part of our platform or brand is off-limits.</li>
-          <li className="relative pl-6 p-color mb-2"><strong>No Name Drops:</strong> Using "<span className="text-bold underline main-color">Sham Marianas</span>" as your own brand, product, or business name without permission is a major no-no.</li>
+          <li className="relative pl-6 p-color mb-2"><strong>No Name Drops:</strong> Using "<span className="text-bold underline main-color">Sham Marianas F.Z.C</span>" as your own brand, product, or business name without permission is a major no-no.</li>
           <li className="relative pl-6 p-color mb-2"><strong>No Rule Dodging:</strong> Using VPNs or tricks to bypass our policies or hide illegal activity will not be tolerated.</li>
           <li className="relative pl-6 p-color mb-2"><strong>No Signature Removal:</strong> Never remove copyrights, watermarks, or protective marks from our original content.</li>
           <li className="relative pl-6 p-color mb-2"><strong>No Fake Faces:</strong> Impersonating someone else or lying about your identity isn't just wrong it's banned.</li>
@@ -114,20 +114,20 @@ const TermsandConditionTemplate = () => {
           <li className="relative pl-6 p-color mb-2"><strong>No Unauthorized Moves:</strong> If it's not clearly allowed here, it's simply not allowed.</li>
         </ul>
 
-        <h2 className="text-3xl fw-500 mb-2">Enter a New Realm with <span className="main-color">Sham Marianas</span></h2>
+        <h2 className="text-3xl fw-500 mb-2">Enter a New Realm with <span className="main-color">Sham Marianas F.Z.C</span></h2>
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
           <strong>1. Who We Welcome</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
           Only the bold. Only the dreamers. Only the doers.
-          To become part of <span className="text-bold underline main-color">Sham Marianas</span>, you must be 18 years or older, ready to craft your legacy and rewrite the rules.
+          To become part of <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, you must be 18 years or older, ready to craft your legacy and rewrite the rules.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
-          <strong>2. Creating Your Gateway to <span className="main-color">Sham Marianas</span></strong>
+          <strong>2. Creating Your Gateway to <span className="main-color">Sham Marianas F.Z.C</span></strong>
         </h3>
         <p className="fotter-police-p p-color mb-2">
-          When you create your account, you're not just signing up, you're entering the <span className="text-bold underline main-color">Sham Marianas</span>, Syndicate a private world crafted for fearless brands, visionary thinkers, and creative powerhouses.
+          When you create your account, you're not just signing up, you're entering the <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, Syndicate a private world crafted for fearless brands, visionary thinkers, and creative powerhouses.
         </p>
         <p className="fotter-police-p p-color mb-2">
           Membership costs nothing, but the possibilities you unlock are limitless. Your account is your passport to bold ideas, iconic collaborations, and untold opportunities waiting to unfold.
@@ -141,7 +141,7 @@ const TermsandConditionTemplate = () => {
         </h3>
         <p className="fotter-police-p p-color mb-2">
           Greatness demands authenticity.
-          At <span className="text-bold underline main-color">Sham Marianas</span>, we build on trust and brilliance.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, we build on trust and brilliance.
         </p>
         <ul className="fotter-police-p p-color mb-8 list-disc p-0">
           <li className="relative pl-6 p-color mb-2">Share only real, accurate, and up-to-date information.</li>
@@ -165,7 +165,7 @@ const TermsandConditionTemplate = () => {
         </h3>
         <p className="fotter-police-p p-color mb-2">
           If you don't just chase dreams but create new realities, you belong here.
-          Apply to become an Official <span className="text-bold underline main-color">Sham Marianas</span>, Architect, a master builder of brands, ideas, and futures.
+          Apply to become an Official <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, Architect, a master builder of brands, ideas, and futures.
           As an architect, you'll thrive among pioneers who live to disrupt, inspire, and leave their mark on the world.
         </p>
         <p className="fotter-police-p p-color mb-8">
@@ -174,7 +174,7 @@ const TermsandConditionTemplate = () => {
 
         <h2 className="text-3xl fw-500 mb-2">Pricing & Payment, No Surprises, Just Straight Talk</h2>
         <p className="fotter-police-p p-color mb-8">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, we like to keep things real. No confusing fine print. No hidden traps. Just honest pricing, flexible options, and full transparency, because that's how partnerships work.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, we like to keep things real. No confusing fine print. No hidden traps. Just honest pricing, flexible options, and full transparency, because that's how partnerships work.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -314,7 +314,7 @@ const TermsandConditionTemplate = () => {
 
         <h2 className="text-3xl fw-500 mb-2">Unlock Limitless Possibilities</h2>
         <p className="fotter-police-p p-color mb-8">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, a subscription isn't just access, it's your personal gateway to brilliance, boldness, and beyond.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, a subscription isn't just access, it's your personal gateway to brilliance, boldness, and beyond.
           Here's how you step into your next chapter:
         </p>
 
@@ -322,7 +322,7 @@ const TermsandConditionTemplate = () => {
           <strong>1. Seamless Entry & Effortless Plans</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Become a subscriber and claim full access to the <span className="text-bold underline main-color">Sham Marianas</span>, universe.
+          Become a subscriber and claim full access to the <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, universe.
           Your journey begins with a smooth, recurring plan, designed to keep your creative power flowing without pause.
           Set it. Forget it. Create endlessly.
         </p>
@@ -351,16 +351,16 @@ const TermsandConditionTemplate = () => {
           <strong>4. Explore, Experience, Elevate</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Taste the <span className="text-bold underline main-color">Sham Marianas</span>, magic with limited browsing, no strings attached.
+          Taste the <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, magic with limited browsing, no strings attached.
           But when you're ready to own your creative future, a subscription unlocks the full experience you were born to conquer.
-          At <span className="text-bold underline main-color">Sham Marianas</span>, you're not just subscribing. You're stepping into a world built for legends.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, you're not just subscribing. You're stepping into a world built for legends.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
-          <strong>5. What Happens When You Download at <span className="main-color">Sham Marianas</span></strong>
+          <strong>5. What Happens When You Download at <span className="main-color">Sham Marianas F.Z.C</span></strong>
         </h3>
         <p className="fotter-police-p p-color mb-2">
-          Every download from <span className="text-bold underline main-color">Sham Marianas</span>, unlocks a new world of creativity. Here's what you step into:
+          Every download from <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, unlocks a new world of creativity. Here's what you step into:
         </p>
         <h4 className="fz-24 fw-300 mb-3 letter-spacing-1"><strong>Your Personal License to Create</strong></h4>
         <p className="fotter-police-p p-color mb-4">
@@ -370,7 +370,7 @@ const TermsandConditionTemplate = () => {
         </p>
         <h4 className="fz-24 fw-300 mb-3 letter-spacing-1"><strong>Our Library is Alive, and Always Evolving</strong></h4>
         <p className="fotter-police-p p-color mb-4">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, fresh ideas never stop flowing.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, fresh ideas never stop flowing.
           Items may change or rotate over time, but if you've downloaded and registered an item, it's locked in for you even if it's no longer available later.
         </p>
         <h4 className="fz-24 fw-300 mb-3 letter-spacing-1"><strong>Freedom Without Ownership</strong></h4>
@@ -380,27 +380,27 @@ const TermsandConditionTemplate = () => {
         </p>
         <h4 className="fz-24 fw-300 mb-3 letter-spacing-1"><strong>Your License Lives With Your Subscription</strong></h4>
         <p className="fotter-police-p p-color mb-4">
-          As long as you're subscribed to <span className="text-bold underline main-color">Sham Marianas</span>, your licenses stay fully active.
+          As long as you're subscribed to <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, your licenses stay fully active.
           If you complete your project while subscribed, your license remains valid forever for that project, even after your subscription ends.
           (Free downloads and trial users follow special guidelines.)
         </p>
         <h4 className="fz-24 fw-300 mb-3 letter-spacing-1"><strong>Need a hand? We're Here for You</strong></h4>
         <p className="fotter-police-p p-color mb-8">
-          Your <span className="text-bold underline main-color">Sham Marianas</span>, subscription includes friendly support to help you stay on track.
+          Your <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, subscription includes friendly support to help you stay on track.
           While unlimited downloads mean we can't provide deep after-sales service for every item, we're always ready to guide you if you need something extra.
-          At <span className="text-bold underline main-color">Sham Marianas</span>, every click, every download, and every idea brings you closer to building something extraordinary.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, every click, every download, and every idea brings you closer to building something extraordinary.
           Download. Create. Make your mark.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
-          <strong>6. Step into the Future with <span className="main-color">Sham Marianas</span> AI Sphere</strong>
+          <strong>6. Step into the Future with <span className="main-color">Sham Marianas F.Z.C</span> AI Sphere</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
           Unleash creativity with cutting-edge AI tools and redefine what's possible. Join us in shaping the future, where imagination meets innovation.
         </p>
         <h4 className="fz-24 fw-300 mb-3 letter-spacing-1"><strong>1. Unlock the Magic of AI</strong></h4>
         <p className="fotter-police-p p-color mb-4">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, you don't just browse, you create.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, you don't just browse, you create.
           With our powerful AI search engine labs and AI Labs, you get instant access to smart tools, creative extensions, and next-gen products, all powered by world-leading AI technologies like OpenAI.
           We provide you access to tomorrow's brilliance today.
         </p>
@@ -414,13 +414,13 @@ const TermsandConditionTemplate = () => {
         <ul className="fotter-police-p p-color mb-8 list-disc p-0">
           <li className="relative pl-6 p-color mb-2"><strong>AI isn't flawless:</strong> sometimes the magic may be a little wild. Content might not match your input exactly, and it might mention real people, brands, or places accidentally.</li>
           <li className="relative pl-6 p-color mb-2"><strong>You're the final boss:</strong> Always double-check the content you generate. It's your call to make sure it's polished, accurate, and ready to shine.</li>
-          <li className="relative pl-6 p-color mb-2"><strong>We inspire, you decide:</strong> <span className="text-bold underline main-color">Sham Marianas</span>, AI is your creative partner, not a replacement for real-world advice (legal, medical, financial, you get it!).</li>
+          <li className="relative pl-6 p-color mb-2"><strong>We inspire, you decide:</strong> <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, AI is your creative partner, not a replacement for real-world advice (legal, medical, financial, you get it!).</li>
           <li className="relative pl-6 p-color mb-2"><strong>Respect lives:</strong> Never use AI-generated content in a way that impacts someone's life decisions like jobs, education, or health.</li>
-          <li className="relative pl-6 p-color mb-2"><strong>Mistakes are part of magic:</strong> AI can sometimes surprise you, not always in the best way. We stand for creativity, but we don't claim every word or image represents <span className="text-bold underline main-color">Sham Marianas</span>.</li>
-          <li className="relative pl-6 p-color mb-2"><strong>Brands and names? No secret deals here!</strong> If you see a brand or product mentioned, it's just the AI doing its thing, not a <span className="text-bold underline main-color">Sham Marianas</span>, endorsement.</li>
+          <li className="relative pl-6 p-color mb-2"><strong>Mistakes are part of magic:</strong> AI can sometimes surprise you, not always in the best way. We stand for creativity, but we don't claim every word or image represents <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>.</li>
+          <li className="relative pl-6 p-color mb-2"><strong>Brands and names? No secret deals here!</strong> If you see a brand or product mentioned, it's just the AI doing its thing, not a <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, endorsement.</li>
         </ul>
         <p className="fotter-police-p p-color mb-8">
-          <span className="text-bold underline main-color">Sham Marianas</span>, AI Sphere isn't just a tool, it's a launchpad for your boldest ideas.
+          <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, AI Sphere isn't just a tool, it's a launchpad for your boldest ideas.
           Dream it. Build it. Change everything.
         </p>
 
@@ -428,7 +428,7 @@ const TermsandConditionTemplate = () => {
           <strong>7. Third Party Offers, Bonus Perks, No Strings Attached</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, we're all about giving you more than you expect. That's why we sometimes bring you exciting offers and services from our trusted partners, just little extras to level up your experience.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, we're all about giving you more than you expect. That's why we sometimes bring you exciting offers and services from our trusted partners, just little extras to level up your experience.
         </p>
         <h4 className="fz-24 fw-300 mb-3 letter-spacing-1"><strong>1. Discover the Extras</strong></h4>
         <p className="fotter-police-p p-color mb-4">
@@ -456,7 +456,7 @@ const TermsandConditionTemplate = () => {
           <strong>8. Third Party Services, The Hidden Magic Behind the Scenes</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          To keep <span className="text-bold underline main-color">Sham Marianas</span>, running sharp, smooth, and smart, we use some powerful tools and services from other companies. Here's what that means for you:
+          To keep <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, running sharp, smooth, and smart, we use some powerful tools and services from other companies. Here's what that means for you:
         </p>
         <h4 className="fz-24 fw-300 mb-3 letter-spacing-1"><strong>1. Tech That Supports You</strong></h4>
         <p className="fotter-police-p p-color mb-4">
@@ -498,7 +498,7 @@ const TermsandConditionTemplate = () => {
           <strong>3. Purpose-Driven Data, Not a Price Tag</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Yes, we collect usage insights, but not for selling. Ever. We only gather smart patterns, user behaviors, and content flows to improve your experience and level up what <span className="text-bold underline main-color">Sham Marianas</span>, delivers. No names, no faces, just progress.
+          Yes, we collect usage insights, but not for selling. Ever. We only gather smart patterns, user behaviors, and content flows to improve your experience and level up what <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, delivers. No names, no faces, just progress.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -512,7 +512,7 @@ const TermsandConditionTemplate = () => {
 
         <h2 className="text-3xl fw-500 mb-2">Your ideas matter. So Do Rights</h2>
         <p className="fotter-police-p p-color mb-8">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, creativity is everything, and we make sure it's respected, protected, and celebrated. Here's how intellectual property works in our creative universe:
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, creativity is everything, and we make sure it's respected, protected, and celebrated. Here's how intellectual property works in our creative universe:
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -526,7 +526,7 @@ const TermsandConditionTemplate = () => {
           <strong>2. Our Magic Is Ours</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          From the flow of the website to the bold design, code, visuals, and vibes, every bit of <span className="text-bold underline main-color">Sham Marianas</span>, is our own creative DNA.
+          From the flow of the website to the bold design, code, visuals, and vibes, every bit of <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, is our own creative DNA.
           You're free to experience it, but copying it? That's a no-go.
         </p>
 
@@ -548,7 +548,7 @@ const TermsandConditionTemplate = () => {
           <strong>5. Share ideas. Just know they're ours to build on.</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Have a brilliant idea to make <span className="text-bold underline main-color">Sham Marianas</span>, better? Amazing. We love feedback, and once you send it, it becomes part of what we build. No strings attached, no legal loopbacks.
+          Have a brilliant idea to make <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, better? Amazing. We love feedback, and once you send it, it becomes part of what we build. No strings attached, no legal loopbacks.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -563,7 +563,7 @@ const TermsandConditionTemplate = () => {
           <strong>1. Play fair. Stay creative</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, creativity and integrity go hand in hand. We anticipate that every user will treat our services with integrity and decency. Stick to our Acceptable Use Policy and let your ideas shine the right way. Great things are built on fair play.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, creativity and integrity go hand in hand. We anticipate that every user will treat our services with integrity and decency. Stick to our Acceptable Use Policy and let your ideas shine the right way. Great things are built on fair play.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -584,26 +584,26 @@ const TermsandConditionTemplate = () => {
           <strong>4. Share with Purpose</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Want to link to <span className="text-bold underline main-color">Sham Marianas</span>? Awesome, just be mindful that we protect our platform's image. If a link doesn't align with our vision or values, we may ask to remove it. Sharing is welcome, but standards matter.
+          Want to link to <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>? Awesome, just be mindful that we protect our platform's image. If a link doesn't align with our vision or values, we may ask to remove it. Sharing is welcome, but standards matter.
         </p>
 
         <h2 className="text-3xl fw-500 mb-2">Let's Settle It Smartly</h2>
         <p className="fotter-police-p p-color mb-8">
-          Disagreements happen, but at <span className="text-bold underline main-color">Sham Marianas</span>, we believe in solving them smoothly and professionally. Instead of messy courtroom battles, we aim for respectful, confidential resolution that saves time, energy, and keeps both parties protected.
+          Disagreements happen, but at <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, we believe in solving them smoothly and professionally. Instead of messy courtroom battles, we aim for respectful, confidential resolution that saves time, energy, and keeps both parties protected.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
           <strong>1. Private Arbitration, Not Courtroom Drama</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Got a legal issue with us at <span className="text-bold underline main-color">Sham Marianas</span>? We'll resolve it through private arbitration a fair, fast, and confidential way to sort things out. The process is handled by an independent expert in Dubai, and both sides cover their own costs. Some serious cases (like copyright infringement or emergency legal matters) may still go to court, but only when absolutely necessary.
+          Got a legal issue with us at <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>? We'll resolve it through private arbitration a fair, fast, and confidential way to sort things out. The process is handled by an independent expert in Dubai, and both sides cover their own costs. Some serious cases (like copyright infringement or emergency legal matters) may still go to court, but only when absolutely necessary.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
           <strong>2. No Crowds, Just You</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, we value one-on-one fairness. That means no class-action lawsuits. If you have a concern, it'll be handled individually, not as part of a group case. This ensures your issue gets the attention it deserves, without being buried in legal noise.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, we value one-on-one fairness. That means no class-action lawsuits. If you have a concern, it'll be handled individually, not as part of a group case. This ensures your issue gets the attention it deserves, without being buried in legal noise.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -615,7 +615,7 @@ const TermsandConditionTemplate = () => {
 
         <h2 className="text-3xl fw-500 mb-2">Membership Matters</h2>
         <p className="fotter-police-p p-color mb-2">
-          At <span className="text-bold underline main-color">Sham Marianas</span>, your membership isn't just a sign-up, it's a seat at our creative table. But with great access comes great responsibility. If your actions break our terms, skip payments, or go against our community vibe, we have the right to pause or cancel your account. We stand up for the amazing creators that live there, our team, and our location.
+          At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, your membership isn't just a sign-up, it's a seat at our creative table. But with great access comes great responsibility. If your actions break our terms, skip payments, or go against our community vibe, we have the right to pause or cancel your account. We stand up for the amazing creators that live there, our team, and our location.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -644,14 +644,14 @@ const TermsandConditionTemplate = () => {
           <strong>1. Global Legal Compliance</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          <span className="text-bold underline main-color">Sham Marianas</span>, operates under international trade laws, so we follow all global regulations. If the law says we can't provide services in certain cases, we have to comply, no exceptions. You also agree to abide by these guidelines by using our services. We keep things legal, fair, and safe for everyone.
+          <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, operates under international trade laws, so we follow all global regulations. If the law says we can't provide services in certain cases, we have to comply, no exceptions. You also agree to abide by these guidelines by using our services. We keep things legal, fair, and safe for everyone.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
           <strong>2. No Hidden Partnerships</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Just because you're using <span className="text-bold underline main-color">Sham Marianas</span>, services doesn't mean we're in a legal partnership or employment relationship. You can't represent or speak for us officially, but you're still a valuable part of our creative community. We collaborate, but with clear boundaries.
+          Just because you're using <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, services doesn't mean we're in a legal partnership or employment relationship. You can't represent or speak for us officially, but you're still a valuable part of our creative community. We collaborate, but with clear boundaries.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -665,7 +665,7 @@ const TermsandConditionTemplate = () => {
           <strong>4. Evolving for You</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          To stay up-to-date and enhance our services, we might revise these terms and policies. Don't worry; if anything significant changes, we'll let you know. You can always get the latest version here. Your continued use of <span className="text-bold underline main-color">Sham Marianas</span>, means you accept and support these updates.
+          To stay up-to-date and enhance our services, we might revise these terms and policies. Don't worry; if anything significant changes, we'll let you know. You can always get the latest version here. Your continued use of <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, means you accept and support these updates.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -686,7 +686,7 @@ const TermsandConditionTemplate = () => {
           <strong>7. The Whole Deal</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          You and <span className="text-bold underline main-color">Sham Marianas</span>, have fully agreed to these conditions. They take the place of any prior agreements, discussions, or verbal or written commitments. Basically, what's here is what counts.
+          You and <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, have fully agreed to these conditions. They take the place of any prior agreements, discussions, or verbal or written commitments. Basically, what's here is what counts.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -707,7 +707,7 @@ const TermsandConditionTemplate = () => {
           <strong>10. Law of the Land</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          The laws of Dubai govern all of our terms. This ensures a consistent and trusted legal foundation no matter where you're using <span className="text-bold underline main-color">Sham Marianas</span>, services from.
+          The laws of Dubai govern all of our terms. This ensures a consistent and trusted legal foundation no matter where you're using <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, services from.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -729,7 +729,7 @@ const TermsandConditionTemplate = () => {
           <strong>2. We / Us / Our</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          This means the team at <span className="text-bold underline main-color">Sham Marianas</span>, the minds behind the platform, building tools and content to help creators thrive.
+          This means the team at <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, the minds behind the platform, building tools and content to help creators thrive.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -771,7 +771,7 @@ const TermsandConditionTemplate = () => {
           <strong>8. Member</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Anyone with an account on <span className="text-bold underline main-color">Sham Marianas</span>, whether you're here to explore, subscribe, create, or collaborate.
+          Anyone with an account on <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, whether you're here to explore, subscribe, create, or collaborate.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">
@@ -785,7 +785,7 @@ const TermsandConditionTemplate = () => {
           <strong>10. You / Your</strong>
         </h3>
         <p className="fotter-police-p p-color mb-8">
-          Yes, you! The bold thinker, artist, or entrepreneur using <span className="text-bold underline main-color">Sham Marianas</span>, to bring ideas to life.
+          Yes, you! The bold thinker, artist, or entrepreneur using <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, to bring ideas to life.
         </p>
 
         <h3 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1">

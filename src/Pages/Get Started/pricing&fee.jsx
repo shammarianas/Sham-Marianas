@@ -14,14 +14,14 @@ const PricingAndFees = () => {
                     <strong>Commission Structure</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-2">
-                    For all assets licensed through the <span className="text-bold underline main-color">Sham Marianas</span> platform, the net revenue (total license fee collected from the customer, minus any transaction fees, taxes, or third-party charges) will be split as follows:
+                    For all assets licensed through the <span className="text-bold underline main-color">Sham Marianas F.Z.C</span> platform, the net revenue (total license fee collected from the customer, minus any transaction fees, taxes, or third-party charges) will be split as follows:
                 </p>
                 <ul className="fotter-police-p p-color mb-2 list-disc p-0">
                     <li className="relative pl-6 p-color mb-2"><strong>Contributor Earnings:</strong> 60% of the net revenue.</li>
                     <li className="relative pl-6 p-color mb-2"><strong>Platform Fee:</strong> 40% of the net revenue.</li>
                 </ul>
                 <p className="fotter-police-p p-color mb-8">
-                    This commission structure is standard for all contributors and applies to all license types and sales channels unless otherwise stated in a separate, written exclusive agreement with <span className="text-bold underline main-color">Sham Marianas</span>.
+                    This commission structure is standard for all contributors and applies to all license types and sales channels unless otherwise stated in a separate, written exclusive agreement with <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>.
                 </p>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
@@ -51,7 +51,7 @@ const PricingAndFees = () => {
                     <strong>Pricing & Licensing</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-8">
-                    <span className="text-bold underline main-color">Sham Marianas</span>, retains sole discretion to set the final retail price for all assets on the platform. We employ dynamic pricing strategies based on market demand, license type, file size, and other factors to maximize sales potential for your portfolio.
+                    <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, retains sole discretion to set the final retail price for all assets on the platform. We employ dynamic pricing strategies based on market demand, license type, file size, and other factors to maximize sales potential for your portfolio.
                 </p>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
@@ -64,7 +64,7 @@ const PricingAndFees = () => {
 
                 <h4 className="mt-5 fz-30 fw-300 mb-2 letter-spacing-1"><strong>Taxes</strong></h4>
                 <p className="fotter-police-p p-color mb-8">
-                    You are solely responsible for declaring and paying any personal income, value-added (VAT), or other taxes applicable to your earnings in your country of residence. <span className="text-bold underline main-color">Sham Marianas</span>, may be required to collect tax identification information or withhold taxes as mandated by law.
+                    You are solely responsible for declaring and paying any personal income, value-added (VAT), or other taxes applicable to your earnings in your country of residence. <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, may be required to collect tax identification information or withhold taxes as mandated by law.
                 </p>
 
                 <h3 className="mt-5 fz-30 fw-400 mb-2 letter-spacing-1">
@@ -78,7 +78,7 @@ const PricingAndFees = () => {
                     <strong>Policy Updates</strong>
                 </h3>
                 <p className="fotter-police-p p-color mb-8">
-                    <span className="text-bold underline main-color">Sham Marianas</span>, reserves the right to modify this Pricing and Withdrawal Policy, including commission rates and the payout threshold, with 30 days' prior notice to contributors via email and platform announcements. Continued use of the platform after changes take effect constitutes your acceptance of the new terms.
+                    <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, reserves the right to modify this Pricing and Withdrawal Policy, including commission rates and the payout threshold, with 30 days' prior notice to contributors via email and platform announcements. Continued use of the platform after changes take effect constitutes your acceptance of the new terms.
                 </p>
             </div>
         </div>

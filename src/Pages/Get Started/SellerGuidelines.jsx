@@ -20,11 +20,11 @@ const SellerGuideline = () => {
                     <h1 className="text-4xl fw-500 mb-8 text-center">Seller Guidelines</h1>
 
                     <h3 className="mt-5 fz-30 fw-400 mb-2">
-                        <strong>Welcome to <span className="text-400 underline main-color">Sham Marianas</span></strong>
+                        <strong>Welcome to <span className="text-400 underline main-color">Sham Marianas F.Z.C</span></strong>
                     </h3>
 
                     <p className="fotter-police-p p-color mb-8">
-                        Congratulations on joining <span className="text-bold underline main-color">Sham Marianas</span>, as a valued contributor. This comprehensive guide outlines our platform standards, submission processes, and best practices to ensure your success. Please read these guidelines thoroughly before submitting any assets.
+                        Congratulations on joining <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, as a valued contributor. This comprehensive guide outlines our platform standards, submission processes, and best practices to ensure your success. Please read these guidelines thoroughly before submitting any assets.
                     </p>
 
                     <h3 className="mt-5 fz-30 fw-400 mb-2">
@@ -38,7 +38,7 @@ const SellerGuideline = () => {
                         <li className="mb-2">Complete the registration form with accurate details</li>
                         <li className="mb-2">Verify your email address through the confirmation link</li>
                         <li className="mb-2">Set up your secure password and profile information</li>
-                        <li className="mb-2">Waiting for <span className="text-bold underline main-color">Sham Marianas</span>, approval</li>
+                        <li className="mb-2">Waiting for <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, approval</li>
                     </ul>
 
                     <h4 className="fz-24 fw-400 mb-2">Existing Contributor Login</h4>
@@ -230,7 +230,7 @@ const SellerGuideline = () => {
                     </h3>
 
                     <p className="fotter-police-p p-color mb-2">
-                        <strong><span className="text-bold underline main-color">Sham Marianas</span>, reserves the right to:</strong>
+                        <strong><span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, reserves the right to:</strong>
                     </p>
                     <ul className="fotter-police-p p-color mb-4 list-disc p-0 ">
                         <li className="mb-2">Update these guidelines without prior notice</li>
@@ -283,7 +283,7 @@ const SellerGuideline = () => {
 
                         <div className="item wow fadeInUp" data-wow-delay=".5s">
                             <div onClick={openAccordion} className="title">
-                                <h6>Q3: What commission structure does <span className="main-color">Sham Marianas</span> offer?</h6>
+                                <h6>Q3: What commission structure does <span className="main-color">Sham Marianas F.Z.C</span> offer?</h6>
                                 <span className="ico ti-plus"></span>
                             </div>
                             <div className="accordion-info">

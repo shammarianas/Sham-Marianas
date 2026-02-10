@@ -22,7 +22,7 @@ function PrintMediaSolutions() {
 
           <div className="text">
             <p className="mb-15">
-              At Sham Marianas, we transform print into powerful brand
+              At Sham Marianas F.Z.C, we transform print into powerful brand
               experiences. Each project is approached with a single goal in
               mind: to design materials that not only stand out but also work
               tirelessly to elevate your brand. Whether launching a bold

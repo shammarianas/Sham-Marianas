@@ -5,7 +5,7 @@ import loadBackgroudImages from "../../common/loadBackgroudImages";
 const HeaderSection = ({
   title = "",
   highlightedText = "",
-  backgroundImage = "/assets/imgs/background/bg4.jpg",
+  backgroundImage = "/assets/imgs/background/bg4.webp",
   overlayDark = "8",
 }) => {
   useEffect(() => {

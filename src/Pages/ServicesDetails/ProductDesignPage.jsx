@@ -12,7 +12,7 @@ const ProductDesignPage = () => {
     paragraphs: [
       <>
         True product design lives in the details At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         we transform bold ideas into beautifully crafted physical products that
         look stunning, feel right, and work effortlessly.
       </>,
@@ -27,7 +27,7 @@ const ProductDesignPage = () => {
     title: "Designs That Transform Ideas into Iconic Products",
     paragraphs: [
       <>
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we believe great products start with bold ideas and end with
         unforgettable designs. Whether it’s an innovative gadget or a practical
         everyday item, we specialize in creating products that look stunning,
@@ -44,7 +44,7 @@ const ProductDesignPage = () => {
 
       <>
         With{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         your product won’t just fit in it will stand out, engage users, and make
         a lasting impact in the market.
       </>,
@@ -60,10 +60,10 @@ const ProductDesignPage = () => {
     {
       question: "How do you ensure my product design is user-friendly?",
       answer:
-        "At Sham Marianas, we place the user at the heart of every design. Through user-centered design principles, we craft products that are not only intuitive to use but also comfortable and functional. We carefully consider every detail, from ergonomic shapes to seamless interactions, ensuring your product is a joy for customers to use.",
+        "At Sham Marianas F.Z.C, we place the user at the heart of every design. Through user-centered design principles, we craft products that are not only intuitive to use but also comfortable and functional. We carefully consider every detail, from ergonomic shapes to seamless interactions, ensuring your product is a joy for customers to use.",
     },
     {
-      question: "What makes Sham Marianas design process unique?",
+      question: "What makes Sham Marianas F.Z.C design process unique?",
       answer:
         "We blend creativity with precision. From concept development to prototyping, we focus on market-ready innovation and aesthetics that align with your brand's vision. Our design approach ensures your product is not just beautiful but also practical, durable, and designed for real-world success.",
     },
@@ -95,7 +95,7 @@ const ProductDesignPage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, 
             we do more than product design, we bring bold ideas to life.
             Whether it’s a sleek gadget or a smart everyday solution, we turn

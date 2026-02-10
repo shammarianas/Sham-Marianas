@@ -22,7 +22,7 @@ function PhotographyAndVideo() {
 
           <div className="text">
             <p className="mb-15">
-              At Sham Marianas, our photography & video production services go
+              At Sham Marianas F.Z.C, our photography & video production services go
               far beyond the lens. We don&apos;t just point and shoot, we tell
               your brand&apos;s story frame by frame. Whether it&apos;s bold
               product photography, cinematic brand videos, or crisp lifestyle
@@ -56,7 +56,7 @@ function PhotographyAndVideo() {
                     That Converts
                   </h6>
                   <p>
-                    At Sham Marianas, we don&apos;t just create visuals, we craft
+                    At Sham Marianas F.Z.C, we don&apos;t just create visuals, we craft
                     high-impact photo and video content that tells your story,
                     connects with your audience, and fuels business growth. Our
                     photography & video production services are built to elevate

@@ -21,7 +21,7 @@ const UiUxDesignPage = () => {
       <>
         To make an impact on a wider audience, it’s essential to cater to
         different user preferences. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         our tailored UI/UX solutions are designed to provide personalized
         experiences that meet diverse needs.
       </>,
@@ -37,7 +37,7 @@ const UiUxDesignPage = () => {
       </>,
       <>
         Discover how{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         can transform your digital presence with innovative mobile UI/UX design
         solutions. Stay a head of the competition and lead the market with
         expert design services.
@@ -64,7 +64,7 @@ const UiUxDesignPage = () => {
     {
       question: "What makes your UI/UX design services different?",
       answer:
-        "At Sham Marianas, we focus on personalized, user-centered designs. We combine creativity with functionality to deliver seamless, engaging experiences that enhance your brand's digital presence.",
+        "At Sham Marianas F.Z.C, we focus on personalized, user-centered designs. We combine creativity with functionality to deliver seamless, engaging experiences that enhance your brand's digital presence.",
     },
     {
       question: "Do You Include User Testing in Your Design Workflow?",
@@ -74,7 +74,7 @@ const UiUxDesignPage = () => {
     {
       question: "What UI/UX design tools and technologies do you use?",
       answer:
-        "At Sham Marianas, we use top UI/UX design tools like Adobe XD, Sketch, and Figma for wireframing, prototyping, and creating intuitive designs. We also utilize InVision and Usability Hub for user testing to ensure a seamless user experience, improve user engagement, and boost conversion rates.",
+        "At Sham Marianas F.Z.C, we use top UI/UX design tools like Adobe XD, Sketch, and Figma for wireframing, prototyping, and creating intuitive designs. We also utilize InVision and Usability Hub for user testing to ensure a seamless user experience, improve user engagement, and boost conversion rates.",
     },
     {
       question: "How Long Does It Take to Complete a UI/UX Design?",
@@ -97,7 +97,7 @@ const UiUxDesignPage = () => {
         paragraphs={[
           <>
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, delivers smart, user-focused UI/UX design that combines beauty and
             usability. We craft intuitive digital experiences that elevate your
             brand. From startups to enterprises, we turn ideas into powerful,

@@ -66,7 +66,7 @@ function Creativity() {
                     essential for businesses to stand out and build connections
                     with their audience. At{" "}
                     <span className="text-bold underline main-color">
-                      Sham Marianas
+                      Sham Marianas F.Z.C
                     </span>
                     , we create unique branding designs that help define your
                     identity, communicate your message clearly, and leave a
@@ -78,7 +78,7 @@ function Creativity() {
                     about consistency and trust. A cohesive design across all
                     platforms builds loyalty and keeps your brand relevant. At{" "}
                     <span className="text-bold underline main-color">
-                      Sham Marianas
+                      Sham Marianas F.Z.C
                     </span>
                     , we ensure your brand evolves with the digital trends,
                     keeping it fresh and engaging.
@@ -179,7 +179,7 @@ function Creativity() {
                       To get started, simply contact us through our website or
                       reach out to our team at{" "}
                       <span className="text-bold underline main-color">
-                        Sham Marianas
+                        Sham Marianas F.Z.C
                       </span>
                       . We&apos;ll schedule a consultation to understand your
                       needs and begin the process of crafting your unique brand

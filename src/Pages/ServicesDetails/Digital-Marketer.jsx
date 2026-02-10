@@ -13,7 +13,7 @@ const DigitalMaketerPage = () => {
       <>
         In today’s fast-paced digital world, your social media & digital
         marketing presence is key to making a lasting first impression. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         we craft strategies that go beyond likes and shares. We focus on
         creating authentic connections, building trust, and driving real action
         with every piece of content and campaign we execute. From captivating
@@ -30,7 +30,7 @@ const DigitalMaketerPage = () => {
     paragraphs: [
       "Let's face it, nobody scrolls aimlessly nowadays. They scroll to discover, to connect, and to buy. And we’re here to make sure your brand is part of that journey.",
       <>
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we combine innovative storytelling with data-driven tactics to craft
         social media & digital marketing strategies that don’t just capture
         attention but convert it into real business results. Whether we’re
@@ -96,7 +96,7 @@ const DigitalMaketerPage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, we elevate social media management into an art,  creating digital
             experiences that grab attention, spark conversations, and drive real
             business growth.

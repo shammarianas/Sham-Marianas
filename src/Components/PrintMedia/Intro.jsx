@@ -19,7 +19,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, we transform your brand vision into
+                    At Sham Marianas F.Z.C, we transform your brand vision into
                     reality with print media solutions that captivate and
                     convert. Our design process blends bold creativity with
                     strategic thinking to create print materials that not only
