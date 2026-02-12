@@ -14,7 +14,7 @@ function FirstPage() {
   <img 
     src="/assets/imgs/background/bg5.webp" 
     alt="Background"
-    fetchpriority="high" 
+    fetchPriority="high" 
     loading="eager"
     style={{
       position: 'absolute',
