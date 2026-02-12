@@ -30,7 +30,7 @@ function EcommerceDev() {
               ensures your customers keep coming back for more. Speed, clarity,
               and simplicity are everything in e-commerce. From fast loading
               times to clear product listings and a seamless checkout process,
-              every second counts. At Sham Marianas, we focus on mobile-friendly
+              every second counts. At Sham Marianas F.Z.C, we focus on mobile-friendly
               designs, SEO optimization, and user-friendly navigation to ensure
               your store performs at its peak. With features like secure payment
               gateways, easy inventory management, and customized product pages,
@@ -100,7 +100,7 @@ function EcommerceDev() {
 
                   <div className="item wow fadeInUp" data-wow-delay=".5s">
                     <div onClick={openAccordion} className="title">
-                      <h6>What makes Sham Marianas different?</h6>
+                      <h6>What makes Sham Marianas F.Z.C different?</h6>
                       <span className="ico ti-plus"></span>
                     </div>
                     <div className="accordion-info">

@@ -23,7 +23,7 @@ function PhotographyAndVideo() {
           <div className="text">
             <p className="mb-15">
               Every VFX and CGI project we create starts with purpose and ends
-              with performance. At Sham Marianas, we don&apos;t just make things
+              with performance. At Sham Marianas F.Z.C, we don&apos;t just make things
               look amazing, we make them work. Each frame is part of a bigger
               plan to grab attention, spark engagement, and drive results. From
               the very first idea to the final pixel, we handle everything,
@@ -54,7 +54,7 @@ function PhotographyAndVideo() {
                     From Bold Ideas to Breathtaking Visuals
                   </h6>
                   <p>
-                    At Sham Marianas, we bring ambitious ideas to life through
+                    At Sham Marianas F.Z.C, we bring ambitious ideas to life through
                     cinematic visuals that captivate, connect, and convert.
                     Whether it's a surreal animation, a stylized brand story, or
                     a hyper-real visual experience, every project is crafted

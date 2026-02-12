@@ -10,7 +10,7 @@ export const getSchema = (type, data = {}) => {
       ...baseSchema,
       "@type": "AdvertisingAgency",
       "@id": "https://www.shammarianas.com/#agency",
-      "name": "Sham Marianas",
+      "name": "Sham Marianas F.Z.C",
       "url": "https://www.shammarianas.com",
       "logo": "https://www.shammarianas.com/assets/imgs/logo.png",
       "image": {
@@ -80,12 +80,12 @@ export const getSchema = (type, data = {}) => {
           }
         : { 
             "@type": "Organization", 
-            "name": "Sham Marianas", 
+            "name": "Sham Marianas F.Z.C", 
             "@id": "https://www.shammarianas.com/#agency" 
           },
       "publisher": {
         "@type": "Organization",
-        "name": "Sham Marianas",
+        "name": "Sham Marianas F.Z.C",
         "logo": { 
           "@type": "ImageObject", 
           "url": "https://www.shammarianas.com/assets/imgs/logo.png" 
@@ -112,7 +112,7 @@ export const getSchema = (type, data = {}) => {
       "provider": {
         "@type": "AdvertisingAgency",
         "@id": "https://www.shammarianas.com/#agency",
-        "name": "Sham Marianas"
+        "name": "Sham Marianas F.Z.C"
       },
       "description": data.description || "",
       "offers": {
@@ -133,7 +133,7 @@ export const getSchema = (type, data = {}) => {
       ...baseSchema,
       "@type": "WebSite",
       "url": "https://www.shammarianas.com",
-      "name": "Sham Marianas",
+      "name": "Sham Marianas F.Z.C",
       "description": "Advertising Agency in Dubai, UAE",
       "potentialAction": {
         "@type": "SearchAction",
@@ -168,7 +168,7 @@ export const getSchema = (type, data = {}) => {
       },
       "brand": {
         "@type": "Brand",
-        "name": "Sham Marianas"
+        "name": "Sham Marianas F.Z.C"
       }
     };
   }
@@ -187,7 +187,7 @@ export const getSchema = (type, data = {}) => {
       "author": {
         "@type": "AdvertisingAgency",
         "@id": "https://www.shammarianas.com/#agency",
-        "name": "Sham Marianas"
+        "name": "Sham Marianas F.Z.C"
       },
       "datePublished": data.datePublished || "",
       "keywords": data.keywords || ""
@@ -238,6 +238,6 @@ export const getContactSchema = () => [
     "@context": "https://schema.org",
     "@type": "ContactPage",
     "url": "https://www.shammarianas.com/contact",
-    "name": "Contact Sham Marianas"
+    "name": "Contact Sham Marianas F.Z.C"
   }
 ];

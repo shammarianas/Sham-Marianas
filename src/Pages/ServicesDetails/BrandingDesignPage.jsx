@@ -22,7 +22,7 @@ const BrandingDesignPage = () => {
       <>
         In today&apos;s fast-paced digital world, branding design is essential
         for businesses to stand out and build connections with their audience.
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we create unique branding designs that help define your identity,
         communicate your message clearly, and leave a lasting impression.
       </>,
@@ -30,7 +30,7 @@ const BrandingDesignPage = () => {
         Good branding isn&apos;t just about aesthetics; it&apos;s about
         consistency and trust. A cohesive design across all platforms builds
         loyalty and keeps your brand relevant. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         we ensure your brand evolves with the digital trends, keeping it fresh
         and engaging.{" "}
       </>,
@@ -66,7 +66,7 @@ const BrandingDesignPage = () => {
     {
       question: "How do I get started with your branding design services?",
       answer:
-        " To get started, simply contact us through our website or reach out to our team at Sham Marianas . We'll schedule a consultation to understand your needs and begin the process of crafting your unique brand identity.",
+        " To get started, simply contact us through our website or reach out to our team at Sham Marianas F.Z.C . We'll schedule a consultation to understand your needs and begin the process of crafting your unique brand identity.",
     },
   ];
 
@@ -75,7 +75,7 @@ const BrandingDesignPage = () => {
       <HeaderSection
         title="Branding"
         highlightedText="Design"
-        backgroundImage="/assets/imgs/background/bg4.jpg"
+        backgroundImage="/assets/imgs/background/bg4.webp"
         overlayDark="8"
       />
       <IntroSection
@@ -85,7 +85,7 @@ const BrandingDesignPage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, we craft branding and designs that go beyond just visuals we
             create identities. Your brand is your story, and we help you tell it
             with clarity, creativity, and consistency.

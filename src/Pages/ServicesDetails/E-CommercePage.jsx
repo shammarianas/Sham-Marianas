@@ -15,7 +15,7 @@ const EcommercePage = () => {
         Speed, clarity, and simplicity are everything in e-commerce. From fast
         loading times to clear product listings and a seamless checkout process,
         every second counts. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         we focus on mobile-friendly designs, SEO optimization, and user-friendly
         navigation to ensure your store performs at its peak. With features like
         secure payment gateways, easy inventory management, and customized
@@ -41,7 +41,7 @@ const EcommercePage = () => {
         "A unique e-commerce website improves user experience, increases conversions, and represents your brand. We ensure it’s mobile-friendly, SEO-optimized, and performance-driven.",
     },
     {
-      question: "What makes Sham Marianas different?",
+      question: "What makes Sham Marianas F.Z.C different?",
       answer:
         "We focus on creating e-commerce experiences that are user-friendly, SEO-optimized, and conversion-driven, ensuring your success.",
     },
@@ -71,7 +71,7 @@ const EcommercePage = () => {
     <>
       <HeaderSection
         title="E-Commerce Solutions"
-        backgroundImage="/assets/imgs/background/bg4.jpg"
+        backgroundImage="/assets/imgs/background/bg4.webp"
         overlayDark="8"
       />
       <IntroSection
@@ -82,7 +82,7 @@ const EcommercePage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, we go beyond designing e-commerce websites,  we create immersive
             digital storefronts that wow your customers and turn casual clicks
             into loyal buyers.

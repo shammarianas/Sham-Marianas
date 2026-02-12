@@ -102,7 +102,7 @@ function Blogs() {
       <div className="main-bgs">
         <header
           className="page-header bg-img section-padding valign"
-          style={{ backgroundImage: "url('/assets/imgs/background/bg4.jpg')" }}
+          style={{ backgroundImage: "url('/assets/imgs/background/bg4.webp')" }}
           data-overlay-dark="8"
         >
           <div className="container pt-80">

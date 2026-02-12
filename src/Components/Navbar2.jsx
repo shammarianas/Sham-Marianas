@@ -226,7 +226,7 @@ const Navbar = () => {
               <img
                 src="/assets/imgs/logo.png"
                 className="site-logo-img"
-                alt="Sham Marianas logo"
+                alt="Sham Marianas F.Z.C logo"
               />
             </Link>
             <button
@@ -617,7 +617,7 @@ const Navbar = () => {
           <img
             src="/assets/imgs/logo.png"
             className="site-logo-img"
-            alt="Sham Marianas logo"
+            alt="Sham Marianas F.Z.C logo"
           />
         </Link>
 

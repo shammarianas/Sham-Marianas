@@ -48,7 +48,7 @@ function UiUx() {
                   </h6>
                   <p>
                     To make an impact on a wider audience, it&apos;s essential
-                    to cater to different user preferences. At Sham Marianas,
+                    to cater to different user preferences. At Sham Marianas F.Z.C,
                     our tailored UI/UX solutions are designed to provide
                     personalized experiences that meet diverse needs. In the
                     fast-paced digital landscape, staying up-to-date is key.
@@ -155,7 +155,7 @@ function UiUx() {
                     </div>
                     <div className="accordion-info">
                       <p className="">
-                        At Sham Marianas, we use top UI/UX design tools like
+                        At Sham Marianas F.Z.C, we use top UI/UX design tools like
                         Adobe XD, Sketch, and Figma for wireframing,
                         prototyping, and creating intuitive designs. We also
                         utilize InVision and UsabilityHub for user testing to

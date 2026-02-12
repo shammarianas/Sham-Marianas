@@ -76,7 +76,7 @@ function BlogDetails() {
             blogData.featuredImageUrl ||
             blogData.featureImgUrl ||
             blogData.coverImageUrl ||
-            "/assets/imgs/background/bg4.jpg";
+            "/assets/imgs/background/bg4.webp";
 
           blogData.content = sanitizeHtml(blogData.content, {
             allowedTags: [

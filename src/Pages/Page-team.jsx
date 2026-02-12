@@ -18,7 +18,7 @@ export default function PageTeam() {
   return (
     <>
       <Helmet>
-        <title>Sham Marianas Teams</title>
+        <title>Sham Marianas F.Z.C Teams</title>
       </Helmet>
       <body>
         {/* <LoadingScreen /> */}

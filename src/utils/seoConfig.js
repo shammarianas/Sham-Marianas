@@ -3,13 +3,13 @@ export const SEO_CONFIG = {
   //   Main Pages SEO
   // =========================================================
   home: {
-    title: "Sham Marianas | Advertising Agency in Dubai, UAE",
-    description: "Sham Marianas is the best advertising agency in Dubai. We help with online marketing, managing your social media, creating strong brands, and developing plans that deliver real results and increased revenue. Let us help your business grow in the UAE! ",
+    title: "Sham Marianas F.Z.C | Advertising Agency in Dubai, UAE",
+    description: "Sham Marianas F.Z.C is the best advertising agency in Dubai. We help with online marketing, managing your social media, creating strong brands, and developing plans that deliver real results and increased revenue. Let us help your business grow in the UAE! ",
     keywords: " Digital marketing agency Dubai, advertising agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
   },
   about: {
-    title: "About Sham Marianas | Dubai's Top Advertising Agency",
-    description: "Sham Marianas started in 2022. We're a full-service digital agency. We bring fresh marketing, websites, and creative ideas to help UAE businesses grow.",
+    title: "About Sham Marianas F.Z.C | Dubai's Top Advertising Agency",
+    description: "Sham Marianas F.Z.C started in 2022. We're a full-service digital agency. We bring fresh marketing, websites, and creative ideas to help UAE businesses grow.",
     keywords: "about advertising agency Dubai, digital agency UAE, branding specialists Dubai, social campaigns UAE",
   },
   services: {
@@ -19,32 +19,32 @@ export const SEO_CONFIG = {
   },
   aiAutomation: {
     title: " AI Automation Dubai, UAE",
-    description: "Sham Marianas creates AI automation for UAE ops. BPA, chatbots, analytics, CRM—smart systems boost efficiency and growth.",
+    description: "Sham Marianas F.Z.C creates AI automation for UAE ops. BPA, chatbots, analytics, CRM—smart systems boost efficiency and growth.",
     keywords: "AI automation Dubai, business automation UAE, chatbots Dubai, workflow automation UAE, CRM automation Dubai",
   },
   boothDesign: {
     title: "Exhibition Booth Design Dubai",
-    description: " Impress at events with custom booth designs by Sham Marianas. Eye-catching structures built for UAE trade shows and exhibitions.",
+    description: " Impress at events with custom booth designs by Sham Marianas F.Z.C. Eye-catching structures built for UAE trade shows and exhibitions.",
     keywords: " exhibition booth Dubai, trade show design UAE, booth fabrication Dubai",
   },
   branding: {
     title: " Branding Design Agency Dubai, UAE",
-    description: "Sham Marianas creates compelling brand identities with logos, visuals, and strategies tailored for UAE markets. Stand out and connect with your audience effectively.",
+    description: "Sham Marianas F.Z.C creates compelling brand identities with logos, visuals, and strategies tailored for UAE markets. Stand out and connect with your audience effectively.",
     keywords: " branding design Dubai, logo design UAE, brand identity Dubai",
   },
   content: {
     title: "Content Writing Services Dubai",
-    description: "Engage audiences with high-quality content from Sham Marianas. SEO-optimized blogs, copies, and scripts that drive traffic for Dubai brands.",
+    description: "Engage audiences with high-quality content from Sham Marianas F.Z.C. SEO-optimized blogs, copies, and scripts that drive traffic for Dubai brands.",
     keywords: "content writing Dubai, SEO content UAE, blog writing Dubai",
   },
   digitalMarketer: {
     title: "Social Media Digital Marketing Dubai",
-    description: "Grow your presence with Sham Marianas' social media and digital strategies. Targeted campaigns across platforms for maximum UAE engagement.",
+    description: "Grow your presence with Sham Marianas F.Z.C' social media and digital strategies. Targeted campaigns across platforms for maximum UAE engagement.",
     keywords: "social media Dubai, digital marketing UAE, meta ads Dubai",
   },
   ecommerce: {
     title: " E-Commerce Development Dubai, UAE",
-    description: "Launch thriving online stores with Sham Marianas' e-commerce solutions. Secure, scalable platforms designed to boost sales for UAE retailers.",
+    description: "Launch thriving online stores with Sham Marianas F.Z.C' e-commerce solutions. Secure, scalable platforms designed to boost sales for UAE retailers.",
     keywords: "E e-commerce Dubai, online store UAE, Shopify Dubai, WooCommerce Dubai",
   },
   Photography: {
@@ -54,7 +54,7 @@ export const SEO_CONFIG = {
   },
   printMediaSolutions: {
     title: "Print Media Solutions Dubai, UAE",
-    description: "Sham Marianas crafts impactful print for UAE brands: brochures, cards, banners, packaging. Bold design meets strategy—captivate and convert.",
+    description: "Sham Marianas F.Z.C crafts impactful print for UAE brands: brochures, cards, banners, packaging. Bold design meets strategy—captivate and convert.",
     keywords: "print media Dubai, brochure printing UAE, banners Dubai",
   },
   productDesign: {
@@ -69,12 +69,12 @@ export const SEO_CONFIG = {
   },
   vfxAndCgiAds: {
     title: "VFX CGI Ads Agency Dubai",
-    description: "Create mesmerizing ads with Sham Marianas' VFX and CGI expertise. Cinematic effects and animations that captivate UAE audiences.",
+    description: "Create mesmerizing ads with Sham Marianas F.Z.C' VFX and CGI expertise. Cinematic effects and animations that captivate UAE audiences.",
     keywords: "VFX Dubai, CGI ads UAE, motion graphics Dubai",
   },
   webDevelopment: {
     title: "Web Development Company Dubai, UAE",
-    description: "Build fast, responsive websites with Sham Marianas. Our expert developers deliver custom solutions powering UAE business growth online.",
+    description: "Build fast, responsive websites with Sham Marianas F.Z.C. Our expert developers deliver custom solutions powering UAE business growth online.",
     keywords: "web development Dubai, website developer UAE, custom web development Dubai",
   },
 
@@ -359,7 +359,7 @@ export const SEO_CONFIG = {
   //   Portfolio & Project SEO
   // =========================================================
   portfolio: {
-    title: "Sham Marianas Portfolio | Dubai Creative Projects ",
+    title: "Sham Marianas F.Z.C Portfolio | Dubai Creative Projects ",
     description: "Explore Shammarianas portfolio of successful projects including web design, development, digital marketing, and branding solutions.",
     keywords: "Portfolio, Projects, Case Studies, Web Design, Development, Digital Marketing, Branding",
   },
@@ -399,21 +399,21 @@ export const SEO_CONFIG = {
   },
 
   privacy: {
-    title: " Privacy Policy | Sham Marianas Dubai",
-    description: "Sham Marianas Privacy Policy details how we protect your data in Dubai per UAE standards for advertising services. Review our secure practices",
-     keywords: " privacy policy, Dubai agency, Sham Marianas data protection, UAE privacy advertising",
+    title: " Privacy Policy | Sham Marianas F.Z.C Dubai",
+    description: "Sham Marianas F.Z.C Privacy Policy details how we protect your data in Dubai per UAE standards for advertising services. Review our secure practices",
+     keywords: " privacy policy, Dubai agency, Sham Marianas F.Z.C data protection, UAE privacy advertising",
   },
 
   terms: {
-    title: " Terms & Conditions | Sham Marianas Dubai",
-    description: " Sham Marianas' Terms and Conditions govern our Dubai advertising, branding, and AI services. Please review them for secure engagement.",
-    keywords: "terms and conditions Dubai agency, Sham Marianas T&C, advertising terms Dubai",
+    title: " Terms & Conditions | Sham Marianas F.Z.C Dubai",
+    description: " Sham Marianas F.Z.C' Terms and Conditions govern our Dubai advertising, branding, and AI services. Please review them for secure engagement.",
+    keywords: "terms and conditions Dubai agency, Sham Marianas F.Z.C T&C, advertising terms Dubai",
   },
 
   contact: {
-    title: "Contact Sham Marianas | Dubai Agency",
-    description: " Reach out to Sham Marianas for Dubai advertising and branding. Our team elevates UAE businesses—connect now!",
-    keywords: "contact Sham Marianas Dubai, advertising agency UAE, branding inquiry Dubai, AI services contact UAE",
+    title: "Contact Sham Marianas F.Z.C | Dubai Agency",
+    description: " Reach out to Sham Marianas F.Z.C for Dubai advertising and branding. Our team elevates UAE businesses—connect now!",
+    keywords: "contact Sham Marianas F.Z.C Dubai, advertising agency UAE, branding inquiry Dubai, AI services contact UAE",
   },
 
   // =========================================================
@@ -443,7 +443,7 @@ export const SEO_CONFIG = {
 
   contributorLogin: {
     title: " Contribute Login | Shammarianas Marketplace",
-    description: "Sham Marianas Marketplace: Upload 3D, videos, textures & assets to earn. Get the dashboard, download everything, and use it freely.",
+    description: "Sham Marianas F.Z.C Marketplace: Upload 3D, videos, textures & assets to earn. Get the dashboard, download everything, and use it freely.",
     keywords: "contribute assets, upload 3D marketplace, login download assets, contributor marketplace, upload videos earn, asset dashboard"
   },
 
@@ -461,9 +461,9 @@ export const SEO_CONFIG = {
   },
 
   templates: {
-    title: "Templates | Sham Marianas Dubai Designs",
-    description: "Check out Sham Marianas' ready-to-use website templates. Modern, easy-to-customize designs perfect for UAE businesses. Get online quickly and grow your brand!",
-    keywords: " Sham marianas Website templates, Get online fast, Brand styles, Business growth"
+    title: "Templates | Sham Marianas F.Z.C Dubai Designs",
+    description: "Check out Sham Marianas F.Z.C' ready-to-use website templates. Modern, easy-to-customize designs perfect for UAE businesses. Get online quickly and grow your brand!",
+    keywords: " Sham Marianas F.Z.C Website templates, Get online fast, Brand styles, Business growth"
   },
 
   // =========================================================

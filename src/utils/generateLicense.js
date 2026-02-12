@@ -84,7 +84,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
 
       // Intro Paragraph
       {
-        text: 'This license lets you use any designs, templates, graphics, logos, photos, videos, or branding material created by Sham Marianas completely free in your personal or commercial projects; you just have to give simple credit in the final work: “Designed by Sham Marianas”.',
+        text: 'This license lets you use any designs, templates, graphics, logos, photos, videos, or branding material created by Sham Marianas F.Z.C completely free in your personal or commercial projects; you just have to give simple credit in the final work: “Designed by Sham Marianas F.Z.C”.',
         margin: [0, 0, 0, 10],
         lineHeight: 1.4,
         color: '#7f8c8d'
@@ -100,7 +100,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
         color: '#2c3e50'
       },
       {
-        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas</a>\'',
+        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas F.Z.C</a>\'',
         margin: [0, 0, 0, 4],
         italics: true,
         color: '#7f8c8d'
@@ -113,14 +113,14 @@ const getLicenseTermsContent = (licenseType, asset) => {
         color: '#2c3e50'
       },
       {
-        text: 'Just write “Designed by Sham Marianas” next to the design or put it in the description/credits section.',
+        text: 'Just write “Designed by Sham Marianas F.Z.C” next to the design or put it in the description/credits section.',
         margin: [0, 0, 0, 10],
         italics: true,
         color: '#7f8c8d'
       },
 
       // Where you can use
-      { text: 'Where you can use Sham Marianas content:', ...subHeading, color: '#2c3e50' },
+      { text: 'Where you can use Sham Marianas F.Z.C content:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
           'Websites',
@@ -161,7 +161,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
 
       // Final Note
       {
-        text: 'That’s it! Just add “Designed by Sham Marianas” and enjoy using the work freely.',
+        text: 'That’s it! Just add “Designed by Sham Marianas F.Z.C” and enjoy using the work freely.',
         italics: true,
         color: '#7f8c8d',
         margin: [0, 0, 0, 0],
@@ -190,7 +190,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
         color: '#2c3e50'
       },
       {
-        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas</a>\'',
+        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas F.Z.C</a>\'',
         margin: [0, 0, 0, 4],
         italics: true,
         color: '#7f8c8d'
@@ -203,14 +203,14 @@ const getLicenseTermsContent = (licenseType, asset) => {
         color: '#2c3e50'
       },
       {
-        text: 'Just write “Designed by Sham Marianas” next to the design or put it in the description/credits section.',
+        text: 'Just write “Designed by Sham Marianas F.Z.C” next to the design or put it in the description/credits section.',
         margin: [0, 0, 0, 10],
         italics: true,
         color: '#7f8c8d'
       },
 
       // Where you can use
-      { text: 'Where you can use Sham Marianas content:', ...subHeading, color: '#2c3e50' },
+      { text: 'Where you can use Sham Marianas F.Z.C content:', ...subHeading, color: '#2c3e50' },
       {
         ul: [
           'Websites',
@@ -251,7 +251,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
 
       // Final Note
       {
-        text: 'That’s it! Just add “Designed by Sham Marianas” and enjoy using the work freely.',
+        text: 'That’s it! Just add “Designed by Sham Marianas F.Z.C” and enjoy using the work freely.',
         italics: true,
         color: '#7f8c8d',
         margin: [0, 0, 0, 0],

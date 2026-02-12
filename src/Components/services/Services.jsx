@@ -27,7 +27,7 @@ function Services() {
       category: "Web Development",
       title: "Innovative Solutions",
       description:
-        "At Sham Marianas, we build cutting-edge web development solutions that blend innovation, performance, and seamless user experiences to help businesses thrive online.",
+        "At Sham Marianas F.Z.C, we build cutting-edge web development solutions that blend innovation, performance, and seamless user experiences to help businesses thrive online.",
       img: "/assets/imgs/serv-img/3.jpg",
     },
     {

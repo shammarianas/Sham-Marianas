@@ -18,7 +18,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, photography & video production is where
+                    At Sham Marianas F.Z.C, photography & video production is where
                     storytelling meets strategy, capturing emotion, building
                     connection, and elevating your brand. From stunning product
                     shoots to cinematic brand videos, we create visuals that

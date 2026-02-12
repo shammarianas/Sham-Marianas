@@ -20,7 +20,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    Sham Marianas delivers smart, user-focused UI/UX design that
+                    Sham Marianas F.Z.C delivers smart, user-focused UI/UX design that
                     combines beauty and usability. We craft intuitive digital
                     experiences that elevate your brand. From startups to
                     enterprises, we turn ideas into powerful, engaging

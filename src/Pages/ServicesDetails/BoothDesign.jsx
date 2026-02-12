@@ -13,7 +13,7 @@ const BoothDesignPage = () => {
       "Your exhibition booth isn’t just a display, it’s your first impression. In a busy exhibition hall, hundreds of brands are competing for attention. What makes people stop at your booth is design that connects instantly.",
       <>
         A well-designed booth doesn’t just attract visitors; it keeps them engaged. It builds trust, sparks curiosity, and gives people a reason to remember your brand. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>, we design booths that balance creativity and clarity, so your space feels open, inviting, and aligned with your brand identity.
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, we design booths that balance creativity and clarity, so your space feels open, inviting, and aligned with your brand identity.
       </>,
       "When your booth feels well-designed, your audience feels confident about your brand. That’s the power of design done right, it turns curiosity into connection, and visitors into potential clients.",
       "From sketch to setup, we handle everything so you can focus on your event while we bring your booth to life."
@@ -28,7 +28,7 @@ const BoothDesignPage = () => {
        "That’s where we come in. Our exhibition booth design services are made for brands that want to be seen, heard, and remembered. We keep every design modern, clean, and easy to explore. Whether you want a minimalist setup or an interactive digital display, our team tailors each detail to fit your goals.",
        "We also make sure your booth feels comfortable and functional. The flow of space, lighting, materials, and colors, all are thoughtfully chosen to create a setting where people naturally want to step in and engage.",
         <>
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we believe design isn’t about decoration, it’s about communication. Every booth we build is designed to tell your story visually, consistently, and effectively.
       </>
     ],
@@ -59,7 +59,7 @@ const BoothDesignPage = () => {
       question: "How can I get started?",
       answer:
       <>
-        Simply contact  <span className="text-bold underline main-color">Sham Marianas</span>, through our website or message our team directly. We’ll schedule a quick consultation to understand your vision and start designing your booth.
+        Simply contact  <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, through our website or message our team directly. We’ll schedule a quick consultation to understand your vision and start designing your booth.
    </>
       },
   ];
@@ -80,7 +80,7 @@ const BoothDesignPage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, we believe your exhibition booth should do more than just look good, it should speak for your brand. Every event is an opportunity to make people stop, notice, and remember who you are. That’s exactly what we help you do.
 
           </>,

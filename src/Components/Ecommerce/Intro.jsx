@@ -20,7 +20,7 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <p className="mb-15">
-                    At Sham Marianas, we go beyond designing e-commerce websites
+                    At Sham Marianas F.Z.C, we go beyond designing e-commerce websites
                    , we create immersive digital storefronts that wow your
                     customers and turn casual clicks into loyal buyers. Whether
                     you're launching your first e-commerce venture or looking to

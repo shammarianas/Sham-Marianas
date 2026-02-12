@@ -11,7 +11,7 @@ const PrintMediaPage = () => {
     title: "From Concept to Impact Print That Drives Success",
     paragraphs: [
       <>
-        At <span className="text-bold underline main-color">Sham Marianas</span>
+        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we transform print into powerful brand experiences. Each project is
         approached with a single goal in mind: to design materials that not only
         stand out but also work tirelessly to elevate your brand. Whether
@@ -30,7 +30,7 @@ const PrintMediaPage = () => {
       <>
         Print isn’t just paper and ink,  it’s your brand’s chance to make a
         lasting impression. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas</span>,
+        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
         we craft more than just visually striking materials; we create
         experiences that connect, resonate, and move your audience to act. From
         bold, captivating visuals to precisely crafted messaging, every piece is
@@ -84,7 +84,7 @@ const PrintMediaPage = () => {
           <>
             At{" "}
             <span className="text-bold text-left underline main-color">
-              Sham Marianas
+              Sham Marianas F.Z.C
             </span>, we transform your brand vision into reality with print media
             solutions that captivate and convert. Our design process blends bold
             creativity with strategic thinking to create print materials that
