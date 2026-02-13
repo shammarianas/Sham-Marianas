@@ -10,7 +10,7 @@ import Home from "./Pages/Home";
 import View from "./Pages/View";
 import Footer from "./Components/Footer";
 import Upload from "./Pages/Upload";
-import Cart from "./Pages/Cart";
+// import Cart from "./Pages/Cart";
 import Login from "./Pages/Login/Login";
 import AutoLoginTeam from "./Pages/Login/AutoLoginTeam";
 
@@ -101,7 +101,6 @@ export const AppRoutes = () => (
     <Route path="/reset" element={<PasswordReset />} />
     <Route path="/Logout" element={<Logout />} />
     <Route path="/" element={<Home />} />
-    <Route path="/Cart" element={<Cart />} />
     <Route path="/Groups" element={<Group />} />
     <Route path="/Upload" element={<Upload />} />
     <Route path="/Checkout" element={<Checkout />} />
