@@ -208,10 +208,22 @@ export const getHomepageSchema = () => [
 ];
 
 // Blog page ke liye schema
-export const getBlogSchema = (blogData) => [
-  getSchema("agency"),
-  getSchema("blog", blogData)
-];
+export const getBlogSchema = (blogData) => {
+  const schemas = [
+    getSchema("agency"),
+    getSchema("blog", blogData)
+  ];
+
+  // Auto FAQ generate karo agar content available ho
+  if (blogData.content) {  // blog.content HTML string hai
+    const faqSchema = getAutoFaqSchema(blogData.content, blogData);
+    if (faqSchema) {
+      schemas.push(faqSchema);
+    }
+  }
+
+  return schemas;
+};
 
 // Service page ke liye schema
 export const getServiceSchema = (serviceData) => [
@@ -241,3 +253,70 @@ export const getContactSchema = () => [
     "name": "Contact Sham Marianas F.Z.C"
   }
 ];
+
+// utils/schemaGenerator.js mein add karo (end pe)
+
+// Automatic FAQ from blog HTML content
+export const getAutoFaqSchema = (htmlContent = '', blogData = {}) => {
+  if (!htmlContent) return null;
+
+  // Simple DOM parser use karo (browser mein safe hai)
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, 'text/html');
+
+  const faqItems = [];
+
+  // H2 headings ko target karo (aapke blog mein questions H2/H3 hain)
+  const headings = doc.querySelectorAll('h2, h3');
+
+  headings.forEach((heading) => {
+    const question = heading.textContent.trim();
+    
+    // Question-like check (starts with What/How/Why/Which etc. ya ? end pe)
+    if (
+      question &&
+      (question.endsWith('?') ||
+       question.toLowerCase().startsWith('what') ||
+       question.toLowerCase().startsWith('how') ||
+       question.toLowerCase().startsWith('why') ||
+       question.toLowerCase().startsWith('tips') ||
+       question.toLowerCase().includes('?'))
+    ) {
+      // Next sibling elements tak answer collect karo (p, ul, ol, etc. tak next heading tak)
+      let answer = '';
+      let nextElement = heading.nextElementSibling;
+
+      while (nextElement && !['H1','H2','H3','H4','H5','H6'].includes(nextElement.tagName)) {
+        answer += nextElement.outerHTML || nextElement.textContent.trim() + ' ';
+        nextElement = nextElement.nextElementSibling;
+      }
+
+      // Clean answer (strip extra spaces, limit length if needed)
+      answer = answer.trim().replace(/\s+/g, ' ');
+
+      if (answer && answer.length > 50) {  // Minimum length to avoid junk
+        faqItems.push({
+          question,
+          answer: answer.substring(0, 800) + (answer.length > 800 ? '...' : '')  // AI ke liye concise rakho
+        });
+      }
+    }
+  });
+
+  if (faqItems.length > 0) {
+    return {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqItems.map(item => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.answer
+        }
+      }))
+    };
+  }
+
+  return null;
+};

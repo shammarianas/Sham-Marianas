@@ -190,7 +190,7 @@ const HeroSection = () => {
                   </h3>
                 </div>
                 <div className="ml-auto vi-more">
-                  <a href="#Hot" className="butn butn-sm butn-bord radius-30">
+                  <a href="#Hot" className="butn butn-sm butn-bord radius-30" aria-label="View hot assets">
                     <span>View All</span>
                   </a>
                   <span className="icon ti-arrow-top-right"></span>

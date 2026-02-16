@@ -300,16 +300,18 @@ function BlogDetails() {
       {blog && (
         <>
           <SchemaMarkup type="agency" />
-          <SchemaMarkup 
-            type="blog" 
-            data={{
-              ...blog,
-              slug: blog.slug || blog.id,
-              publishedTime: blog.publishedAt ? blog.publishedAt.toDate().toISOString() : new Date().toISOString(),
-              description: blog.excerpt || SEO_CONFIG.getBlogSEO(blog)?.description || "",
-              keywords: blog.tags?.join(', ') || blog.category
-            }}
-          />
+    <SchemaMarkup 
+      type="blog" 
+      data={{
+        ...blog,
+        slug: blog.slug || blog.id,
+        publishedTime: blog.publishedAt ? blog.publishedAt.toDate().toISOString() : new Date().toISOString(),
+        updatedTime: blog.updatedAt ? blog.updatedAt.toDate().toISOString() : blog.publishedAt?.toDate().toISOString(),
+        description: blog.excerpt || "Blog description",
+        keywords: blog.tags?.join(', ') || blog.category,
+        content: blog.content  // Yeh important – auto FAQ ke liye pass karo
+      }}
+    />
         </>
       )}
       <Cursor />
@@ -334,7 +336,7 @@ function BlogDetails() {
                   <div className="left-info">
                     <div className="d-flex align-items-center">
                       <div className="date">
-                        <a href="">
+                        <a href="" aria-label={`Published on ${blog.publishedAt ? new Date(blog.publishedAt.toDate()).toDateString() : "Unknown date"}`}>
                           <span className="opacity-7">Published</span>
                           <h6 className="fz-14">
                             {blog.publishedAt

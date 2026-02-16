@@ -36,13 +36,13 @@ function Team() {
                 </div>
                 <div className="social">
                   <div className="links">
-                    <a href="https://www.youtube.com/c/ShamMarianasSM">
+                    <a href="https://www.youtube.com/c/ShamMarianasSM" aria-label="Visit Sham Marianas YouTube channel">
                       <i class="fab fa-youtube"></i>
                     </a>
-                    <a href="https://www.behance.net/shammarianas">
+                    <a href="https://www.behance.net/shammarianas" aria-label="Visit Sham Marianas Behance profile">
                       <i className="fab fa-behance"></i>
                     </a>
-                    <a href="https://www.instagram.com/sham_marianas/">
+                    <a href="https://www.instagram.com/sham_marianas/" aria-label="Visit Sham Marianas Instagram profile">
                       <i className="fab fa-instagram"></i>
                     </a>
                   </div>

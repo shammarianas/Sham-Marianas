@@ -157,7 +157,7 @@ function Services() {
                   </div>
                   <h5 className="mb-15">{item.title}</h5>
                   <p className="align-text">{item.desc}</p>
-                  <a href={item.link} className="rmore mt-30 flex">
+                  <a href={item.link} className="rmore mt-30 flex" aria-label={`Learn more about ${item.title}`}>
                     <span className="sub-title">Read More</span>
                     <img
                       src="/assets/imgs/arrow-right.png"

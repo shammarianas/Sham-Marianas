@@ -13,8 +13,8 @@ const Privacy = () => {
             shammarianas is committed to protecting your privacy. This Privacy
             Policy explains how we collect, use, disclose, and safeguard your
             information when you visit our website{" "}
-            <a href="https://www.shammarianas.in" className="eula-link">
-              www.shammarianas.in
+            <a href="https://www.shammarianas.com" className="eula-link" aria-label="Visit shammarianas.com">
+              www.shammarianas.com
             </a>
             , and use our services. By accessing or using our services, you
             agree to the terms of this Privacy Policy.
@@ -126,17 +126,18 @@ const Privacy = () => {
           <p className="eula-paragraph">
             Email:{" "}
             <a
-              href="mailto:yaxrajd@gmail.com"
+              href="mailto:info@shammarianas.com"
               target="_blank"
               className="eula-link"
+              rel="noopener noreferrer"
+              aria-label="Send us an email"
             >
-              yaxrajd@gmail.com
+              info@shammarianas.com
             </a>
             <br />
-            Phone: +91 83205 04609
+            Phone: +971 52 803 6012
             <br />
-            Address: 32, Neminath Nagar, Model Town Road, Parvat Patiya, Surat,
-            Gujarat, India
+            Address: Dubai, United Arab Emirates
           </p>
         </div>
       </div>
