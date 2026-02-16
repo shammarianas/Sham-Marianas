@@ -18,7 +18,7 @@ export default function PageServicesDetails() {
   return (
     <>
       <SEO {...SEO_CONFIG.aiAutomation} />
-      <body>
+ 
         <Cursor />
         <ProgressScroll />
         <Lines />
@@ -26,7 +26,7 @@ export default function PageServicesDetails() {
         <Intro />
         <AiAutomation />
         <Marq2 />
-      </body>
+    
     </>
   );
 }

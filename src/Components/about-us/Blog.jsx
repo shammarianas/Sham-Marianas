@@ -17,7 +17,7 @@ function Blog() {
             <div className="ml-auto vi-more">
               <a
                 href="#blog"
-                className="butn butn-sm butn-bord radius-30"
+                className="butn butn-sm butn-bord radius-30" aria-label="View All Blog Posts"
               >
                 <span>View All</span>
               </a>
@@ -34,16 +34,16 @@ function Blog() {
               <div className="cont pt-40">
                 <div className="info sub-title p-color d-flex align-items-center mb-15">
                   <div>
-                    <a href="/blog-classic">By : Admin</a>
+                    <a href="/blog-classic" aria-label="View Blog Post by Admin">By : Admin</a>
                   </div>
                   <div className="ml-30">
-                    <a href="/blog-classic">August 14, 2023</a>
+                    <a href="/blog-classic" aria-label="View Blog Post from August 14, 2023">August 14, 2023</a>
                   </div>
                 </div>
                 <h4>Design Inspiration: Where to Find Creative Ideas</h4>
                 <a
                   href="#blog-details"
-                  className="butn-crev d-flex align-items-center mt-40"
+                  className="butn-crev d-flex align-items-center mt-40" aria-label="Read more about Design Inspiration: Where to Find Creative Ideas"
                 >
                   <span className="hover-this">
                     <span className="circle hover-anim">
@@ -63,16 +63,16 @@ function Blog() {
               <div className="cont pt-40">
                 <div className="info sub-title p-color d-flex align-items-center mb-15">
                   <div>
-                    <a href="#blog-classic">By : Admin</a>
+                    <a href="#blog-classic" aria-label="View Blog Post by Admin">By : Admin</a>
                   </div>
                   <div className="ml-30">
-                    <a href="#blog-classic">August 14, 2023</a>
+                    <a href="#blog-classic" aria-label="View Blog Post from August 14, 2023">August 14, 2023</a>
                   </div>
                 </div>
                 <h4>Typography: Choosing Fonts for Maximum Impact</h4>
                 <a
                   href="#blog-details"
-                  className="butn-crev d-flex align-items-center mt-40"
+                  className="butn-crev d-flex align-items-center mt-40" aria-label="Read more about Typography: Choosing Fonts for Maximum Impact"
                 >
                   <span className="hover-this">
                     <span className="circle hover-anim">

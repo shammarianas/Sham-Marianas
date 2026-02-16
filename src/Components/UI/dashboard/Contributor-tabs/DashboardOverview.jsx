@@ -765,35 +765,35 @@ const DashboardOverview = ({
                 <ul className="rest social-icon d-flex align-items-center">
 
                   <li className="hover-this cursor-pointer ml-10">
-                    <a href="#" target="_blank" rel="noreferrer">
+                    <a href="#" target="_blank" rel="noreferrer" aria-label="YouTube Channel">
                       <div className="hover-anim circle-a">
                         <i className="fab fa-youtube"></i>
                       </div>
                     </a>
                   </li>
                   <li className="hover-this cursor-pointer ml-10">
-                    <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                    <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer" aria-label="Pinterest Profile">
                       <div className="hover-anim circle-a">
                         <i className="fab fa-pinterest"></i>
                       </div>
                     </a>
                   </li>
                   <li className="hover-this cursor-pointer ml-10">
-                    <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
+                    <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer" aria-label="Behance Profile">
                       <div className="hover-anim circle-a">
                         <i className="fab fa-behance"></i>
                       </div>
                     </a>
                   </li>
                   <li className="hover-this cursor-pointer ml-10">
-                    <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer">
+                    <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer" aria-label="Dribbble Profile">
                       <div className="hover-anim circle-a">
                         <i className="fab fa-dribbble"></i>
                       </div>
                     </a>
                   </li>
                   <li className="hover-this cursor-pointer ml-10">
-                    <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                    <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer" aria-label="Instagram Profile">
                       <div className="hover-anim circle-a">
                         <i className="fab fa-instagram"></i>
                       </div>
@@ -810,7 +810,7 @@ const DashboardOverview = ({
               <p className="fz-14">
                 © 2025 All Rights Reserved By{" "}
                 <span className="underline main-color">
-                  <a href="/" target="_blank" rel="noreferrer">
+                  <a href="/" target="_blank" rel="noreferrer" aria-label="Sham Marianas F.Z.C Home Page">
                     Sham Marianas F.Z.C
                   </a>
                 </span>

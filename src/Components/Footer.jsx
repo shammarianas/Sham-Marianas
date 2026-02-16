@@ -118,21 +118,21 @@ function Footer() {
               <div className="col-lg-3">
                 <div className="column md-mb50">
                   <h6 className="sub-title mb-30">Contact</h6>
-                  <a href="tel:+971528036012" className=" ">
+                  <a href="tel:+971528036012" className=" " aria-label="Call Sham Marianas Dubai">
                     <span className="fz-18 main-color p-color fw-400 lh-base">
                       +971 52 803 6012
                     </span>
                   </a>
                   <h6 className="p-color fw-400 mb-15">Dubai, United Arab Emirates</h6>
 
-                   <a href="tel:+923116788423" className=" ">
+                   <a href="tel:+923116788423" className=" " aria-label="Call Sham Marianas Multan">
                     <span className="fz-18 main-color p-color fw-400 lh-base">
                       +92 311 678 8423
                     </span>
                   </a>
                   <h6 className="p-color fw-400 mb-15">Multan, Pakistan</h6>
                   <h6 className="p-color fw-400 mb-15">
-                    <a href="mailto:info@shammarianas.com">info@shammarianas.com</a>
+                    <a href="mailto:info@shammarianas.com" aria-label="Email Sham Marianas">info@shammarianas.com</a>
                   </h6>
                  
                 </div>
@@ -240,35 +240,35 @@ function Footer() {
                     /* TEMPLATE PAGE SOCIAL LINKS */
                     <>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="#" target="_blank" rel="noreferrer">
+                        <a href="#" target="_blank" rel="noreferrer" aria-label="YouTube Channel of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-youtube"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                        <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer" aria-label="Pinterest Profile of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-pinterest"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
+                        <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer" aria-label="Behance Profile of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-behance"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer">
+                        <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer" aria-label="Dribbble Profile of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-dribbble"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                        <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer" aria-label="Instagram Profile of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-instagram"></i>
                           </div>
@@ -279,35 +279,35 @@ function Footer() {
                     /* NON-TEMPLATE PAGE SOCIAL LINKS (Regular Website) */
                     <>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.youtube.com/c/ShamMarianasSM" target="_blank" rel="noreferrer">
+                        <a href="https://www.youtube.com/c/ShamMarianasSM" target="_blank" rel="noreferrer" aria-label="YouTube Channel of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-youtube"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.facebook.com/shammarianas" target="_blank" rel="noreferrer">
+                        <a href="https://www.facebook.com/shammarianas" target="_blank" rel="noreferrer" aria-label="Facebook Page of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-facebook-f"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer">
+                        <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer"  aria-label="Behance Profile of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-behance"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer">
+                        <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer" aria-label="Pinterest Profile of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-pinterest"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer">
+                        <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer" aria-label="Instagram Profile of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-instagram"></i>
                           </div>
@@ -325,7 +325,7 @@ function Footer() {
               <p className="fz-14">
                 © 2025 All Rights Reserved By{" "}
                 <span className="underline main-color">
-                  <a href="/" target="_blank" rel="noreferrer">
+                  <a href="/" target="_blank" rel="noreferrer" aria-label="Visit Sham Marianas F.Z.C Website">
                     Sham Marianas F.Z.C
                   </a>
                 </span>

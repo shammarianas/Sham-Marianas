@@ -100,7 +100,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
         color: '#2c3e50'
       },
       {
-        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas F.Z.C</a>\'',
+        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates" aria-label="Visit Sham Marianas Templates">Designed by Sham Marianas F.Z.C</a>\'',
         margin: [0, 0, 0, 4],
         italics: true,
         color: '#7f8c8d'
@@ -190,7 +190,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
         color: '#2c3e50'
       },
       {
-        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates">Designed by Sham Marianas F.Z.C</a>\'',
+        text: 'Add this small line (preferably with a link): \'<a href="https://www.shammarianas.com/templates" aria-label="Visit Sham Marianas Templates">Designed by Sham Marianas F.Z.C</a>\'',
         margin: [0, 0, 0, 4],
         italics: true,
         color: '#7f8c8d'

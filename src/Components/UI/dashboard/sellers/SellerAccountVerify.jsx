@@ -654,7 +654,7 @@ const formatDate = (date) => {
                     <span className="detail-value">
                       <FiLink style={{ marginRight: "6px" }} />
                       {selectedSeller.portfolioLink && selectedSeller.portfolioLink !== "N/A" ? (
-                        <a href={selectedSeller.portfolioLink} target="_blank" rel="noopener noreferrer">
+                        <a href={selectedSeller.portfolioLink} target="_blank" rel="noopener noreferrer" aria-label={`View ${selectedSeller.name}'s Portfolio`}>
                           View Portfolio
                         </a>
                       ) : (

@@ -25,9 +25,9 @@ function Team() {
                     <img  loading="lazy"  src={item.img} alt="" />
                     {/* <div className="social">
                       <div className="links">
-                        <a
+                        <a 
                           href="https://www.facebook.com/shammarianas
-"
+" aria-label="Sham Marianas Facebook"
                         >
                           <i className="fab fa-facebook-f"></i>
                         </a>
@@ -54,13 +54,13 @@ function Team() {
             </div>
           ))}
 
-          <a href="/contact-us" className="col-lg-3 col-md-6">
+          <a href="/contact-us" className="col-lg-3 col-md-6" aria-label="Contact Us to Join Our Team">
             <div className="item-bord d-flex align-items-center justify-content-center mb-50">
                <div>
                 <h5>
                   Become <br /> Our Member
                 </h5>
-                <a href="/contact-us" className="mt-30">
+                <a href="/contact-us" className="mt-30" aria-label="Contact Us to Join Our Team">
                   <span className="ti-arrow-top-right fz-30"></span>
                 </a>
               </div> 
