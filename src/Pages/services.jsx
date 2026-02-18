@@ -9,7 +9,7 @@ import Header from "../Components/services/Header";
 // import Numbers from "../Components/services/Numbers";
 import Intro2 from "../Components/services/Intro2";
 import Services from "./../Components/services/Services";
-import Contact from "../Components/landing/contact";
+import Contact from "../Components/landing/Contact";
 import Testimonials from "../Components/services/Testimonials";
 import WhatsAppButton from "../Components/whatsappButton";
 import { SEO_CONFIG } from "../utils/seoConfig";
