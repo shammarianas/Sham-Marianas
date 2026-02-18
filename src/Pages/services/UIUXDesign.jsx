@@ -8,25 +8,21 @@ import Marq2 from "../../Components/marq2";
 import Intro from "../../Components/UiUx-Design/Intro";
 import Header from "../../Components/UiUx-Design/Header";
 import UiUx from "../../Components/services/UiUx";
-import SEO from "../../common/SEO";
-import { SEO_CONFIG } from "../../utils/seoConfig";
 
 export default function PageServicesDetails() {
   const main = useRef();
 
   return (
     <>
-    <SEO {...SEO_CONFIG.uiUxDesign} />
-      <body>
-        <Cursor />
-        <ProgressScroll />
-        <Lines />
-        <Header />
-        <Intro />
-        <UiUx />
-        {/* <Feat /> */}
-        <Marq2 />
-      </body>
+      <Cursor />
+      <ProgressScroll />
+      <Lines />
+      <Header />
+      <Intro />
+      <UiUx />
+      {/* <Feat /> */}
+      <Marq2 />
+
     </>
   );
 }

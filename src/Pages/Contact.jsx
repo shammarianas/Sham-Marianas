@@ -4,6 +4,7 @@ import ProgressScroll from "../common/ProgressScroll";
 import SEO from "../common/SEO.jsx";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import loadBackgroudImages from "../common/loadBackgroudImages.js";
+import SchemaMarkup from "../Components/SchemaMarkup";
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -77,9 +78,8 @@ function Contact() {
       } else {
         setSubmitStatus({
           success: false,
-          message: `Failed to send: ${
-            result.error || "Please try again later."
-          }`,
+          message: `Failed to send: ${result.error || "Please try again later."
+            }`,
         });
       }
     } catch (error) {
@@ -121,6 +121,7 @@ function Contact() {
   return (
     <>
       <ProgressScroll />
+      <SchemaMarkup type="agency" data={SEO_CONFIG.contact} />
       <SEO {...SEO_CONFIG.contact} />
       <header
         className="page-header bg-img section-padding valign"

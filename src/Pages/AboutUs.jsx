@@ -9,9 +9,11 @@ import Marq2 from "./../Components/marq2";
 import Testimonials from "../Components/services/Testimonials";
 import SEO from "../common/SEO";
 import { SEO_CONFIG } from "../utils/seoConfig";
+import SchemaMarkup from "../Components/SchemaMarkup";
 function AboutUs() {
   return (
     <>
+      <SchemaMarkup type="about" data={SEO_CONFIG.about} />
       <SEO {...SEO_CONFIG.about} />
       <Header />
       <Intro />

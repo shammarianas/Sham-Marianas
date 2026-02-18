@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const WebDevelopmentPage = () => {
   const sectionOne = {
@@ -71,6 +74,8 @@ const WebDevelopmentPage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.webDevelopment} />
+      <SEO {...SEO_CONFIG.webDevelopment} />
       <HeaderSection
         title="Web Development"
         backgroundImage="/assets/imgs/background/b2.jpg"

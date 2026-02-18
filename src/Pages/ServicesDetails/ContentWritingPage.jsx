@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const ContentServicePage = () => {
   const sectionOne = {
@@ -62,6 +65,8 @@ const ContentServicePage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.content} />
+      <SEO {...SEO_CONFIG.content} />
       <HeaderSection
         title="Content Writing"
         backgroundImage="/assets/imgs/background/bg5.webp"

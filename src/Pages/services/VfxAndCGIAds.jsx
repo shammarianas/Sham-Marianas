@@ -8,24 +8,19 @@ import Marq2 from "../../Components/marq2";
 import Intro from "../../Components/VFXCGIAds/Intro";
 import Header from "../../Components/VFXCGIAds/Header";
 import PhotographyAndVideo from "../../Components/VFXCGIAds/PhotographyAndVideo";
-import SEO from "../../common/SEO";
-import { SEO_CONFIG } from "../../utils/seoConfig";
 
 export default function PageServicesDetails() {
   const main = useRef();
 
   return (
     <>
-    <SEO {...SEO_CONFIG.vfxAndCgiAds} />
-      <body>
-        <Cursor />
-        <ProgressScroll />
-        <Lines />
-        <Header />
-        <Intro />
-        <PhotographyAndVideo />
-        <Marq2 />
-      </body>
+      <Cursor />
+      <ProgressScroll />
+      <Lines />
+      <Header />
+      <Intro />
+      <PhotographyAndVideo />
+      <Marq2 />
     </>
   );
 }

@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const AiAutomationPage = () => {
   const sectionOne = {
@@ -28,7 +31,7 @@ const AiAutomationPage = () => {
         , we believe automation should be both powerful and practical. Our goal is to give you tools that boost productivity, cut costs, and increase accuracy while freeing your team to focus on what truly matters, which is growth.
       </>,
       "From the first consultation to final deployment, we focus on business impact, user experience, and measurable ROI. Every automation solution is built with your industry needs in mind, ensuring that it is not only a fit for today but also a foundation for future growth.",
-       <>
+      <>
         With <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
       </>,
     ],
@@ -58,14 +61,16 @@ const AiAutomationPage = () => {
     {
       question: "How do I get started?",
       answer:
-      <>
-        Make a consultation appointment by visiting our website at  <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>. We will identify automation opportunities and start building a system that will save time, cut costs, and boost productivity.
-   </>
-      },
+        <>
+          Make a consultation appointment by visiting our website at  <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>. We will identify automation opportunities and start building a system that will save time, cut costs, and boost productivity.
+        </>
+    },
   ];
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.aiAutomation} />
+      <SEO {...SEO_CONFIG.aiAutomation} />
       <HeaderSection
         title="AI "
         highlightedText="Automation"
@@ -85,7 +90,7 @@ const AiAutomationPage = () => {
 
           </>,
           "From concept to execution, our automation solutions are crafted with precision, performance, and people in mind. We blend advanced artificial intelligence with practical business logic to create systems that save time and elevate your customer experience.",
-       "With us, your business does not just work. It works smarter."
+          "With us, your business does not just work. It works smarter."
         ]}
         listItems={[
           "Business Process Automation (BPA)",
@@ -108,7 +113,7 @@ const AiAutomationPage = () => {
         imageSrc="/assets/imgs/FAQ.png"
       />
       ;
-       <Marq2 />
+      <Marq2 />
     </>
   );
 };

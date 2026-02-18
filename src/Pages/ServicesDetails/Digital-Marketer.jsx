@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const DigitalMaketerPage = () => {
   const sectionOne = {
@@ -83,6 +86,8 @@ const DigitalMaketerPage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.digitalMarketer} />
+      <SEO {...SEO_CONFIG.digitalMarketer} />
       <HeaderSection
         title="Social Media & Digital Marketing"
         backgroundImage="/assets/imgs/background/b2.jpg"
