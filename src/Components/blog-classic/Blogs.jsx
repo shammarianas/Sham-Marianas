@@ -143,37 +143,37 @@ function Blogs() {
                 <ul className="rest">
                   <li>
                     <span>
-                      <a href="/blog-grid-sidebar">All</a>
+                      <a href="/blog-grid-sidebar" aria-label="View All Blog Posts">All</a>
                     </span>
                     <span className="ml-auto">{blogs.length}</span>
                   </li>
                   <li>
                     <span>
-                      <a href="/blog-grid-sidebar">Business</a>
+                      <a href="/blog-grid-sidebar" aria-label="View Business Blog Posts">Business</a>
                     </span>
                     <span className="ml-auto">{blogs.length}</span>
                   </li>
                   <li>
                     <span>
-                      <a href="/blog-grid-sidebar">Lifestyle</a>
+                      <a href="/blog-grid-sidebar" aria-label="View Lifestyle Blog Posts">Lifestyle</a>
                     </span>
                     <span className="ml-auto">05</span>
                   </li>
                   <li>
                     <span>
-                      <a href="/blog-grid-sidebar">Creative</a>
+                      <a href="/blog-grid-sidebar" aria-label="View Creative Blog Posts">Creative</a>
                     </span>
                     <span className="ml-auto">28</span>
                   </li>
                   <li>
                     <span>
-                      <a href="/blog-grid-sidebar">WordPress</a>
+                      <a href="/blog-grid-sidebar" aria-label="View WordPress Blog Posts">WordPress</a>
                     </span>
                     <span className="ml-auto">17</span>
                   </li>
                   <li>
                     <span>
-                      <a href="/blog-grid-sidebar">Design</a>
+                      <a href="/blog-grid-sidebar" aria-label="View Design Blog Posts">Design</a>
                     </span>
                     <span className="ml-auto">45</span>
                   </li>
@@ -184,7 +184,7 @@ function Blogs() {
                 <div className="item d-flex align-items-center">
                   <div>
                     <div className="img">
-                      <a href="/blog-grid-sidebar">
+                      <a href="/blog-grid-sidebar" aria-label="View Blog Post">
                         <img  loading="lazy"  src="/assets/imgs/blog/c1.jpg" alt="" />
                         <span className="date">
                           <span>
@@ -196,10 +196,10 @@ function Blogs() {
                   </div>
                   <div className="cont">
                     <span className="tag">
-                      <a href="/blog-grid-sidebar">Web Design</a>
+                      <a href="/blog-grid-sidebar" aria-label="View Web Design Blog Post">Web Design</a>
                     </span>
                     <h6>
-                      <a href="/blog-grid-sidebar">
+                      <a href="/blog-grid-sidebar" aria-label="Read more about ways to quickly increase traffic to your website">
                         ways to quickly increase traffic to your website
                       </a>
                     </h6>
@@ -208,7 +208,7 @@ function Blogs() {
                 <div className="item d-flex align-items-center">
                   <div>
                     <div className="img">
-                      <a href="/blog-grid-sidebar">
+                      <a href="/blog-grid-sidebar" aria-label="View Blog Post">
                         <img  loading="lazy"  src="/assets/imgs/blog/c2.jpg" alt="" />
                         <span className="date">
                           <span>
@@ -220,10 +220,10 @@ function Blogs() {
                   </div>
                   <div className="cont">
                     <span className="tag">
-                      <a href="/blog-grid-sidebar">Web Design</a>
+                      <a href="/blog-grid-sidebar" aria-label="View Web Design Blog Post">Web Design</a>
                     </span>
                     <h6>
-                      <a href="/blog-grid-sidebar">
+                      <a href="/blog-grid-sidebar" aria-label="Read more about breaking the rules: using sqlite to demo web">
                         breaking the rules: using sqlite to demo web
                       </a>
                     </h6>
@@ -232,7 +232,7 @@ function Blogs() {
                 <div className="item d-flex align-items-center">
                   <div>
                     <div className="img">
-                      <a href="/blog-grid-sidebar">
+                      <a href="/blog-grid-sidebar" aria-label="View Blog Post">
                         <img  loading="lazy"  src="/assets/imgs/blog/c3.jpg" alt="" />
                         <span className="date">
                           <span>
@@ -244,10 +244,10 @@ function Blogs() {
                   </div>
                   <div className="cont">
                     <span className="tag">
-                      <a href="/blog-grid-sidebar">Web Design</a>
+                      <a href="/blog-grid-sidebar" aria-label="View Web Design Blog Post">Web Design</a>
                     </span>
                     <h6>
-                      <a href="/blog-grid-sidebar">
+                      <a href="/blog-grid-sidebar" aria-label="Read more about building better ui designs with layout grids">
                         building better ui designs with layout grids
                       </a>
                     </h6>
@@ -257,11 +257,11 @@ function Blogs() {
               <div className="widget tags">
                 <h6 className="title-widget">Tags</h6>
                 <div>
-                  <a href="/blog-grid-sidebar">Creative</a>
-                  <a href="/blog-grid-sidebar">Design</a>
-                  <a href="/blog-grid-sidebar">Dark & Light</a>
-                  <a href="/blog-grid-sidebar">Minimal</a>
-                  <a href="/blog-grid-sidebar">Infolio</a>
+                  <a href="/blog-grid-sidebar" aria-label="View Creative Blog Posts">Creative</a>
+                  <a href="/blog-grid-sidebar" aria-label="View Design Blog Posts">Design</a>
+                  <a href="/blog-grid-sidebar" aria-label="View Dark & Light Blog Posts">Dark & Light</a>
+                  <a href="/blog-grid-sidebar" aria-label="View Minimal Blog Posts">Minimal</a>
+                  <a href="/blog-grid-sidebar" aria-label="View Infolio Blog Posts">Infolio</a>
                 </div>
               </div>
             </div>

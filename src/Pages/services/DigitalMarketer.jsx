@@ -7,25 +7,21 @@ import Lines from "../../Components/Lines";
 import Marq2 from "../../Components/marq2";
 import Intro from "../../Components/Digital-Marketing/Intro";
 import Header from "../../Components/Digital-Marketing/Header";
-import Digital from "../../Components/Digital-Marketing/Digital-Marketer";
-import SEO from "../../common/SEO";
-import { SEO_CONFIG } from "../../utils/seoConfig";
+import Digital from "../../Components/Digital-Marketing/Digital-Marketer"
 
 export default function PageServicesDetails() {
   const main = useRef();
 
   return (
     <>
-      <SEO {...SEO_CONFIG.digitalMarketer} />
-      <body>
-        <Cursor />
-        <ProgressScroll />
-        <Lines />
-        <Header />
-        <Intro />
-        <Digital />
-        <Marq2 />
-      </body>
+      <Cursor />
+      <ProgressScroll />
+      <Lines />
+      <Header />
+      <Intro />
+      <Digital />
+      <Marq2 />
+
     </>
   );
 }

@@ -99,7 +99,7 @@ function Next() {
                   <span className="mr-30 fz-30 ti-arrow-left cursor-pointer" onClick={handlePrevClick} style={{ cursor: "pointer" }} />
                   <div>
                     <h6 className="sub-title fz-16 mb-5">Previous Blog</h6>
-                    <a href={`/blog-details/${prevBlog.id}`} className="fz-40 fw-600 stroke next-pre-title">
+                    <a href={`/blog-details/${prevBlog.id}`} className="fz-40 fw-600 stroke next-pre-title" aria-label={`View previous blog: ${prevBlog.title}`}>
                       {prevBlog.title}
                     </a>
                   </div>
@@ -123,7 +123,7 @@ function Next() {
                   <div className="cont d-flex align-items-center">
                     <div>
                       <h6 className="sub-title fz-16 mb-5">Next Blog</h6>
-                      <a href={`/blog-details/${nextBlog.id}`} className="fz-40 fw-600 stroke next-pre-title">
+                      <a href={`/blog-details/${nextBlog.id}`} className="fz-40 fw-600 stroke next-pre-title" aria-label={`View next blog: ${nextBlog.title}`}>
                         {nextBlog.title}
                       </a>
                     </div>
@@ -147,7 +147,7 @@ function Next() {
         </div>
       </div>
       <div>
-        <a href="/blog" className="all-works-butn text-center">
+        <a href="/blog" className="all-works-butn text-center" aria-label="View all blogs">
           <span className="ti-view-grid fz-24 mb-10" />
           <span className="d-block fz-12 text-u ls1">All Blogs</span>
         </a>

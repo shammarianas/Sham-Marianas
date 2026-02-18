@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const BrandingDesignPage = () => {
   const sectionOne = {
@@ -72,6 +75,8 @@ const BrandingDesignPage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.branding} />
+      <SEO {...SEO_CONFIG.branding} />
       <HeaderSection
         title="Branding"
         highlightedText="Design"

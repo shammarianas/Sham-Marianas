@@ -12,7 +12,7 @@ function Feat() {
               </span>
             </h2>
             <div className="ml-auto vi-more">
-              <a href="#0" className="butn butn-sm butn-bord radius-30">
+              <a href="#0" className="butn butn-sm butn-bord radius-30" aria-label="View All How It Works Details">
                 <span>View All</span>
               </a>
               <span className="icon ti-arrow-top-right"></span>

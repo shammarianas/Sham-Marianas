@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const VfxAndAdsPage = () => {
   const sectionOne = {
@@ -69,6 +72,8 @@ const VfxAndAdsPage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.vfxAndCgiAds} />
+      <SEO {...SEO_CONFIG.vfxAndCgiAds} />
       <HeaderSection
         title="VFX & CGI"
         highlightedText="Ads"
@@ -114,7 +119,7 @@ const VfxAndAdsPage = () => {
         imageSrc="/assets/imgs/FAQ.png"
       />
       ;
-       <Marq2 />
+      <Marq2 />
     </>
   );
 };

@@ -33,7 +33,7 @@ function MarqStock() {
             ))}
           </div>
 
-          <a href="#contact" className="overlay-link"></a>
+          <a href="#contact" className="overlay-link" aria-label="Go to Contact Section"></a>
         </div>
       </div>
       <div className="main-marq bord-item">
@@ -57,7 +57,7 @@ function MarqStock() {
             ))}
           </div>
 
-          <a href="#contact" className="overlay-link"></a>
+          <a href="#contact" className="overlay-link" aria-label="Go to Contact Section"></a>
         </div>
       </div>
     </section>

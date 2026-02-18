@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const BoothDesignPage = () => {
   const sectionOne = {
@@ -25,9 +28,9 @@ const BoothDesignPage = () => {
     title: "Designed for the Modern Brand",
     paragraphs: [
       "In today’s fast-moving world of trade shows and expos, standing out is essential. Visitors don’t just look for flashy visuals, they look for experiences. Your booth should feel alive, reflect your brand’s purpose, and create a lasting emotional impact.",
-       "That’s where we come in. Our exhibition booth design services are made for brands that want to be seen, heard, and remembered. We keep every design modern, clean, and easy to explore. Whether you want a minimalist setup or an interactive digital display, our team tailors each detail to fit your goals.",
-       "We also make sure your booth feels comfortable and functional. The flow of space, lighting, materials, and colors, all are thoughtfully chosen to create a setting where people naturally want to step in and engage.",
-        <>
+      "That’s where we come in. Our exhibition booth design services are made for brands that want to be seen, heard, and remembered. We keep every design modern, clean, and easy to explore. Whether you want a minimalist setup or an interactive digital display, our team tailors each detail to fit your goals.",
+      "We also make sure your booth feels comfortable and functional. The flow of space, lighting, materials, and colors, all are thoughtfully chosen to create a setting where people naturally want to step in and engage.",
+      <>
         At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
         , we believe design isn’t about decoration, it’s about communication. Every booth we build is designed to tell your story visually, consistently, and effectively.
       </>
@@ -58,14 +61,16 @@ const BoothDesignPage = () => {
     {
       question: "How can I get started?",
       answer:
-      <>
-        Simply contact  <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, through our website or message our team directly. We’ll schedule a quick consultation to understand your vision and start designing your booth.
-   </>
-      },
+        <>
+          Simply contact  <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, through our website or message our team directly. We’ll schedule a quick consultation to understand your vision and start designing your booth.
+        </>
+    },
   ];
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.boothDesign} />
+      <SEO {...SEO_CONFIG.boothDesign} />
       <HeaderSection
         title="Exhibition "
         highlightedText="Booth"
@@ -105,7 +110,7 @@ const BoothDesignPage = () => {
         imageSrc="/assets/imgs/FAQ.png"
       />
       ;
-       <Marq2 />
+      <Marq2 />
     </>
   );
 };

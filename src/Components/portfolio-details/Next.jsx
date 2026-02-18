@@ -105,7 +105,7 @@ function Next() {
                   </div>
                   <div>
                     <h6 className="sub-title fz-16 mb-5">Prev Project</h6>
-                    <a  href={`/project-details/${prevProject.id}`} className="fz-40 fw-600 stroke next-pre-title">
+                    <a  href={`/project-details/${prevProject.id}`} className="fz-40 fw-600 stroke next-pre-title" aria-label={`View previous project: ${prevProject.title}`}>
                       {prevProject.title}
                     </a>
                   </div>
@@ -129,7 +129,7 @@ function Next() {
                   <div className="cont d-flex align-items-center">
                     <div>
                       <h6 className="sub-title fz-16 mb-5">Next Project</h6>
-                      <a href={`/project-details/${nextProject.id}`} className="fz-40 fw-600 stroke next-pre-title">
+                      <a href={`/project-details/${nextProject.id}`} className="fz-40 fw-600 stroke next-pre-title" aria-label={`View next project: ${nextProject.title}`}>
                         {nextProject.title}
                       </a>
                     </div>
@@ -155,7 +155,7 @@ function Next() {
         </div>
       </div>
       <div>
-        <a href="/portfolio" className="all-works-butn text-center">
+        <a href="/portfolio" className="all-works-butn text-center" aria-label="View all projects">
           <span className="ti-view-grid fz-24 mb-10"></span>
           <span className="d-block fz-12 text-u ls1">All Projects</span>
         </a>

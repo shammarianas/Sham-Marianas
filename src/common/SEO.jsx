@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'; // USE THIS
 import { SEO_CONFIG } from '../utils/seoConfig';
 
 const SEO = ({ 
-  title = "Shammarianas",
+  title = "Sham Marianas F.Z.C",
   description = "Sham Marianas F.Z.C is a top advertising agency that helps businesses grow with digital marketing, brand building, and ROI-focused advertising. We employ tried-and-true marketing techniques to increase our internet presence, draw in new clients, and provide tangible outcomes. Let's grow your company to new heights!", 
   keywords = "Web development, Digital Marketing, SEO, Social Media Marketing, Branding, Advertising Agency", 
   canonical, 
@@ -27,16 +27,6 @@ const SEO = ({
     return `${siteUrl}${path}`;
   };
   
-  // ✅ 1. Decide schema type based on ogType
-  // let schemaType = "agency";
-  // if (ogType === "article") schemaType = "blog";
-  // Agar page main agency page nahi hai to use service schema
-  // else if (location.pathname !== "/") schemaType = "service";
-
-  // ✅ 2. Get the schema data from config
-  // const schemaData = SEO_CONFIG.getSchema(schemaType, {
-  //   title, description, ogImage, publishedTime, author
-  // });
 
   const canonicalUrl = getCanonicalUrl();
   const siteTitle = "Shammarianas";
@@ -71,28 +61,6 @@ const SEO = ({
       <meta name="language" content="English" />
       <meta name="revisit-after" content="7 days" />
       <meta name="author" content="Shammarianas" />
-      
-      {/* Structured Data */}
-      {/* <script type="application/ld+json">
-        {JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          "name": "Shammarianas",
-          "url": siteUrl,
-          "logo": "https://www.shammarianas.com/logo.png",
-          "description": description,
-          "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "Your City",
-            "addressRegion": "Your State",
-            "addressCountry": "Your Country"
-          }
-        })}
-      </script> */}
-
-      {/* <script type="application/ld+json">
-          {JSON.stringify(schemaData)}
-        </script> */}
     </Helmet>
   );
 };

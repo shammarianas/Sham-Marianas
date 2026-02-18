@@ -25,8 +25,8 @@ const Terms = () => {
             Shammarianas is a marketplace for 3D models, game assets, and AR/VR
             content aimed at game developers, artists, and creators. The
             website,{" "}
-            <a href="https://www.meshables.me" className="eula-link">
-              www.Shammarianas.me
+            <a href="https://www.shammarianas.com" className="eula-link" aria-label="Visit shammarianas.com">
+              www.Shammarianas.com
             </a>
             , is owned and operated by Shammarianas (hereafter referred to as
             "Shammarianas"). This End-User License Agreement (the “Agreement,”
@@ -287,17 +287,18 @@ const Terms = () => {
           <p className="eula-paragraph">
             Email:{" "}
             <a
-              href="mailto:yaxrajd@gmail.com"
+              href="mailto:info@shammarianas.com"
               target="_blank"
               className="eula-link"
+              rel="noopener noreferrer"
+              aria-label="Email us at info@shammarianas.com"
             >
-              yaxrajd@gmail.com
+              info@shammarianas.com
             </a>
             <br />
-            Phone: +91 83205 04609
+            Phone: +971 52 803 6012
             <br />
-            Address: 32, Neminath Nagar, Model Town Road, Parvat Patiya, Surat,
-            Gujarat, India
+            Address: Dubai, United Arab Emirates
           </p>
         </div>
       </div>
