@@ -5,17 +5,12 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const VideoProductionPage = () => {
-  // const sectionOne = {
-  //   title: "From Lens to Legacy Visuals That Resonate",
-  //   paragraphs: [
-  //     "Our photography & video production services go far beyond the lens. We don’t just point and shoot,  we tell your brand’s story frame by frame. Whether it’s bold product photography, cinematic brand videos, or crisp lifestyle visuals, we create content that stops the scroll, sparks curiosity, and drives action. Every image we capture is built to speak your message,  loud, clear, and beautifully.",
 
-  //     "From creative planning to final edit, we deliver full-scale visual production tailored for digital impact. Think scroll-stopping social media clips, polished promo videos, striking product shots, and branded storytelling,  all crafted with pro-level lighting, styling, direction, and editing. If your brand needs to be seen and felt, we’re here to bring that vision to life,  one unforgettable visual at a time.",
-  //   ],
-  //   image: "/assets/imgs/PhotographyVideo/08.png",
-  // };
 
   const sectionTwo = {
     title:
@@ -70,6 +65,8 @@ const VideoProductionPage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.photography} />
+      <SEO {...SEO_CONFIG.photography} />
       <HeaderSection
         title="Photography & Video Production"
         backgroundImage="/assets/imgs/background/bg.jpg"
@@ -126,7 +123,7 @@ const VideoProductionPage = () => {
                   cinematic brand videos, or crisp lifestyle visuals, we create
                   content that stops the scroll, sparks curiosity, and drives
                   action. Every image we capture is built to speak your message
-                 ,  loud, clear, and beautifully.
+                  ,  loud, clear, and beautifully.
                 </p>
                 <p className="mb-15 align-text">
                   From creative planning to final edit, we deliver full-scale

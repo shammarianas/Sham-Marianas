@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const UiUxDesignPage = () => {
   const sectionOne = {
@@ -85,6 +88,8 @@ const UiUxDesignPage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.uiUxDesign} />
+      <SEO {...SEO_CONFIG.uiUxDesign} />
       <HeaderSection
         title="UI/UX"
         highlightedText="Design"
@@ -124,7 +129,7 @@ const UiUxDesignPage = () => {
         imageSrc="/assets/imgs/FAQ.png"
       />
       ;
-       <Marq2 />
+      <Marq2 />
     </>
   );
 };

@@ -47,7 +47,7 @@ export const SEO_CONFIG = {
     description: "Launch thriving online stores with Sham Marianas F.Z.C' e-commerce solutions. Secure, scalable platforms designed to boost sales for UAE retailers.",
     keywords: "E e-commerce Dubai, online store UAE, Shopify Dubai, WooCommerce Dubai",
   },
-  Photography: {
+  photography: {
     title: " Photography Video Production Dubai",
     description: " Professional photography and video services creating high-impact visuals for Dubai brands and events.",
     keywords: "photography Dubai, video production UAE, product shoots Dubai",
@@ -401,7 +401,7 @@ export const SEO_CONFIG = {
   privacy: {
     title: " Privacy Policy | Sham Marianas F.Z.C Dubai",
     description: "Sham Marianas F.Z.C Privacy Policy details how we protect your data in Dubai per UAE standards for advertising services. Review our secure practices",
-     keywords: " privacy policy, Dubai agency, Sham Marianas F.Z.C data protection, UAE privacy advertising",
+    keywords: " privacy policy, Dubai agency, Sham Marianas F.Z.C data protection, UAE privacy advertising",
   },
 
   terms: {

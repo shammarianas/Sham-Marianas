@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const ProductDesignPage = () => {
   const sectionOne = {
@@ -82,6 +85,8 @@ const ProductDesignPage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.productDesign} />
+      <SEO {...SEO_CONFIG.productDesign} />
       <HeaderSection
         title="Product Design"
         backgroundImage="/assets/imgs/background/bg3.jpg"
@@ -96,7 +101,7 @@ const ProductDesignPage = () => {
             At{" "}
             <span className="text-bold text-left underline main-color">
               Sham Marianas F.Z.C
-            </span>, 
+            </span>,
             we do more than product design, we bring bold ideas to life.
             Whether it’s a sleek gadget or a smart everyday solution, we turn
             your vision into a tangible product that looks incredible, feels

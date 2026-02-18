@@ -8,24 +8,19 @@ import Marq2 from "../../Components/marq2";
 import Intro from "../../Components/Branding/Intro";
 import Header from "../../Components/Branding/Header";
 import Creative from "../../Components/Branding/Creative";
-import SEO from "../../common/SEO";
-import { SEO_CONFIG } from "../../utils/seoConfig";
 
 export default function PageServicesDetails() {
   const main = useRef();
 
   return (
     <>
-      <SEO seo={SEO_CONFIG.branding} />
-      <body>
-        <Cursor />
-        <ProgressScroll />
-        <Lines />
-        <Header />
-        <Intro />
-        <Creative />
-        <Marq2 />
-      </body>
+      <Cursor />
+      <ProgressScroll />
+      <Lines />
+      <Header />
+      <Intro />
+      <Creative />
+      <Marq2 />
     </>
   );
 }

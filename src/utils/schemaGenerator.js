@@ -60,9 +60,9 @@ export const getSchema = (type, data = {}) => {
     return {
       ...baseSchema,
       "@type": "BlogPosting",
-      "mainEntityOfPage": { 
-        "@type": "WebPage", 
-        "@id": data.url || "" 
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": data.url || ""
       },
       "url": data.url || "",
       "headline": data.title || "",
@@ -73,22 +73,22 @@ export const getSchema = (type, data = {}) => {
         }
       ],
       "author": data.authorName
-        ? { 
-            "@type": "Person", 
-            "name": data.authorName, 
-            "sameAs": data.authorSameAs || [] 
-          }
-        : { 
-            "@type": "Organization", 
-            "name": "Sham Marianas F.Z.C", 
-            "@id": "https://www.shammarianas.com/#agency" 
-          },
+        ? {
+          "@type": "Person",
+          "name": data.authorName,
+          "sameAs": data.authorSameAs || []
+        }
+        : {
+          "@type": "Organization",
+          "name": "Sham Marianas F.Z.C",
+          "@id": "https://www.shammarianas.com/#agency"
+        },
       "publisher": {
         "@type": "Organization",
         "name": "Sham Marianas F.Z.C",
-        "logo": { 
-          "@type": "ImageObject", 
-          "url": "https://www.shammarianas.com/assets/imgs/logo.png" 
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.shammarianas.com/assets/imgs/logo.png"
         }
       },
       "datePublished": data.publishedTime || "",
@@ -128,7 +128,7 @@ export const getSchema = (type, data = {}) => {
   // =========================================================
   //   WEBSITE SCHEMA (Homepage par)
   // =========================================================
-   if (type === "website") {
+  if (type === "website") {
     return {
       ...baseSchema,
       "@type": "WebSite",
@@ -148,7 +148,7 @@ export const getSchema = (type, data = {}) => {
     return null; // Will be handled in getHomepageSchema()
   }
 
-  
+
   // =========================================================
   //   PRODUCT/ASSET SCHEMA (Digital assets par)
   // =========================================================
@@ -254,7 +254,6 @@ export const getContactSchema = () => [
   }
 ];
 
-// utils/schemaGenerator.js mein add karo (end pe)
 
 // Automatic FAQ from blog HTML content
 export const getAutoFaqSchema = (htmlContent = '', blogData = {}) => {
@@ -271,22 +270,22 @@ export const getAutoFaqSchema = (htmlContent = '', blogData = {}) => {
 
   headings.forEach((heading) => {
     const question = heading.textContent.trim();
-    
+
     // Question-like check (starts with What/How/Why/Which etc. ya ? end pe)
     if (
       question &&
       (question.endsWith('?') ||
-       question.toLowerCase().startsWith('what') ||
-       question.toLowerCase().startsWith('how') ||
-       question.toLowerCase().startsWith('why') ||
-       question.toLowerCase().startsWith('tips') ||
-       question.toLowerCase().includes('?'))
+        question.toLowerCase().startsWith('what') ||
+        question.toLowerCase().startsWith('how') ||
+        question.toLowerCase().startsWith('why') ||
+        question.toLowerCase().startsWith('tips') ||
+        question.toLowerCase().includes('?'))
     ) {
       // Next sibling elements tak answer collect karo (p, ul, ol, etc. tak next heading tak)
       let answer = '';
       let nextElement = heading.nextElementSibling;
 
-      while (nextElement && !['H1','H2','H3','H4','H5','H6'].includes(nextElement.tagName)) {
+      while (nextElement && !['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(nextElement.tagName)) {
         answer += nextElement.outerHTML || nextElement.textContent.trim() + ' ';
         nextElement = nextElement.nextElementSibling;
       }

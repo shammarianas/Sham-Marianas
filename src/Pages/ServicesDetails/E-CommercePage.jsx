@@ -5,6 +5,9 @@ import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
+import SchemaMarkup from "../../Components/SchemaMarkup";
 
 const EcommercePage = () => {
   const sectionOne = {
@@ -69,6 +72,8 @@ const EcommercePage = () => {
 
   return (
     <>
+      <SchemaMarkup type="service" data={SEO_CONFIG.ecommerce} />
+      <SEO {...SEO_CONFIG.ecommerce} />
       <HeaderSection
         title="E-Commerce Solutions"
         backgroundImage="/assets/imgs/background/bg4.webp"
