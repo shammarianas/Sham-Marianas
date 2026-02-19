@@ -4,7 +4,7 @@ export const SEO_CONFIG = {
   // =========================================================
   home: {
     title: "Sham Marianas F.Z.C | Advertising Agency in Dubai,UAE",
-    description: "Sham Marianas F.Z.C. Dubai's best advertising agency. Online marketing, social, branding & revenue-boosting strategies.  Let's grow your business in the UAE! ",
+    description: "Sham Marianas F.Z.C. Dubai's best advertising agency. Online marketing, social, branding & revenue strategies. Let's grow your business in the UAE!",
     keywords: " Digital marketing agency Dubai, advertising agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
   },
   about: {
