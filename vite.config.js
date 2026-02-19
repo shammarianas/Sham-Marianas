@@ -1,10 +1,26 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
+import compression from 'vite-plugin-compression';  // ← Add this line
 
 export default defineConfig({
   cacheDir: "node_modules/.vite-cache",
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Add compression plugin here
+    compression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      threshold: 10240, // 10KB se chhoti files compress nahi hogi
+      deleteOriginFile: false, // original files bhi rakhni hain
+    }),
+    // Optional: Brotli compression for even better results
+    compression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 10240,
+    })
+  ],
   assetsInclude: ["**/*.glb", "**/*.gltf", "**/*.jpg", "**/*.png", "**/*.hdr"],
   base: "./",
 
@@ -15,30 +31,47 @@ export default defineConfig({
       transformMixedEsModules: true,
     },
 
-    // ────────────────────────────────────────────────
-    // Terser ko yahan enable kar rahe hain
-    minify: 'terser',                     // ← Ye line sabse zaroori – esbuild ki jagah terser
-
-    terserOptions: {                      // ← Ye optional lekin bohot faydemand
+    // Terser enable kar rahe hain
+    minify: 'terser',
+    terserOptions: {
       compress: {
-        drop_console: true,               // production mein console.log, console.info etc. remove
+        drop_console: true,
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-        passes: 2,                        // 2 baar compression chalao → size thoda aur kam
-        // booleans: true,                // true/false ko !0 / !1 jaise short kar de (optional)
+        passes: 2,
       },
       mangle: {
-        toplevel: true,                   // top-level variables/functions bhi short names de
-        // reserved: ['someImportantVar'], // agar koi naam mat change karna to yahan list karo
+        toplevel: true,
       },
       format: {
-        comments: false,                  // production mein comments hata de (size saving)
+        comments: false,
       },
     },
 
-    // Optional extra settings (recommend)
-    reportCompressedSize: true,           // build ke end mein gzip size bhi batayega
-    // sourcemap: false,                  // production mein false kar do (size kam hota hai)
+    // Manual chunks for code splitting
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core libraries
+          vendor: ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
+          // Three.js and 3D libraries
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+          // Firebase
+          firebase: ['firebase'],
+          // Stripe
+          stripe: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
+          // GSAP
+          gsap: ['gsap', '@gsap/react'],
+          // UI libraries
+          ui: ['swiper', 'aos', 'react-icons'],
+          // Editor related
+          editor: ['react-quill', 'quill'],
+        },
+      },
+    },
+
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 1000, // 1000KB warning limit
   },
 
   define: {
