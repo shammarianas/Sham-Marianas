@@ -26,7 +26,7 @@ import Group from "./Pages/Group";
 import Analytics from "./Pages/Analytics";
 import Terms from "./Pages/Terms";
 import Privacy from "./Pages/Privacy";
-import Contact from "./Pages/contact";
+import Contact from "./Pages/Contact";
 import Blog from "./Pages/Blog";
 import BlogDetails from "./Pages/Blog-details";
 import Portfolio from "./Pages/portfolio";
