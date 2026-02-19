@@ -29,8 +29,8 @@ const SEO = ({
   
 
   const canonicalUrl = getCanonicalUrl();
-  const siteTitle = "Shammarianas";
-  const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
+  const siteTitle = "";
+  const fullTitle = title ? `${title}  ${siteTitle}` : siteTitle;
 
   return (
     <Helmet>
