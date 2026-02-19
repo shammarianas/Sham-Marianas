@@ -11,7 +11,7 @@ import Services from "../Components/landing/Services";
 
 import Team from "../Components/landing/Team";
 import Clients from "../Components/landing/Clients";
-import Contact from "../Components/landing/contact";
+import Contact from "../Components/landing/Contact";
 import Marq2 from "../Components/marq2";
 
 import Cursor from "../common/cusor";
