@@ -108,7 +108,7 @@ export const getSchema = (type, data = {}) => {
       "@type": "Service",
       "serviceType": data.title || "",
       "url": data.url || "",
-      "areaServed": data.areaServed || ["AE"],
+      "areaServed": ["AE"],
       "provider": {
         "@type": "AdvertisingAgency",
         "@id": "https://www.shammarianas.com/#agency",
@@ -121,27 +121,27 @@ export const getSchema = (type, data = {}) => {
         "price": data.price || undefined,
         "availability": data.availability || "https://schema.org/InStock",
         "url": data.url || "https://www.shammarianas.com/services"
-      }
+      } 
     };
   }
 
   // =========================================================
   //   WEBSITE SCHEMA (Homepage par)
   // =========================================================
-  if (type === "website") {
-    return {
-      ...baseSchema,
-      "@type": "WebSite",
-      "url": "https://www.shammarianas.com",
-      "name": "Sham Marianas F.Z.C",
-      "description": "Advertising Agency in Dubai, UAE",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://www.shammarianas.com/search?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    };
-  }
+  // if (type === "website") {
+  //   return {
+  //     ...baseSchema,
+  //     "@type": "WebSite",
+  //     "url": "https://www.shammarianas.com",
+  //     "name": "Sham Marianas F.Z.C",
+  //     "description": "Advertising Agency in Dubai, UAE",
+  //     "potentialAction": {
+  //       "@type": "SearchAction",
+  //       "target": "https://www.shammarianas.com/search?q={search_term_string}",
+  //       "query-input": "required name=search_term_string"
+  //     }
+  //   };
+  // }
 
   // HOMEPAGE ke liye alag function
   if (type === "homepage") {
