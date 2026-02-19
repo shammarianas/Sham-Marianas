@@ -14,6 +14,7 @@ import Testimonials from "../Components/services/Testimonials";
 import WhatsAppButton from "../Components/whatsappButton";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SEO from "../common/SEO.jsx";
+import SchemaMarkup from '../Components/SchemaMarkup.jsx';
 
 export default function PageServices() {
   const main = useRef();
@@ -29,6 +30,7 @@ export default function PageServices() {
   return (
     <>
       {/* <Cursor /> */}
+      <SchemaMarkup type="service" />
       <SEO {...SEO_CONFIG.services} />
       
       <ProgressScroll />
