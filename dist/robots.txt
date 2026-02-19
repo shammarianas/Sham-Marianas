@@ -1,18 +1,17 @@
-# ==================================
-# Robots.txt for shammarianas.com
-# ==================================
-
 User-agent: *
 Allow: /
 
-# Block sensitive or useless paths (only if they exist)
-Disallow: /admin
-Disallow: /login
-Disallow: /contributordashboard
-Disallow: /api
+Disallow: /admin/
+Disallow: /contributordashboard/
+Disallow: /api/
 
-# AI & LLM Crawlers
 User-agent: GPTBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
 Allow: /
 
 User-agent: ChatGPT-User
@@ -30,7 +29,6 @@ Allow: /
 User-agent: Bytespider
 Allow: /
 
-# Block heavy commercial scrapers (recommended)
 User-agent: AhrefsBot
 Disallow: /
 
@@ -43,7 +41,6 @@ Disallow: /
 User-agent: DotBot
 Disallow: /
 
-# Sitemap
 Sitemap: https://www.shammarianas.com/sitemap.xml
 
 
