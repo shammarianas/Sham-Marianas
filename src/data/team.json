@@ -1,17 +1,17 @@
 [
   {
-    "img": "/assets/imgs/team/1.jpg",
-    "name": "Robert De Niro",
-    "subName": "Web Developer"
+    "img": "/assets/imgs/team/1.png",
+    "name": "Adeel Shyk",
+    "subName": "CEO - CFO"
   },
   {
-    "img": "/assets/imgs/team/02.png",
+    "img": "/assets/imgs/team/2.jpeg",
     "name": "Ehtasham ul haq",
-    "subName": "CEO - CCO - CFO"
+    "subName": "CEO - CFO"
   },
   {
     "img": "/assets/imgs/team/3.jpg",
     "name": "Ahmed Khaled",
-    "subName": "Web Designer"
+    "subName": "General Manager"
   }
 ]
