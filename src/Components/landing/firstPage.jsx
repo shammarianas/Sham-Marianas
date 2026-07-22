@@ -24,13 +24,41 @@ const countryOptions = [
   { code: "+00", country: "Other" },
 ];
 
+// WhatsApp number jahan data jayega
+const WHATSAPP_NUMBER = "971528036012";
+
 function FirstPage() {
   const [selectedCountryCode, setSelectedCountryCode] = useState("+971");
   const [selectedRegion, setSelectedRegion] = useState("");
 
+  // form data capture karne ke liye
+  const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [service, setService] = useState("");
+  const [budget, setBudget] = useState("");
+  const [idea, setIdea] = useState("");
+
   useEffect(() => {
     loadBackgroudImages();
   }, []);
+
+  const handleSubmit = () => {
+    const message =
+      `New Project Brief\n\n` +
+      `Name: ${name}\n` +
+      `Company: ${company}\n` +
+      `Email: ${email}\n` +
+      `Contact Number: ${selectedCountryCode} ${phone}\n` +
+      `Service: ${service}\n` +
+      `Budget: ${budget}\n` +
+      `Project Idea: ${idea || "N/A"}`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    window.open(whatsappUrl, "_blank");
+  };
 
   return (
     <header className="main-header valign" style={{ position: "relative", overflow: "hidden" }}>
@@ -56,9 +84,9 @@ function FirstPage() {
           <div className="col-lg-6">
             <div className="caption" style={{ maxWidth: "620px" }}>
               <h1 className="new">Let's Scale Your Business </h1>
-              <h4>
+              <h5>
                 We Build <span className="main-color">Brand</span>  the Future Remembers
-              </h4>
+              </h5>
 
             </div>
 
@@ -86,14 +114,26 @@ function FirstPage() {
                     <label style={{ display: "block", color: "#fff", marginBottom: "6px" }}>
                       Name *
                     </label>
-                    <input type="text" class="input" placeholder="Your name" />
+                    <input
+                      type="text"
+                      class="input"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                   </div>
 
                   <div className="width-50">
                     <label style={{ display: "block", color: "#fff", marginBottom: "6px" }}>
                       Company *
                     </label>
-                    <input type="text" class="input" placeholder="Your company" />
+                    <input
+                      type="text"
+                      class="input"
+                      placeholder="Your company"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                    />
                   </div>
                 </div>
 
@@ -102,7 +142,13 @@ function FirstPage() {
                     <label style={{ display: "block", color: "#fff", marginBottom: "6px" }}>
                       Email *
                     </label>
-                    <input type="email" class="input" placeholder="you@example.com" />
+                    <input
+                      type="email"
+                      class="input"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
 
                   <div className="width-50">
@@ -132,6 +178,8 @@ function FirstPage() {
                       <input
                         type="tel"
                         placeholder="123 4567"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                       />
                     </div>
                   </div>
@@ -142,7 +190,10 @@ function FirstPage() {
                     <label style={{ display: "block", color: "#fff", marginBottom: "6px" }}>
                       Service *
                     </label>
-                    <select class="input" defaultValue=""
+                    <select
+                      class="input"
+                      value={service}
+                      onChange={(e) => setService(e.target.value)}
                       style={{
                         width: "100%",
                         padding: "1rem",
@@ -157,11 +208,19 @@ function FirstPage() {
                       <option value="" disabled>
                         Please choose an option
                       </option>
-                      <option value="AI Commercial Production">AI Commercial Production</option>
-                      <option value="CGI / FOOH Activation">CGI / FOOH Activation</option>
-                      <option value="Premium Video Production">Premium Video Production</option>
-                      <option value="Hybrid AI + CGI + VFX">Hybrid AI + CGI + VFX</option>
-                      <option value="Not sure yet">Not sure yet</option>
+                      <option value="Branding Design">Branding Design</option>
+                      <option value="UI-UX Design">UI-UX Design</option>
+                      <option value="Web Development">Web Development</option>
+                      <option value="E-Commerce Solutions">E-Commerce Solutions</option>
+                      <option value="Content Writing">Content Writing</option>
+                      <option value="Product Design">Product Design</option>
+                      <option value="Social Media & Digital Marketing">Social Media & Digital Marketing</option>
+                      <option value="Photography & Video Production">Photography & Video Production</option>
+                      <option value="VFX and CGI ADs">VFX and CGI ADs</option>
+                      <option value="Print Media Solution">Print Media Solution</option>
+                      <option value="AI & Automation">AI & Automation</option>
+                      <option value="Exhibition Booth Design">Exhibition Booth Design</option>
+
                     </select>
                   </div>
 
@@ -169,7 +228,10 @@ function FirstPage() {
                     <label style={{ display: "block", color: "#fff", marginBottom: "6px" }}>
                       Budget *
                     </label>
-                    <select class="input" defaultValue=""
+                    <select
+                      class="input"
+                      value={budget}
+                      onChange={(e) => setBudget(e.target.value)}
                       style={{
                         width: "100%",
                         padding: "1rem",
@@ -184,6 +246,7 @@ function FirstPage() {
                       <option value="" disabled>
                         Please choose an option
                       </option>
+                      <option value="$3,000 - $5,000">$1500 - $3,000</option>
                       <option value="$3,000 - $5,000">$3,000 - $5,000</option>
                       <option value="$5,000 - $10,000">$5,000 - $10,000</option>
                       <option value="$10,000 - $15,000">$10,000 - $15,000</option>
@@ -195,12 +258,14 @@ function FirstPage() {
 
                 <div className="col-12">
                   <label style={{ display: "block", color: "#fff", marginBottom: "6px" }}>
-                    Project Idea — optional
+                    Project Idea (optional)
                   </label>
                   <textarea
                     rows="4"
                      className="input"
                     placeholder="Share your idea, references, or goals..."
+                    value={idea}
+                    onChange={(e) => setIdea(e.target.value)}
                   />
                 </div>
               
@@ -213,6 +278,7 @@ function FirstPage() {
               <a
                 type="submit"
                 className="butn butn-sm butn-bg main-colorbg radius-5"
+                onClick={handleSubmit}
               >
                 Submit
               </a>

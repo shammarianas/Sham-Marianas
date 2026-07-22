@@ -288,7 +288,7 @@ const Navbar = () => {
                   >
                     <span className="rolling-text">Services</span>
                   </Link>
-                  <ul className="dropdown-menu">
+                  <ul className="dropdown-menu services-dropdown-menu">
                     <li>
                       <Link className="dropdown-item" to="/services">
                         Branding Design
