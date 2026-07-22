@@ -92,9 +92,8 @@ const Navbar = () => {
           setUsername(profileData.username || null);
 
           if (profileData.firstName || profileData.lastName) {
-            const fullName = `${profileData.firstName || ""} ${
-              profileData.lastName || ""
-            }`.trim();
+            const fullName = `${profileData.firstName || ""} ${profileData.lastName || ""
+              }`.trim();
             setDisplayName(fullName);
           } else if (profileData.username) {
             setDisplayName(profileData.username);
@@ -115,9 +114,8 @@ const Navbar = () => {
             if (contributorData.username) {
               setDisplayName(contributorData.username);
             } else if (contributorData.firstName || contributorData.lastName) {
-              const fullName = `${contributorData.firstName || ""} ${
-                contributorData.lastName || ""
-              }`.trim();
+              const fullName = `${contributorData.firstName || ""} ${contributorData.lastName || ""
+                }`.trim();
               setDisplayName(fullName);
             } else if (contributorData.displayName) {
               setDisplayName(contributorData.displayName);
@@ -281,7 +279,8 @@ const Navbar = () => {
                   className="nav-item dropdown"
                 >
                   <Link
-                    className="nav-link"
+                     className="nav-link dropdown-toggle"
+                    data-toggle="dropdown"
                     to="/services"
                     role="button"
                     aria-haspopup="true"
@@ -289,6 +288,68 @@ const Navbar = () => {
                   >
                     <span className="rolling-text">Services</span>
                   </Link>
+                  <ul className="dropdown-menu">
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        Branding Design
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        UI-UX Design
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        Web Development
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        E-Commerce Solutions
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        Content Writing
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        Product Design
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        Social Media & Digital Marketing
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        Photography & Video Production
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        VFX and CGI ADs
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        Print Media Solution
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        AI & Automation
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/services">
+                        Exhibition Booth Design
+                      </Link>
+                    </li>
+                  </ul>
                 </li>
                 <li
                   onMouseLeave={handleDropdownMouseLeave}
@@ -368,9 +429,8 @@ const Navbar = () => {
 
         {/* Mobile Menu Overlay for Company Pages */}
         <div
-          className={`mobile-menu-overlay ${
-            isMobileMenuOpen ? "open" : ""
-          }`}
+          className={`mobile-menu-overlay ${isMobileMenuOpen ? "open" : ""
+            }`}
           style={{
             position: "fixed",
             top: 0,
@@ -418,9 +478,8 @@ const Navbar = () => {
                       >
                         <span>{label}</span>
                         <i
-                          className={`fas fa-chevron-${
-                            isMoreMenuOpen ? "up" : "down"
-                          }`}
+                          className={`fas fa-chevron-${isMoreMenuOpen ? "up" : "down"
+                            }`}
                         ></i>
                       </div>
 
@@ -542,7 +601,7 @@ const Navbar = () => {
             <Search />
           </>
         )}
-        
+
         <div className="right">
           <div className="nav_buttons">
             <div className="navbar_dropdown">
@@ -555,7 +614,7 @@ const Navbar = () => {
                 </Link>
               ) : (
                 <Link to="/Login" className="butn butn-sm butn-bg main-colorbg radius-5">
-                    <span className="text">Sign In</span>
+                  <span className="text">Sign In</span>
                 </Link>
               )}
 
@@ -644,9 +703,8 @@ const Navbar = () => {
                         >
                           <span>{label}</span>
                           <i
-                            className={`fas fa-chevron-${
-                              isMoreMenuOpen ? "up" : "down"
-                            }`}
+                            className={`fas fa-chevron-${isMoreMenuOpen ? "up" : "down"
+                              }`}
                           ></i>
                         </div>
 
