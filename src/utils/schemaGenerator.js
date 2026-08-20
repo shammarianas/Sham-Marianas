@@ -1,262 +1,566 @@
 // utils/schemaGenerator.js
-export const getSchema = (type, data = {}) => {
-  const baseSchema = { "@context": "https://schema.org" };
 
-  // =========================================================
-  //   AGENCY/ORGANIZATION SCHEMA (Global - har page par)
-  // =========================================================
-  if (type === "agency") {
-    return {
-      ...baseSchema,
-      "@type": "AdvertisingAgency",
-      "@id": "https://www.shammarianas.com/#agency",
-      "name": "Sham Marianas F.Z.C",
-      "url": "https://www.shammarianas.com",
-      "logo": "https://www.shammarianas.com/assets/imgs/logo.png",
-      "image": {
-        "@type": "ImageObject",
-        "url": "https://www.shammarianas.com/assets/imgs/arrow-image.webp"
-      },
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Dubai",
-        "addressCountry": "AE"
-      },
-      "contactPoint": [
-        {
-          "@type": "ContactPoint",
-          "telephone": "+971528036012",
-          "contactType": "customer service",
-          "url": "https://www.shammarianas.com/contact-us",
-          "areaServed": ["AE", "Worldwide"],
-          "availableLanguage": ["English"]
-        },
-        {
-          "@type": "ContactPoint",
-          "telephone": "+923116788423",
-          "contactType": "customer service",
-          "areaServed": ["PK"],
-          "availableLanguage": ["English", "Urdu"]
-        }
-      ],
-      "email": "info@shammarianas.com",
-      "priceRange": "$$",
-      "foundingDate": "2022",
-      "sameAs": [
-        "https://www.youtube.com/c/ShamMarianasSM",
-        "https://www.facebook.com/shammarianas",
-        "https://www.behance.net/shammarianas",
-        "https://www.pinterest.com/shammarianas/",
-        "https://www.instagram.com/sham_marianas/",
-        "https://www.linkedin.com/in/shammarianas/"
-      ]
-    };
-  }
+const SITE_URL = "https://www.shammarianas.com";
+const ORG_ID = `${SITE_URL}/#organization`;
+const WEBSITE_ID = `${SITE_URL}/#website`;
 
-  // =========================================================
-  //   BLOG SCHEMA (Dynamic - blog page par)
-  // =========================================================
-  if (type === "blog") {
-    return {
-      ...baseSchema,
-      "@type": "BlogPosting",
-      "mainEntityOfPage": {
-        "@type": "WebPage",
-        "@id": data.url || ""
-      },
-      "url": data.url || "",
-      "headline": data.title || "",
-      "image": [
-        {
-          "@type": "ImageObject",
-          "url": data.ogImage || "https://www.shammarianas.com/assets/imgs/arrow-image.webp"
-        }
-      ],
-      "author": data.authorName
-        ? {
-          "@type": "Person",
-          "name": data.authorName,
-          "sameAs": data.authorSameAs || []
-        }
-        : {
-          "@type": "Organization",
-          "name": "Sham Marianas F.Z.C",
-          "@id": "https://www.shammarianas.com/#agency"
-        },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Sham Marianas F.Z.C",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://www.shammarianas.com/assets/imgs/logo.png"
-        }
-      },
-      "datePublished": data.publishedTime || "",
-      "dateModified": data.updatedTime || data.publishedTime || "",
-      "description": data.description || "",
-      "wordCount": data.wordCount || undefined,
-      "keywords": data.keywords || undefined
-    };
-  }
-
-  // =========================================================
-  //   SERVICE SCHEMA (Dynamic - service page par)
-  // =========================================================
-  if (type === "service") {
-    return {
-      ...baseSchema,
-      "@type": "Service",
-      "serviceType": data.title || "",
-      "url": data.url || "",
-      "areaServed": ["AE"],
-      "provider": {
-        "@type": "AdvertisingAgency",
-        "@id": "https://www.shammarianas.com/#agency",
-        "name": "Sham Marianas F.Z.C"
-      },
-      "description": data.description || "",
-      "offers": {
-        "@type": "Offer",
-        "priceCurrency": data.priceCurrency || "AED",
-        "price": data.price || undefined,
-        "availability": data.availability || "https://schema.org/InStock",
-        "url": data.url || "https://www.shammarianas.com/services"
-      } 
-    };
-  }
-
-  // =========================================================
-  //   WEBSITE SCHEMA (Homepage par)
-  // =========================================================
-  // if (type === "website") {
-  //   return {
-  //     ...baseSchema,
-  //     "@type": "WebSite",
-  //     "url": "https://www.shammarianas.com",
-  //     "name": "Sham Marianas F.Z.C",
-  //     "description": "Advertising Agency in Dubai, UAE",
-  //     "potentialAction": {
-  //       "@type": "SearchAction",
-  //       "target": "https://www.shammarianas.com/search?q={search_term_string}",
-  //       "query-input": "required name=search_term_string"
-  //     }
-  //   };
-  // }
-
-  // HOMEPAGE ke liye alag function
-  if (type === "homepage") {
-    return null; // Will be handled in getHomepageSchema()
-  }
-
-
-  // =========================================================
-  //   PRODUCT/ASSET SCHEMA (Digital assets par)
-  // =========================================================
-  if (type === "product") {
-    return {
-      ...baseSchema,
-      "@type": "Product",
-      "name": data.title || "",
-      "description": data.description || "",
-      "image": data.image || "https://www.shammarianas.com/assets/imgs/arrow-image.webp",
-      "url": data.url || "",
-      "offers": {
-        "@type": "Offer",
-        "price": data.price === "free" ? "0" : data.price || "",
-        "priceCurrency": data.priceCurrency || "AED",
-        "availability": data.availability || "https://schema.org/InStock"
-      },
-      "brand": {
-        "@type": "Brand",
-        "name": "Sham Marianas F.Z.C"
-      }
-    };
-  }
-
-  // =========================================================
-  //   PORTFOLIO SCHEMA (Project page par)
-  // =========================================================
-  if (type === "portfolio") {
-    return {
-      ...baseSchema,
-      "@type": "CreativeWork",
-      "name": data.title || "",
-      "description": data.description || "",
-      "image": data.image || "https://www.shammarianas.com/assets/imgs/arrow-image.webp",
-      "url": data.url || "",
-      "author": {
-        "@type": "AdvertisingAgency",
-        "@id": "https://www.shammarianas.com/#agency",
-        "name": "Sham Marianas F.Z.C"
-      },
-      "datePublished": data.datePublished || "",
-      "keywords": data.keywords || ""
-    };
-  }
-
-  return null;
+// =========================================================
+//   ORGANIZATION SCHEMA (Global - reference ke tor par har page par reuse hoga)
+// =========================================================
+const organizationSchema = {
+  "@type": "Organization",
+  "@id": ORG_ID,
+  "name": "Sham Marianas F.Z.C.",
+  "url": `${SITE_URL}/`,
+  "logo": {
+    "@type": "ImageObject",
+    "@id": `${SITE_URL}/#logo`,
+    "url": `${SITE_URL}/assets/imgs/logo.png`,
+    "contentUrl": `${SITE_URL}/assets/imgs/logo.png`
+  },
+  "image": `${SITE_URL}/assets/imgs/arrow-image.webp`,
+  "email": "info@shammarianas.com",
+  "telephone": "+971528036012",
+  "legalName": "Sham Marianas F.Z.C.",
+  "foundingDate": "2022",
+  "priceRange": "$$",
+  "knowsLanguage": ["en", "ur"],
+  "areaServed": [
+    { "@type": "Country", "name": "United Arab Emirates" },
+    { "@type": "Country", "name": "Pakistan" },
+    { "@type": "Place", "name": "Worldwide" }
+  ],
+  "knowsAbout": [
+    "Advertising",
+    "Branding",
+    "Digital Marketing",
+    "Search Engine Optimization",
+    "SEO",
+    "AI Optimization",
+    "Generative Engine Optimization",
+    "AI Search Visibility",
+    "Social Media Marketing",
+    "Web Development",
+    "E-Commerce",
+    "Graphic Design",
+    "UI UX Design",
+    "Content Writing",
+    "Product Design",
+    "Photography",
+    "Video Production",
+    "VFX and CGI",
+    "Print Media",
+    "AI Automation",
+    "Exhibition Booth Design"
+  ],
+  "sameAs": [
+    "https://www.youtube.com/c/ShamMarianasSM",
+    "https://www.facebook.com/shammarianas",
+    "https://www.behance.net/shammarianas",
+    "https://www.pinterest.com/shammarianas/",
+    "https://www.instagram.com/sham_marianas/",
+    "https://www.linkedin.com/in/shammarianas/"
+  ],
+  "address": [
+    { "@type": "PostalAddress", "addressLocality": "Dubai", "addressCountry": "AE" },
+    { "@type": "PostalAddress", "addressLocality": "Multan", "addressCountry": "PK" }
+  ],
+  "contactPoint": [
+    {
+      "@type": "ContactPoint",
+      "telephone": "+971528036012",
+      "contactType": "customer service",
+      "areaServed": "AE",
+      "availableLanguage": ["English"]
+    },
+    {
+      "@type": "ContactPoint",
+      "telephone": "+923116788423",
+      "contactType": "customer service",
+      "areaServed": "PK",
+      "availableLanguage": ["English", "Urdu"]
+    }
+  ]
 };
 
 // =========================================================
-//   Helper Functions (har page ke liye ready-to-use)
+//   WEBSITE SCHEMA (Global - reference ke tor par reuse hoga)
+// =========================================================
+const websiteSchema = {
+  "@type": "WebSite",
+  "@id": WEBSITE_ID,
+  "url": `${SITE_URL}/`,
+  "name": "Sham Marianas F.Z.C.",
+  "publisher": { "@id": ORG_ID },
+  "inLanguage": "en"
+};
+
+// =========================================================
+//   Breadcrumb Helper (har page ke liye reuse hoga)
+// =========================================================
+const buildBreadcrumb = (id, items) => ({
+  "@type": "BreadcrumbList",
+  "@id": id,
+  "itemListElement": items.map((item, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": item.name,
+    "item": item.url
+  }))
+});
+
+const homeCrumb = { name: "Home", url: `${SITE_URL}/` };
+
+// =========================================================
+//   getSchema: single-node generator per type
+//   (baaki file ka dispatcher-based logic same rakha gaya hai)
+// =========================================================
+export const getSchema = (type, data = {}) => {
+  switch (type) {
+    // -----------------------------------------------------
+    // Core global nodes
+    // -----------------------------------------------------
+    case "organization":
+      return organizationSchema;
+
+    case "website":
+      return websiteSchema;
+
+    // -----------------------------------------------------
+    // HOMEPAGE
+    // -----------------------------------------------------
+    case "homepage":
+      return {
+        "@type": "WebPage",
+        "@id": `${SITE_URL}/#webpage`,
+        "url": `${SITE_URL}/`,
+        "name": data.title || "Sham Marianas F.Z.C. | Advertising Agency in Dubai, UAE",
+        "isPartOf": { "@id": WEBSITE_ID },
+        "about": { "@id": ORG_ID },
+        "mainEntity": { "@id": ORG_ID },
+        "publisher": { "@id": ORG_ID },
+        "inLanguage": "en"
+      };
+
+    // -----------------------------------------------------
+    // ABOUT PAGE
+    // -----------------------------------------------------
+    case "about":
+      return {
+        "@type": "AboutPage",
+        "@id": `${SITE_URL}/about#webpage`,
+        "url": `${SITE_URL}/about`,
+        "name": "About Sham Marianas F.Z.C.",
+        "isPartOf": { "@id": WEBSITE_ID },
+        "about": { "@id": ORG_ID },
+        "mainEntity": { "@id": ORG_ID },
+        "breadcrumb": { "@id": `${SITE_URL}/about#breadcrumb` },
+        "inLanguage": "en"
+      };
+
+    // -----------------------------------------------------
+    // SERVICES LISTING PAGE
+    // -----------------------------------------------------
+    case "servicesListing":
+      return {
+        "@type": "CollectionPage",
+        "@id": `${SITE_URL}/services#webpage`,
+        "url": `${SITE_URL}/services`,
+        "name": "Services | Sham Marianas F.Z.C.",
+        "isPartOf": { "@id": WEBSITE_ID },
+        "about": { "@id": ORG_ID },
+        "publisher": { "@id": ORG_ID },
+        "breadcrumb": { "@id": `${SITE_URL}/services#breadcrumb` },
+        "inLanguage": "en"
+      };
+
+    // -----------------------------------------------------
+    // INDIVIDUAL SERVICE PAGE (Dynamic)
+    // -----------------------------------------------------
+    case "service": {
+      const url = data.url || "";
+      return {
+        "@type": "Service",
+        "@id": `${url}#service`,
+        "name": data.title || "",
+        "url": url,
+        "description": data.description || "",
+        "provider": { "@id": ORG_ID },
+        "areaServed": data.areaServed || [
+          { "@type": "Country", "name": "United Arab Emirates" },
+          { "@type": "Country", "name": "Pakistan" },
+          { "@type": "Place", "name": "Worldwide" }
+        ],
+        "serviceType": data.serviceType || (data.title ? [data.title] : []),
+        ...(data.price
+          ? {
+              "offers": {
+                "@type": "Offer",
+                "priceCurrency": data.priceCurrency || "AED",
+                "price": data.price,
+                "availability": data.availability || "https://schema.org/InStock",
+                "url": url
+              }
+            }
+          : {})
+      };
+    }
+
+    // -----------------------------------------------------
+    // BLOG LISTING PAGE
+    // -----------------------------------------------------
+    case "blogListing":
+      return {
+        "@type": "Blog",
+        "@id": `${SITE_URL}/blog#blog`,
+        "url": `${SITE_URL}/blog`,
+        "name": "Sham Marianas F.Z.C. Blog",
+        "publisher": { "@id": ORG_ID },
+        "inLanguage": "en"
+      };
+
+    // -----------------------------------------------------
+    // INDIVIDUAL BLOG ARTICLE (Dynamic)
+    // -----------------------------------------------------
+    case "blog": {
+      const url = data.url || "";
+      return {
+        "@type": "BlogPosting",
+        "@id": `${url}#article`,
+        "url": url,
+        "headline": data.title || "",
+        "description": data.description || "",
+        "mainEntityOfPage": { "@id": `${url}#webpage` },
+        "publisher": { "@id": ORG_ID },
+        "author": data.authorName
+          ? {
+              "@type": "Person",
+              "name": data.authorName,
+              "sameAs": data.authorSameAs || []
+            }
+          : { "@type": "Organization", "@id": ORG_ID, "name": "Sham Marianas F.Z.C." },
+        "image": {
+          "@type": "ImageObject",
+          "url": data.ogImage || `${SITE_URL}/assets/imgs/arrow-image.webp`
+        },
+        "datePublished": data.publishedTime || "",
+        "dateModified": data.updatedTime || data.publishedTime || "",
+        "wordCount": data.wordCount || undefined,
+        "keywords": data.keywords || undefined,
+        "inLanguage": "en"
+      };
+    }
+
+    // -----------------------------------------------------
+    // PORTFOLIO LISTING PAGE
+    // -----------------------------------------------------
+    case "portfolioListing":
+      return {
+        "@type": "CollectionPage",
+        "@id": `${SITE_URL}/portfolio#webpage`,
+        "url": `${SITE_URL}/portfolio`,
+        "name": "Portfolio | Sham Marianas F.Z.C.",
+        "isPartOf": { "@id": WEBSITE_ID },
+        "about": { "@id": ORG_ID },
+        "publisher": { "@id": ORG_ID },
+        "breadcrumb": { "@id": `${SITE_URL}/portfolio#breadcrumb` },
+        "inLanguage": "en"
+      };
+
+    // -----------------------------------------------------
+    // INDIVIDUAL PORTFOLIO PROJECT (Dynamic)
+    // -----------------------------------------------------
+    case "portfolio": {
+      const url = data.url || "";
+      return {
+        "@type": "CreativeWork",
+        "@id": `${url}#project`,
+        "url": url,
+        "name": data.title || "",
+        "description": data.description || "",
+        "creator": { "@id": ORG_ID },
+        "publisher": { "@id": ORG_ID },
+        "image": [data.image || `${SITE_URL}/assets/imgs/arrow-image.webp`],
+        "datePublished": data.datePublished || "",
+        "keywords": data.keywords || "",
+        "inLanguage": "en"
+      };
+    }
+
+    // -----------------------------------------------------
+    // CONTACT PAGE
+    // -----------------------------------------------------
+    case "contact":
+      return {
+        "@type": "ContactPage",
+        "@id": `${SITE_URL}/contact#webpage`,
+        "url": `${SITE_URL}/contact`,
+        "name": "Contact Sham Marianas F.Z.C.",
+        "isPartOf": { "@id": WEBSITE_ID },
+        "about": { "@id": ORG_ID },
+        "mainEntity": { "@id": ORG_ID },
+        "breadcrumb": { "@id": `${SITE_URL}/contact#breadcrumb` },
+        "inLanguage": "en"
+      };
+
+    // -----------------------------------------------------
+    // TEMPLATES PAGE
+    // -----------------------------------------------------
+    case "templates":
+      return {
+        "@type": "CollectionPage",
+        "@id": `${SITE_URL}/templates#webpage`,
+        "url": `${SITE_URL}/templates`,
+        "name": "Templates | Sham Marianas F.Z.C.",
+        "isPartOf": { "@id": WEBSITE_ID },
+        "about": { "@id": ORG_ID },
+        "publisher": { "@id": ORG_ID },
+        "inLanguage": "en"
+      };
+
+    // -----------------------------------------------------
+    // CATEGORY PAGE (Dynamic - fonts, icons, mockups, etc.)
+    // -----------------------------------------------------
+    case "category": {
+      const url = data.url || "";
+      return {
+        "@type": "CollectionPage",
+        "@id": `${url}#webpage`,
+        "url": url,
+        "name": data.title ? `${data.title} | Sham Marianas F.Z.C.` : "",
+        "isPartOf": { "@id": WEBSITE_ID },
+        "about": { "@id": ORG_ID },
+        "publisher": { "@id": ORG_ID },
+        "breadcrumb": { "@id": `${url}#breadcrumb` },
+        "inLanguage": "en"
+      };
+    }
+
+    // -----------------------------------------------------
+    // PRODUCT/ASSET SCHEMA (Digital assets par) - purana logic, org reference update kiya
+    // -----------------------------------------------------
+    case "product":
+      return {
+        "@type": "Product",
+        "name": data.title || "",
+        "description": data.description || "",
+        "image": data.image || `${SITE_URL}/assets/imgs/arrow-image.webp`,
+        "url": data.url || "",
+        "offers": {
+          "@type": "Offer",
+          "price": data.price === "free" ? "0" : data.price || "",
+          "priceCurrency": data.priceCurrency || "AED",
+          "availability": data.availability || "https://schema.org/InStock"
+        },
+        "brand": { "@id": ORG_ID }
+      };
+
+    default:
+      return null;
+  }
+};
+
+// =========================================================
+//   Helper Functions (har page ke liye ready-to-use @graph)
 // =========================================================
 
-// Homepage ke liye schema
-export const getHomepageSchema = () => [
-  getSchema("website"),
-  getSchema("agency")
-];
+// Homepage
+export const getHomepageSchema = () => ({
+  "@context": "https://schema.org",
+  "@graph": [organizationSchema, websiteSchema, getSchema("homepage")]
+});
 
-// Blog page ke liye schema
+// About page
+export const getAboutSchema = () => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    getSchema("about"),
+    buildBreadcrumb(`${SITE_URL}/about#breadcrumb`, [
+      homeCrumb,
+      { name: "About", url: `${SITE_URL}/about` }
+    ])
+  ]
+});
+
+// Services listing page
+export const getServicesListingSchema = () => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    getSchema("servicesListing"),
+    buildBreadcrumb(`${SITE_URL}/services#breadcrumb`, [
+      homeCrumb,
+      { name: "Services", url: `${SITE_URL}/services` }
+    ])
+  ]
+});
+
+// Individual service page
+export const getServiceSchema = (serviceData) => {
+  const url = serviceData.url || "";
+  const graph = [
+    getSchema("service", serviceData),
+    {
+      "@type": "WebPage",
+      "@id": `${url}#webpage`,
+      "url": url,
+      "name": serviceData.title ? `${serviceData.title} | Sham Marianas F.Z.C.` : "",
+      "isPartOf": { "@id": WEBSITE_ID },
+      "about": { "@id": `${url}#service` },
+      "breadcrumb": { "@id": `${url}#breadcrumb` },
+      "inLanguage": "en"
+    },
+    buildBreadcrumb(`${url}#breadcrumb`, [
+      homeCrumb,
+      { name: "Services", url: `${SITE_URL}/services` },
+      { name: serviceData.title || "", url }
+    ])
+  ];
+
+  // Agar page par actually visible FAQs hain to unhe serviceData.faqs mein pass karo
+  if (Array.isArray(serviceData.faqs) && serviceData.faqs.length > 0) {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      "mainEntity": serviceData.faqs.map((item) => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": { "@type": "Answer", "text": item.answer }
+      }))
+    });
+  }
+
+  return { "@context": "https://schema.org", "@graph": graph };
+};
+
+// Blog listing page
+export const getBlogListingSchema = () => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    getSchema("blogListing"),
+    {
+      "@type": "CollectionPage",
+      "@id": `${SITE_URL}/blog#webpage`,
+      "url": `${SITE_URL}/blog`,
+      "name": "Digital Marketing, SEO, AI & Branding Blog",
+      "isPartOf": { "@id": WEBSITE_ID },
+      "about": { "@id": `${SITE_URL}/blog#blog` },
+      "breadcrumb": { "@id": `${SITE_URL}/blog#breadcrumb` },
+      "inLanguage": "en"
+    },
+    buildBreadcrumb(`${SITE_URL}/blog#breadcrumb`, [
+      homeCrumb,
+      { name: "Blog", url: `${SITE_URL}/blog` }
+    ])
+  ]
+});
+
+// Individual blog article page
 export const getBlogSchema = (blogData) => {
-  const schemas = [
-    getSchema("agency"),
-    getSchema("blog", blogData)
+  const url = blogData.url || "";
+  const graph = [
+    getSchema("blog", blogData),
+    {
+      "@type": "WebPage",
+      "@id": `${url}#webpage`,
+      "url": url,
+      "name": blogData.title || "",
+      "isPartOf": { "@id": WEBSITE_ID },
+      "about": { "@id": `${url}#article` },
+      "breadcrumb": { "@id": `${url}#breadcrumb` }
+    },
+    buildBreadcrumb(`${url}#breadcrumb`, [
+      homeCrumb,
+      { name: "Blog", url: `${SITE_URL}/blog` },
+      { name: blogData.title || "", url }
+    ])
   ];
 
   // Auto FAQ generate karo agar content available ho
-  if (blogData.content) {  // blog.content HTML string hai
-    const faqSchema = getAutoFaqSchema(blogData.content, blogData);
-    if (faqSchema) {
-      schemas.push(faqSchema);
-    }
+  if (blogData.content) {
+    const faqSchema = getAutoFaqSchema(blogData.content, blogData, url);
+    if (faqSchema) graph.push(faqSchema);
   }
 
-  return schemas;
+  return { "@context": "https://schema.org", "@graph": graph };
 };
 
-// Service page ke liye schema
-export const getServiceSchema = (serviceData) => [
-  getSchema("agency"),
-  getSchema("service", serviceData)
-];
+// Portfolio listing page
+export const getPortfolioListingSchema = () => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    getSchema("portfolioListing"),
+    buildBreadcrumb(`${SITE_URL}/portfolio#breadcrumb`, [
+      homeCrumb,
+      { name: "Portfolio", url: `${SITE_URL}/portfolio` }
+    ])
+  ]
+});
 
-// Product/Asset page ke liye schema
-export const getProductSchema = (productData) => [
-  getSchema("agency"),
-  getSchema("product", productData)
-];
-
-// Portfolio page ke liye schema
-export const getPortfolioSchema = (projectData) => [
-  getSchema("agency"),
-  getSchema("portfolio", projectData)
-];
-
-// Contact page ke liye schema
-export const getContactSchema = () => [
-  getSchema("agency"),
-  {
+// Individual portfolio project page
+export const getPortfolioSchema = (projectData) => {
+  const url = projectData.url || "";
+  return {
     "@context": "https://schema.org",
-    "@type": "ContactPage",
-    "url": "https://www.shammarianas.com/contact",
-    "name": "Contact Sham Marianas F.Z.C"
-  }
-];
+    "@graph": [
+      getSchema("portfolio", projectData),
+      {
+        "@type": "WebPage",
+        "@id": `${url}#webpage`,
+        "url": url,
+        "name": projectData.title ? `${projectData.title} | Sham Marianas F.Z.C.` : "",
+        "isPartOf": { "@id": WEBSITE_ID },
+        "about": { "@id": `${url}#project` },
+        "breadcrumb": { "@id": `${url}#breadcrumb` }
+      },
+      buildBreadcrumb(`${url}#breadcrumb`, [
+        homeCrumb,
+        { name: "Portfolio", url: `${SITE_URL}/portfolio` },
+        { name: projectData.title || "", url }
+      ])
+    ]
+  };
+};
 
+// Contact page
+export const getContactSchema = () => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    getSchema("contact"),
+    buildBreadcrumb(`${SITE_URL}/contact#breadcrumb`, [
+      homeCrumb,
+      { name: "Contact", url: `${SITE_URL}/contact` }
+    ])
+  ]
+});
 
-// Automatic FAQ from blog HTML content
-export const getAutoFaqSchema = (htmlContent = '', blogData = {}) => {
+// Templates page
+export const getTemplatesSchema = () => getSchema("templates");
+
+// Category page (fonts, icons, mockups, models, graphics, videos, images, scripts, HDRI, textures, etc.)
+export const getCategorySchema = (categoryData) => {
+  const url = categoryData.url || "";
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      getSchema("category", categoryData),
+      buildBreadcrumb(`${url}#breadcrumb`, [
+        homeCrumb,
+        { name: categoryData.title || "", url }
+      ])
+    ]
+  };
+};
+
+// Product/Asset page
+export const getProductSchema = (productData) => ({
+  "@context": "https://schema.org",
+  "@graph": [organizationSchema, getSchema("product", productData)]
+});
+
+// =========================================================
+//   Automatic FAQ from blog HTML content (logic same rakha gaya hai)
+// =========================================================
+export const getAutoFaqSchema = (htmlContent = '', blogData = {}, pageUrl = '') => {
   if (!htmlContent) return null;
 
   // Simple DOM parser use karo (browser mein safe hai)
@@ -304,8 +608,8 @@ export const getAutoFaqSchema = (htmlContent = '', blogData = {}) => {
 
   if (faqItems.length > 0) {
     return {
-      "@context": "https://schema.org",
       "@type": "FAQPage",
+      "@id": pageUrl ? `${pageUrl}#faq` : undefined,
       "mainEntity": faqItems.map(item => ({
         "@type": "Question",
         "name": item.question,

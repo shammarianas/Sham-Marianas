@@ -1,42 +1,78 @@
-// components/SchemaMarkup.jsx
 import { useEffect } from 'react';
-import { getSchema, getHomepageSchema, getBlogSchema, getServiceSchema } from '../utils/schemaGenerator';
+import {
+  getHomepageSchema,
+  getAboutSchema,
+  getServicesListingSchema,
+  getServiceSchema,
+  getBlogListingSchema,
+  getBlogSchema,
+  getPortfolioListingSchema,
+  getPortfolioSchema,
+  getContactSchema,
+  getTemplatesSchema,
+  getCategorySchema,
+  getProductSchema,
+  getSchema
+} from '../utils/schemaGenerator';
 
-const SchemaMarkup = ({ 
-  type,       // "agency", "blog", "service", etc.
-  data = {},  // dynamic data
-  multiple = false, // agar multiple schemas chahiye
-  schemas = []     // array of schemas
+const SchemaMarkup = ({
+  type,           // "homepage", "blog", "service", "about", etc.
+  data = {},
+  multiple = false,
+  schemas = []
 }) => {
   useEffect(() => {
-    let schemaArray = [];
+    let schemasToInject = [];
 
-    if (multiple && schemas.length > 0) {
-      // Multiple schemas add karein
-      schemaArray = schemas;
-    } else if (type === "homepage") {
-      // Homepage ke liye pre-defined
-      schemaArray = getHomepageSchema();
-    } else if (type === "blog" && data) {
-      // Blog ke liye
-      schemaArray = getBlogSchema(data);
+    // 1. Agar multiple schemas manually pass kiye gaye hain
+    if (multiple && Array.isArray(schemas) && schemas.length > 0) {
+      schemasToInject = schemas;
+    }
+    // 2. Pre-built full schemas (yeh already { @context, @graph } return karte hain)
+    else if (type === "homepage") {
+      schemasToInject = [getHomepageSchema()];
+    } else if (type === "about") {
+      schemasToInject = [getAboutSchema()];
+    } else if (type === "servicesListing") {
+      schemasToInject = [getServicesListingSchema()];
     } else if (type === "service" && data) {
-      // Service ke liye
-      schemaArray = getServiceSchema(data);
-    } else if (type) {
-      // Single schema
+      schemasToInject = [getServiceSchema(data)];
+    } else if (type === "blogListing") {
+      schemasToInject = [getBlogListingSchema()];
+    } else if (type === "blog" && data) {
+      schemasToInject = [getBlogSchema(data)];
+    } else if (type === "portfolioListing") {
+      schemasToInject = [getPortfolioListingSchema()];
+    } else if (type === "portfolio" && data) {
+      schemasToInject = [getPortfolioSchema(data)];
+    } else if (type === "contact") {
+      schemasToInject = [getContactSchema()];
+    } else if (type === "templates") {
+      schemasToInject = [getTemplatesSchema()];
+    } else if (type === "category" && data) {
+      schemasToInject = [getCategorySchema(data)];
+    } else if (type === "product" && data) {
+      schemasToInject = [getProductSchema(data)];
+    }
+    // 3. Single schema (getSchema se)
+    else if (type) {
       const schema = getSchema(type, data);
-      if (schema) schemaArray = [schema];
+      if (schema) {
+        // Single node ko bhi full context ke sath wrap kar dete hain
+        schemasToInject = [{
+          "@context": "https://schema.org",
+          "@graph": [schema]
+        }];
+      }
     }
 
-    if (schemaArray.length === 0) return;
+    if (schemasToInject.length === 0) return;
 
-    // Purane schemas remove karein
-    const existingScripts = document.querySelectorAll(`script[data-schema]`);
-    existingScripts.forEach(script => script.remove());
+    // Purane schema scripts hatao
+    document.querySelectorAll('script[data-schema]').forEach(script => script.remove());
 
-    // Naye schemas add karein
-    schemaArray.forEach((schema, index) => {
+    // Naye schemas inject karo
+    schemasToInject.forEach((schema, index) => {
       if (!schema) return;
 
       const script = document.createElement('script');
@@ -46,14 +82,13 @@ const SchemaMarkup = ({
       document.head.appendChild(script);
     });
 
-    // Cleanup
+    // Cleanup on unmount
     return () => {
-      const scripts = document.querySelectorAll(`script[data-schema]`);
-      scripts.forEach(script => script.remove());
+      document.querySelectorAll('script[data-schema]').forEach(script => script.remove());
     };
   }, [type, data, multiple, schemas]);
 
-  return null; // Yeh component kuch render nahi karta
+  return null;
 };
 
 export default SchemaMarkup;
