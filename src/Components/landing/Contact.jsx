@@ -37,23 +37,30 @@ function Contact() {
     setSubmitStatus({ success: null, message: "" });
 
     try {
-      // 🔧 REPLACE THIS WITH YOUR ACTUAL FIREBASE FUNCTION URL
-      // After deploying, you'll get a URL like:
-      // https://us-central1-your-project-id.cloudfunctions.net/sendContactFormEmail
-      const CLOUD_FUNCTION_URL =
-        "https://us-central1-sham-marianas.cloudfunctions.net/sendContactFormEmail";
+      // 🔧 YAHAN APNA WEBHOOK URL PASTE KARO
+      // (Automation tool mein Webhook node add karne ke baad jo URL milega, wahi yahan daalna hai)
+      const WEBHOOK_URL = "https://n8n-z5va.srv1917294.hstgr.cloud/webhook/Contact-us";
 
-      const response = await fetch(CLOUD_FUNCTION_URL, {
+      // 🔧 Field names capitalized bhej rahe hain (Name, Email, Subject, Message)
+      // kyunki automation workflow mein $json.Name, $json.Email waghera
+      // isi naming se map kiye hain. Agar workflow mein lowercase use kiya hai
+      // to yahan bhi lowercase rakhna.
+      const response = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          Name: formData.name,
+          Email: formData.email,
+          Subject: formData.subject,
+          Message: formData.message,
+        }),
       });
 
-      const result = await response.json();
-
-      if (result.success) {
+      // Webhook usually simple 200 OK return karta hai, Firebase Function jaisa
+      // {success: true} nahi hota - isliye response.ok se check kar rahe hain
+      if (response.ok) {
         setSubmitStatus({
           success: true,
           message:
@@ -75,9 +82,7 @@ function Contact() {
       } else {
         setSubmitStatus({
           success: false,
-          message: `Failed to send: ${
-            result.error || "Please try again later."
-          }`,
+          message: "Failed to send. Please try again later.",
         });
       }
     } catch (error) {

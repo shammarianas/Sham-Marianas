@@ -24,8 +24,13 @@ const countryOptions = [
   { code: "+00", country: "Other" },
 ];
 
-// WhatsApp number jahan data jayega
-const WHATSAPP_NUMBER = "971528036012";
+// 🔧 Webhook URL - n8n workflow trigger
+// ⚠️ NOTE: Ye "webhook-test" URL hai, sirf testing ke liye kaam karega
+// (jab n8n editor mein "Listen for test event" active ho).
+// Live website ke liye ise "Production URL" se replace karna hoga
+// (n8n Webhook node ke "Production URL" tab se milegi, path mein "-test" nahi hoga)
+const WEBHOOK_URL =
+  "https://n8n-z5va.srv1917294.hstgr.cloud/webhook/Sham-Marianas-Inquires";
 
 function FirstPage() {
   const [selectedCountryCode, setSelectedCountryCode] = useState("+971");
@@ -40,24 +45,104 @@ function FirstPage() {
   const [budget, setBudget] = useState("");
   const [idea, setIdea] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState({
+    success: null,
+    message: "",
+  });
+
   useEffect(() => {
     loadBackgroudImages();
   }, []);
 
-  const handleSubmit = () => {
-    const message =
-      `New Project Brief\n\n` +
-      `Name: ${name}\n` +
-      `Company: ${company}\n` +
-      `Email: ${email}\n` +
-      `Contact Number: ${selectedCountryCode} ${phone}\n` +
-      `Service: ${service}\n` +
-      `Budget: ${budget}\n` +
-      `Project Idea: ${idea || "N/A"}`;
+  const handleSubmit = async () => {
+    // Basic validation - required fields
+    if (!name || !company || !email || !phone || !service || !budget) {
+      setSubmitStatus({
+        success: false,
+        message: "Please fill in all required fields.",
+      });
+      return;
+    }
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-    window.open(whatsappUrl, "_blank");
+    setIsSubmitting(true);
+    setSubmitStatus({ success: null, message: "" });
+
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Name: name,
+          Company: company,
+          Email: email,
+          "Contact Number": `${selectedCountryCode} ${phone}`,
+          Service: service,
+          Budget: budget,
+          "Project Idea (optional)": idea || "N/A",
+        }),
+      });
+
+      if (response.ok) {
+        setSubmitStatus({
+          success: true,
+          message:
+            "Thank you! Your brief has been submitted. We'll get back to you soon.",
+        });
+
+        // Reset form
+        setName("");
+        setCompany("");
+        setEmail("");
+        setPhone("");
+        setService("");
+        setBudget("");
+        setIdea("");
+        setSelectedCountryCode("+971");
+
+        setTimeout(() => {
+          setSubmitStatus({ success: null, message: "" });
+        }, 5000);
+      } else {
+        setSubmitStatus({
+          success: false,
+          message: "Failed to submit. Please try again later.",
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setSubmitStatus({
+        success: false,
+        message: "Network error. Please check your connection and try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const statusStyles = {
+    success: {
+      backgroundColor: "#d4edda",
+      borderColor: "#c3e6cb",
+      color: "#155724",
+      padding: "12px",
+      borderRadius: "5px",
+      marginBottom: "16px",
+      border: "1px solid #c3e6cb",
+      fontSize: "14px",
+    },
+    error: {
+      backgroundColor: "#f8d7da",
+      borderColor: "#f5c6cb",
+      color: "#721c24",
+      padding: "12px",
+      borderRadius: "5px",
+      marginBottom: "16px",
+      border: "1px solid #f5c6cb",
+      fontSize: "14px",
+    },
   };
 
   return (
@@ -105,6 +190,15 @@ function FirstPage() {
                 right creative direction, scope and next steps.
               </p>
             </div>
+
+            {/* Status Messages */}
+            {submitStatus.success === true && (
+              <div style={statusStyles.success}>✓ {submitStatus.message}</div>
+            )}
+            {submitStatus.success === false && (
+              <div style={statusStyles.error}>✗ {submitStatus.message}</div>
+            )}
+
             <form
               onSubmit={(e) => e.preventDefault()}
             >
@@ -120,6 +214,7 @@ function FirstPage() {
                       placeholder="Your name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      disabled={isSubmitting}
                     />
                   </div>
 
@@ -133,6 +228,7 @@ function FirstPage() {
                       placeholder="Your company"
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
@@ -148,6 +244,7 @@ function FirstPage() {
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      disabled={isSubmitting}
                     />
                   </div>
 
@@ -159,6 +256,7 @@ function FirstPage() {
                       <select
                         value={selectedCountryCode}
                         onChange={(e) => setSelectedCountryCode(e.target.value)}
+                        disabled={isSubmitting}
                         style={{
                           width: "80px",
                           border: "1px solid rgba(255,255,255,0.2)",
@@ -180,6 +278,7 @@ function FirstPage() {
                         placeholder="123 4567"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -194,6 +293,7 @@ function FirstPage() {
                       class="input"
                       value={service}
                       onChange={(e) => setService(e.target.value)}
+                      disabled={isSubmitting}
                       style={{
                         width: "100%",
                         padding: "1rem",
@@ -232,6 +332,7 @@ function FirstPage() {
                       class="input"
                       value={budget}
                       onChange={(e) => setBudget(e.target.value)}
+                      disabled={isSubmitting}
                       style={{
                         width: "100%",
                         padding: "1rem",
@@ -246,7 +347,7 @@ function FirstPage() {
                       <option value="" disabled>
                         Please choose an option
                       </option>
-                      <option value="$3,000 - $5,000">$1500 - $3,000</option>
+                      <option value="$1,500 - $3,000">$1,500 - $3,000</option>
                       <option value="$3,000 - $5,000">$3,000 - $5,000</option>
                       <option value="$5,000 - $10,000">$5,000 - $10,000</option>
                       <option value="$10,000 - $15,000">$10,000 - $15,000</option>
@@ -266,21 +367,18 @@ function FirstPage() {
                     placeholder="Share your idea, references, or goals..."
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
+                    disabled={isSubmitting}
                   />
                 </div>
               
 
-              <p style={{   lineHeight: 1.4 }}>
-                For faster response, you can also send references or a short voice note through
-                WhatsApp.
-              </p>
-
               <a
                 type="submit"
                 className="butn butn-sm butn-bg main-colorbg radius-5"
-                onClick={handleSubmit}
+                onClick={!isSubmitting ? handleSubmit : undefined}
+                style={isSubmitting ? { opacity: 0.6, pointerEvents: "none" } : {}}
               >
-                Submit
+                {isSubmitting ? "Submitting..." : "Submit"}
               </a>
 
             </form>
@@ -291,14 +389,5 @@ function FirstPage() {
     </header>
   );
 }
-
-
-
-const phoneInputWrapperStyle = {
-  display: "flex",
-  alignItems: "center",
-};
-
-
 
 export default FirstPage;
