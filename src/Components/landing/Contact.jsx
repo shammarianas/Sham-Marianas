@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import React, { useState } from "react";
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -124,6 +125,7 @@ function Contact() {
         <div className="container col-md-6 d-flex justify-content-center">
           <div>
             <div className="valign">
+            <div className="valign">
               <div className="full-width">
                 <div className="sec-head text-center mb-50">
                   <h6 className="sub-title main-color mb-15">
@@ -144,9 +146,22 @@ function Contact() {
                   <div style={statusStyles.error}>✗ {submitStatus.message}</div>
                 )}
 
+
+                {/* Status Messages */}
+                {submitStatus.success === true && (
+                  <div style={statusStyles.success}>
+                    ✓ {submitStatus.message}
+                  </div>
+                )}
+                {submitStatus.success === false && (
+                  <div style={statusStyles.error}>✗ {submitStatus.message}</div>
+                )}
+
                 <form
                   id="contact-form"
                   className="form2"
+                  onSubmit={handleSubmit}
+                  noValidate
                   onSubmit={handleSubmit}
                   noValidate
                 >
@@ -160,6 +175,10 @@ function Contact() {
                           type="text"
                           name="name"
                           placeholder="Name"
+                          required
+                          value={formData.name}
+                          onChange={handleChange}
+                          disabled={isSubmitting}
                           required
                           value={formData.name}
                           onChange={handleChange}
@@ -179,6 +198,10 @@ function Contact() {
                           value={formData.email}
                           onChange={handleChange}
                           disabled={isSubmitting}
+                          required
+                          value={formData.email}
+                          onChange={handleChange}
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -193,6 +216,9 @@ function Contact() {
                           value={formData.subject}
                           onChange={handleChange}
                           disabled={isSubmitting}
+                          value={formData.subject}
+                          onChange={handleChange}
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -203,7 +229,12 @@ function Contact() {
                           id="form_message"
                           name="message"
                           placeholder="Message "
+                          placeholder="Message "
                           rows="4"
+                          required
+                          value={formData.message}
+                          onChange={handleChange}
+                          disabled={isSubmitting}
                           required
                           value={formData.message}
                           onChange={handleChange}
@@ -215,7 +246,11 @@ function Contact() {
                           type="submit"
                           className="butn butn-full butn-bord radius-5"
                           disabled={isSubmitting}
+                          disabled={isSubmitting}
                         >
+                          <span className="text">
+                            {isSubmitting ? "Sending..." : "Submit"}
+                          </span>
                           <span className="text">
                             {isSubmitting ? "Sending..." : "Submit"}
                           </span>
