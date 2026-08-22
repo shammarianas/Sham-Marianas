@@ -21,6 +21,9 @@ function Blogs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [filter, setFilter] = useState("*");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const blogsPerPage = 10;
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -84,14 +87,49 @@ function Blogs() {
 
   const handleFilterChange = (filterValue) => {
     setFilter(filterValue);
+    setCurrentPage(1);
   };
 
   // Filter blogs by search term and category
   const filteredBlogs = blogs
     .filter((blog) =>
-      blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+      blog.title?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((blog) => filter === "*" || blog.category === filter);
+
+  const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
+  const startIndex = (currentPage - 1) * blogsPerPage;
+  const paginatedBlogs = filteredBlogs.slice(
+    startIndex,
+    startIndex + blogsPerPage
+  );
+
+  const getPaginationItems = () => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const pages = [1, 2];
+
+    if (currentPage > 4) {
+      pages.push("left-ellipsis");
+    }
+
+    const startPage = Math.max(3, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let page = startPage; page <= endPage; page++) {
+      if (!pages.includes(page)) pages.push(page);
+    }
+
+    if (currentPage < totalPages - 3) {
+      pages.push("right-ellipsis");
+    }
+
+    pages.push(totalPages);
+
+    return pages;
+  };
 
   if (loading) return <div className="main-bgs">Loading...</div>;
 
@@ -124,7 +162,7 @@ function Blogs() {
               <div className="col-lg-8">
                 <div className="md-mb80">
                   {filteredBlogs.length > 0 ? (
-                    filteredBlogs.map((blog) => (
+                    paginatedBlogs.map((blog) => (
                       <div className="item mb-80 blog-card" key={blog.id}>
                         {blog.coverImageUrl && (
                           <div className="img">
@@ -165,6 +203,73 @@ function Blogs() {
                   ) : (
                     <p>No blogs match your search or category.</p>
                   )}
+
+                  {totalPages > 1 && (
+                    <div className="pagination d-flex align-items-center justify-content-center mt-50">
+                      <button
+                        type="button"
+                        disabled={currentPage === 1}
+                        onClick={() =>
+                          setCurrentPage((page) => Math.max(page - 1, 1))
+                        }
+                        style={{
+                          margin: "0 5px",
+                          minWidth: "40px",
+                          height: "40px",
+                          borderRadius: "50px",
+                          border: "1px solid #ddd",
+                          color: "#ffffff",
+                          background: "none",
+                          cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                          opacity: currentPage === 1 ? 0.5 : 1,
+                        }}
+                      >
+                        <i className="fa-solid fa-chevron-left"></i>
+                      </button>
+
+                      <button
+                        type="button"
+                        className="page-item active"
+                        style={{
+                          margin: "0 5px",
+                          minWidth: "40px",
+                          height: "40px",
+                          border: "1px solid #ddd",
+                          background: "#111",
+                          color: "#fff",
+                          cursor: "default",
+                        }}
+                      >
+                        {currentPage}
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={currentPage === totalPages}
+                        onClick={() =>
+                          setCurrentPage((page) =>
+                            Math.min(page + 1, totalPages)
+                          )
+                        }
+                        style={{
+                          margin: "0 5px",
+                          minWidth: "40px",
+                          height: "40px",
+                          borderRadius: "50px",
+                          border: "1px solid #ddd",
+                          color: "#ffffff",
+                          background: "none",
+                          cursor:
+                            currentPage === totalPages
+                              ? "not-allowed"
+                              : "pointer",
+                          opacity: currentPage === totalPages ? 0.5 : 1,
+                        }}
+                      >
+                        <i className="fa-solid fa-chevron-right"></i>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -178,7 +283,10 @@ function Blogs() {
                         type="text"
                         placeholder="Search by title..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => {
+                          setSearchTerm(e.target.value);
+                          setCurrentPage(1);
+                        }}
                       />
                       <span className="icon pe-7s-search"></span>
                     </div>
