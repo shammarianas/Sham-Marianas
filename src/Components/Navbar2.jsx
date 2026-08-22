@@ -402,7 +402,7 @@ const Navbar = () => {
 
         {/* Mobile Menu Toggle Button for Company Pages */}
         <div
-          className="mobile-menu-toggle d-lg-none"
+          className="mobile-menu-toggle d-none"
           style={{
             position: "fixed",
             bottom: "20px",

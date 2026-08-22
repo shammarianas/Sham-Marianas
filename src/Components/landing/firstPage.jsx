@@ -182,7 +182,7 @@ function FirstPage() {
             </div>
           </div>
 
-          <div className="col-lg-6 hero-form">
+          <div className="col-lg-6 hero-form" id="INQUIRY_FORM">
             <div>
               <h4 style={{ color: "#fff", marginBottom: "8px" }}>Start with a brief</h4>
               <p style={{ marginBottom: "20px", lineHeight: 1.4 }}>

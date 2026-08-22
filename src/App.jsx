@@ -68,14 +68,7 @@ import TermsandConditionTemplate from "./Pages/Get Started/termsOfTemplate";
 import SellerGuideline from "./Pages/Get Started/SellerGuidelines";
 import PricingAndFees from "./Pages/Get Started/pricing&fee";
 import ContributorPolicies from "./Pages/Get Started/ContributorPolicies";
-// STRIPE IMPORTS - ADDED
-// import { loadStripe } from "@stripe/stripe-js";
-// import { Elements } from "@stripe/react-stripe-js";
-
-// THIS IS STRIPE'S OFFICIAL PUBLIC TEST KEY - 100% SAFE & WORKS FOR EVERYONE
-// const stripePromise = loadStripe(
-//   "pk_test_51Qp2sLFRNVbhydxG8zAsORIhUy8ZS7nNCl9omwJQ7PJYSHmfyvqj6mIxk1ATxvT2sl9HyiEzdA60UndoF9mAejSM00ZF8DHsip"
-// );
+import ChatWidget from "./Components/ChatWidget";
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -191,6 +184,7 @@ const Layout = () => {
       <Navbar2 />
       <AppRoutes />
       <Footer />
+      <ChatWidget />
     </>
   );
 };

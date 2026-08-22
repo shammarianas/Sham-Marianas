@@ -469,7 +469,7 @@ a {
   }
 
   .mobile-menu-toggle {
-    display: flex !important;
+    display: none !important;
   }
 
   .navbar .right {
@@ -8926,4 +8926,32 @@ h2.title{
     border: none;
     background-color: transparent !important;
     color: #f5f5f5 !important;
+}
+
+/* chatbott text animate */
+@keyframes assistSlide {
+  0% {
+    transform: translateX(-15px);
+    opacity: 0;
+  }
+
+  2% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  8% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  10% {
+    transform: translateX(-15px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(-15px);
+    opacity: 0;
+  }
 }
