@@ -4,12 +4,21 @@ import App from "./App.jsx";
 import { UserProvider } from "./Context/UserProvider.jsx";
 import { HelmetProvider } from "react-helmet-async";
 import { Buffer } from "buffer";
+
 window.Buffer = Buffer;
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-    <HelmetProvider>
-      <UserProvider>
-        <App />
-      </UserProvider>
-    </HelmetProvider>
+const rootElement = document.getElementById("root");
+
+const app = (
+  <HelmetProvider>
+    <UserProvider>
+      <App />
+    </UserProvider>
+  </HelmetProvider>
 );
+
+if (rootElement.hasChildNodes()) {
+  ReactDOM.hydrateRoot(rootElement, app);
+} else {
+  ReactDOM.createRoot(rootElement).render(app);
+}
