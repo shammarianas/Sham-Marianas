@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
-import compression from 'vite-plugin-compression';  // ← Add this line
+import compression from 'vite-plugin-compression';
 
 export default defineConfig({
   cacheDir: "node_modules/.vite-cache",
