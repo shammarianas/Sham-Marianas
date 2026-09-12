@@ -22,7 +22,7 @@ export default defineConfig({
     })
   ],
   assetsInclude: ["**/*.glb", "**/*.gltf", "**/*.jpg", "**/*.png", "**/*.hdr"],
-  base: "./",
+  base: "/",
 
   build: {
     external: ["three"],                  // ye theek hai (three.js ko bundle se bahar rakha)

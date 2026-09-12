@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "postbuild": "node prerender.js",
-    "build:full": "npm run build && npm run postbuild",
+    "generate:sitemap": "node sitemap-generator.js",
+    "prerender": "node prerender.js",
+    "build:production": "npm run build && npm run generate:sitemap && npm run prerender",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -84,5 +85,13 @@
       "--disable-setuid-sandbox"
     ]
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+  "allowScripts": {
+    "@firebase/util@1.13.0": true,
+    "core-js@3.47.0": true,
+    "esbuild@0.27.1": true,
+    "esbuild@0.17.19": true,
+    "puppeteer@1.20.0": true,
+    "puppeteer@25.8.0": true
+  }
 }
