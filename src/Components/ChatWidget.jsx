@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
 // ⚠️ IMPORTANT: Apna production webhook URL yahan daalein.
-const N8N_CHAT_WEBHOOK_URL = "https://n8n-z5va.srv1917294.hstgr.cloud/webhook/sham-marianas-chatbot";
+const N8N_CHAT_WEBHOOK_URL = "https://n8n-z5va.srv1917294.hstgr.cloud/webhook-test/sham-marianas-chatbot";
 
 const SESSION_STORAGE_KEY = "sm_chat_session_id";
 const INQUIRY_FORM_URL = "#INQUIRY_FORM";
@@ -188,11 +188,11 @@ function extractMarkers(rawText) {
     showWhatsappButton = true;
     text = text.replace(waLinkRegex, "");
   }
-  const barePhoneRegex = /(\+?971[\s-]?5\d(?:[\s-]?\d){7}|\+?971528036012)/g;
-  if (barePhoneRegex.test(text)) {
-    showWhatsappButton = true;
-    text = text.replace(barePhoneRegex, "");
-  }
+ const barePhoneRegex = /(\+?971[\s-]?5\d(?:[\s-]?\d){7}|\+?971528036012)/g;
+if (barePhoneRegex.test(text)) {
+  showWhatsappButton = true;
+  // Number ko text se delete nahi karna — bas WhatsApp button bhi dikha do
+}
 
   // 5) Safety net — markdown link to a deeper page (e.g. a project page)
   //    that the AI wrote out itself instead of using the [[LINK:...]] marker.
@@ -385,7 +385,7 @@ const ChatWidget = () => {
             }}
           >
             <div>
-              <div style={{ fontWeight: 600, fontSize: "15px" }}>Sham Marianas</div>
+              <div style={{ fontWeight: 600, fontSize: "15px" }}>Sham Marianas - AI Assistent</div>
               <div style={{ fontSize: "12px", opacity: 0.7 }}>
                 Usually within a few minutes.
               </div>
