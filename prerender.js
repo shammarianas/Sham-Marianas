@@ -1,97 +1,146 @@
 // prerender.js
 import puppeteer from 'puppeteer';
+import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
-// ✅ Import Firebase from your existing config
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { firebaseConfig } from './src/firebase.js'; // 👈 APNI FILE SE IMPORT
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DIST_DIR = path.join(__dirname, 'dist');
+const PORT = 4173;
 
-// Initialize Firebase with your config
+// Standalone Firebase config (Node.js safe, no window dependencies)
+const firebaseConfig = {
+  apiKey: "AIzaSyCC_cEqxB99hMW16aowMs6AJ3-k52VasW0",
+  authDomain: "sham-marianas.firebaseapp.com",
+  projectId: "sham-marianas",
+  storageBucket: "sham-marianas.appspot.com",
+  messagingSenderId: "607689609153",
+  appId: "1:607689609153:web:3d76a1c337979a691a6940",
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🚀 Get all blog slugs from Firebase
-async function getBlogSlugs() {
-  try {
-    const querySnapshot = await getDocs(collection(db, 'blogs'));
-    const slugs = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const slug = data.slug || doc.id;
-      slugs.push({
-        slug: slug,
-        id: doc.id
-      });
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+};
+
+// 1. Static HTTP server for serving dist/ during pre-rendering
+function startStaticServer(fallbackHtml) {
+  return new Promise((resolve) => {
+    const server = http.createServer((req, res) => {
+      try {
+        const urlPath = new URL(req.url, `http://localhost:${PORT}`).pathname;
+        let filePath = path.join(DIST_DIR, urlPath);
+
+        // Direct file match
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          const ext = path.extname(filePath).toLowerCase();
+          res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+          fs.createReadStream(filePath).pipe(res);
+          return;
+        }
+
+        // SPA Navigation fallback
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(fallbackHtml);
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Server Error');
+      }
     });
-    console.log(`✅ Found ${slugs.length} blogs`);
-    return slugs;
-  } catch (error) {
-    console.error('❌ Error fetching blogs:', error);
-    return [];
-  }
+
+    server.listen(PORT, '127.0.0.1', () => {
+      console.log(`🌐 Local pre-render server listening on http://127.0.0.1:${PORT}`);
+      resolve(server);
+    });
+  });
 }
 
-// 🎯 Pre-render all pages
+// 2. Fetch dynamic routes from Firebase Firestore
+async function getDynamicRoutes() {
+  const dynamicRoutes = [];
+
+  // Blogs
+  try {
+    const blogSnap = await getDocs(collection(db, 'blogs'));
+    blogSnap.forEach((doc) => {
+      const data = doc.data();
+      const slug = data.slug || doc.id;
+      if (slug) {
+        dynamicRoutes.push(`/blog/${slug}`);
+      }
+    });
+    console.log(`✅ Loaded ${dynamicRoutes.length} blog routes from Firestore`);
+  } catch (err) {
+    console.warn('⚠️ Could not fetch blogs from Firestore:', err.message);
+  }
+
+  // Projects
+  try {
+    const projSnap = await getDocs(collection(db, 'projects'));
+    let count = 0;
+    projSnap.forEach((doc) => {
+      const data = doc.data();
+      const slug = data.slug || doc.id;
+      if (slug) {
+        dynamicRoutes.push(`/project-details/${slug}`);
+        count++;
+      }
+    });
+    console.log(`✅ Loaded ${count} project routes from Firestore`);
+  } catch (err) {
+    console.warn('⚠️ Could not fetch projects from Firestore:', err.message);
+  }
+
+  return dynamicRoutes;
+}
+
+// 3. Main Pre-rendering Engine
 async function prerender() {
-  console.log('🚀 Starting prerendering...');
-  
-  // Get all blog slugs
-  const blogs = await getBlogSlugs();
-  
-  // Create all URLs
-  const urls = [
+  console.log('🚀 Initializing Static Pre-rendering (SSG)...');
+
+  if (!fs.existsSync(DIST_DIR) || !fs.existsSync(path.join(DIST_DIR, 'index.html'))) {
+    console.error('❌ Error: dist/index.html not found! Please run "npm run build" first.');
+    process.exit(1);
+  }
+
+  // Keep a copy of the base SPA shell for server fallback
+  const baseHtml = fs.readFileSync(path.join(DIST_DIR, 'index.html'), 'utf8');
+
+  // Start local server
+  const server = await startStaticServer(baseHtml);
+
+  // Define static routes
+  const staticRoutes = [
     '/',
-    '/blog',
-    '/portfolio',
-    '/services',
     '/about',
+    '/services',
+    '/portfolio',
+    '/blog',
     '/contact-us',
     '/templates',
-    '/Login',
-    '/profile',
-    '/analytics',
-    '/Support',
-    '/Terms',
-    '/Privacy',
-    '/success',
-    '/error',
-    '/coming-soon',
-    '/subscription',
-    '/Library',
-    '/MyDownloads',
-    '/Favorites',
-    '/Upload',
-    '/Checkout',
-    '/Groups',
     '/page-team',
-    '/Logout',
-    '/Reset',
-    '/admin',
-    '/ContributorLogin',
-    '/ContributorDashboard',
-    // Category routes
-    '/category/fonts',
-    '/category/video-templates',
-    '/category/icons',
-    '/category/models',
-    '/category/mockups',
-    '/category/graphics',
-    '/category/videos',
-    '/category/images',
-    '/category/scripts',
-    '/category/hdri',
-    '/category/hdris',
-    '/category/textures',
-    '/category/more',
-    // Blog routes
-    ...blogs.map(blog => `/blog/${blog.slug}`),
-    ...blogs.map(blog => `/blog-details/${blog.id}`),
-    // Service routes
+
+    // High commercial intent service pages
     '/services/branding-design',
     '/services/uiux-design',
     '/services/web-development',
@@ -106,85 +155,180 @@ async function prerender() {
     '/services/exhibition-booth-design',
     '/services/brandingpage',
     '/services/demo',
-    // Privacy and Terms
-    '/privacy-policy',
-    '/privacy-policy-template',
+
+    // Category routes
+    '/category/fonts',
+    '/category/video-templates',
+    '/category/icons',
+    '/category/models',
+    '/category/mockups',
+    '/category/graphics',
+    '/category/videos',
+    '/category/images',
+    '/category/scripts',
+    '/category/hdri',
+    '/category/hdris',
+    '/category/textures',
+    '/category/more',
+
+    // Legal & Information
     '/terms-and-conditions',
-    '/terms-condition-template',
+    '/privacy-policy',
     '/seller-guideline',
     '/prices-and-fees',
-    '/contributor-policies'
+    '/contributor-policies',
   ];
 
-  console.log(`📄 Total pages to prerender: ${urls.length}`);
+  // Fetch dynamic routes
+  const dynamicRoutes = await getDynamicRoutes();
+  const allRoutes = Array.from(new Set([...staticRoutes, ...dynamicRoutes]));
 
-  // Launch browser
+  console.log(`📄 Total pages to prerender: ${allRoutes.length}`);
+
+  // Auto-detect local Chrome or Edge if available
+  function findChromePath() {
+    const possiblePaths = [
+      process.env.PUPPETEER_EXECUTABLE_PATH,
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+      '/usr/bin/google-chrome',
+      '/usr/bin/chromium-browser',
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    ].filter(Boolean);
+
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) return p;
+    }
+    return undefined;
+  }
+
+  const chromePath = findChromePath();
+  if (chromePath) {
+    console.log(`🔍 Using browser executable: ${chromePath}`);
+  }
+
+  // Launch Puppeteer with optimized flags
   const browser = await puppeteer.launch({
     headless: 'new',
+    executablePath: chromePath,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-web-security',
       '--disable-features=IsolateOrigins,site-per-process',
       '--disable-dev-shm-usage',
-      '--disable-gpu'
-    ]
+      '--disable-gpu',
+    ],
   });
 
   const page = await browser.newPage();
-  
-  // Set viewport
-  await page.setViewport({ width: 1920, height: 1080 });
+  await page.setViewport({ width: 1440, height: 900 });
 
-  // Create dist directory if not exists
-  if (!fs.existsSync('dist')) {
-    fs.mkdirSync('dist');
-  }
+  // Stub WebGL context to prevent Three.js headless stalls
+  await page.evaluateOnNewDocument(() => {
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+      if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') {
+        const gl = originalGetContext.apply(this, [type, ...args]);
+        if (gl) return gl;
+        return originalGetContext.apply(this, ['2d', ...args]) || {};
+      }
+      return originalGetContext.apply(this, [type, ...args]);
+    };
+  });
 
-  // Pre-render each URL
-  for (const url of urls) {
+  // Intercept requests: abort images, video, audio, fonts for rapid rendering
+  await page.setRequestInterception(true);
+  page.on('request', (req) => {
+    const resType = req.resourceType();
+    if (['image', 'media', 'font'].includes(resType)) {
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
+
+  let successCount = 0;
+
+  for (let i = 0; i < allRoutes.length; i++) {
+    const route = allRoutes[i];
+    const targetUrl = `http://127.0.0.1:${PORT}${route}`;
+    const progress = `[${i + 1}/${allRoutes.length}]`;
+
     try {
-      console.log(`🔄 Rendering: ${url}`);
-      
-      // Navigate to URL
-      await page.goto(`http://localhost:5173${url}`, {
-        waitUntil: 'networkidle2',
-        timeout: 60000
+      // Navigate to route
+      await page.goto(targetUrl, {
+        waitUntil: 'domcontentloaded',
+        timeout: 25000,
       });
 
-      // ✅ FIXED: Use setTimeout instead of page.waitForTimeout
-      await new Promise(resolve => setTimeout(resolve, 5000));
-
-      // Additional wait for dynamic content
+      // Wait for React to render and react-helmet-async to inject title/meta
       try {
-        await page.waitForSelector('#root', { timeout: 10000 });
+        await page.waitForFunction(
+          (currentRoute) => {
+            const root = document.getElementById('root');
+            if (!root) return false;
+            if (root.querySelector('.loader-wrap')) return false;
+
+            // Wait for dynamic blog data
+            if (currentRoute.startsWith('/blog/')) {
+              const hasLoaded = !document.body.innerText.includes('Loading blog...');
+              const hasHeading = Boolean(document.querySelector('.blog-inside-title') || document.querySelector('h1'));
+              return hasLoaded && hasHeading;
+            }
+
+            // Wait for dynamic project details
+            if (currentRoute.startsWith('/project-details/')) {
+              const hasLoaded = !document.body.innerText.includes('Loading project...') && !document.body.innerText.includes('Loading...');
+              return hasLoaded;
+            }
+
+            // For all static pages, wait until root has real DOM children
+            return root.children.length > 0;
+          },
+          { timeout: 8000 },
+          route
+        );
       } catch (e) {
-        console.log(`⏳ #root not found for ${url}, continuing...`);
+        // Fallback brief wait if timeout
       }
-      
-      // Get HTML
+
+      // Allow 800ms for helmet tags and Firestore state updates to flush into document.head
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Extract rendered HTML
       const html = await page.content();
 
-      // Create directory structure
-      const filePath = url === '/' ? 'dist/index.html' : `dist${url}/index.html`;
-      const dir = path.dirname(filePath);
-      
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+      // Determine output filepath
+      const filePath = route === '/'
+        ? path.join(DIST_DIR, 'index.html')
+        : path.join(DIST_DIR, route.replace(/^\//, ''), 'index.html');
+
+      const fileDir = path.dirname(filePath);
+      if (!fs.existsSync(fileDir)) {
+        fs.mkdirSync(fileDir, { recursive: true });
       }
 
-      // Save HTML
-      fs.writeFileSync(filePath, html);
-      console.log(`✅ Saved: ${filePath}`);
-
-    } catch (error) {
-      console.error(`❌ Error rendering ${url}:`, error.message);
+      fs.writeFileSync(filePath, html, 'utf8');
+      successCount++;
+      console.log(`✅ ${progress} Saved: ${route} -> ${path.relative(__dirname, filePath)}`);
+    } catch (err) {
+      console.error(`❌ ${progress} Failed to prerender ${route}: ${err.message}`);
     }
   }
 
+  // Cleanup
   await browser.close();
-  console.log('🎉 Prerendering complete! All pages are ready for SEO.');
+  server.close();
+
+  console.log(`\n🎉 Prerendering finished! Successfully generated ${successCount}/${allRoutes.length} pages.`);
+  console.log('📦 All static HTML files are ready for SEO deployment in dist/');
+  process.exit(0);
 }
 
-// Run prerendering
-prerender().catch(console.error);
+prerender().catch((err) => {
+  console.error('❌ Critical Prerender Failure:', err);
+  process.exit(1);
+});
