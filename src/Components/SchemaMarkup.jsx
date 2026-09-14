@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   getHomepageSchema,
   getAboutSchema,
@@ -21,41 +21,40 @@ const SchemaMarkup = ({
   multiple = false,
   schemas = []
 }) => {
-  useEffect(() => {
-    let schemasToInject = [];
+  let schemasToInject = [];
 
     // 1. Agar multiple schemas manually pass kiye gaye hain
-    if (multiple && Array.isArray(schemas) && schemas.length > 0) {
+  if (multiple && Array.isArray(schemas) && schemas.length > 0) {
       schemasToInject = schemas;
     }
     // 2. Pre-built full schemas (yeh already { @context, @graph } return karte hain)
-    else if (type === "homepage") {
+  else if (type === "homepage") {
       schemasToInject = [getHomepageSchema()];
-    } else if (type === "about") {
+  } else if (type === "about") {
       schemasToInject = [getAboutSchema()];
-    } else if (type === "servicesListing") {
+  } else if (type === "servicesListing") {
       schemasToInject = [getServicesListingSchema()];
-    } else if (type === "service" && data) {
+  } else if (type === "service" && data) {
       schemasToInject = [getServiceSchema(data)];
-    } else if (type === "blogListing") {
+  } else if (type === "blogListing") {
       schemasToInject = [getBlogListingSchema()];
-    } else if (type === "blog" && data) {
+  } else if (type === "blog" && data) {
       schemasToInject = [getBlogSchema(data)];
-    } else if (type === "portfolioListing") {
+  } else if (type === "portfolioListing") {
       schemasToInject = [getPortfolioListingSchema()];
-    } else if (type === "portfolio" && data) {
+  } else if (type === "portfolio" && data) {
       schemasToInject = [getPortfolioSchema(data)];
-    } else if (type === "contact") {
+  } else if (type === "contact") {
       schemasToInject = [getContactSchema()];
-    } else if (type === "templates") {
+  } else if (type === "templates") {
       schemasToInject = [getTemplatesSchema()];
-    } else if (type === "category" && data) {
+  } else if (type === "category" && data) {
       schemasToInject = [getCategorySchema(data)];
-    } else if (type === "product" && data) {
+  } else if (type === "product" && data) {
       schemasToInject = [getProductSchema(data)];
     }
     // 3. Single schema (getSchema se)
-    else if (type) {
+  else if (type) {
       const schema = getSchema(type, data);
       if (schema) {
         // Single node ko bhi full context ke sath wrap kar dete hain
@@ -64,31 +63,21 @@ const SchemaMarkup = ({
           "@graph": [schema]
         }];
       }
-    }
+  }
 
-    if (schemasToInject.length === 0) return;
+  if (schemasToInject.length === 0) return null;
 
-    // Purane schema scripts hatao
-    document.querySelectorAll('script[data-schema]').forEach(script => script.remove());
-
-    // Naye schemas inject karo
-    schemasToInject.forEach((schema, index) => {
-      if (!schema) return;
-
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.setAttribute('data-schema', type || `schema-${index}`);
-      script.textContent = JSON.stringify(schema, null, 2);
-      document.head.appendChild(script);
-    });
-
-    // Cleanup on unmount
-    return () => {
-      document.querySelectorAll('script[data-schema]').forEach(script => script.remove());
-    };
-  }, [type, data, multiple, schemas]);
-
-  return null;
+  return (
+    <Helmet>
+      {schemasToInject.map((schema, index) => (
+        schema && (
+          <script key={`${type || 'schema'}-${index}`} type="application/ld+json">
+            {JSON.stringify(schema)}
+          </script>
+        )
+      ))}
+    </Helmet>
+  );
 };
 
 export default SchemaMarkup;

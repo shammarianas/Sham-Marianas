@@ -3,6 +3,7 @@ import { initializeFirestore } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCC_cEqxB99hMW16aowMs6AJ3-k52VasW0",
@@ -26,6 +27,16 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const functions = getFunctions(app, "us-central1");
 
+// Start GA4 only in browsers that support Firebase Analytics.
+let analytics = null;
+if (typeof window !== "undefined") {
+  isSupported().then((supported) => {
+    if (supported) analytics = getAnalytics(app);
+  }).catch(() => {
+    analytics = null;
+  });
+}
+
 // Optional Admin Console Helper
 setTimeout(() => {
   window.httpsCallable = httpsCallable;
@@ -45,4 +56,4 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-export { app, db, auth, storage, functions };
+export { app, db, auth, storage, functions, analytics };

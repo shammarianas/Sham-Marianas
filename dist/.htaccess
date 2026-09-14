@@ -2,6 +2,17 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Keep one HTTPS www host for all public URLs.
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} ^shammarianas\.com$ [NC]
+  RewriteRule ^ https://www.shammarianas.com%{REQUEST_URI} [R=301,L]
+
+  # Retire the old digital-asset marketplace URLs.
+  RewriteRule ^category(?:/.*)?$ /services [R=301,L,NC]
+  RewriteRule ^templates/?$ /services [R=301,L,NC]
+  RewriteRule ^services/demo/?$ /services [R=301,L,NC]
+
   # Allow existing files and directories to be served directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d

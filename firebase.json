@@ -20,7 +20,7 @@
     }
   ],
   "hosting": {
-    "public": "public",
+    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -66,6 +66,23 @@
             "value": "public, max-age=604800"
           }
         ]
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/category/**",
+        "destination": "/services",
+        "type": 301
+      },
+      {
+        "source": "/templates",
+        "destination": "/services",
+        "type": 301
+      },
+      {
+        "source": "/services/demo",
+        "destination": "/services",
+        "type": 301
       }
     ],
     "rewrites": [

@@ -490,14 +490,16 @@ export const SEO_CONFIG = {
   contributorLogin: {
     title: " Contribute Login | Shammarianas Marketplace",
     description: "Sham Marianas F.Z.C Marketplace: Upload 3D, videos, textures & assets to earn. Get the dashboard, download everything, and use it freely.",
-    keywords: "contribute assets, upload 3D marketplace, login download assets, contributor marketplace, upload videos earn, asset dashboard"
+    keywords: "contribute assets, upload 3D marketplace, login download assets, contributor marketplace, upload videos earn, asset dashboard",
+    robots: "noindex, nofollow"
   },
 
 
   contributorSignup: {
     title: " Register | Shammarianas Marketplace",
     description: "Join Shammarianas by registering. Gain contributor status for asset sharing and project access.",
-    keywords: " sign up contributor, new account assets, register marketplace, join Shammarianas, contributor access"
+    keywords: " sign up contributor, new account assets, register marketplace, join Shammarianas, contributor access",
+    robots: "noindex, nofollow"
   },
 
 

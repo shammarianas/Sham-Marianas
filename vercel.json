@@ -1,9 +1,31 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:production",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/category/:path*",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/templates",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/services/demo",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "shammarianas.com" }],
+      "destination": "https://www.shammarianas.com/$1",
+      "permanent": true
+    }
+  ],
   "routes": [
-    { "src": "/sitemap.xml", "dest": "/api/sitemap.xml" },
     { "handle": "filesystem" },
     { "src": "/.*", "dest": "/index.html" }
   ]

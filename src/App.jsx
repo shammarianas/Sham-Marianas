@@ -34,13 +34,11 @@ import PortfolioDetails from "./Pages/project-details";
 import Support from "./Pages/Support";
 import AboutUs from "./Pages/AboutUs";
 import Services from "./Pages/services";
-import StockPage from "./Pages/templates";
 import MyDownloads from "./Pages/MyDownloads";
 import Favorites from "./Pages/Favorites";
 import Admin from "./Pages/Admin";
 import BrandingDesignPage from "./Pages/ServicesDetails/BrandingDesignPage";
 import BrandingPage from "./Components/Content/HomePage";
-import Demo from "./Pages/services/Web-Services";
 import UiUxDesignPage from "./Pages/ServicesDetails/UIUXDesignPage";
 import WebDesign from "./Pages/ServicesDetails/WebDevelopment";
 import EcommercePage from "./Pages/ServicesDetails/E-CommercePage";
@@ -53,7 +51,6 @@ import PrintMedia from "./Pages/ServicesDetails/PrintMedia";
 import AiAutomation from "./Pages/ServicesDetails/AiAutomation";
 import BoothDesign from "./Pages/ServicesDetails/BoothDesign";
 import Success from "./Pages/Success";
-import CategoryTemplate from "./Pages/Types/CategoryTemplate";
 import PageTeam from "./Pages/Page-team";
 import Error from "./Pages/Error";
 import PrivacyPolicy from "./Pages/Get Started/PrivacyPolice";
@@ -110,7 +107,6 @@ export const AppRoutes = () => (
     <Route path="/Support" element={<Support />} />
     <Route path="/about" element={<AboutUs />} />
     <Route path="/page-team" element={<PageTeam />} />
-    <Route path="/templates" element={<StockPage />} />
     <Route path="/services" element={<Services />} />
     <Route path="/success" element={<Success />} />
     <Route path="/services/branding-design" element={<BrandingDesignPage />} />
@@ -129,7 +125,6 @@ export const AppRoutes = () => (
     <Route path="/services/ai-automation" element={<AiAutomation />} />
     <Route path="/services/exhibition-booth-design" element={<BoothDesign />} />
     <Route path="/services/brandingpage" element={<BrandingPage />} />
-    <Route path="/services/demo" element={<Demo />} />
     <Route path="/error" element={<Error />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
     <Route
@@ -157,21 +152,6 @@ export const AppRoutes = () => (
     {/* Profile routes - should come before generic dynamic route */}
     <Route path="/profile/:username" element={<Profile />} />
     <Route path="/:username" element={<Profile />} />
-
-    {/* Updated Category Routes - Now all start with /category */}
-    <Route path="/category/fonts" element={<CategoryTemplate />} />
-    <Route path="/category/video-templates" element={<CategoryTemplate />} />
-    <Route path="/category/icons" element={<CategoryTemplate />} />
-    <Route path="/category/models" element={<CategoryTemplate />} />
-    <Route path="/category/mockups" element={<CategoryTemplate />} />
-    <Route path="/category/graphics" element={<CategoryTemplate />} />
-    <Route path="/category/videos" element={<CategoryTemplate />} />
-    <Route path="/category/images" element={<CategoryTemplate />} />
-    <Route path="/category/scripts" element={<CategoryTemplate />} />
-    <Route path="/category/hdri" element={<CategoryTemplate />} />
-    <Route path="/category/hdris" element={<CategoryTemplate />} />
-    <Route path="/category/textures" element={<CategoryTemplate />} />
-    <Route path="/category/more" element={<CategoryTemplate />} />
 
     {/* if you have this */}
     <Route path="*" element={<Error />} />

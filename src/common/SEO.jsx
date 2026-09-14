@@ -12,7 +12,8 @@ const SEO = ({
   ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.webp",
   ogType = "website",
   twitterCard = "summary_large_image", 
-  publishedTime, author
+  publishedTime, author,
+  robots = "index, follow"
 }) => {
   const location = useLocation(); // Get current URL path
   const siteUrl = "https://www.shammarianas.com";
@@ -29,8 +30,8 @@ const SEO = ({
   
 
   const canonicalUrl = getCanonicalUrl();
-  const siteTitle = "";
-  const fullTitle = title ? `${title}  ${siteTitle}` : siteTitle;
+  const siteTitle = "Sham Marianas F.Z.C.";
+  const fullTitle = title || siteTitle;
 
   return (
     <Helmet>
@@ -38,6 +39,7 @@ const SEO = ({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
+      <meta name="twitter:url" content={canonicalUrl} />
       
       {/* ✅ DYNAMIC CANONICAL LINK */}
       <link rel="canonical" href={canonicalUrl} />
@@ -57,7 +59,7 @@ const SEO = ({
       <meta name="twitter:image" content={ogImage} />
       
       {/* Additional Tags */}
-      <meta name="robots" content="index, follow" />
+      <meta name="robots" content={robots} />
       <meta name="language" content="English" />
       <meta name="revisit-after" content="7 days" />
       <meta name="author" content="Shammarianas" />

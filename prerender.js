@@ -137,7 +137,6 @@ async function prerender() {
     '/portfolio',
     '/blog',
     '/contact-us',
-    '/templates',
     '/page-team',
 
     // High commercial intent service pages
@@ -154,22 +153,6 @@ async function prerender() {
     '/services/ai-automation',
     '/services/exhibition-booth-design',
     '/services/brandingpage',
-    '/services/demo',
-
-    // Category routes
-    '/category/fonts',
-    '/category/video-templates',
-    '/category/icons',
-    '/category/models',
-    '/category/mockups',
-    '/category/graphics',
-    '/category/videos',
-    '/category/images',
-    '/category/scripts',
-    '/category/hdri',
-    '/category/hdris',
-    '/category/textures',
-    '/category/more',
 
     // Legal & Information
     '/terms-and-conditions',

@@ -33,7 +33,6 @@ const ROUTES_CONFIG = [
   { path: '/portfolio', dynamic: false, priority: '0.9', freq: 'weekly' },
   { path: '/blog', dynamic: false, priority: '0.9', freq: 'daily' },
   { path: '/contact-us', dynamic: false, priority: '0.8', freq: 'monthly' },
-  { path: '/templates', dynamic: false, priority: '0.8', freq: 'weekly' },
   { path: '/page-team', dynamic: false, priority: '0.7', freq: 'monthly' },
 
   // Service Detail Pages (High Commercial Intent)
@@ -50,22 +49,6 @@ const ROUTES_CONFIG = [
   { path: '/services/ai-automation', dynamic: false, priority: '0.85', freq: 'weekly' },
   { path: '/services/exhibition-booth-design', dynamic: false, priority: '0.85', freq: 'weekly' },
   { path: '/services/brandingpage', dynamic: false, priority: '0.8', freq: 'monthly' },
-  { path: '/services/demo', dynamic: false, priority: '0.7', freq: 'monthly' },
-
-  // Category Pages
-  { path: '/category/fonts', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/video-templates', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/icons', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/models', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/mockups', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/graphics', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/videos', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/images', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/scripts', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/hdri', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/hdris', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/textures', dynamic: false, priority: '0.8', freq: 'weekly' },
-  { path: '/category/more', dynamic: false, priority: '0.7', freq: 'weekly' },
 
   // Legal & Info Pages
   { path: '/terms-and-conditions', dynamic: false, priority: '0.5', freq: 'monthly' },
