@@ -241,48 +241,49 @@ async function prerender() {
     const progress = `[${i + 1}/${allRoutes.length}]`;
 
     try {
-      // Navigate to route
-      await page.goto(targetUrl, {
-        waitUntil: 'domcontentloaded',
-        timeout: 25000,
-      });
+      let html;
+      let lastError;
 
-      // Wait for React to render and react-helmet-async to inject title/meta
-      try {
-        await page.waitForFunction(
-          (currentRoute) => {
-            const root = document.getElementById('root');
-            if (!root) return false;
-            if (root.querySelector('.loader-wrap')) return false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await page.goto(targetUrl, {
+            waitUntil: 'domcontentloaded',
+            timeout: 25000,
+          });
 
-            // Wait for dynamic blog data
-            if (currentRoute.startsWith('/blog/')) {
-              const hasLoaded = !document.body.innerText.includes('Loading blog...');
-              const hasHeading = Boolean(document.querySelector('.blog-inside-title') || document.querySelector('h1'));
-              return hasLoaded && hasHeading;
-            }
+          await page.waitForFunction(
+            (currentRoute) => {
+              const root = document.getElementById('root');
+              if (!root || root.querySelector('.loader-wrap')) return false;
 
-            // Wait for dynamic project details
-            if (currentRoute.startsWith('/project-details/')) {
-              const hasLoaded = !document.body.innerText.includes('Loading project...') && !document.body.innerText.includes('Loading...');
-              return hasLoaded;
-            }
+              if (currentRoute.startsWith('/blog/')) {
+                return !document.body.innerText.includes('Loading blog...') &&
+                  Boolean(document.querySelector('.blog-inside-title'));
+              }
 
-            // For all static pages, wait until root has real DOM children
-            return root.children.length > 0;
-          },
-          { timeout: 8000 },
-          route
-        );
-      } catch (e) {
-        // Fallback brief wait if timeout
+              if (currentRoute.startsWith('/project-details/')) {
+                return !document.body.innerText.includes('Loading project...') &&
+                  !document.body.innerText.includes('Loading...');
+              }
+
+              return root.children.length > 0;
+            },
+            { timeout: 30000 },
+            route
+          );
+
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          html = await page.content();
+          break;
+        } catch (error) {
+          lastError = error;
+          console.warn(`⚠️ ${progress} Attempt ${attempt}/3 incomplete: ${error.message}`);
+        }
       }
 
-      // Allow 800ms for helmet tags and Firestore state updates to flush into document.head
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // Extract rendered HTML
-      const html = await page.content();
+      if (!html) {
+        throw new Error(`Rendered content was not ready after 3 attempts: ${lastError?.message || 'unknown error'}`);
+      }
 
       // Determine output filepath
       const filePath = route === '/'
