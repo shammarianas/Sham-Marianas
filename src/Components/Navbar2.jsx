@@ -290,62 +290,63 @@ const Navbar = () => {
                   </Link>
                   <ul className="dropdown-menu services-dropdown-menu">
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/branding-design">
                         Branding Design
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/uiux-design">
                         UI-UX Design
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/web-development">
                         Web Development
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/ecommerce-solutions">
                         E-Commerce Solutions
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/content-writing">
+
                         Content Writing
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/product-design">
                         Product Design
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/social-media-digital-marketing">
                         Social Media & Digital Marketing
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/video-production">
                         Photography & Video Production
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/vfx-and-cgi-ads">
                         VFX and CGI ADs
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/print-media-solutions">
                         Print Media Solution
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="https://agentixsystem.com/">
                         AI & Automation
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="/services">
+                      <Link className="dropdown-item" to="/services/exhibition-booth-design">
                         Exhibition Booth Design
                       </Link>
                     </li>
