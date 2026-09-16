@@ -95,7 +95,7 @@ function Services() {
     },
     {
       num: "11",
-      slug: "ai-automation",
+      slug: "https://agentixsystem.com/",
       category: "AI & Automation",
       title: "Smart workflows",
       description:
@@ -130,41 +130,52 @@ function Services() {
             </div>
           </div>
         </div>
-        {services.map((service, index) => (
-          <div className="item" key={index}>
-            <div className="row md-marg align-items-end">
-              <div className="col-lg-4">
-                <div>
-                  <span className="num">{service.num}</span>
+        {services.map((service, index) => {
+          const isExternalLink = /^https?:\/\//i.test(service.slug);
+          const serviceLink = isExternalLink ? service.slug : `/services/${service.slug}`;
+
+          return (
+            <div className="item" key={index}>
+              <div className="row md-marg align-items-end">
+                <div className="col-lg-4">
                   <div>
-                    <span className="sub-title main-color mb-10">
-                      {service.category}
-                    </span>
-                    <h2>
-                      {service.title.split(" ")[0]}{" "}
-                      <span className="fw-200">
-                        {service.title.split(" ")[1] || ""}
+                    <span className="num">{service.num}</span>
+                    <div>
+                      <span className="sub-title main-color mb-10">
+                        {service.category}
                       </span>
-                    </h2>
+                      <h2>
+                        {service.title.split(" ")[0]}{" "}
+                        <span className="fw-200">
+                          {service.title.split(" ")[1] || ""}
+                        </span>
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-lg-4">
+                  <div className="text md-mb80">
+                    <p>{service.description}</p>
+                  </div>
+                </div>
+                <div className="col-lg-4">
+                  <div className="img">
+                    <img loading="lazy" src={service.img} alt={service.category} />
+                    {isExternalLink ? (
+                      <a href={serviceLink} target="_blank" rel="noreferrer">
+                        <span className="ti-arrow-top-right"></span>
+                      </a>
+                    ) : (
+                      <Link to={serviceLink}>
+                        <span className="ti-arrow-top-right"></span>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
-              <div className="col-lg-4">
-                <div className="text md-mb80">
-                  <p>{service.description}</p>
-                </div>
-              </div>
-              <div className="col-lg-4">
-                <div className="img">
-                  <img  loading="lazy"  src={service.img} alt={service.category} />
-                  <Link to={`/services/${service.slug}`}>
-                    <span className="ti-arrow-top-right"></span>
-                  </Link>
-                </div>
-              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
