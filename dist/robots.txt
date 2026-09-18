@@ -1,6 +1,3 @@
-# ==================================
-# Robots.txt for shammarianas.com
-# ==================================
 
 User-agent: *
 Allow: /
@@ -8,9 +5,7 @@ Allow: /
 # Block sensitive or useless paths (only if they exist)
 Disallow: /admin
 Disallow: /login
-Disallow: /Login
 Disallow: /contributordashboard
-Disallow: /ContributorDashboard
 Disallow: /api
 
 # AI & LLM Crawlers

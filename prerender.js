@@ -157,9 +157,17 @@ async function prerender() {
     // Legal & Information
     '/terms-and-conditions',
     '/privacy-policy',
+    '/privacy-policy-template',
+    '/terms-condition-template',
     '/seller-guideline',
     '/prices-and-fees',
     '/contributor-policies',
+
+    // Blog category landing pages
+    '/blog-category/business',
+    '/blog-category/technology',
+    '/blog-category/design',
+    '/blog-category/marketing',
   ];
 
   // Fetch dynamic routes
@@ -254,15 +262,35 @@ async function prerender() {
           await page.waitForFunction(
             (currentRoute) => {
               const root = document.getElementById('root');
-              if (!root || root.querySelector('.loader-wrap')) return false;
+              if (!root) return false;
+
+              if (currentRoute === '/') {
+                return Boolean(document.querySelector('link[rel="canonical"]')) &&
+                  Boolean(document.querySelector('title'));
+              }
+
+              if (root.querySelector('.loader-wrap')) return false;
 
               if (currentRoute.startsWith('/blog/')) {
                 return !document.body.innerText.includes('Loading blog...') &&
                   Boolean(document.querySelector('.blog-inside-title'));
               }
 
+              if (currentRoute === '/blog') {
+                return Boolean(document.querySelector('link[rel="canonical"]')) &&
+                  Boolean(document.querySelector('title')) &&
+                  !document.body.innerText.includes('Loading...');
+              }
+
               if (currentRoute.startsWith('/project-details/')) {
-                return !document.body.innerText.includes('Loading project...') &&
+                return !document.querySelector('.loading-container') &&
+                  !document.body.innerText.includes('Loading project details...') &&
+                  Boolean(document.querySelector('link[rel="canonical"]')) &&
+                  !document.title.startsWith('Loading Project');
+              }
+
+              if (currentRoute.startsWith('/blog-category/')) {
+                return Boolean(document.querySelector('link[rel="canonical"]')) &&
                   !document.body.innerText.includes('Loading...');
               }
 

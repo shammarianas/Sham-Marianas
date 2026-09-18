@@ -132,21 +132,18 @@ const BlogCategory = () => {
       : urlCategory.charAt(0).toUpperCase() + urlCategory.slice(1)
     : "All Blogs";
 
-  if (loading) {
-    return (
-      <section className="blog-main section-padding">
-        <div className="container text-center py-5">Loading...</div>
-      </section>
-    );
-  }
-
   return (
     <>
-     {SEO_CONFIG?.blogCategories?.[urlCategory] ? (
-      <SEO {...SEO_CONFIG.blogCategories[urlCategory]} />
-    ) : (
-      <SEO {...SEO_CONFIG?.blogHome || {}} />
-    )}
+      {SEO_CONFIG?.blogCategories?.[urlCategory] ? (
+        <SEO {...SEO_CONFIG.blogCategories[urlCategory]} />
+      ) : (
+        <SEO {...SEO_CONFIG?.blogHome || {}} />
+      )}
+      {loading ? (
+        <section className="blog-main section-padding">
+          <div className="container text-center py-5">Loading...</div>
+        </section>
+      ) : (
       
     <section className="blog-main section-padding">
       <div className="container">
@@ -260,6 +257,7 @@ const BlogCategory = () => {
         </div>
       </div>
     </section>
+      )}
     </>
   );
 };

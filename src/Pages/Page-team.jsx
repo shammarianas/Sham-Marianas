@@ -10,16 +10,18 @@ import Header from "../Components/page-team/Header";
 import Numbers from "../Components/services/Numbers";
 import Marq2 from "../Components/marq2";
 import Team from "../Components/about-us/Team";
-import { Helmet } from "react-helmet-async";
+import SEO from "../common/SEO";
 
 export default function PageTeam() {
   const main = useRef();
 
   return (
     <>
-      <Helmet>
-        <title>Sham Marianas F.Z.C Teams</title>
-      </Helmet>
+      <SEO
+        title="Sham Marianas F.Z.C Teams"
+        description="Meet the creative and digital team behind Sham Marianas F.Z.C., a Dubai-based advertising and digital solutions agency."
+        canonical="https://www.shammarianas.com/page-team"
+      />
       <body>
         {/* <LoadingScreen /> */}
         {/* <Cursor />

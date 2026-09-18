@@ -4,6 +4,7 @@ import HeaderSection from "../ServicesDetails/HeaderSection";
 import IntroSection from "../ServicesDetails/IntroSection";
 import BrandingContentSection from "../ServicesDetails/ContentSection";
 import FAQAccordion from "../ServicesDetails/FAQAccordion";
+import SEO from "../../common/SEO";
 
 const BrandingPage = () => {
   const sectionOne = {
@@ -84,6 +85,11 @@ const BrandingPage = () => {
 
   return (
     <>
+      <SEO
+        title="UI/UX Design Services | Sham Marianas F.Z.C."
+        description="Create intuitive, engaging digital experiences with user-focused UI/UX design services from Sham Marianas F.Z.C. in Dubai."
+        canonical="https://www.shammarianas.com/services/brandingpage"
+      />
       <HeaderSection
         title="UI/UX"
         highlightedText="Design"

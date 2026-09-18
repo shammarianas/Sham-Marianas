@@ -131,12 +131,13 @@ function Blogs() {
     return pages;
   };
 
-  if (loading) return <div className="main-bgs">Loading...</div>;
-
   return (
     <>
       <ProgressScroll />
       <SEO {...SEO_CONFIG.blogHome} />
+      {loading ? (
+        <div className="main-bgs">Loading...</div>
+      ) : (
       <div className="main-bgs">
         <header
           className="page-header bg-img section-padding valign"
@@ -333,6 +334,7 @@ function Blogs() {
 
         <Marq2 />
       </div>
+      )}
     </>
   );
 }
