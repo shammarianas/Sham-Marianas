@@ -39,7 +39,7 @@ function Contact() {
     try {
       // 🔧 YAHAN APNA WEBHOOK URL PASTE KARO
       // (Automation tool mein Webhook node add karne ke baad jo URL milega, wahi yahan daalna hai)
-      const WEBHOOK_URL = "https://n8n-z5va.srv1917294.hstgr.cloud/webhook/Contact-us";
+      const WEBHOOK_URL = "https://n8n.agentixsystem.com/webhook/Contact-us";
 
       // 🔧 Field names capitalized bhej rahe hain (Name, Email, Subject, Message)
       // kyunki automation workflow mein $json.Name, $json.Email waghera

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
-// ⚠️ IMPORTANT: Apna production webhook URL yahan daalein.
-const N8N_CHAT_WEBHOOK_URL = "https://n8n-z5va.srv1917294.hstgr.cloud/webhook-test/sham-marianas-chatbot";
+//  IMPORTANT: Apna production webhook URL yahan daalein.
+const N8N_CHAT_WEBHOOK_URL = "https://n8n.agentixsystem.com/webhook/sham-marianas-chatbot";
 
 const SESSION_STORAGE_KEY = "sm_chat_session_id";
 const INQUIRY_FORM_URL = "#INQUIRY_FORM";
