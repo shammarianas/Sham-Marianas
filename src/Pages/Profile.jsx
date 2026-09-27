@@ -26,6 +26,7 @@ import {
 import { db, auth } from "../../firebase";
 import { useUser } from "../Context/UserProvider";
 import ListedItemCard from "../Components/UI/ListedItemCard";
+import Error from "./Error";
 // Add these URLs at the top of your Profile.js or in a config file
 const CLOUD_FUNCTIONS = {
   addTeamMember: "https://addteammember-xc6vtzxljq-uc.a.run.app",
@@ -1557,6 +1558,10 @@ const Profile = () => {
     acc[item.type].push(item);
     return acc;
   }, {});
+
+  if (loading === "not_found") {
+    return <Error />;
+  }
 
   return (
     <>
