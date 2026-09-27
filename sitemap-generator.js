@@ -24,6 +24,14 @@ const db = getFirestore(app);
 const WEBSITE = 'https://www.shammarianas.com';
 const TODAY = new Date().toISOString().split('T')[0];
 
+const escapeXml = (value) => String(value).replace(/[<>&'\"]/g, (character) => ({
+  '<': '&lt;',
+  '>': '&gt;',
+  '&': '&amp;',
+  "'": '&apos;',
+  '"': '&quot;',
+}[character]));
+
 // Define all routes from your AppRoutes component
 const ROUTES_CONFIG = [
   // Primary Static Routes
@@ -128,8 +136,7 @@ async function main() {
     uniqueUrls.forEach(page => {
       xml += `
   <url>
-    <loc>${WEBSITE}${page.url}</loc>
-    <lastmod>${TODAY}</lastmod>
+    <loc>${escapeXml(`${WEBSITE}${page.url}`)}</loc>
     <changefreq>${page.freq}</changefreq>
     <priority>${page.priority}</priority>
   </url>`;
@@ -137,21 +144,31 @@ async function main() {
 
     xml += '\n</urlset>\n';
 
+    const sitemapIndexXml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${escapeXml(`${WEBSITE}/sitemap.xml`)}</loc>
+    <lastmod>${TODAY}</lastmod>
+  </sitemap>
+</sitemapindex>\n`;
+
     // Save to public/sitemap.xml
     const publicFolder = path.join(__dirname, 'public');
     if (!fs.existsSync(publicFolder)) {
       fs.mkdirSync(publicFolder, { recursive: true });
     }
     fs.writeFileSync(path.join(publicFolder, 'sitemap.xml'), xml, 'utf8');
+    fs.writeFileSync(path.join(publicFolder, 'sitemap-index.xml'), sitemapIndexXml, 'utf8');
 
     // Also save to dist/sitemap.xml if dist exists
     const distFolder = path.join(__dirname, 'dist');
     if (fs.existsSync(distFolder)) {
       fs.writeFileSync(path.join(distFolder, 'sitemap.xml'), xml, 'utf8');
+      fs.writeFileSync(path.join(distFolder, 'sitemap-index.xml'), sitemapIndexXml, 'utf8');
     }
 
     console.log(`🎉 Sitemap successfully generated with ${uniqueUrls.length} URLs!`);
-    console.log(`🔗 Output saved to public/sitemap.xml`);
+    console.log(`🔗 Output saved to public/sitemap.xml and public/sitemap-index.xml`);
     process.exit(0);
   } catch (error) {
     console.error('❌ Sitemap generation error:', error);
