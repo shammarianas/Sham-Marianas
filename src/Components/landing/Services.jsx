@@ -38,31 +38,31 @@ const data = [
     title: "6. Product Design",
     img: "/assets/imgs/serv-icons/5.png",
     desc: "We provide the best product design, creating seamless, user-focused experiences that drive engagement, innovation, and business success.",
-    link: "/services/product",
+    link: "/services/product-design",
   },
   {
     title: "7. Social Media & Digital Marketing",
     img: "/assets/imgs/serv-icons/4.png",
     desc: "We help businesses grow with social media & digital marketing, increasing brand awareness, interaction, and online reach.",
-    link: "/services/digital",
+    link: "/services/social-media-digital-marketing",
   },
   {
     title: "8. Photography & Video Production",
     img: "/assets/imgs/serv-icons/5.png",
     desc: "We deliver photography & video production that captures your brand’s story, enhancing engagement, visibility, and trust with high-impact visuals.",
-    link: "#services/video-production",
+    link: "/services/video-production",
   },
   {
     title: "9. VFX and CGI ADs",
     img: "/assets/imgs/serv-icons/4.png",
     desc: "We design eye-catching VFX and CGI ads that boost brand visibility, engagement, and audience impact with stunning, high-quality visuals.",
-    link: "/services/vfx",
+    link: "/services/vfx-and-cgi-ads",
   },
   {
     title: "10. Print Media Solution",
     img: "/assets/imgs/serv-icons/5.png",
     desc: "We craft print media solutions that boost brand visibility, marketing impact, and audience engagement with high-quality designs and materials.",
-    link: "/services/printing",
+    link: "/services/print-media-solutions",
   },
   {
     title: "11. AI-Automation",
@@ -74,7 +74,7 @@ const data = [
     title: "12. Exhibition Booth Design",
     img: "/assets/imgs/serv-icons/4.png",
     desc: "We develop exhibition booth designs that bring your brand to life with stunning visuals, smart layouts, and engaging displays that attract audiences and build memorable connections.",
-    link: "/services/exhibition",
+    link: "/services/exhibition-booth-design",
   },
 ];
 function Services() {

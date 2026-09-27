@@ -159,7 +159,7 @@ function Contact() {
                 </div>
                 <div className="morinfo mt-30 pb-30 bord-thin-bottom">
                   <h6 className="mb-15">Email</h6>
-                  <p>info@shammarians.com</p>
+                  <p>info@shammarianas.com</p>
                 </div>
                 <div className="Contact-socialIcons mt-50">
                   <div className="social-list">
