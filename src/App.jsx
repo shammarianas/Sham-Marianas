@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import Navbar2 from "./Components/Navbar2";
 import "./assets/Styles/Tab.css";
 import "./assets/Styles/Style.css";
@@ -77,38 +78,50 @@ const ScrollToTop = () => {
   return null;
 };
 
+const NoIndexRoute = ({ children }) => (
+  <>
+    {children}
+    <Helmet>
+      <meta name="robots" content="noindex, nofollow" />
+      <meta name="googlebot" content="noindex, nofollow" />
+    </Helmet>
+  </>
+);
+
+const noIndex = (element) => <NoIndexRoute>{element}</NoIndexRoute>;
+
 export const AppRoutes = () => (
   <Routes>
     {/* Static routes first */}
-    <Route path="/Login" element={<Login />} />
-    <Route path="/auto-login-team" element={<AutoLoginTeam />} />
+    <Route path="/Login" element={noIndex(<Login />)} />
+    <Route path="/auto-login-team" element={noIndex(<AutoLoginTeam />)} />
 
-    <Route path="/login" element={<Login />} />
-    <Route path="/ContributorLogin" element={<ContributorLogin />} />
-    <Route path="/ContributorDashboard" element={<ContributorDashboard />} />
-    <Route path="/Admin" element={<Admin />} />
-    <Route path="/Reset" element={<PasswordReset />} />
-    <Route path="/reset" element={<PasswordReset />} />
-    <Route path="/Logout" element={<Logout />} />
+    <Route path="/login" element={noIndex(<Login />)} />
+    <Route path="/ContributorLogin" element={noIndex(<ContributorLogin />)} />
+    <Route path="/ContributorDashboard" element={noIndex(<ContributorDashboard />)} />
+    <Route path="/Admin" element={noIndex(<Admin />)} />
+    <Route path="/Reset" element={noIndex(<PasswordReset />)} />
+    <Route path="/reset" element={noIndex(<PasswordReset />)} />
+    <Route path="/Logout" element={noIndex(<Logout />)} />
     <Route path="/" element={<Home />} />
-    <Route path="/Groups" element={<Group />} />
-    <Route path="/Upload" element={<Upload />} />
-    <Route path="/Checkout" element={<Checkout />} />
-    <Route path="/Library" element={<Library />} />
-    <Route path="/MyDownloads" element={<MyDownloads />} />
-    <Route path="/Favorites" element={<Favorites />} />
-    <Route path="/Texture" element={<TextureViewer />} />
-    <Route path="/analytics" element={<Analytics />} />
-    <Route path="/Terms" element={<Terms />} />
-    <Route path="/Privacy" element={<Privacy />} />
+    <Route path="/Groups" element={noIndex(<Group />)} />
+    <Route path="/Upload" element={noIndex(<Upload />)} />
+    <Route path="/Checkout" element={noIndex(<Checkout />)} />
+    <Route path="/Library" element={noIndex(<Library />)} />
+    <Route path="/MyDownloads" element={noIndex(<MyDownloads />)} />
+    <Route path="/Favorites" element={noIndex(<Favorites />)} />
+    <Route path="/Texture" element={noIndex(<TextureViewer />)} />
+    <Route path="/analytics" element={noIndex(<Analytics />)} />
+    <Route path="/Terms" element={noIndex(<Terms />)} />
+    <Route path="/Privacy" element={noIndex(<Privacy />)} />
     <Route path="/contact-us" element={<Contact />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="/portfolio" element={<Portfolio />} />
-    <Route path="/Support" element={<Support />} />
+    <Route path="/Support" element={noIndex(<Support />)} />
     <Route path="/about" element={<AboutUs />} />
     <Route path="/page-team" element={<PageTeam />} />
     <Route path="/services" element={<Services />} />
-    <Route path="/success" element={<Success />} />
+    <Route path="/success" element={noIndex(<Success />)} />
     <Route path="/services/branding-design" element={<BrandingDesignPage />} />
     <Route path="/services/uiux-design" element={<UiUxDesignPage />} />
     <Route path="/services/web-development" element={<WebDesign />} />
@@ -139,9 +152,9 @@ export const AppRoutes = () => (
     <Route path="/seller-guideline" element={<SellerGuideline />} />
     <Route path="/prices-and-fees" element={<PricingAndFees />} />
     <Route path="/contributor-policies" element={<ContributorPolicies />} />
-    <Route path="/coming-soon" element={<CommingSoon />} />
+    <Route path="/coming-soon" element={noIndex(<CommingSoon />)} />
     <Route path="/blogs" element={<BlogCategory />} />
-    <Route path="/subscription" element={<Subscription />} />
+    <Route path="/subscription" element={noIndex(<Subscription />)} />
     {/* Dynamic routes with parameters - order matters! */}
     <Route path="/View/:slug" element={<View />} />
     <Route path="/blog/:id" element={<BlogDetails />} />
