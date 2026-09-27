@@ -9,8 +9,13 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DIST_DIR = path.join(__dirname, 'dist');
-const PORT = 4173;
+const SITE_URL = 'https://www.shammarianas.com';
+const DIST_DIR = path.resolve(process.env.PRERENDER_DIST_DIR || path.join(__dirname, 'dist'));
+const PORT = Number.parseInt(process.env.PRERENDER_PORT || '4173', 10);
+
+if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
+  throw new Error(`Invalid PRERENDER_PORT: ${process.env.PRERENDER_PORT}`);
+}
 
 // Standalone Firebase config (Node.js safe, no window dependencies)
 const firebaseConfig = {
@@ -78,6 +83,7 @@ function startStaticServer(fallbackHtml) {
 // 2. Fetch dynamic routes from Firebase Firestore
 async function getDynamicRoutes() {
   const dynamicRoutes = [];
+  const errors = [];
 
   // Blogs
   try {
@@ -92,6 +98,7 @@ async function getDynamicRoutes() {
     console.log(`✅ Loaded ${dynamicRoutes.length} blog routes from Firestore`);
   } catch (err) {
     console.warn('⚠️ Could not fetch blogs from Firestore:', err.message);
+    errors.push(`blogs: ${err.message}`);
   }
 
   // Projects
@@ -109,6 +116,11 @@ async function getDynamicRoutes() {
     console.log(`✅ Loaded ${count} project routes from Firestore`);
   } catch (err) {
     console.warn('⚠️ Could not fetch projects from Firestore:', err.message);
+    errors.push(`projects: ${err.message}`);
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Could not load all dynamic routes (${errors.join('; ')})`);
   }
 
   return dynamicRoutes;
@@ -260,16 +272,39 @@ async function prerender() {
           });
 
           await page.waitForFunction(
-            (currentRoute) => {
+            (currentRoute, siteUrl) => {
               const root = document.getElementById('root');
               if (!root) return false;
 
-              if (currentRoute === '/') {
-                return Boolean(document.querySelector('link[rel="canonical"]')) &&
-                  Boolean(document.querySelector('title'));
+              if (root.querySelector('.loader-wrap')) return false;
+
+              const title = document.querySelector('title')?.textContent?.trim();
+              const description = document.querySelector('meta[name="description"]')?.content?.trim();
+              const canonical = document.querySelector('link[rel="canonical"]');
+              const robots = document.querySelector('meta[name="robots"]')?.content?.toLowerCase() || '';
+              const expectedPath = currentRoute.replace(/\/+$/, '') || '/';
+
+              let hasValidCanonical = false;
+              if (canonical?.href) {
+                try {
+                  const canonicalUrl = new URL(canonical.href);
+                  const canonicalPath = canonicalUrl.pathname.replace(/\/+$/, '') || '/';
+                  hasValidCanonical = canonicalUrl.origin === siteUrl && canonicalPath === expectedPath;
+                } catch {
+                  hasValidCanonical = false;
+                }
               }
 
-              if (root.querySelector('.loader-wrap')) return false;
+              const hasCoreSeo = Boolean(
+                root.children.length > 0 &&
+                title &&
+                description &&
+                hasValidCanonical &&
+                robots.includes('index') &&
+                !robots.includes('noindex')
+              );
+
+              if (!hasCoreSeo) return false;
 
               if (currentRoute.startsWith('/blog/')) {
                 return !document.body.innerText.includes('Loading blog...') &&
@@ -277,27 +312,24 @@ async function prerender() {
               }
 
               if (currentRoute === '/blog') {
-                return Boolean(document.querySelector('link[rel="canonical"]')) &&
-                  Boolean(document.querySelector('title')) &&
-                  !document.body.innerText.includes('Loading...');
+                return !document.body.innerText.includes('Loading...');
               }
 
               if (currentRoute.startsWith('/project-details/')) {
                 return !document.querySelector('.loading-container') &&
                   !document.body.innerText.includes('Loading project details...') &&
-                  Boolean(document.querySelector('link[rel="canonical"]')) &&
                   !document.title.startsWith('Loading Project');
               }
 
               if (currentRoute.startsWith('/blog-category/')) {
-                return Boolean(document.querySelector('link[rel="canonical"]')) &&
-                  !document.body.innerText.includes('Loading...');
+                return !document.body.innerText.includes('Loading...');
               }
 
-              return root.children.length > 0;
+              return true;
             },
             { timeout: 30000 },
-            route
+            route,
+            SITE_URL
           );
 
           await new Promise((resolve) => setTimeout(resolve, 800));
@@ -335,8 +367,13 @@ async function prerender() {
   await browser.close();
   server.close();
 
+  if (successCount !== allRoutes.length) {
+    console.error(`\n❌ Prerendering incomplete: generated ${successCount}/${allRoutes.length} pages.`);
+    process.exit(1);
+  }
+
   console.log(`\n🎉 Prerendering finished! Successfully generated ${successCount}/${allRoutes.length} pages.`);
-  console.log('📦 All static HTML files are ready for SEO deployment in dist/');
+  console.log(`📦 All static HTML files are ready for SEO deployment in ${DIST_DIR}`);
   process.exit(0);
 }
 
