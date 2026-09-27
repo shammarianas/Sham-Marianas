@@ -28,6 +28,40 @@
     ],
     "headers": [
       {
+        "source": "/robots.txt",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600, must-revalidate"
+          },
+          {
+            "key": "CDN-Cache-Control",
+            "value": "public, max-age=3600"
+          },
+          {
+            "key": "Cloudflare-CDN-Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "/sitemap*.xml",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600, must-revalidate"
+          },
+          {
+            "key": "CDN-Cache-Control",
+            "value": "public, max-age=3600"
+          },
+          {
+            "key": "Cloudflare-CDN-Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
         "source": "**/*.@(jpg|jpeg|gif|png|webp|svg|ico)",
         "headers": [
           {

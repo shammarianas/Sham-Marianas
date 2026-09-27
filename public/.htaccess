@@ -21,6 +21,15 @@
   RewriteRule ^ index.html [L]
 </IfModule>
 
+# Keep crawler-control files fresh enough for SEO updates.
+<IfModule mod_headers.c>
+  <FilesMatch "^(robots\.txt|sitemap(?:-index)?\.xml)$">
+    Header always set Cache-Control "public, max-age=3600, must-revalidate"
+    Header always set CDN-Cache-Control "public, max-age=3600"
+    Header always set Cloudflare-CDN-Cache-Control "public, max-age=3600"
+  </FilesMatch>
+</IfModule>
+
 # Cache static assets (optional)
 <IfModule mod_expires.c>
   ExpiresActive On
