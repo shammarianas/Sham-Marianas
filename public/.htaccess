@@ -12,6 +12,7 @@
   RewriteRule ^category(?:/.*)?$ /services [R=301,L,NC]
   RewriteRule ^templates/?$ /services [R=301,L,NC]
   RewriteRule ^services/demo/?$ /services [R=301,L,NC]
+  RewriteRule ^services/brandingpage/?$ /services/uiux-design [R=301,L,NC]
 
   # Allow existing files and directories to be served directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]

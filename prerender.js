@@ -164,8 +164,6 @@ async function prerender() {
     '/services/print-media-solutions',
     '/services/ai-automation',
     '/services/exhibition-booth-design',
-    '/services/brandingpage',
-
     // Legal & Information
     '/terms-and-conditions',
     '/privacy-policy',

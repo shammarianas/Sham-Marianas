@@ -72,6 +72,11 @@
       "permanent": true
     },
     {
+      "source": "/services/brandingpage",
+      "destination": "/services/uiux-design",
+      "permanent": true
+    },
+    {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "shammarianas.com" }],
       "destination": "https://www.shammarianas.com/$1",

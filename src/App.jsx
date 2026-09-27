@@ -6,7 +6,7 @@ import "./assets/Styles/Style.css";
 import "./assets/Styles/stock.css";
 import "./assets/Styles/video-viewer.css";
 import "./assets/Styles/profile-edit.css";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Home from "./Pages/Home";
 import View from "./Pages/View";
 import Footer from "./Components/Footer";
@@ -39,7 +39,6 @@ import MyDownloads from "./Pages/MyDownloads";
 import Favorites from "./Pages/Favorites";
 import Admin from "./Pages/Admin";
 import BrandingDesignPage from "./Pages/ServicesDetails/BrandingDesignPage";
-import BrandingPage from "./Components/Content/HomePage";
 import UiUxDesignPage from "./Pages/ServicesDetails/UIUXDesignPage";
 import WebDesign from "./Pages/ServicesDetails/WebDevelopment";
 import EcommercePage from "./Pages/ServicesDetails/E-CommercePage";
@@ -137,7 +136,10 @@ export const AppRoutes = () => (
     <Route path="/services/print-media-solutions" element={<PrintMedia />} />
     <Route path="/services/ai-automation" element={<AiAutomation />} />
     <Route path="/services/exhibition-booth-design" element={<BoothDesign />} />
-    <Route path="/services/brandingpage" element={<BrandingPage />} />
+    <Route
+      path="/services/brandingpage"
+      element={<Navigate to="/services/uiux-design" replace />}
+    />
     <Route path="/error" element={<Error />} />
     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
     <Route

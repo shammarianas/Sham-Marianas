@@ -56,8 +56,6 @@ const ROUTES_CONFIG = [
   { path: '/services/print-media-solutions', dynamic: false, priority: '0.85', freq: 'weekly' },
   { path: '/services/ai-automation', dynamic: false, priority: '0.85', freq: 'weekly' },
   { path: '/services/exhibition-booth-design', dynamic: false, priority: '0.85', freq: 'weekly' },
-  { path: '/services/brandingpage', dynamic: false, priority: '0.8', freq: 'monthly' },
-
   // Legal & Info Pages
   { path: '/terms-and-conditions', dynamic: false, priority: '0.5', freq: 'monthly' },
   { path: '/privacy-policy', dynamic: false, priority: '0.5', freq: 'monthly' },
