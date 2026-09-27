@@ -122,6 +122,16 @@
         "source": "/services/brandingpage",
         "destination": "/services/uiux-design",
         "type": 301
+      },
+      {
+        "source": "/blogs",
+        "destination": "/blog",
+        "type": 301
+      },
+      {
+        "source": "/blog-details/:id",
+        "destination": "/blog/:id",
+        "type": 301
       }
     ],
     "rewrites": [

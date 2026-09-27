@@ -157,7 +157,7 @@ export const AppRoutes = () => (
     <Route path="/prices-and-fees" element={<PricingAndFees />} />
     <Route path="/contributor-policies" element={<ContributorPolicies />} />
     <Route path="/coming-soon" element={noIndex(<CommingSoon />)} />
-    <Route path="/blogs" element={<BlogCategory />} />
+    <Route path="/blogs" element={<Navigate to="/blog" replace />} />
     <Route path="/subscription" element={noIndex(<Subscription />)} />
     {/* Dynamic routes with parameters - order matters! */}
     <Route path="/View/:slug" element={<View />} />

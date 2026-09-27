@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Marq2 from "../Components/marq2";
 import { db, auth } from "../../firebase";
 import {
@@ -15,7 +15,17 @@ import ProgressScroll from "../common/ProgressScroll";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SEO from "../common/SEO";
 
+const VALID_CATEGORIES = [
+  "business",
+  "technology",
+  "design",
+  "lifestyle",
+  "ai",
+  "marketing",
+];
+
 function Blogs() {
+  const location = useLocation();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,8 +49,7 @@ function Blogs() {
           const data = doc.data();
           // Normalize category to lowercase
           const normalizedCat = data.category?.toString().toLowerCase();
-          const validCategories = ["business", "technology", "design", "lifestyle", "ai", "marketing"];
-          const category = validCategories.includes(normalizedCat) ? normalizedCat : "business";
+          const category = VALID_CATEGORIES.includes(normalizedCat) ? normalizedCat : "business";
 
           return {
             id: doc.id,
@@ -85,16 +94,38 @@ function Blogs() {
     loadBackgroudImages();
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const category = params.get("category")?.toLowerCase();
+    const search = params.get("search") || params.get("tag") || "";
+
+    setFilter(VALID_CATEGORIES.includes(category) ? category : "*");
+    setSearchTerm(search);
+    setCurrentPage(1);
+  }, [location.search]);
+
   const handleFilterChange = (filterValue) => {
     setFilter(filterValue);
     setCurrentPage(1);
   };
 
   // Filter blogs by search term and category
+  const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredBlogs = blogs
-    .filter((blog) =>
-      blog.title?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((blog) => {
+      if (!normalizedSearch) return true;
+
+      const searchableText = [
+        blog.title,
+        blog.excerpt,
+        ...(Array.isArray(blog.tags) ? blog.tags : []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(normalizedSearch);
+    })
     .filter((blog) => filter === "*" || blog.category === filter);
 
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);

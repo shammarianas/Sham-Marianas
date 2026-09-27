@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   doc,
   getDoc,
@@ -22,10 +22,12 @@ import sanitizeHtml from "sanitize-html";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SchemaMarkup from "../Components/SchemaMarkup";
 import SEO from "../common/SEO";
+import ErrorPage from "./Error";
 
 function BlogDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -103,6 +105,11 @@ function BlogDetails() {
 
           setBlog(blogData);
           setAllTags(Array.isArray(blogData.tags) ? blogData.tags : []);
+
+          const canonicalPath = `/blog/${encodeURIComponent(blogData.slug || blogData.id)}`;
+          if (location.pathname !== canonicalPath) {
+            navigate(canonicalPath, { replace: true });
+          }
         } else {
           setBlog(null);
           setAllTags([]);
@@ -192,17 +199,17 @@ function BlogDetails() {
     fetchCategoryCounts();
     fetchLatestBlogs();
     loadBackgroudImages();
-  }, [id, navigate]);
+  }, [id, location.pathname, navigate]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/blogs?search=${encodeURIComponent(searchTerm)}`);
+      navigate(`/blog?search=${encodeURIComponent(searchTerm)}`);
     }
   };
 
   const handleCategoryClick = (category) => {
-    navigate(`/blogs?category=${encodeURIComponent(category)}`);
+    navigate(`/blog?category=${encodeURIComponent(category)}`);
   };
 
   const handleCommentSubmit = async (e) => {
@@ -213,7 +220,7 @@ function BlogDetails() {
     }
 
     try {
-      await addDoc(collection(db, "blogs", id, "comments"), {
+      await addDoc(collection(db, "blogs", blog.id, "comments"), {
         name,
         email,
         message,
@@ -230,7 +237,7 @@ function BlogDetails() {
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">Loading blog...</div>;
-  if (!blog) return <div className="min-h-screen flex items-center justify-center text-lg text-red-500">Blog not found</div>;
+  if (!blog) return <ErrorPage />;
 
   return (
     <>
@@ -293,6 +300,7 @@ function BlogDetails() {
           title={`${blog.title} | Shammarianas Blog`}
           description={blog.excerpt || "Blog description"}
           keywords={blog.tags?.join(', ') || blog.category}
+          canonical={`https://www.shammarianas.com/blog/${encodeURIComponent(blog.slug || blog.id)}`}
         />
       )}
 
@@ -375,7 +383,7 @@ function BlogDetails() {
                 </article>
 
                 <Link
-                  to="/blogs"
+                  to="/blog"
                   className="d-flex align-items-center main-color mt-40"
                 >
                   <span className="text mr-15">Back to Blogs</span>
@@ -492,7 +500,7 @@ function BlogDetails() {
                         </div>
                         <div className="cont">
                           <span className="tag">
-                            <Link to={`/blogs?category=${post.category}`}>
+                            <Link to={`/blog?category=${post.category}`}>
                               {post.category === "ai"
                                 ? "AI"
                                 : post.category.charAt(0).toUpperCase() + post.category.slice(1)}
@@ -516,7 +524,7 @@ function BlogDetails() {
                       {allTags.map((tag, index) => (
                         <Link
                           key={index}
-                          to={`/blogs?tag=${encodeURIComponent(tag)}`}
+                          to={`/blog?tag=${encodeURIComponent(tag)}`}
                           className="inline-block px-3 py-2 text-xs bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition"
                         >
                           {tag}

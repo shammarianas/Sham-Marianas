@@ -77,6 +77,16 @@
       "permanent": true
     },
     {
+      "source": "/blogs",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog-details/:id",
+      "destination": "/blog/:id",
+      "permanent": true
+    },
+    {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "shammarianas.com" }],
       "destination": "https://www.shammarianas.com/$1",
