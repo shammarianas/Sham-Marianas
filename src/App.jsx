@@ -120,6 +120,8 @@ export const AppRoutes = () => (
     <Route path="/about" element={<AboutUs />} />
     <Route path="/page-team" element={<PageTeam />} />
     <Route path="/services" element={<Services />} />
+    <Route path="/templates" element={<Navigate to="/services" replace />} />
+    <Route path="/category/:category" element={<Navigate to="/services" replace />} />
     <Route path="/success" element={noIndex(<Success />)} />
     <Route path="/services/branding-design" element={<BrandingDesignPage />} />
     <Route path="/services/uiux-design" element={<UiUxDesignPage />} />

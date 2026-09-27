@@ -245,8 +245,8 @@ const Navbar = () => {
             >
               <ul className="navbar-nav">
                 <li className="nav-item d-lg-none">
-                  <Link to="/templates" className="nav-link">
-                    <span className="rolling-text">Template</span>
+                  <Link to="/services" className="nav-link">
+                    <span className="rolling-text">Services</span>
                   </Link>
                 </li>
                 <li
@@ -392,10 +392,10 @@ const Navbar = () => {
             </div>
             <div className="contact-button">
               <Link
-                to="/templates"
+                to="/services"
                 className="butn butn-sm butn-bg main-colorbg radius-5"
               >
-                <span className="text">Template</span>
+                <span className="text">Explore Services</span>
               </Link>
             </div>
           </div>
@@ -591,7 +591,7 @@ const Navbar = () => {
         {/* Explore and Search - Hide on admin pages */}
         {!isCompanyPage && !isAdminPage && (
           <>
-            <Link to="/templates">
+            <Link to="/services">
               <div className="d-none d-md-block ml-auto vi-more">
                 <span className="butn butn-sm butn-bord radius-30">
                   <span>Explore</span>
