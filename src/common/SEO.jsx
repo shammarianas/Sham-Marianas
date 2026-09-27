@@ -13,7 +13,8 @@ const SEO = ({
   ogType = "website",
   twitterCard = "summary_large_image", 
   publishedTime, author,
-  robots = "index, follow"
+  robots = "index, follow",
+  noCanonical = false
 }) => {
   const location = useLocation(); // Get current URL path
   const siteUrl = "https://www.shammarianas.com";
@@ -39,15 +40,15 @@ const SEO = ({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
-      <meta name="twitter:url" content={canonicalUrl} />
+      {!noCanonical && <meta name="twitter:url" content={canonicalUrl} />}
       
       {/* ✅ DYNAMIC CANONICAL LINK */}
-      <link rel="canonical" href={canonicalUrl} />
+      {!noCanonical && <link rel="canonical" href={canonicalUrl} />}
       
       {/* Open Graph Tags (Facebook, LinkedIn) */}
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
-      <meta property="og:url" content={canonicalUrl} /> {/* ✅ Same canonical */}
+      {!noCanonical && <meta property="og:url" content={canonicalUrl} />}
       <meta property="og:type" content={ogType} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:site_name" content={siteTitle} />

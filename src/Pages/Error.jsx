@@ -1,11 +1,19 @@
 import React from "react";
+import SEO from "../common/SEO";
 
 function Error() {
   const marquess = ["Page Not Found"]; // Replace with your actual array
   const AllMarquess = Array(8).fill(marquess).flat();
 
   return (
-    <section className="page-error section-padding valign">
+    <>
+      <SEO
+        title="Page Not Found | Sham Marianas F.Z.C."
+        description="The requested page could not be found on the Sham Marianas website."
+        robots="noindex, nofollow"
+        noCanonical
+      />
+      <section className="page-error section-padding valign">
       <div className="container">
         <div className="text-center">
           <h1>404</h1>
@@ -138,7 +146,8 @@ function Error() {
           </div>
         </div>
       </div>
-    </section>
+      </section>
+    </>
   );
 }
 
