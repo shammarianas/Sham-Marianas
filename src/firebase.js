@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { initializeFirestore } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { getAnalytics, isSupported } from "firebase/analytics";
@@ -45,15 +45,5 @@ setTimeout(() => {
   window.app = app;
   console.log("%c✅ ADMIN TOOL READY!", "color: green; font-weight:bold");
 }, 2000);
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    user.getIdToken(true).then((token) => {
-      console.log("USER:", user.email, "\nTOKEN:", token);
-    });
-  } else {
-    console.log("NO USER LOGGED IN");
-  }
-});
 
 export { app, db, auth, storage, functions, analytics };
