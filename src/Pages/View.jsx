@@ -3,7 +3,7 @@ import ItemInfoTable from "../Components/ItemInfoTable";
 import Keywords from "../Components/Keywords";
 import sky from "../assets/Models/illovo_beach_balcony_4k.hdr";
 import Breadcrumbs from "../Components/Breadcrumbs";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { db } from "../../firebase";
 import {
   doc,
@@ -40,7 +40,8 @@ const View = () => {
   const [is3d, setIs3d] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastState, setToastState] = useState("");
-  const [item, setItem] = useState({});
+  const [item, setItem] = useState(null);
+  const [loadStatus, setLoadStatus] = useState("loading");
   const [showToast, setShowToast] = useState(false);
   const [isItemOwned, setIsItemOwned] = useState(false);
   const [group, setGroup] = useState(null);
@@ -92,45 +93,60 @@ const View = () => {
   };
 
   useEffect(() => {
+    let isActive = true;
+
     const fetchItem = async () => {
-      const q = query(collection(db, "Assets"), where("slug", "==", slug));
-      const snap = await getDocs(q);
+      setItem(null);
+      setSeoData(null);
+      setMarkdown("");
+      setLoadStatus("loading");
 
-      if (snap.empty) {
-        setItem(null);
-        return;
+      try {
+        const q = query(collection(db, "Assets"), where("slug", "==", slug));
+        const snap = await getDocs(q);
+
+        if (!isActive) return;
+
+        if (snap.empty) {
+          setLoadStatus("not-found");
+          return;
+        }
+
+        const docData = snap.docs[0].data();
+        const docId = snap.docs[0].id;
+
+        // Only approved assets can be viewed publicly.
+        if (docData.status !== "approved") {
+          setLoadStatus("not-found");
+          return;
+        }
+
+        const fetchedItemData = { id: docId, ...docData };
+
+        setItem(fetchedItemData);
+        setMarkdown(docData.description || "");
+        setIs3d(docData.is3d || false);
+        setSeoData(getAssetSEO(fetchedItemData));
+        setLoadStatus("ready");
+      } catch (error) {
+        if (!isActive) return;
+        console.error("Error loading asset:", error);
+        setLoadStatus("error");
       }
-
-     const docData = snap.docs[0].data();
-      const docId = snap.docs[0].id; // ✅ Defined here
-
-      // Only approved assets
-      if (docData.status !== "approved") {
-        setItem(null);
-        return;
-      }
-
-      // ✅ Create the item data object
-      const fetchedItemData = { id: docId, ...docData };
-      
-      // ✅ Set the item state
-      setItem(fetchedItemData);
-      setMarkdown(docData.description || "");
-      setIs3d(docData.is3d || false);
-      
-      // ✅ Generate SEO data using the fetched data
-      const seo = getAssetSEO(fetchedItemData);
-      setSeoData(seo);
-      
-    } 
-  
+    };
 
     fetchItem();
+
+    return () => {
+      isActive = false;
+    };
   }, [slug]);
 
   useEffect(() => {
-    if (userProfile && userProfile.purchasedItems) {
+    if (item?.id && userProfile?.purchasedItems) {
       setIsItemOwned(userProfile.purchasedItems.includes(item.id));
+    } else {
+      setIsItemOwned(false);
     }
   }, [userProfile, item]);
 
@@ -164,7 +180,20 @@ const View = () => {
   const getLoadingSEO = () => ({
     title: "Loading Asset | Shammarianas",
     description: "Loading digital asset details...",
-    keywords: "loading, digital assets"
+    keywords: "loading, digital assets",
+    robots: "noindex, follow",
+    noCanonical: true
+  });
+
+  const getUnavailableSEO = () => ({
+    title: loadStatus === "error"
+      ? "Asset Temporarily Unavailable | Shammarianas"
+      : "Asset Not Found | Shammarianas",
+    description: loadStatus === "error"
+      ? "This asset could not be loaded right now. Please try again later."
+      : "The requested asset could not be found on Shammarianas.",
+    robots: "noindex, nofollow",
+    noCanonical: true
   });
 
   return (
@@ -172,10 +201,18 @@ const View = () => {
       <Cursor />
 
     {/* ✅ Dynamic SEO for Asset Page */}
-      {seoData ? <SEO {...seoData} /> : <SEO {...getLoadingSEO()} />}
+      {loadStatus === "ready" && seoData ? (
+        <SEO {...seoData} />
+      ) : loadStatus === "loading" ? (
+        <SEO {...getLoadingSEO()} />
+      ) : (
+        <SEO {...getUnavailableSEO()} />
+      )}
 
       <div className="page_content">
-        {item.id ? (
+        {loadStatus === "loading" ? (
+          <div className="loading">Loading...</div>
+        ) : loadStatus === "ready" && item?.id ? (
           <div className="view_item_main">
             {showToast ? (
               <ToastAlert message={toastMessage} state={toastState} />
@@ -331,16 +368,40 @@ const View = () => {
             </div>
           </div>
         ) : (
-          <div className="loading">Loading...</div>
+          <section className="page-error section-padding valign">
+            <div className="container">
+              <div className="text-center">
+                <h1>{loadStatus === "error" ? "Sorry" : "404"}</h1>
+                <h2>
+                  {loadStatus === "error"
+                    ? "Asset temporarily unavailable"
+                    : "Asset not found"}
+                </h2>
+                <p>
+                  {loadStatus === "error"
+                    ? "We could not load this asset right now. Please try again later."
+                    : "The asset may have been removed or the link may be incorrect."}
+                </p>
+                <Link
+                  to="/"
+                  className="butn butn-md butn-bg main-colorbg radius-30 mt-30"
+                >
+                  <span className="text">Back to Home</span>
+                </Link>
+              </div>
+            </div>
+          </section>
         )}
       </div>
 
-      <RelatedItems
-        category={item.category}
-        currentItemId={item.id}
-        assetType={item.type}
-        limit={8}
-      />
+      {loadStatus === "ready" && item?.id ? (
+        <RelatedItems
+          category={item.category}
+          currentItemId={item.id}
+          assetType={item.type}
+          limit={8}
+        />
+      ) : null}
     </>
   );
 };
