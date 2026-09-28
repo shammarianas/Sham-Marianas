@@ -5,13 +5,7 @@ import PageTitle from "../Components/UI/PageTitle";
 import { useUser } from "../Context/UserProvider";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Cursor from "../common/cusor";
-
-// Naya (same hi rahega, bas ensure karo path sahi hai)
-import { downloadLicense } from "../utils/generateLicense";
 
 // ✅ Function to fetch complete asset data including licenseType
 const fetchCompleteAssetData = async (assetId, downloadData) => {
@@ -78,53 +72,84 @@ const SimpleModelViewer = ({ modelUrl }) => {
   useEffect(() => {
     if (!mountRef.current || !modelUrl) return;
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
-    camera.position.set(5, 5, 5);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(100, 100);
-    mountRef.current.appendChild(renderer.domElement);
+    const mountNode = mountRef.current;
+    let cancelled = false;
+    let animationFrame = null;
+    let renderer = null;
+    let controls = null;
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 1);
-    scene.add(ambientLight);
+    const initializeViewer = async () => {
+      const [THREE, { GLTFLoader }, { OrbitControls }] = await Promise.all([
+        import("three"),
+        import("three/examples/jsm/loaders/GLTFLoader"),
+        import("three/examples/jsm/controls/OrbitControls"),
+      ]);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(10, 10, 5);
-    scene.add(directionalLight);
+      if (cancelled) return;
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.enableZoom = false;
-    controls.autoRotate = true;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+      camera.position.set(5, 5, 5);
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(100, 100);
+      mountNode.appendChild(renderer.domElement);
 
-    const loader = new GLTFLoader();
-    loader.load(modelUrl, (gltf) => {
-      const model = gltf.scene;
-      const box = new THREE.Box3().setFromObject(model);
-      const center = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
+      const ambientLight = new THREE.AmbientLight(0x404040, 1);
+      scene.add(ambientLight);
 
-      model.position.x -= center.x;
-      model.position.y -= center.y;
-      model.position.z -= center.z;
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(10, 10, 5);
+      scene.add(directionalLight);
 
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = maxDim > 0 ? 5 / maxDim : 1;
-      model.scale.multiplyScalar(scale);
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.enableZoom = false;
+      controls.autoRotate = true;
 
-      scene.add(model);
+      const loader = new GLTFLoader();
+      loader.load(modelUrl, (gltf) => {
+        if (cancelled) return;
+
+        const model = gltf.scene;
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+
+        model.position.x -= center.x;
+        model.position.y -= center.y;
+        model.position.z -= center.z;
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = maxDim > 0 ? 5 / maxDim : 1;
+        model.scale.multiplyScalar(scale);
+
+        scene.add(model);
+      });
+
+      const animate = () => {
+        if (cancelled) return;
+        animationFrame = requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      };
+      animate();
+    };
+
+    initializeViewer().catch((error) => {
+      if (!cancelled) {
+        console.error("Unable to load 3D preview:", error);
+      }
     });
 
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    animate();
-
     return () => {
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      cancelled = true;
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+      }
+      controls?.dispose();
+      renderer?.dispose();
+      if (renderer?.domElement.parentNode === mountNode) {
+        mountNode.removeChild(renderer.domElement);
       }
     };
   }, [modelUrl]);
@@ -221,6 +246,7 @@ const MyDownloads = () => {
   const handleDownloadLicense = async (asset) => {
     setDownloadingLicense(asset.id);
     try {
+      const { downloadLicense } = await import("../utils/generateLicense");
       const success = await downloadLicense(asset, currentUser);
       if (success) {
         alert('License downloaded successfully!');
