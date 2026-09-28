@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ItemInfoTable from "../Components/ItemInfoTable";
 import Keywords from "../Components/Keywords";
-import sky from "../assets/Models/illovo_beach_balcony_4k.hdr";
 import Breadcrumbs from "../Components/Breadcrumbs";
 import { Link, useParams } from "react-router-dom";
 import { db } from "../../firebase";
@@ -243,7 +242,6 @@ const View = () => {
                       type={item.type}
                       alt={item.title}
                       ar={item.vrArLowPoly}
-                      sky={sky}
                       onLoad={() => console.log("Model loaded successfully")}
                       onError={(e) => console.error("Error loading model:", e)}
                       onFullscreen={handleOpenFullscreen}
