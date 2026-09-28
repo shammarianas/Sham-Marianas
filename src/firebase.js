@@ -2,7 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { initializeFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { getFunctions } from "firebase/functions";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -36,14 +36,5 @@ if (typeof window !== "undefined") {
     analytics = null;
   });
 }
-
-// Optional Admin Console Helper
-setTimeout(() => {
-  window.httpsCallable = httpsCallable;
-  window.functions = functions;
-  window.auth = auth; // ✅ ADD THIS
-  window.app = app;
-  console.log("%c✅ ADMIN TOOL READY!", "color: green; font-weight:bold");
-}, 2000);
 
 export { app, db, auth, storage, functions, analytics };
