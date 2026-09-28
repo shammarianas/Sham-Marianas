@@ -254,7 +254,7 @@ const SellerDashboard = () => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
         setError("Please log in to access the seller dashboard");
-        navigate("/contributor-login");
+        navigate("/ContributorLogin");
         return;
       }
 

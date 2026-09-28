@@ -25,7 +25,7 @@ const AutoLoginTeam = () => {
           );
 
           // Redirect to dashboard
-          navigate("/dashboard");
+          navigate("/Admin");
         } else {
           // No token, redirect to login
           navigate("/login");

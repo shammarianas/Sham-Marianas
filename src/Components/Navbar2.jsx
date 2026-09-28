@@ -23,7 +23,7 @@ const Navbar = () => {
   const companyPages = [
     "/",
     "/about",
-    "//terms-and-conditions",
+    "/terms-and-conditions",
     "/privacy-policy",
     "/services",
     "/portfolio",

@@ -52,8 +52,8 @@ function Footer() {
     path === "/contributorlogin" ||
     path === "/login" ||
     path == "/support" ||
-    path === "//Favorites" ||
-    path === "/MyDownloads" ||
+    path === "/favorites" ||
+    path === "/mydownloads" ||
     path === "/privacy-policy-template" ||
     path === "/terms-condition-template" ||
     path === "/seller-guideline" ||

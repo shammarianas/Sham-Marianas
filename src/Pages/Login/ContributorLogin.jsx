@@ -2071,11 +2071,11 @@ const ContributorLogin = () => {
                     />
                     <label htmlFor="accept">
                       I accept the{" "}
-                      <Link to="/contributor/terms" target="_blank">
+                      <Link to="/contributor-policies" target="_blank">
                         Contributor Agreement
                       </Link>{" "}
                       and{" "}
-                      <Link to="/privacy" target="_blank">
+                      <Link to="/privacy-policy" target="_blank">
                         Privacy Policy
                       </Link>
                     </label>
