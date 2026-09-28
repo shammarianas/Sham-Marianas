@@ -1,49 +1,43 @@
-import React, { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import ItemInfoTable from "../Components/ItemInfoTable";
 import Keywords from "../Components/Keywords";
 import Breadcrumbs from "../Components/Breadcrumbs";
 import { Link, useParams } from "react-router-dom";
 import { db } from "../../firebase";
 import {
-  doc,
-  getDoc,
   query,
   where,
   collection,
   getDocs,
 } from "firebase/firestore";
-import ModelViewer from "../Components/ModelViewer";
 import UserCard from "../Components/UI/UserCard";
 import ToastAlert from "../Components/UI/ToastAlert";
 import { useUser } from "../Context/UserProvider";
 import ReactMarkdown from "react-markdown";
-import "@google/model-viewer";
 // import HdriViewer from "../Components/HdriViewer";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
 import FavoriteButton from "../Components/UI/FavoriteButton";
 import DownloadButton from "../Components/UI/DownloadButton";
 import VideoViewer from "./VideoViewer";
-import ContentViewer from "../Components/ContentViewer";
 import AssetFullScreen from "../Components/AssetFullScreen";
 import RelatedItems from "../Components/RelatedItems";
 import Cursor from "../common/cusor";
 import SEO from "../common/SEO";
 
+const ModelViewer = lazy(() => import("../Components/ModelViewer"));
+const MarkdownCodeBlock = lazy(() => import("../Components/MarkdownCodeBlock"));
+
 const View = () => {
-  const { currentUser, userProfile } = useUser();
+  const { userProfile } = useUser();
   const { slug } = useParams();
   const [seoData, setSeoData] = useState(null);
 
-  const [is3d, setIs3d] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastState, setToastState] = useState("");
   const [item, setItem] = useState(null);
   const [loadStatus, setLoadStatus] = useState("loading");
   const [showToast, setShowToast] = useState(false);
   const [isItemOwned, setIsItemOwned] = useState(false);
-  const [group, setGroup] = useState(null);
   const [markdown, setMarkdown] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   
@@ -72,14 +66,19 @@ const View = () => {
     code({ node, inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
       return !inline && match ? (
-        <SyntaxHighlighter
-          style={materialDark}
-          language={match[1]}
-          PreTag="div"
-          {...props}
+        <Suspense
+          fallback={(
+            <pre>
+              <code className={className} {...props}>
+                {children}
+              </code>
+            </pre>
+          )}
         >
-          {String(children).replace(/\n$/, "")}
-        </SyntaxHighlighter>
+          <MarkdownCodeBlock language={match[1]} {...props}>
+            {String(children).replace(/\n$/, "")}
+          </MarkdownCodeBlock>
+        </Suspense>
       ) : (
         <code className={className} {...props}>
           {children}
@@ -124,7 +123,6 @@ const View = () => {
 
         setItem(fetchedItemData);
         setMarkdown(docData.description || "");
-        setIs3d(docData.is3d || false);
         setSeoData(getAssetSEO(fetchedItemData));
         setLoadStatus("ready");
       } catch (error) {
@@ -236,16 +234,28 @@ const View = () => {
               <div>
                 <div className="left">
                   {item.type === "models" || item.type === "printables" ? (
-                    <ModelViewer
-                      thumbnailModel={item.thumbnailModel}
-                      model={item.model}
-                      type={item.type}
-                      alt={item.title}
-                      ar={item.vrArLowPoly}
-                      onLoad={() => console.log("Model loaded successfully")}
-                      onError={(e) => console.error("Error loading model:", e)}
-                      onFullscreen={handleOpenFullscreen}
-                    />
+                    <Suspense
+                      fallback={(
+                        <div
+                          className="details-media-frame loading"
+                          role="status"
+                          aria-live="polite"
+                        >
+                          Loading 3D preview...
+                        </div>
+                      )}
+                    >
+                      <ModelViewer
+                        thumbnailModel={item.thumbnailModel}
+                        model={item.model}
+                        type={item.type}
+                        alt={item.title}
+                        ar={item.vrArLowPoly}
+                        onLoad={() => console.log("Model loaded successfully")}
+                        onError={(e) => console.error("Error loading model:", e)}
+                        onFullscreen={handleOpenFullscreen}
+                      />
+                    </Suspense>
                   ) : item.type === "videos" ? (
                     <VideoViewer
                       videoUrl={item.video}
