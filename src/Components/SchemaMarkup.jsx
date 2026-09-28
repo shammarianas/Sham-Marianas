@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 import {
   getHomepageSchema,
   getAboutSchema,
@@ -21,7 +22,15 @@ const SchemaMarkup = ({
   multiple = false,
   schemas = []
 }) => {
+  const location = useLocation();
   let schemasToInject = [];
+  const schemaData = type === "service"
+    ? {
+        ...data,
+        url: data.url || `https://www.shammarianas.com${location.pathname}`,
+        serviceType: data.serviceType || data.title?.split("|")[0].trim() || ""
+      }
+    : data;
 
     // 1. Agar multiple schemas manually pass kiye gaye hain
   if (multiple && Array.isArray(schemas) && schemas.length > 0) {
@@ -35,7 +44,7 @@ const SchemaMarkup = ({
   } else if (type === "servicesListing") {
       schemasToInject = [getServicesListingSchema()];
   } else if (type === "service" && data) {
-      schemasToInject = [getServiceSchema(data)];
+      schemasToInject = [getServiceSchema(schemaData)];
   } else if (type === "blogListing") {
       schemasToInject = [getBlogListingSchema()];
   } else if (type === "blog" && data) {
@@ -55,7 +64,7 @@ const SchemaMarkup = ({
     }
     // 3. Single schema (getSchema se)
   else if (type) {
-      const schema = getSchema(type, data);
+      const schema = getSchema(type, schemaData);
       if (schema) {
         // Single node ko bhi full context ke sath wrap kar dete hain
         schemasToInject = [{

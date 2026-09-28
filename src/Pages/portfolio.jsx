@@ -16,6 +16,7 @@ import loadBackgroundImages from "../common/loadBackgroudImages";
 import Marq2 from "../Components/marq2";
 import SEO from "../common/SEO.jsx";
 import { SEO_CONFIG } from "../utils/seoConfig.js";
+import SchemaMarkup from "../Components/SchemaMarkup.jsx";
 
 const SingleImage = ({ coverImgUrl, title }) => {
   return (
@@ -111,6 +112,7 @@ function Header() {
   return (
     <>
     <SEO {...SEO_CONFIG.portfolio} />
+      <SchemaMarkup type="portfolioListing" />
       <ProgressScroll />
       <header
         className="page-header bg-img section-padding valign"

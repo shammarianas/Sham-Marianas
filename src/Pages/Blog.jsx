@@ -14,6 +14,7 @@ import loadBackgroudImages from "../common/loadBackgroudImages";
 import ProgressScroll from "../common/ProgressScroll";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SEO from "../common/SEO";
+import SchemaMarkup from "../Components/SchemaMarkup";
 
 const VALID_CATEGORIES = [
   "business",
@@ -166,6 +167,7 @@ function Blogs() {
     <>
       <ProgressScroll />
       <SEO {...SEO_CONFIG.blogHome} />
+      <SchemaMarkup type="blogListing" />
       {loading ? (
         <div className="main-bgs">Loading...</div>
       ) : (

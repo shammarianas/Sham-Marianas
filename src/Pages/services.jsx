@@ -30,7 +30,7 @@ export default function PageServices() {
   return (
     <>
       {/* <Cursor /> */}
-      <SchemaMarkup type="service" />
+      <SchemaMarkup type="servicesListing" />
       <SEO {...SEO_CONFIG.services} />
       
       <ProgressScroll />

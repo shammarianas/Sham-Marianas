@@ -121,7 +121,7 @@ function Contact() {
   return (
     <>
       <ProgressScroll />
-      <SchemaMarkup type="agency" data={SEO_CONFIG.contact} />
+      <SchemaMarkup type="contact" />
       <SEO {...SEO_CONFIG.contact} />
       <header
         className="page-header bg-img section-padding valign"

@@ -179,10 +179,11 @@ export const getSchema = (type, data = {}) => {
     // -----------------------------------------------------
     case "service": {
       const url = data.url || "";
+      const serviceName = data.serviceType || data.name || data.title || "";
       return {
         "@type": "Service",
         "@id": `${url}#service`,
-        "name": data.title || "",
+        "name": serviceName,
         "url": url,
         "description": data.description || "",
         "provider": { "@id": ORG_ID },
@@ -191,7 +192,7 @@ export const getSchema = (type, data = {}) => {
           { "@type": "Country", "name": "Pakistan" },
           { "@type": "Place", "name": "Worldwide" }
         ],
-        "serviceType": data.serviceType || (data.title ? [data.title] : []),
+        "serviceType": serviceName,
         ...(data.price
           ? {
               "offers": {
@@ -293,13 +294,13 @@ export const getSchema = (type, data = {}) => {
     case "contact":
       return {
         "@type": "ContactPage",
-        "@id": `${SITE_URL}/contact#webpage`,
-        "url": `${SITE_URL}/contact`,
+        "@id": `${SITE_URL}/contact-us#webpage`,
+        "url": `${SITE_URL}/contact-us`,
         "name": "Contact Sham Marianas F.Z.C.",
         "isPartOf": { "@id": WEBSITE_ID },
         "about": { "@id": ORG_ID },
         "mainEntity": { "@id": ORG_ID },
-        "breadcrumb": { "@id": `${SITE_URL}/contact#breadcrumb` },
+        "breadcrumb": { "@id": `${SITE_URL}/contact-us#breadcrumb` },
         "inLanguage": "en"
       };
 
@@ -526,9 +527,9 @@ export const getContactSchema = () => ({
   "@context": "https://schema.org",
   "@graph": [
     getSchema("contact"),
-    buildBreadcrumb(`${SITE_URL}/contact#breadcrumb`, [
+    buildBreadcrumb(`${SITE_URL}/contact-us#breadcrumb`, [
       homeCrumb,
-      { name: "Contact", url: `${SITE_URL}/contact` }
+      { name: "Contact", url: `${SITE_URL}/contact-us` }
     ])
   ]
 });
