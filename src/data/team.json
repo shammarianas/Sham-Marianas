@@ -1,16 +1,22 @@
 [
   {
     "img": "/assets/imgs/team/1.webp",
+    "width": 800,
+    "height": 1000,
     "name": "Adeel Shyk",
     "subName": "CEO - CFO"
   },
   {
     "img": "/assets/imgs/team/2.webp",
+    "width": 800,
+    "height": 1000,
     "name": "Ehtasham ul haq",
     "subName": "CEO - CFO"
   },
   {
     "img": "/assets/imgs/team/3.jpg",
+    "width": 570,
+    "height": 696,
     "name": "Ahmed Khaled",
     "subName": "General Manager"
   }

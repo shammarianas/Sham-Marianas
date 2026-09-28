@@ -28,7 +28,14 @@ function Team() {
             <div key={i} className="col-lg-4">
               <div className="item mb-4 lg-mb50">
                 <div className="img-team img">
-                  <img  loading="lazy"  src={item.img} alt="" />
+                  <img
+                    loading="lazy"
+                    decoding="async"
+                    src={item.img}
+                    width={item.width}
+                    height={item.height}
+                    alt={`${item.name}, ${item.subName} at Sham Marianas F.Z.C`}
+                  />
                   <div className="info">
                     <span className="fz-12">{item.subName}</span>
                     <h6 className="fz-18">{item.name}</h6>
