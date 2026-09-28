@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, initializeFirestore } from "firebase/firestore";
+import { getApp, getApps, initializeApp } from "firebase/app";
+import { initializeFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
@@ -8,14 +8,14 @@ const firebaseConfig = {
   apiKey: "AIzaSyCC_cEqxB99hMW16aowMs6AJ3-k52VasW0",
   authDomain: "sham-marianas.firebaseapp.com",
   projectId: "sham-marianas",
-  storageBucket: "sham-marianas.firebasestorage.app",
+  storageBucket: "sham-marianas.appspot.com",
   messagingSenderId: "607689609153",
   appId: "1:607689609153:web:3d76a1c337979a691a6940",
   measurementId: "G-Y0VR1HQNCG",
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Reuse the default app when another lazy-loaded module imports Firebase.
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 // Use initializeFirestore for restricted environments
 const db = initializeFirestore(app, {
@@ -61,4 +61,4 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
   console.log("Localhost 5173: Test mode ON — OTP = 123456");
 }
 
-export { db, auth, storage, functions };
+export { app, db, auth, storage, functions };
