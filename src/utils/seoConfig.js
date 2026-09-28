@@ -576,9 +576,9 @@ export const SEO_CONFIG = {
 
 
   contributerPolices: {
-    title: "Website Templates - Shammarianas | Professional Designs",
-    description: "Browse professional website templates and designs from Shammarianas. Responsive templates for businesses, portfolios, and e-commerce.",
-    keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
+    title: "Contributor Policies | Sham Marianas F.Z.C.",
+    description: "Review Sham Marianas contributor policies covering account standards, content ownership, uploads, moderation, and marketplace responsibilities.",
+    keywords: "Sham Marianas contributor policies, content ownership, upload rules, marketplace responsibilities"
   },
   pricesFees: {
     title: "Pricing & Fees | Shammarianas",
@@ -591,9 +591,9 @@ export const SEO_CONFIG = {
     keywords: "privacy policy template, marketplace data protection, contributor privacy template, asset site compliance"
   },
   sellerGuidlines: {
-    title: "Website Templates - Shammarianas | Professional Designs",
-    description: "Browse professional website templates and designs from Shammarianas. Responsive templates for businesses, portfolios, and e-commerce.",
-    keywords: "Website Templates, Web Design Templates, Professional Templates, Responsive Templates, Business Templates"
+    title: "Seller Guidelines | Sham Marianas F.Z.C.",
+    description: "Read Sham Marianas seller guidelines for uploading digital assets, quality standards, prohibited content, licensing, and contributor approval.",
+    keywords: "Sham Marianas seller guidelines, digital asset uploads, content quality standards, contributor approval"
   },
   termsConditionTemplate: {
     title: "Terms & Conditions Template | Shammarianas",
@@ -601,7 +601,6 @@ export const SEO_CONFIG = {
     keywords: "service terms template, platform rules agreement"
   }
 };
-
 
 
 
