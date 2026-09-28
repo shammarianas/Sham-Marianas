@@ -51,21 +51,54 @@ export default defineConfig({
     // Manual chunks for code splitting
     rollupOptions: {
       output: {
-        manualChunks: {
-          // React core libraries
-          vendor: ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
-          // Three.js and 3D libraries
-          three: ['three', '@react-three/fiber', '@react-three/drei'],
-          // Firebase
-          firebase: ['firebase'],
-          // Stripe
-          stripe: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
-          // GSAP
-          gsap: ['gsap', '@gsap/react'],
-          // UI libraries
-          ui: ['swiper', 'aos', 'react-icons'],
-          // Editor related
-          editor: ['react-quill', 'quill'],
+        manualChunks(id) {
+          const normalizedId = id.replace(/\\/g, "/");
+          const isPackage = (packageName) =>
+            normalizedId.includes(`/node_modules/${packageName}/`);
+
+          // Keep React and Vite's lazy-load helper in the core vendor chunk.
+          // This prevents the JSX runtime from being pulled into Three.js.
+          if (
+            normalizedId.includes("vite/preload-helper") ||
+            normalizedId.includes("commonjsHelpers") ||
+            [
+              "react",
+              "react-dom",
+              "react-router-dom",
+              "react-helmet-async",
+              "scheduler",
+            ].some(isPackage)
+          ) {
+            return "vendor";
+          }
+
+          if (
+            ["three", "@react-three/fiber", "@react-three/drei"].some(
+              isPackage
+            )
+          ) {
+            return "three";
+          }
+
+          if (isPackage("firebase") || normalizedId.includes("/node_modules/@firebase/")) {
+            return "firebase";
+          }
+
+          if (["@stripe/stripe-js", "@stripe/react-stripe-js"].some(isPackage)) {
+            return "stripe";
+          }
+
+          if (["gsap", "@gsap/react"].some(isPackage)) {
+            return "gsap";
+          }
+
+          if (["swiper", "aos", "react-icons"].some(isPackage)) {
+            return "ui";
+          }
+
+          if (["react-quill", "quill"].some(isPackage)) {
+            return "editor";
+          }
         },
       },
     },
