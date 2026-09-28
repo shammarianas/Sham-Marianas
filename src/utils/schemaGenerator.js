@@ -18,7 +18,7 @@ const organizationSchema = {
     "url": `${SITE_URL}/assets/imgs/logo.png`,
     "contentUrl": `${SITE_URL}/assets/imgs/logo.png`
   },
-  "image": `${SITE_URL}/assets/imgs/arrow-image.webp`,
+  "image": `${SITE_URL}/assets/imgs/arrow-image.png`,
   "email": "info@shammarianas.com",
   "telephone": "+971528036012",
   "legalName": "Sham Marianas F.Z.C.",
@@ -242,7 +242,7 @@ export const getSchema = (type, data = {}) => {
           : { "@type": "Organization", "@id": ORG_ID, "name": "Sham Marianas F.Z.C." },
         "image": {
           "@type": "ImageObject",
-          "url": data.ogImage || `${SITE_URL}/assets/imgs/arrow-image.webp`
+          "url": data.ogImage || `${SITE_URL}/assets/imgs/arrow-image.png`
         },
         "datePublished": data.publishedTime || "",
         "dateModified": data.updatedTime || data.publishedTime || "",
@@ -281,7 +281,7 @@ export const getSchema = (type, data = {}) => {
         "description": data.description || "",
         "creator": { "@id": ORG_ID },
         "publisher": { "@id": ORG_ID },
-        "image": [data.image || `${SITE_URL}/assets/imgs/arrow-image.webp`],
+        "image": [data.image || `${SITE_URL}/assets/imgs/arrow-image.png`],
         "datePublished": data.datePublished || "",
         "keywords": data.keywords || "",
         "inLanguage": "en"
@@ -345,7 +345,7 @@ export const getSchema = (type, data = {}) => {
         "@type": "Product",
         "name": data.title || "",
         "description": data.description || "",
-        "image": data.image || `${SITE_URL}/assets/imgs/arrow-image.webp`,
+        "image": data.image || `${SITE_URL}/assets/imgs/arrow-image.png`,
         "url": data.url || "",
         "offers": {
           "@type": "Offer",

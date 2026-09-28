@@ -55,7 +55,7 @@ function Intro() {
                     </div>
                     <div className="ml-auto">
                       <div className="icon-img-40">
-                        <img  loading="lazy"  src="/assets/imgs/arrow-image.webp" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/arrow-image.png" alt="" />
                       </div>
                     </div>
                   </div>
@@ -68,7 +68,7 @@ function Intro() {
                     </div>
                     <div className="ml-auto">
                       <div className="icon-img-40">
-                        <img  loading="lazy"  src="/assets/imgs/arrow-image.webp" alt="" />
+                        <img  loading="lazy"  src="/assets/imgs/arrow-image.png" alt="" />
                       </div>
                     </div>
                   </div>

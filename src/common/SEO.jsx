@@ -9,7 +9,7 @@ const SEO = ({
   description = "Sham Marianas F.Z.C is a top advertising agency that helps businesses grow with digital marketing, brand building, and ROI-focused advertising. We employ tried-and-true marketing techniques to increase our internet presence, draw in new clients, and provide tangible outcomes. Let's grow your company to new heights!", 
   keywords = "Web development, Digital Marketing, SEO, Social Media Marketing, Branding, Advertising Agency", 
   canonical, 
-  ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.webp",
+  ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.png",
   ogType = "website",
   twitterCard = "summary_large_image", 
   publishedTime, author,
