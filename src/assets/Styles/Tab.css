@@ -362,7 +362,7 @@
   .hero-background {
     position: absolute;
     inset: 0;
-    background-image: url('../Images/b8.jpg');
+    background-image: url('../Images/b8.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
