@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import Navbar2 from "./Components/Navbar2";
 import "./assets/Styles/Tab.css";
@@ -8,64 +8,78 @@ import "./assets/Styles/video-viewer.css";
 import "./assets/Styles/profile-edit.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Home from "./Pages/Home";
-import View from "./Pages/View";
 import Footer from "./Components/Footer";
-import Upload from "./Pages/Upload";
-// import Cart from "./Pages/Cart";
-import Login from "./Pages/Login/Login";
-import AutoLoginTeam from "./Pages/Login/AutoLoginTeam";
-
-import Checkout from "./Pages/Checkout";
 import { FilterProvider } from "./Context/FilterContext";
-import Profile from "./Pages/Profile";
-import ProfileByUsername from "./Context/ProfileByUsername";
-import Logout from "./Pages/Logout";
-import Library from "./Pages/Library";
-import TextureViewer from "./Components/TextureViewer";
-import PasswordReset from "./Pages/Login/PasswordReset";
-import Group from "./Pages/Group";
-import Analytics from "./Pages/Analytics";
-import Terms from "./Pages/Terms";
-import Privacy from "./Pages/Privacy";
-import Contact from "./Pages/Contact";
-import Blog from "./Pages/Blog";
-import BlogDetails from "./Pages/Blog-details";
-import Portfolio from "./Pages/portfolio";
-import PortfolioDetails from "./Pages/project-details";
-import Support from "./Pages/Support";
-import AboutUs from "./Pages/AboutUs";
-import Services from "./Pages/services";
-import MyDownloads from "./Pages/MyDownloads";
-import Favorites from "./Pages/Favorites";
-import Admin from "./Pages/Admin";
-import BrandingDesignPage from "./Pages/ServicesDetails/BrandingDesignPage";
-import UiUxDesignPage from "./Pages/ServicesDetails/UIUXDesignPage";
-import WebDesign from "./Pages/ServicesDetails/WebDevelopment";
-import EcommercePage from "./Pages/ServicesDetails/E-CommercePage";
-import ContentWritingPage from "./Pages/ServicesDetails/ContentWritingPage";
-import ProductDesignPage from "./Pages/ServicesDetails/ProductDesignPage";
-import DigitalMaketerPage from "./Pages/ServicesDetails/Digital-Marketer";
-import VfxAndAds from "./Pages/ServicesDetails/VfxAndAds";
-import VideoProduction from "./Pages/ServicesDetails/Video-Production";
-import PrintMedia from "./Pages/ServicesDetails/PrintMedia";
-import AiAutomation from "./Pages/ServicesDetails/AiAutomation";
-import BoothDesign from "./Pages/ServicesDetails/BoothDesign";
-import Success from "./Pages/Success";
-import PageTeam from "./Pages/Page-team";
-import Error from "./Pages/Error";
-import PrivacyPolicy from "./Pages/Get Started/PrivacyPolice";
-import TermsandCondition from "./Pages/Get Started/Terms&Condition";
-import CommingSoon from "./Pages/CommingSoon";
-import BlogCategory from "./Pages/Blog-Category";
-import Subscription from "./Pages/Subscription";
-import ContributorLogin from "./Pages/Login/ContributorLogin";
-import ContributorDashboard from "./Components/UI/dashboard/Contributor/ContributorDashboard";
-import PrivacyPolicyTemplate from "./Pages/Get Started/privacyTemplate";
-import TermsandConditionTemplate from "./Pages/Get Started/termsOfTemplate";
-import SellerGuideline from "./Pages/Get Started/SellerGuidelines";
-import PricingAndFees from "./Pages/Get Started/pricing&fee";
-import ContributorPolicies from "./Pages/Get Started/ContributorPolicies";
 import ChatWidget from "./Components/ChatWidget";
+
+const View = lazy(() => import("./Pages/View"));
+const Upload = lazy(() => import("./Pages/Upload"));
+const Login = lazy(() => import("./Pages/Login/Login"));
+const AutoLoginTeam = lazy(() => import("./Pages/Login/AutoLoginTeam"));
+const Checkout = lazy(() => import("./Pages/Checkout"));
+const Profile = lazy(() => import("./Pages/Profile"));
+const Logout = lazy(() => import("./Pages/Logout"));
+const Library = lazy(() => import("./Pages/Library"));
+const TextureViewer = lazy(() => import("./Components/TextureViewer"));
+const PasswordReset = lazy(() => import("./Pages/Login/PasswordReset"));
+const Group = lazy(() => import("./Pages/Group"));
+const Analytics = lazy(() => import("./Pages/Analytics"));
+const Terms = lazy(() => import("./Pages/Terms"));
+const Privacy = lazy(() => import("./Pages/Privacy"));
+const Contact = lazy(() => import("./Pages/Contact"));
+const Blog = lazy(() => import("./Pages/Blog"));
+const BlogDetails = lazy(() => import("./Pages/Blog-details"));
+const Portfolio = lazy(() => import("./Pages/portfolio"));
+const PortfolioDetails = lazy(() => import("./Pages/project-details"));
+const Support = lazy(() => import("./Pages/Support"));
+const AboutUs = lazy(() => import("./Pages/AboutUs"));
+const Services = lazy(() => import("./Pages/services"));
+const MyDownloads = lazy(() => import("./Pages/MyDownloads"));
+const Favorites = lazy(() => import("./Pages/Favorites"));
+const Admin = lazy(() => import("./Pages/Admin"));
+const BrandingDesignPage = lazy(() => import("./Pages/ServicesDetails/BrandingDesignPage"));
+const UiUxDesignPage = lazy(() => import("./Pages/ServicesDetails/UIUXDesignPage"));
+const WebDesign = lazy(() => import("./Pages/ServicesDetails/WebDevelopment"));
+const EcommercePage = lazy(() => import("./Pages/ServicesDetails/E-CommercePage"));
+const ContentWritingPage = lazy(() => import("./Pages/ServicesDetails/ContentWritingPage"));
+const ProductDesignPage = lazy(() => import("./Pages/ServicesDetails/ProductDesignPage"));
+const DigitalMaketerPage = lazy(() => import("./Pages/ServicesDetails/Digital-Marketer"));
+const VfxAndAds = lazy(() => import("./Pages/ServicesDetails/VfxAndAds"));
+const VideoProduction = lazy(() => import("./Pages/ServicesDetails/Video-Production"));
+const PrintMedia = lazy(() => import("./Pages/ServicesDetails/PrintMedia"));
+const AiAutomation = lazy(() => import("./Pages/ServicesDetails/AiAutomation"));
+const BoothDesign = lazy(() => import("./Pages/ServicesDetails/BoothDesign"));
+const Success = lazy(() => import("./Pages/Success"));
+const PageTeam = lazy(() => import("./Pages/Page-team"));
+const Error = lazy(() => import("./Pages/Error"));
+const PrivacyPolicy = lazy(() => import("./Pages/Get Started/PrivacyPolice"));
+const TermsandCondition = lazy(() => import("./Pages/Get Started/Terms&Condition"));
+const CommingSoon = lazy(() => import("./Pages/CommingSoon"));
+const BlogCategory = lazy(() => import("./Pages/Blog-Category"));
+const Subscription = lazy(() => import("./Pages/Subscription"));
+const ContributorLogin = lazy(() => import("./Pages/Login/ContributorLogin"));
+const ContributorDashboard = lazy(() => import("./Components/UI/dashboard/Contributor/ContributorDashboard"));
+const PrivacyPolicyTemplate = lazy(() => import("./Pages/Get Started/privacyTemplate"));
+const TermsandConditionTemplate = lazy(() => import("./Pages/Get Started/termsOfTemplate"));
+const SellerGuideline = lazy(() => import("./Pages/Get Started/SellerGuidelines"));
+const PricingAndFees = lazy(() => import("./Pages/Get Started/pricing&fee"));
+const ContributorPolicies = lazy(() => import("./Pages/Get Started/ContributorPolicies"));
+
+const RouteFallback = () => (
+  <div
+    role="status"
+    aria-live="polite"
+    style={{
+      minHeight: "40vh",
+      display: "grid",
+      placeItems: "center",
+      color: "#fff",
+      background: "#0a0a0a",
+    }}
+  >
+    Loading...
+  </div>
+);
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -90,7 +104,8 @@ const NoIndexRoute = ({ children }) => (
 const noIndex = (element) => <NoIndexRoute>{element}</NoIndexRoute>;
 
 export const AppRoutes = () => (
-  <Routes>
+  <Suspense fallback={<RouteFallback />}>
+    <Routes>
     {/* Static routes first */}
     <Route path="/Login" element={noIndex(<Login />)} />
     <Route path="/auto-login-team" element={noIndex(<AutoLoginTeam />)} />
@@ -172,7 +187,8 @@ export const AppRoutes = () => (
 
     {/* if you have this */}
     <Route path="*" element={<Error />} />
-  </Routes>
+    </Routes>
+  </Suspense>
 );
 
 const Layout = () => {
