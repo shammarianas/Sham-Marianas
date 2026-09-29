@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
+    "lint": "eslint src firebase.js sitemap-generator.js prerender.js vite.config.js eslint.config.js --quiet",
+    "lint:all": "eslint src firebase.js sitemap-generator.js prerender.js vite.config.js eslint.config.js",
     "generate:sitemap": "node sitemap-generator.js",
     "prerender": "node prerender.js",
     "build:production": "npm run build && npm run generate:sitemap && npm run prerender",
