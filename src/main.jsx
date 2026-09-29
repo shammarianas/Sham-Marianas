@@ -17,8 +17,10 @@ const app = (
   </HelmetProvider>
 );
 
-// If rootElement has real rendered content (not just the initial loader), hydrate it; otherwise createRoot
-const hasRealContent = rootElement && rootElement.querySelector(":not(.loader-wrap)");
+// Hydrate only pre-rendered pages. The initial loader has a wrapper element
+// around .loader-wrap, so a broad :not() selector incorrectly treated it as content.
+const hasInitialLoader = rootElement?.querySelector(".loader-wrap");
+const hasRealContent = Boolean(rootElement?.firstElementChild && !hasInitialLoader);
 if (hasRealContent) {
   ReactDOM.hydrateRoot(rootElement, app);
 } else {
