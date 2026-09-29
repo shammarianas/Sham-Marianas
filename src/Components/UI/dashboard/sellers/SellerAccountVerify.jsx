@@ -279,14 +279,7 @@ const formatDate = (date) => {
   };
 
   // Helper function to get formatted location
-  const getFormattedLocation = (seller) => {
-    if (seller.country) {
-      return seller.country;
-    } else if (seller.country) {
-      return seller.country;
-    }
-    return "N/A";
-  };
+  const getFormattedLocation = (seller) => seller.country || "N/A";
 
   return (
     <div className="user-reports-dashboard">

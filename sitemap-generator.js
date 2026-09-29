@@ -24,7 +24,7 @@ const db = getFirestore(app);
 const WEBSITE = 'https://www.shammarianas.com';
 const TODAY = new Date().toISOString().split('T')[0];
 
-const escapeXml = (value) => String(value).replace(/[<>&'\"]/g, (character) => ({
+const escapeXml = (value) => String(value).replace(/[<>&'"]/g, (character) => ({
   '<': '&lt;',
   '>': '&gt;',
   '&': '&amp;',

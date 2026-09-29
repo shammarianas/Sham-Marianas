@@ -74,7 +74,7 @@ function Footer() {
     path.startsWith("/category/hdri") ||
     path.startsWith("/subscription") ||
     path.startsWith("/view/") ||
-    (path.match(/^\/[^\/]+$/) && !nonTemplateSinglePaths.includes(path.toLowerCase()));
+    (path.match(/^\/[^/]+$/) && !nonTemplateSinglePaths.includes(path.toLowerCase()));
     
 
 

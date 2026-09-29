@@ -98,10 +98,6 @@ const Group = () => {
 
       setRequests(requestsData);
 
-      if (requestsData.length > 0) {
-        } else {
-      }
-
       return requestsData;
     } catch (error) {
       console.error("Error fetching group requests: ", error);

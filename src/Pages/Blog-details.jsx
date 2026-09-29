@@ -153,7 +153,7 @@ function BlogDetails() {
 
         querySnapshot.forEach((doc) => {
           const cat = doc.data().category?.toString().toLowerCase();
-          if (counts.hasOwnProperty(cat)) {
+          if (Object.prototype.hasOwnProperty.call(counts, cat)) {
             counts[cat]++;
           }
         });

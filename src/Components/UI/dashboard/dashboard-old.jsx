@@ -572,7 +572,9 @@ const AdminDashboard = () => {
           { createdAt: serverTimestamp(), promotedBy: "system" },
           { merge: true }
         );
-      } catch {}
+      } catch (error) {
+        console.error("Failed to ensure primary admin record:", error);
+      }
       return true;
     }
 
@@ -849,6 +851,12 @@ const AdminDashboard = () => {
       return;
     }
     try {
+      await updateDoc(doc(db, "Profiles", userId), { status: newStatus });
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user.id === userId ? { ...user, status: newStatus } : user
+        )
+      );
     } catch (error) {
       setError(`Failed to update status: ${error.message}`);
     }
@@ -1655,7 +1663,9 @@ const AdminDashboard = () => {
                     try {
                       await signOut(auth);
                       navigate("/");
-                    } catch {}
+                    } catch (error) {
+                      setError(`Failed to log out: ${error.message}`);
+                    }
                   }}
                 >
                   <FiLogOut style={{ fontSize: "1.1rem" }} />

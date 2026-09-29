@@ -26,6 +26,7 @@ export const UserProvider = ({ children }) => {
             const profileData = userProfileSnap.data();
             setUserProfile(profileData);
           } else {
+            setUserProfile(null);
           }
         } else {
           setUserProfile(null); // Clear profile data if no user is logged in
