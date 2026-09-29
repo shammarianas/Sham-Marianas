@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { doc, updateDoc, increment, serverTimestamp, getDoc } from "firebase/firestore";
-import { db } from "../../../firebase"; 
-import { getFunctions, httpsCallable } from "firebase/functions"; 
+import { db } from "../../../firebase";
+import "firebase/functions";
 import { getAuth } from "firebase/auth";
-import { functions } from "../../../firebase"; 
+import "../../../firebase";
 
 const DownloadButton = ({
   item,
@@ -15,10 +15,10 @@ const DownloadButton = ({
   setToastState,
   setShowToast,
 }) => {
-  const { isDownloaded, addToDownloads, error } = useSaveToDownloads(
-    item.id,
-    item
-  );
+  const {
+  isDownloaded,
+  addToDownloads
+} = useSaveToDownloads(item.id, item);
   const navigate = useNavigate();
   const [isContributor, setIsContributor] = useState(false);
 
@@ -294,7 +294,7 @@ const DownloadButton = ({
         }, 100);
 
         console.log("✅ Download initiated via blob:", filename);
-      } catch (fetchError) {
+      } catch (_fetchError) {
         console.log("🔄 Using direct method as fallback");
         // Fallback to original method
         const a = document.createElement("a");

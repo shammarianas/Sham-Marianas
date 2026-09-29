@@ -20,7 +20,7 @@ const fetchCompleteAssetData = async (assetId, downloadData) => {
         id: assetId,
       };
     }
-    
+
     // If not found in Assets, return the download data as is
     return {
       ...downloadData,
@@ -53,15 +53,15 @@ const detectLicenseType = (asset) => {
 // ✅ SIMPLE COLOR FUNCTION
 const getLicenseBadgeColor = (licenseType) => {
   if (!licenseType) return "#636e72";
-  
+
   const license = licenseType.toLowerCase();
-  
+
   if (license.includes("free for personal")) return "#00b894"; // Green
   if (license.includes("free for commercial")) return "#0984e3"; // Blue
   if (license.includes("commercial")) return "#0984e3"; // Blue
   if (license.includes("personal")) return "#00b894"; // Green
   if (license.includes("free")) return "#00b894"; // Green
-  
+
   return "#636e72"; // Default gray
 };
 
@@ -188,7 +188,7 @@ const MyDownloads = () => {
         for (const docSnap of downloadsSnapshot.docs) {
           const assetId = docSnap.id;
           const downloadData = docSnap.data();
-          
+
           // Fetch complete asset data including licenseType
           const completeAssetData = await fetchCompleteAssetData(assetId, downloadData);
           downloadsData.push(completeAssetData);
@@ -261,12 +261,7 @@ const MyDownloads = () => {
   };
 
   // Check if asset is free
-  const isAssetFree = (asset) => {
-    const price = Number(asset.price) || 0;
-    const discount = Number(asset.discount ?? 0) || 0;
-    const finalPrice = Math.max(0, price - (price * discount) / 100);
-    return finalPrice === 0;
-  };
+
 
   // Get license type text - UPDATED: using the local function
   const getLicenseType = (asset) => {
@@ -282,7 +277,7 @@ const MyDownloads = () => {
   // ✅ NEW: Get display text for asset type
   const getAssetTypeDisplay = (type) => {
     if (!type) return "Asset";
-    
+
     const typeMap = {
       "models": "3D Model",
       "videos": "Video",
@@ -297,7 +292,7 @@ const MyDownloads = () => {
       "textures": "Texture",
       "other": "Other"
     };
-    
+
     return typeMap[type] || type;
   };
 
@@ -343,7 +338,7 @@ const MyDownloads = () => {
                               {(() => {
                                 const src = asset.thumbnail;
                                 if (!src) return <div className="no-preview">No Preview</div>;
-                                
+
                                 const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
 
                                 if (isVideo) {
@@ -440,7 +435,7 @@ const MyDownloads = () => {
                             className="download-license license-badge butn butn-sm"
                             onClick={() => handleDownloadLicense(asset)}
                             disabled={downloadingLicense === asset.id}
-                            
+
                           >
                             {downloadingLicense === asset.id ? 'Generating...' : 'Download License'}
                           </button>
@@ -459,7 +454,7 @@ const MyDownloads = () => {
       </div>
 
       <style>{`
-        
+
       `}</style>
     </>
   );

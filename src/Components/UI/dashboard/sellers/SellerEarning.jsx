@@ -1,25 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  FiDollarSign,
-  FiTrendingUp,
-  FiTrendingDown,
-  FiUsers,
-  FiDownload,
-  FiCalendar,
-  FiPieChart,
-  FiBarChart2,
-  FiFilter,
-  FiCheckCircle,
-  FiXCircle,
-  FiEye,
-  FiClock,
-  FiSearch,
-  FiRefreshCw,
-  FiList,
-  FiX,
-  FiUser,
-  FiFileText,
-} from "react-icons/fi";
+import { useState, useEffect, useMemo } from "react";
+import { FiDollarSign, FiUsers, FiCalendar, FiBarChart2, FiFilter, FiCheckCircle, FiXCircle, FiEye, FiClock, FiSearch, FiRefreshCw, FiList, FiX } from "react-icons/fi";
 import {
   collection,
   getDocs,
@@ -34,7 +14,7 @@ const SellerEarning = () => {
   const [timeRange, setTimeRange] = useState("monthly");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [, setTypeFilter] = useState("all");
   const [selectedSeller, setSelectedSeller] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -80,8 +60,8 @@ const SellerEarning = () => {
               const data = doc.data();
 
               // Calculate completed payouts (totalEarnings - pendingEarnings)
-              const totalEarnings = 0; // Set to 0 for demo
-              const pendingEarnings = 0; // Set to 0 for demo
+               // Set to 0 for demo
+               // Set to 0 for demo
               const completedPayouts = 0;
               contributorData.push({
                 id: doc.id,
@@ -255,24 +235,7 @@ const SellerEarning = () => {
   };
 
   // Growth badge component
-  const getGrowthBadge = (growth) => {
-    if (growth === 0 || growth === undefined) {
-      return (
-        <span className="report-stat-trend neutral">
-          0% <FiTrendingUp className="fi-pl" />
-        </span>
-      );
-    }
-    return growth > 0 ? (
-      <span className="report-stat-trend positive">
-        +{growth}% <FiTrendingUp className="fi-pl" />
-      </span>
-    ) : (
-      <span className="report-stat-trend negative">
-        {growth}% <FiTrendingDown className="fi-pl" />
-      </span>
-    );
-  };
+
 
   // Reset filters
   const resetFilters = () => {

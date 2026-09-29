@@ -3,7 +3,7 @@ import ListedItemCard from "./UI/ListedItemCard";
 import { db } from "../../firebase";
 import { collection, getDocs, query, where, limit } from "firebase/firestore";
 import { useFilters } from "../Context/FilterContext";
-import { Link } from "react-router-dom";
+import "react-router-dom";
 import useSearchStore from "../store/searchStore";
 import { useUser } from "../Context/UserProvider";
 // Import the Zustand store

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import AOS from "aos"; 
+import { useEffect, useRef } from "react";
+import AOS from "aos";
 import Lines from "../Components/Lines";
 import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
@@ -9,7 +9,7 @@ import SEO from "../common/SEO";
 import {SEO_CONFIG} from "../utils/seoConfig";
 
 export default function StockPage() {
-  const main = useRef();
+  useRef();
   // useEffect hook to initialize AOS and refresh it
   useEffect(() => {
     AOS.init({

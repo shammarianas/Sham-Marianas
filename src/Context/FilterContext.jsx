@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
+import { createContext, useContext, useState, useMemo, useCallback } from "react";
 
 export const FilterContext = createContext();
 
@@ -33,10 +33,10 @@ export const FilterProvider = ({ children }) => {
   }, []);
 
   // ✅ FIXED: Context value کو properly memoize کریں
-  const value = useMemo(() => ({ 
-    filters, 
-    updateFilters, 
-    clearFilters 
+  const value = useMemo(() => ({
+    filters,
+    updateFilters,
+    clearFilters
   }), [filters, updateFilters, clearFilters]);
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../../../firebase";
 import ListedItemCard from "../UI/ListedItemCard";
@@ -11,13 +11,13 @@ const HeroSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [displayResults, setDisplayResults] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [overlay, setOverlay] = useState(false);
 
   // Assets State
-  const [assets, setAssets] = useState([]);
-  const [filteredAssets, setFilteredAssets] = useState([]);
-  const [error, setError] = useState(null);
+  const [, setAssets] = useState([]);
+  const [, setFilteredAssets] = useState([]);
+  const [, setError] = useState(null);
 
   // Debounce Function
   const debounce = (func, delay) => {
@@ -249,7 +249,7 @@ const HeroSection = () => {
               </div>
             </div>
 
-           
+
             {[
               { title: "Videos", category: "videos" },
               { title: "Video Templates", category: "video-templates" },

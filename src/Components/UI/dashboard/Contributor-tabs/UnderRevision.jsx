@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   FiPackage,
   FiRefreshCw,
@@ -388,7 +388,7 @@ const UnderRevisionAssets = () => {
     }
 
     const totalAssets = allAssets.length;
-    const filteredTotal = assets.length;
+    assets.length;
 
     const highPriority = assets.filter((a) => a.priority === "high").length;
     const completedRevisions = assets.filter(
@@ -503,7 +503,7 @@ const UnderRevisionAssets = () => {
     return date.toLocaleDateString();
   };
 
- 
+
 
   // ✅ UPDATED: Get category display name
   const getCategoryDisplayName = (type) => {
@@ -545,32 +545,7 @@ const UnderRevisionAssets = () => {
     setSelectedAsset(null);
   };
 
-  const categoryStats = getCategoryStats();
-  const totalRatedAssets = Object.values(qualityMetrics.distribution).reduce(
-    (a, b) => a + b,
-    0
-  );
-
-  // Calculate percentages for quality distribution
-  const qualityPercentages = {
-    excellent:
-      totalRatedAssets > 0
-        ? (qualityMetrics.distribution.excellent / totalRatedAssets) * 100
-        : 0,
-    good:
-      totalRatedAssets > 0
-        ? (qualityMetrics.distribution.good / totalRatedAssets) * 100
-        : 0,
-    average:
-      totalRatedAssets > 0
-        ? (qualityMetrics.distribution.average / totalRatedAssets) * 100
-        : 0,
-    poor:
-      totalRatedAssets > 0
-        ? (qualityMetrics.distribution.poor / totalRatedAssets) * 100
-        : 0,
-  };
-
+  getCategoryStats();
   // Show message if no user is logged in
   if (!currentUser) {
     return (
@@ -1006,7 +981,7 @@ const UnderRevisionAssets = () => {
                   <tr key={asset.id}>
                     <td>
                       <div className="report-user">
-                       
+
                         <div className="report-user-info">
                           <div className="report-user-name">
                             {asset.title || "Untitled Asset"}

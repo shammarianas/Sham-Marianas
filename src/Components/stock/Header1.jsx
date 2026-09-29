@@ -192,7 +192,9 @@ const useAssets = () => {
 };
 
 const HeroSection = () => {
-  const { assets, error } = useAssets();
+  const {
+  assets
+} = useAssets();
   if (assets) {
     console.log({ assets });
   }

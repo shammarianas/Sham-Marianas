@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import loadBackgroudImages from "../../../src/common/loadBackgroudImages";
 
@@ -34,7 +34,7 @@ const WEBHOOK_URL =
 
 function FirstPage() {
   const [selectedCountryCode, setSelectedCountryCode] = useState("+971");
-  const [selectedRegion, setSelectedRegion] = useState("");
+  useState("");
 
   // form data capture karne ke liye
   const [name, setName] = useState("");
@@ -202,7 +202,7 @@ function FirstPage() {
             <form
               onSubmit={(e) => e.preventDefault()}
             >
-              
+
                 <div className="form-row-1 mb-0">
                   <div className="width-50">
                     <label style={{ display: "block", color: "#fff", marginBottom: "6px" }}>
@@ -370,7 +370,7 @@ function FirstPage() {
                     disabled={isSubmitting}
                   />
                 </div>
-              
+
 
               <a
                 type="submit"

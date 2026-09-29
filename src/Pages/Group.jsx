@@ -1,16 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { db } from "../../firebase";
-import {
-  collection,
-  doc,
-  addDoc,
-  getDocs,
-  getDoc,
-  updateDoc,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, doc, addDoc, getDocs, getDoc, updateDoc, query } from "firebase/firestore";
 import { useUser } from "../Context/UserProvider";
 
 const Group = () => {

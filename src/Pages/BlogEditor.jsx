@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { db, storage } from "../../firebase";
 import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -581,8 +581,8 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       <style>{`
         span { display: inline; }
         .blog-modal-overlay {
-          position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
-          display: flex; align-items: center; justify-content: center; 
+          position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+          display: flex; align-items: center; justify-content: center;
           z-index: 9999; padding: 1rem;
         }
         .blog-modal-container {
@@ -591,24 +591,24 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         }
         .blog-modal-content { padding: 2rem; height: 90vh; overflow-y: auto; }
         .blog-modal-header {
-          display: flex; justify-content: space-between; align-items: center; 
+          display: flex; justify-content: space-between; align-items: center;
           margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;
         }
         .blog-modal-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0; }
         .blog-modal-close {
-          background: none; border: none; color: #6b7280; cursor: pointer; 
+          background: none; border: none; color: #6b7280; cursor: pointer;
           padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s;
         }
         .blog-modal-close:hover { background: #fee2e2; color: #dc2626; }
         .blog-form-group { margin-bottom: 1.75rem; }
         .blog-form-label {
-          display: block; font-size: 0.95rem; font-weight: 600; 
+          display: block; font-size: 0.95rem; font-weight: 600;
           color: #374151; margin-bottom: 0.5rem;
         }
         .blog-form-required { color: #dc2626; }
         .blog-form-input, .blog-form-select, .blog-form-textarea {
-          width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
-          border-radius: 0.75rem; font-size: 1rem; outline: none; 
+          width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb;
+          border-radius: 0.75rem; font-size: 1rem; outline: none;
           transition: all 0.2s; background: #fafafa; font-family: inherit;
         }
         .blog-form-input:focus, .blog-form-select:focus, .blog-form-textarea:focus {
@@ -616,8 +616,8 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           background: #fff;
         }
         .blog-tags-container {
-          display: flex; flex-wrap: wrap; gap: 0.5rem; 
-          padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
+          display: flex; flex-wrap: wrap; gap: 0.5rem;
+          padding: 0.875rem 1rem; border: 2px solid #e5e7eb;
           border-radius: 0.75rem; background: #fafafa;
           min-height: 48px; align-items: center;
         }
@@ -626,7 +626,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           background: #fff;
         }
         .blog-tag-input {
-          flex: 1; border: none; outline: none; background: transparent; 
+          flex: 1; border: none; outline: none; background: transparent;
           font-size: 1rem; min-width: 100px;
         }
         .blog-tag-input::placeholder { color: #9ca3af; }
@@ -648,34 +648,34 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         .blog-tag-remove:hover { background: rgba(255,255,255,0.5); transform: scale(1.1); }
         @keyframes tagSlideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
         .blog-form-file {
-          color:#000; width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db; 
-          border-radius: 0.75rem; padding: 2rem; text-align: center; 
+          color:#000; width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db;
+          border-radius: 0.75rem; padding: 2rem; text-align: center;
           background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
           transition: all 0.2s; cursor: pointer;
         }
         .blog-form-file:hover { border-color: #3b82f6; background: #eff6ff; }
         .blog-form-hint { font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; font-style: italic; }
         .blog-form-buttons {
-          display: flex; justify-content: flex-end; gap: 1rem; 
+          display: flex; justify-content: flex-end; gap: 1rem;
           padding-top: 2rem; border-top: 1px solid #e5e7eb; margin-top: 2rem;
         }
         .blog-btn {
-          padding: 0.75rem 2rem; border-radius: 0.75rem; border: none; 
+          padding: 0.75rem 2rem; border-radius: 0.75rem; border: none;
           font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
         }
-        .blog-btn-cancel { 
-          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); color: #374151; 
+        .blog-btn-cancel {
+          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); color: #374151;
         }
         .blog-btn-cancel:hover { background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); transform: translateY(-1px); }
-        .blog-btn-submit { 
+        .blog-btn-submit {
           background: #52b0b4; color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
         }
-        .blog-btn-submit:hover:not(:disabled) { 
+        .blog-btn-submit:hover:not(:disabled) {
           background: #52b0b4; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
         }
         .blog-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .blog-quill-editor .ql-container {
-          min-height: 400px; background: #fff; border-radius: 1rem; 
+          min-height: 400px; background: #fff; border-radius: 1rem;
           border: 2px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         .blog-quill-editor .ql-toolbar {
@@ -683,12 +683,12 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         }
         .blog-quill-editor .ql-editor { max-height: 500px; overflow-y: auto; }
         .blog-image-preview {
-          margin-top: 1rem; max-width: 250px; max-height: 150px; 
-          object-fit: cover; border-radius: 0.75rem; 
+          margin-top: 1rem; max-width: 250px; max-height: 150px;
+          object-fit: cover; border-radius: 0.75rem;
           border: 2px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .current-image-note {
-          font-size: 0.875rem; color: #059669; font-style: italic; 
+          font-size: 0.875rem; color: #059669; font-style: italic;
           margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
           border-radius: 0.5rem; border-left: 4px solid #10b981;
         }

@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 import sofa from "../../assets/Images/sofa.png";
 import oven from "../../assets/Images/oven.png";
 import trashbin from "../../assets/Images/trashbin.png";

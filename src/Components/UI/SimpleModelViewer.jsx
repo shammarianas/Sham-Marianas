@@ -1,12 +1,13 @@
 // SimpleModelViewer.jsx
-import React, { useEffect, useRef, useState } from "react";
+// SimpleModelViewer.jsx
+import { useEffect, useRef, useState } from "react";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { app } from "../../firebase";
 
 const SimpleModelViewer = ({ modelUrl }) => {
   const mountRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setIsLoading] = useState(true);
+  const [, setError] = useState(null);
 
   useEffect(() => {
     if (!modelUrl || !mountRef.current) return;
@@ -35,9 +36,9 @@ const SimpleModelViewer = ({ modelUrl }) => {
         camera.position.set(5, 5, 5);
 
         // Renderer
-        renderer = new THREE.WebGLRenderer({ 
-          antialias: true, 
-          alpha: true 
+        renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true
         });
 
         renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
@@ -80,10 +81,10 @@ const SimpleModelViewer = ({ modelUrl }) => {
     const loadModel = async (THREE, GLTFLoader, url) => {
       try {
         console.log('Loading model from:', url);
-        
+
         // Check if it's a Firebase storage path or direct URL
         let modelUrl = url;
-        
+
         if (!url.startsWith('http') && !url.startsWith('blob:')) {
           // It's a Firebase storage path
           const storage = getStorage(app);
@@ -93,7 +94,7 @@ const SimpleModelViewer = ({ modelUrl }) => {
         }
 
         const loader = new GLTFLoader();
-        
+
         loader.load(
           modelUrl,
           (gltf) => {
@@ -109,21 +110,21 @@ const SimpleModelViewer = ({ modelUrl }) => {
             });
 
             scene.add(model);
-            
+
             // Center and scale model
             const box = new THREE.Box3().setFromObject(model);
             const center = box.getCenter(new THREE.Vector3());
             const size = box.getSize(new THREE.Vector3());
-            
+
             const maxDim = Math.max(size.x, size.y, size.z);
             const scale = maxDim > 0 ? 5 / maxDim : 1;
-            
+
             model.scale.setScalar(scale);
             model.position.sub(center.multiplyScalar(scale));
-            
+
             // Focus camera on model
             camera.lookAt(center);
-            
+
             setIsLoading(false);
           },
           (progress) => {
@@ -134,7 +135,7 @@ const SimpleModelViewer = ({ modelUrl }) => {
             console.error('Error loading 3D model:', error);
             setError('Failed to load 3D model');
             setIsLoading(false);
-            
+
             // Fallback: Show a cube
             showFallbackModel(THREE, scene);
           }
@@ -143,7 +144,7 @@ const SimpleModelViewer = ({ modelUrl }) => {
         console.error('Error in loadModel:', error);
         setError(error.message);
         setIsLoading(false);
-        
+
         // Fallback: Show a cube
         showFallbackModel(THREE, scene);
       }
@@ -152,7 +153,7 @@ const SimpleModelViewer = ({ modelUrl }) => {
     const showFallbackModel = (THREE, scene) => {
       // Create a simple cube as fallback
       const geometry = new THREE.BoxGeometry(1, 1, 1);
-      const material = new THREE.MeshPhongMaterial({ 
+      const material = new THREE.MeshPhongMaterial({
         color: 0x2196f3,
         transparent: true,
         opacity: 0.8
@@ -176,8 +177,8 @@ const SimpleModelViewer = ({ modelUrl }) => {
 
   return (
     <div ref={mountRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-    
-      
+
+
     </div>
   );
 };

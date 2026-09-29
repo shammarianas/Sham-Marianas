@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FiUpload,
   FiClock,
@@ -22,20 +22,17 @@ import Upload from "../../../../Pages/Upload";
 import Cursor from "../../../../common/cusor";
 
 const DashboardOverview = ({
-  userData,
   assets,
   stats,
   refreshData,
   formatCurrency,
   formatDate,
-  setActiveTab,
+  setActiveTab
 }) => {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadKey, setUploadKey] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const navigate = useNavigate();
-
   const handleViewAllFiles = () => {
     // Ya toh tab change karein
     setActiveTab("upload");
@@ -63,11 +60,6 @@ const DashboardOverview = ({
   const endIndex = startIndex + rowsPerPage;
   const currentAssets = assets.slice(startIndex, endIndex);
   const recentAssets = currentAssets.slice(0, 10); // Show 10 rows per page
-
-  const topPerformingAssets = assets
-    .filter((asset) => asset.status === "published")
-    .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
-    .slice(0, 3);
 
   // Calculate trends
   const trends = {

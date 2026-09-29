@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 function LoadingScreen() {
   useEffect(() => {
-    
+
     // Direct animation without delay
     const svg = document.getElementById("svg");
     const tl = gsap.timeline();
@@ -22,7 +22,7 @@ function LoadingScreen() {
       opacity: 0,
       duration: 0.4, // Added duration
     });
-    
+
     // ✅ CHANGE 5: Reduce animation durations
     tl.to(svg, {
       duration: 0.3, // Reduced from 0.5
@@ -33,9 +33,9 @@ function LoadingScreen() {
       attr: { d: flat },
       ease: "power2.easeOut",
     });
-    
+
     // ✅ CHANGE 6: Faster exit animation
-    tl.to(".loader-wrap", { 
+    tl.to(".loader-wrap", {
       y: -1500,
       duration: 0.4, // Reduced
       ease: "power2.in",
@@ -47,7 +47,7 @@ function LoadingScreen() {
         }
       }
     });
-    
+
 
     // ✅ CHANGE 7: Safety cleanup
     return () => {

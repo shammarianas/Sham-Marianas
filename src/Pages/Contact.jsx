@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"; // ✅ Add useState import
+import { useEffect, useState } from "react"; // ✅ Add useState import // ✅ Add useState import
 import WhatsAppButton from "../Components/whatsappButton";
 import ProgressScroll from "../common/ProgressScroll";
 import SEO from "../common/SEO.jsx";

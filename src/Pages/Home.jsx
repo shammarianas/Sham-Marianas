@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, Suspense, lazy } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import AOS from "aos";
 import LoadingScreen from "../common/loader";
 import { SEO_CONFIG } from "../utils/seoConfig";

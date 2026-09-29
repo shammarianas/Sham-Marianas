@@ -1,32 +1,6 @@
-import React, { useState, useEffect } from "react";
-import {
-  FiFileText,
-  FiUsers,
-  FiDownload,
-  FiFilter,
-  FiSearch,
-  FiTrendingUp,
-  FiTrendingDown,
-  FiAlertCircle,
-  FiCheckCircle,
-  FiClock,
-  FiRefreshCw,
-  FiList,
-  FiX,
-  FiEye,
-  FiBarChart2,
-  FiPieChart,
-  FiCalendar,
-  FiDollarSign,
-} from "react-icons/fi";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  Timestamp,
-} from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { FiFileText, FiUsers, FiDownload, FiFilter, FiSearch, FiTrendingUp, FiTrendingDown, FiAlertCircle, FiCheckCircle, FiClock, FiRefreshCw, FiList, FiX, FiEye, FiBarChart2, FiCalendar, FiDollarSign } from "react-icons/fi";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import * as XLSX from "xlsx";
 import ExportButton from "../../../ExportButton";
@@ -120,12 +94,12 @@ const SellerReports = () => {
             );
             const assetsSnapshot = await getDocs(assetsQuery);
 
-            let contributorRevenue = 0;
+
             let totalDownloads = 0;
             let totalViews = 0;
             let approvedAssets = 0;
             let pendingAssets = 0;
-            let totalRevenueHistory = 0;
+
             const assetDetails = [];
 
             // Calculate time-based statistics
@@ -140,7 +114,7 @@ const SellerReports = () => {
             let weeklyRevenue = 0;
             let monthlyRevenue = 0;
             let weeklyDownloads = 0;
-            let monthlyDownloads = 0;
+
 
             assetsSnapshot.forEach((assetDoc) => {
               const assetData = assetDoc.data();
@@ -162,7 +136,6 @@ const SellerReports = () => {
                 assetData.status === "approved" ||
                 assetData.status === "published"
               ) {
-                contributorRevenue += assetRevenue; // Ye line same rahegi
                 approvedAssets++;
 
                 // Calculate time-based revenue
@@ -172,7 +145,6 @@ const SellerReports = () => {
                 }
                 if (assetDate >= oneMonthAgo) {
                   monthlyRevenue += assetRevenue;
-                  monthlyDownloads += downloads;
                 }
               } else if (assetData.status === "pending") {
                 pendingAssets++;
@@ -180,7 +152,6 @@ const SellerReports = () => {
 
               totalDownloads += downloads;
               totalViews += views;
-              totalRevenueHistory += assetRevenue;
 
               assetDetails.push({
                 name: assetData.title || "Untitled Asset",
@@ -270,9 +241,7 @@ const SellerReports = () => {
               const cat = asset.category || 'Other';
               categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
             });
-            const primaryCategory = Object.keys(categoryCounts).reduce((a, b) => 
-              categoryCounts[a] > categoryCounts[b] ? a : b, 'Other'
-            );
+            Object.keys(categoryCounts).reduce((a, b) => categoryCounts[a] > categoryCounts[b] ? a : b, 'Other');
 
             // Dynamic status based on recent activity
             let status = "completed";
@@ -464,7 +433,7 @@ const SellerReports = () => {
 
     const matchesStatus =
       statusFilter === "all" || report.status === statusFilter;
-    const matchesCategory = 
+    const matchesCategory =
     categoryFilter === "all" || report.category === categoryFilter;
 
      return matchesSearch && matchesStatus && matchesCategory;
@@ -785,94 +754,7 @@ const SellerReports = () => {
     setCategoryFilter("all");
   };
 
-  const exportAllReports = () => {
-    if (reports.length === 0) {
-      alert("No reports to export!");
-      return;
-    }
 
-    // Prepare data for Excel
-    const worksheetData = [
-      ["ALL SELLER REPORTS - SUMMARY", "", "", "", "", "", "", ""],
-      ["Generated on", new Date().toLocaleString(), "", "", "", "", "", ""],
-      [
-        "Total Reports",
-        reports.length,
-        "Completed",
-        stats.completedReports,
-        "Generating",
-        stats.generatingReports,
-        "Failed",
-        stats.failedReports,
-      ],
-      [
-        "Total Revenue",
-        `$${stats.totalRevenue.toLocaleString()}`,
-        "Average Revenue",
-        `$${stats.averageRevenue.toFixed(0)}`,
-        "Total Downloads",
-        stats.totalDownloads,
-        "Active Sellers",
-        stats.totalSellers,
-      ],
-      [], // Empty row
-
-      ["DETAILED REPORT LIST", "", "", "", "", "", "", ""],
-      [
-        "Seller Name",
-        "Email",
-        "Category",
-        "Period",
-        "Generated Date",
-        "Revenue",
-        "Growth",
-        "Status",
-        "Downloads",
-      ],
-    ];
-
-    // Add each report
-    reports.forEach((report) => {
-      worksheetData.push([
-        report.sellerName,
-        report.sellerEmail,
-        report.category,
-        report.period,
-        report.generatedDate,
-        `$${report.revenue.toLocaleString()}`,
-        `${report.growth >= 0 ? "+" : ""}${report.growth}%`,
-        report.status,
-        report.downloads,
-      ]);
-    });
-
-    // Create workbook and worksheet
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Style the worksheet
-    const wscols = [
-      { wch: 25 },
-      { wch: 30 },
-      { wch: 20 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-    ];
-    ws["!cols"] = wscols;
-
-    XLSX.utils.book_append_sheet(wb, ws, "All Reports");
-
-    const fileName = `All_Seller_Reports_${
-      new Date().toISOString().split("T")[0]
-    }.xlsx`;
-    XLSX.writeFile(wb, fileName);
-
-    console.log(`✅ All reports exported: ${fileName}`);
-  };
 
   return (
     <div className="user-reports-dashboard">
@@ -1005,7 +887,7 @@ const SellerReports = () => {
         </div>
       </div>
 
-     
+
       {/* Revenue Stats */}
       <div className="reports-stats-grid">
         <div className="report-stat-card revenue">
@@ -1186,7 +1068,7 @@ const SellerReports = () => {
                   </td>
                   <td>{report.category}</td>
 
-                  <td> 
+                  <td>
                     <div className="comp-dis">
                       {report.generatedDate}
                       <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>

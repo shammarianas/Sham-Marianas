@@ -1,21 +1,25 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AddToBookmark from "./AddToBookmark";
 import { useUser } from "../../Context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import SimpleModelViewer from "./SimpleModelViewer";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import "firebase/functions";
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import { doc, updateDoc, increment, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { getAuth } from "firebase/auth";
 
-const ListedItemCard = ({ id, data, rating, userProfile }) => {
+const ListedItemCard = ({
+  id,
+  data,
+  userProfile
+}) => {
   const { currentUser } = useUser();
   const navigate = useNavigate();
   const [isContributor, setIsContributor] = useState(false);
   const profile = userProfile || currentUser;
-  const { isDownloaded, addToDownloads, error } = useSaveToDownloads(id, data);
+  const { addToDownloads } = useSaveToDownloads(id, data);
   const auth = getAuth();
 
   useEffect(() => {
@@ -69,9 +73,6 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
   // Check if item is free or paid
   const isFree = data.price === "free" || data.price === 0;
   const isPaid = data.price === "paid";
-
-  // Check if user has active subscription
-  const hasActiveSubscription = currentUser?.subscriptionActive === true;
 
   // Check if user has purchased this specific item
   const hasPurchasedItem = currentUser?.purchasedItems?.includes(id);
@@ -211,7 +212,7 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
         }, 100);
 
         console.log("✅ Download initiated:", filename);
-      } catch (fetchError) {
+      } catch {
         console.log("🔄 Using direct method as fallback");
         // Fallback to original method
         const a = document.createElement("a");
@@ -547,13 +548,6 @@ const ListedItemCard = ({ id, data, rating, userProfile }) => {
         navigate("/subscription");
       }, 1000);
     }
-  };
-
-  // Function to detect 3D model files
-  const is3DModel = (url) => {
-    if (!url) return false;
-    const extension = url.split(".").pop()?.toLowerCase().split("?")[0];
-    return ["glb", "gltf", "fbx", "obj", "stl", "3ds"].includes(extension);
   };
 
   // Get 3D model URL from data

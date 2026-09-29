@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 import data from "../../data/team-t.json";
 function Team() {
   return (
@@ -25,7 +25,7 @@ function Team() {
                     <img  loading="lazy"  src={item.img} alt="" />
                     {/* <div className="social">
                       <div className="links">
-                        <a 
+                        <a
                           href="https://www.facebook.com/shammarianas
 " aria-label="Sham Marianas Facebook"
                         >
@@ -63,7 +63,7 @@ function Team() {
                 <a href="/contact-us" className="mt-30" aria-label="Contact Us to Join Our Team">
                   <span className="ti-arrow-top-right fz-30"></span>
                 </a>
-              </div> 
+              </div>
             </div>
           </a>
         </div>

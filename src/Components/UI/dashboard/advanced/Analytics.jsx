@@ -1,25 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { 
-  FiBarChart2, 
-  FiUsers, 
-  FiEye, 
-  FiShoppingCart, 
-  FiDollarSign, 
-  FiTrendingUp, 
-  FiTrendingDown,
-  FiPieChart, 
-  FiFilter, 
-  FiCalendar, 
-  FiDownload,
-  FiActivity,
-  FiGlobe,
-  FiTarget,
-  FiClock,
-  FiServer,
-  FiZap,
-  FiRefreshCw
-} from "react-icons/fi";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { FiBarChart2, FiUsers, FiEye, FiDollarSign, FiTrendingUp, FiTrendingDown, FiPieChart, FiFilter, FiActivity, FiGlobe, FiTarget, FiZap, FiRefreshCw } from "react-icons/fi";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
 
@@ -60,22 +41,22 @@ const Analytics = () => {
         // Fetch all collections to calculate analytics
         const profilesSnapshot = await getDocs(collection(db, "Profiles"));
         const assetsSnapshot = await getDocs(collection(db, "Assets"));
-        const contributorsSnapshot = await getDocs(collection(db, "Contributors"));
+        await getDocs(collection(db, "Contributors"));
         const transactionsSnapshot = await getDocs(collection(db, "Transactions"));
 
         // Calculate user statistics
         const totalUsers = profilesSnapshot.size;
-        
+
         // Calculate active users (users with recent activity)
         const now = new Date();
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         let activeUsers = 0;
         let newUsers = 0;
-        
+
         profilesSnapshot.forEach((doc) => {
           const userData = doc.data();
           if (userData.createdAt) {
-            const createdDate = userData.createdAt.toDate ? 
+            const createdDate = userData.createdAt.toDate ?
               userData.createdAt.toDate() : new Date(userData.createdAt);
             if (createdDate >= thirtyDaysAgo) {
               newUsers++;
@@ -311,7 +292,7 @@ const Analytics = () => {
           </p>
         </div>
         <div className="header-actions">
-          <button 
+          <button
             className="action-button secondary"
             onClick={handleRefreshData}
             disabled={loading}
@@ -341,7 +322,7 @@ const Analytics = () => {
               Registered platform users
             </div>
             <div className="report-stat-trend positive">
-              +12.5%  
+              +12.5%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -363,7 +344,7 @@ const Analytics = () => {
               Last 30 days activity
             </div>
             <div className="report-stat-trend positive">
-              +8.3%  
+              +8.3%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -385,7 +366,7 @@ const Analytics = () => {
               Total page impressions
             </div>
             <div className="report-stat-trend positive">
-              +15.7%  
+              +15.7%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -407,7 +388,7 @@ const Analytics = () => {
               Monthly recurring revenue
             </div>
             <div className="report-stat-trend positive">
-              +18.2%  
+              +18.2%
               <FiTrendingUp className="fi-pl" />
             </div>
           </div>
@@ -434,31 +415,31 @@ const Analytics = () => {
             </select>
           </div>
         </div>
-        
+
         <div className="filter-controls-grid">
           <div className="analytics-tabs">
-            <button 
+            <button
               className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
               onClick={() => setActiveTab("overview")}
             >
               <FiBarChart2 className="tab-icon" />
               Overview
             </button>
-            <button 
+            <button
               className={`tab-button ${activeTab === "traffic" ? "active" : ""}`}
               onClick={() => setActiveTab("traffic")}
             >
               <FiGlobe className="tab-icon" />
               Traffic
             </button>
-            <button 
+            <button
               className={`tab-button ${activeTab === "performance" ? "active" : ""}`}
               onClick={() => setActiveTab("performance")}
             >
               <FiZap className="tab-icon" />
               Performance
             </button>
-            <button 
+            <button
               className={`tab-button ${activeTab === "conversion" ? "active" : ""}`}
               onClick={() => setActiveTab("conversion")}
             >
@@ -466,7 +447,7 @@ const Analytics = () => {
               Conversion
             </button>
           </div>
-          
+
           <div className="filter-actions">
             <ExportButton
               data={prepareExportData()}
@@ -504,43 +485,43 @@ const Analytics = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="pie-chart-labels">
                   <div className="pie-chart-label">
                     <span className="pie-label-dot excellent"></span>
                     <div className="pie-label-text">
                       <span className="pie-label-name">Active Users</span>
                       <span className="pie-label-percentage">
-                        {analyticsData.overview.totalUsers > 0 ? 
-                          `${((analyticsData.overview.activeUsers / analyticsData.overview.totalUsers) * 100).toFixed(1)}%` : 
+                        {analyticsData.overview.totalUsers > 0 ?
+                          `${((analyticsData.overview.activeUsers / analyticsData.overview.totalUsers) * 100).toFixed(1)}%` :
                           "0%"
-                        } 
+                        }
                         ({formatNumber(analyticsData.overview.activeUsers)})
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="pie-chart-label">
                     <span className="pie-label-dot good"></span>
                     <div className="pie-label-text">
                       <span className="pie-label-name">New Users</span>
                       <span className="pie-label-percentage">
-                        {analyticsData.overview.totalUsers > 0 ? 
-                          `${((analyticsData.overview.newUsers / analyticsData.overview.totalUsers) * 100).toFixed(1)}%` : 
+                        {analyticsData.overview.totalUsers > 0 ?
+                          `${((analyticsData.overview.newUsers / analyticsData.overview.totalUsers) * 100).toFixed(1)}%` :
                           "0%"
-                        } 
+                        }
                         ({formatNumber(analyticsData.overview.newUsers)})
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="pie-chart-label">
                     <span className="pie-label-dot average"></span>
                     <div className="pie-label-text">
                       <span className="pie-label-name">Inactive</span>
                       <span className="pie-label-percentage">
-                        {analyticsData.overview.totalUsers > 0 ? 
-                          `${(((analyticsData.overview.totalUsers - analyticsData.overview.activeUsers) / analyticsData.overview.totalUsers) * 100).toFixed(1)}%` : 
+                        {analyticsData.overview.totalUsers > 0 ?
+                          `${(((analyticsData.overview.totalUsers - analyticsData.overview.activeUsers) / analyticsData.overview.totalUsers) * 100).toFixed(1)}%` :
                           "0%"
                         }
                       </span>
@@ -567,13 +548,13 @@ const Analytics = () => {
                     <span className="category-count">{source.percentage}% ({formatNumber(source.visitors)})</span>
                   </div>
                   <div className="category-progress-bar">
-                    <div 
+                    <div
                       className={`category-progress-fill ${
                         source.name === 'Organic Search' ? 'harassment' :
                         source.name === 'Direct' ? 'spam' :
                         source.name === 'Social Media' ? 'fraud' :
                         source.name === 'Referral' ? 'content' : 'other'
-                      }`} 
+                      }`}
                       style={{ width: `${source.percentage}%` }}
                     ></div>
                   </div>
@@ -680,11 +661,11 @@ const Analytics = () => {
                     <div className="metric-target">Target: {metric.target}</div>
                     <div className="metric-progress">
                       <div className="progress-bar">
-                        <div 
-                          className="progress-fill" 
-                          style={{ 
-                            width: metric.name === 'Uptime' ? '99.9%' : 
-                                  metric.name === 'Error Rate' ? '40%' : '80%' 
+                        <div
+                          className="progress-fill"
+                          style={{
+                            width: metric.name === 'Uptime' ? '99.9%' :
+                                  metric.name === 'Error Rate' ? '40%' : '80%'
                           }}
                         ></div>
                       </div>
@@ -710,13 +691,13 @@ const Analytics = () => {
                     <span className="category-count">{formatNumber(region.users)} users</span>
                   </div>
                   <div className="category-progress-bar">
-                    <div 
+                    <div
                       className={`category-progress-fill ${
                         region.name === 'North America' ? 'harassment' :
                         region.name === 'Europe' ? 'spam' :
                         region.name === 'Asia' ? 'fraud' :
                         region.name === 'South America' ? 'content' : 'other'
-                      }`} 
+                      }`}
                       style={{ width: `${(region.users / analyticsData.overview.totalUsers) * 100}%` }}
                     ></div>
                   </div>
@@ -754,8 +735,8 @@ const Analytics = () => {
                     </div>
                     <div className="stage-count">{formatNumber(stage.count)}</div>
                     <div className="stage-progress">
-                      <div 
-                        className="progress-bar" 
+                      <div
+                        className="progress-bar"
                         style={{ width: `${(stage.count / analyticsData.conversion.funnel[0].count) * 100}%` }}
                       ></div>
                     </div>
@@ -780,12 +761,12 @@ const Analytics = () => {
                     <span className="category-count">{goal.completion}% / {goal.target}%</span>
                   </div>
                   <div className="category-progress-bar">
-                    <div 
+                    <div
                       className={`category-progress-fill ${
                         goal.completion >= goal.target ? 'harassment' :
                         goal.completion >= goal.target * 0.8 ? 'spam' :
                         goal.completion >= goal.target * 0.6 ? 'fraud' : 'content'
-                      }`} 
+                      }`}
                       style={{ width: `${goal.completion}%` }}
                     ></div>
                   </div>

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import "react";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 

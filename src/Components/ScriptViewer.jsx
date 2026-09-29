@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";

@@ -1,24 +1,6 @@
-import React, { useState, useEffect } from "react";
-import {
-  FiDollarSign,
-  FiTrendingUp,
-  FiTrendingDown,
-  FiUsers,
-  FiShoppingCart,
-  FiPieChart,
-  FiBarChart2,
-  FiCalendar,
-  FiDownload,
-  FiFilter,
-  FiList,
-  FiCreditCard,
-  FiPackage,
-  FiActivity,
-  FiX,
-  FiEye,
-  FiRefreshCw,
-} from "react-icons/fi";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiUsers, FiShoppingCart, FiPieChart, FiBarChart2, FiCalendar, FiDownload, FiFilter, FiCreditCard, FiPackage, FiActivity, FiX, FiRefreshCw } from "react-icons/fi";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
 
@@ -28,7 +10,7 @@ const Earnings = () => {
   const [selectedAnalytics, setSelectedAnalytics] = useState(null);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   // ✅ ADD GROWTH DATA STATE
   const [growthData, setGrowthData] = useState({
     platformEarningsGrowth: 0,
@@ -37,7 +19,7 @@ const Earnings = () => {
     monthlyGrowth: {},
     categoryGrowth: {}
   });
-  
+
   const [earningsData, setEarningsData] = useState({
     overview: {
       totalRevenue: 0,
@@ -61,12 +43,12 @@ const Earnings = () => {
   // ✅ REAL GROWTH CALCULATION FUNCTION
   const calculateActualGrowth = (currentData, previousData) => {
     if (!previousData || previousData === 0) return 0;
-    
+
     const current = currentData || 0;
     const previous = previousData || 0;
-    
+
     if (previous === 0) return current > 0 ? 100 : 0;
-    
+
     const growth = ((current - previous) / previous) * 100;
     return parseFloat(growth.toFixed(1));
   };
@@ -96,7 +78,7 @@ const Earnings = () => {
           platformEarnings = subscriptionRevenue + perDownloadRevenue;
 
           // Previous platform earnings (if available)
-          previousPlatformEarnings = parseFloat(platformStats.previousMonthEarnings) || 
+          previousPlatformEarnings = parseFloat(platformStats.previousMonthEarnings) ||
                                     parseFloat(platformStats.lastMonthEarnings) || 0;
         }
 
@@ -122,10 +104,10 @@ const Earnings = () => {
           const transaction = doc.data();
           const amount = parseFloat(transaction.amount) || 0;
           const timestamp = transaction.timestamp;
-          
+
           if (timestamp && amount > 0) {
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            
+
             // Check if transaction is in current month
             if (date >= currentMonthStart && date <= now) {
               currentMonthTotal += amount;
@@ -149,10 +131,10 @@ const Earnings = () => {
           });
         });
 
-        const avgTransactionValue = currentMonthCount > 0 ? 
+        const avgTransactionValue = currentMonthCount > 0 ?
           Math.round((currentMonthTotal / currentMonthCount) * 100) / 100 : 0;
-        
-        const previousAvgTransactionValue = previousMonthCount > 0 ? 
+
+        const previousAvgTransactionValue = previousMonthCount > 0 ?
           Math.round((previousMonthTotal / previousMonthCount) * 100) / 100 : 0;
 
         // 3️⃣ GET CONTRIBUTORS for seller payouts growth
@@ -165,9 +147,9 @@ const Earnings = () => {
           const contributor = doc.data();
           const pendingEarnings = parseFloat(contributor.pendingEarnings) || 0;
           totalSellerPayouts += pendingEarnings;
-          
+
           // Previous earnings (if available)
-          previousSellerPayouts += parseFloat(contributor.previousMonthEarnings) || 
+          previousSellerPayouts += parseFloat(contributor.previousMonthEarnings) ||
                                   parseFloat(contributor.lastMonthEarnings) || 0;
 
           contributorsData.push({
@@ -199,7 +181,7 @@ const Earnings = () => {
 
           if (timestamp && amount > 0) {
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            
+
             if (date >= currentMonthStart && date <= now) {
               totalCategoryRevenue += amount;
               const current = currentMonthCategoryMap.get(category) || { revenue: 0, count: 0 };
@@ -222,13 +204,13 @@ const Earnings = () => {
           .map(([name, currentData]) => {
             const previousData = previousMonthCategoryMap.get(name) || { revenue: 0, count: 0 };
             const previousRevenue = previousData.revenue;
-            
+
             // REAL growth calculation
-            const growth = previousRevenue > 0 ? 
+            const growth = previousRevenue > 0 ?
               ((currentData.revenue - previousRevenue) / previousRevenue) * 100 :
               currentData.revenue > 0 ? 100 : 0;
 
-            const percentage = totalCategoryRevenue > 0 ? 
+            const percentage = totalCategoryRevenue > 0 ?
               Math.round((currentData.revenue / totalCategoryRevenue) * 100) : 0;
 
             return {
@@ -251,8 +233,8 @@ const Earnings = () => {
 
         // 6️⃣ Calculate monthly data from Transactions
         const monthlyData = new Map();
-        const monthlyGrowthData = {};
-        
+
+
         // Group transactions by month
         allTransactionsSnapshot.forEach((doc) => {
           const transaction = doc.data();
@@ -286,10 +268,10 @@ const Earnings = () => {
           })
           .slice(0, 6)
           .map(([month, data], index, array) => {
-            const prevRevenue = index < array.length - 1 ? 
+            const prevRevenue = index < array.length - 1 ?
               array[index + 1][1].revenue : data.revenue;
-            
-            const growth = prevRevenue > 0 ? 
+
+            const growth = prevRevenue > 0 ?
               ((data.revenue - prevRevenue) / prevRevenue) * 100 : 0;
 
             return {
@@ -302,13 +284,13 @@ const Earnings = () => {
           });
 
         // 7️⃣ Calculate overall growth rate (average of monthly growths)
-        const overallGrowth = monthly.length > 1 ? 
+        const overallGrowth = monthly.length > 1 ?
           monthly.reduce((sum, month) => sum + month.growth, 0) / monthly.length : 0;
 
         // 8️⃣ Calculate percentages
-        const platformPercentage = totalRevenue > 0 ? 
+        const platformPercentage = totalRevenue > 0 ?
           Math.round((platformEarnings / totalRevenue) * 100) : 0;
-        const sellerPercentage = totalRevenue > 0 ? 
+        const sellerPercentage = totalRevenue > 0 ?
           Math.round((totalSellerPayouts / totalRevenue) * 100) : 0;
 
         // 9️⃣ Sort contributors by pendingEarnings (top sellers)
@@ -318,8 +300,8 @@ const Earnings = () => {
           .slice(0, 5)
           .map((seller) => {
             // Calculate seller growth
-            const sellerGrowth = seller.previousEarnings > 0 ? 
-              ((seller.pendingEarnings - seller.previousEarnings) / seller.previousEarnings) * 100 : 
+            const sellerGrowth = seller.previousEarnings > 0 ?
+              ((seller.pendingEarnings - seller.previousEarnings) / seller.previousEarnings) * 100 :
               seller.pendingEarnings > 0 ? 100 : 0;
 
             return {
@@ -389,11 +371,7 @@ const Earnings = () => {
   }, []);
 
   // ✅ Helper function for monthly growth calculation
-  const calculateMonthlyGrowth = (currentMonth, previousMonth) => {
-    if (!previousMonth || previousMonth.revenue === 0) return 0;
-    
-    return ((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue) * 100;
-  };
+
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
@@ -464,10 +442,7 @@ const Earnings = () => {
   };
 
   // Handle view analytics
-  const handleViewAnalytics = (type, data) => {
-    setSelectedAnalytics({ type, data });
-    setShowAnalyticsModal(true);
-  };
+
 
   // Close modal
   const handleCloseModal = () => {
@@ -976,10 +951,10 @@ const Earnings = () => {
                     <div className="progress-bar">
                       <div
                         className="progress-fill"
-                        style={{ 
-                          width: `${Math.min(100, 
-                            (earningsData.overview.totalRevenue / 
-                            (earningsData.overview.previousMonthRevenue * 1.2 || 20000)) * 100)}%` 
+                        style={{
+                          width: `${Math.min(100,
+                            (earningsData.overview.totalRevenue /
+                            (earningsData.overview.previousMonthRevenue * 1.2 || 20000)) * 100)}%`
                         }}
                       ></div>
                     </div>
@@ -1001,9 +976,9 @@ const Earnings = () => {
                     <div className="progress-bar">
                       <div
                         className="progress-fill"
-                        style={{ 
-                          width: `${Math.min(100, 
-                            ((earningsData.overview.avgTransactionValue * 3) / 500) * 100)}%` 
+                        style={{
+                          width: `${Math.min(100,
+                            ((earningsData.overview.avgTransactionValue * 3) / 500) * 100)}%`
                         }}
                       ></div>
                     </div>
@@ -1016,8 +991,8 @@ const Earnings = () => {
                     <span className="metric-status excellent">Optimal</span>
                   </div>
                   <div className="metric-value">
-                    {earningsData.overview.sellerPayouts > 0 ? 
-                      Math.round((earningsData.overview.completedPayouts / earningsData.overview.sellerPayouts) * 100) + '%' : 
+                    {earningsData.overview.sellerPayouts > 0 ?
+                      Math.round((earningsData.overview.completedPayouts / earningsData.overview.sellerPayouts) * 100) + '%' :
                       '0%'}
                   </div>
                   <div className="metric-target">Target: 98%</div>
@@ -1025,10 +1000,10 @@ const Earnings = () => {
                     <div className="progress-bar">
                       <div
                         className="progress-fill"
-                        style={{ 
-                          width: `${Math.min(100, 
-                            (earningsData.overview.completedPayouts / 
-                            (earningsData.overview.sellerPayouts || 1)) * 100)}%` 
+                        style={{
+                          width: `${Math.min(100,
+                            (earningsData.overview.completedPayouts /
+                            (earningsData.overview.sellerPayouts || 1)) * 100)}%`
                         }}
                       ></div>
                     </div>

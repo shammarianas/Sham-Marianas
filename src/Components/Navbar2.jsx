@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { useUser } from "../Context/UserProvider";
 import Search from "./Search";
@@ -11,10 +11,10 @@ const Navbar = () => {
   const { currentUser } = useUser() || "";
   const [isContributor, setIsContributor] = useState(false);
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  const cartCount = cart.length;
+  cart.length;
   const currentPage = useLocation().pathname;
   const [username, setUsername] = useState(null);
-  const [userProfileData, setUserProfileData] = useState(null);
+  const [, setUserProfileData] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [displayName, setDisplayName] = useState("User");

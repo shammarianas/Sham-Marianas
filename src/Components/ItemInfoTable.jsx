@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 
 const InfoItem = (props) => {
   const displayValue =
@@ -31,7 +31,7 @@ const ItemInfoTable = (props) => {
   // Agar asset object pass hua hai toh automatically generate karo
   if (props.asset) {
     const asset = props.asset;
-    
+
     // Common attributes for all asset types
     const commonAttributes = [
       { label: "Asset Type", value: asset.type },
@@ -43,7 +43,7 @@ const ItemInfoTable = (props) => {
 
     // Type-specific attributes - ALL FILTERS FROM UPLOAD FORM
     const typeSpecificAttributes = [];
-    
+
     // 3D Models
     if (asset.type === "models" || asset.type === "3DModels") {
       typeSpecificAttributes.push(
@@ -57,7 +57,7 @@ const ItemInfoTable = (props) => {
         { label: "Properties", value: Array.isArray(asset.properties) ? asset.properties.join(", ") : asset.properties }
       );
     }
-    
+
     // Videos
     else if (asset.type === "videos") {
       typeSpecificAttributes.push(
@@ -67,7 +67,7 @@ const ItemInfoTable = (props) => {
         { label: "AI Generated", value: asset.aiGenerated }
       );
     }
-    
+
     // Images/Pictures
     else if (asset.type === "images" || asset.type === "Pictures") {
       typeSpecificAttributes.push(
@@ -77,7 +77,7 @@ const ItemInfoTable = (props) => {
         { label: "License Type", value: asset.licenseType }
       );
     }
-    
+
     // Scripts
     else if (asset.type === "scripts") {
       typeSpecificAttributes.push(
@@ -88,7 +88,7 @@ const ItemInfoTable = (props) => {
         { label: "Integration Ready", value: Array.isArray(asset.integrationReady) ? asset.integrationReady.join(", ") : asset.integrationReady }
       );
     }
-    
+
     // Graphics Templates
     else if (asset.type === "graphics" || asset.type === "GraphicTemplates") {
       typeSpecificAttributes.push(
@@ -98,7 +98,7 @@ const ItemInfoTable = (props) => {
         { label: "Properties", value: Array.isArray(asset.properties) ? asset.properties.join(", ") : asset.properties }
       );
     }
-    
+
     // Textures
     else if (asset.type === "textures") {
       typeSpecificAttributes.push(
@@ -107,7 +107,7 @@ const ItemInfoTable = (props) => {
         { label: "Style", value: asset.style }
       );
     }
-    
+
     // HDRIs
     else if (asset.type === "hdris" || asset.type === "HDRIs") {
       typeSpecificAttributes.push(
@@ -117,7 +117,7 @@ const ItemInfoTable = (props) => {
         { label: "File Format", value: asset.fileFormat }
       );
     }
-    
+
     // Icons
     else if (asset.type === "icons") {
       typeSpecificAttributes.push(
@@ -125,7 +125,7 @@ const ItemInfoTable = (props) => {
         { label: "Properties", value: Array.isArray(asset.properties) ? asset.properties.join(", ") : asset.properties }
       );
     }
-    
+
     // Fonts
     else if (asset.type === "fonts") {
       typeSpecificAttributes.push(
@@ -133,7 +133,7 @@ const ItemInfoTable = (props) => {
         { label: "License Type", value: asset.licenseType }
       );
     }
-    
+
     // Mockups
     else if (asset.type === "mockups") {
       typeSpecificAttributes.push(
@@ -141,7 +141,7 @@ const ItemInfoTable = (props) => {
         { label: "License Type", value: asset.licenseType }
       );
     }
-    
+
     // Video Templates
     else if (asset.type === "video-templates" || asset.type === "VideoTemplates") {
       typeSpecificAttributes.push(
@@ -174,8 +174,8 @@ const ItemInfoTable = (props) => {
 
     // Combine all attributes
     const allAttributes = [
-      ...commonAttributes, 
-      ...typeSpecificAttributes, 
+      ...commonAttributes,
+      ...typeSpecificAttributes,
       ...additionalFilters
     ];
 

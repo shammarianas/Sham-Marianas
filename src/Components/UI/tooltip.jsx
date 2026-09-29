@@ -1,15 +1,17 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
 
-const TooltipProvider = ({ delayDuration = 700, children }) => {
+const TooltipProvider = ({
+  children
+}) => {
   return <div>{children}</div>;
 };
 
 const Tooltip = ({ children }) => {
   const [open, setOpen] = React.useState(false);
-  
+
   return (
-    <div 
+    <div
       className="relative inline-block"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
@@ -41,13 +43,12 @@ const TooltipTrigger = React.forwardRef(({ asChild, children, ...props }, ref) =
 });
 TooltipTrigger.displayName = "TooltipTrigger";
 
-const TooltipContent = React.forwardRef(({ 
-  className, 
-  side = "top", 
-  align = "center",
+const TooltipContent = React.forwardRef(({
+  className,
+  side = "top",
   hidden = false,
-  children, 
-  ...props 
+  children,
+  ...props
 }, ref) => {
   if (hidden) return null;
 

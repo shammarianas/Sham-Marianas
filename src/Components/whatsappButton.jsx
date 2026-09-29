@@ -1,5 +1,6 @@
 // components/WhatsAppButton.jsx
-import React, { useState, useEffect } from "react";
+// components/WhatsAppButton.jsx
+import { useState, useEffect } from "react";
 
 export default function WhatsAppButton() {
   const [isScrolled, setIsScrolled] = useState(false);

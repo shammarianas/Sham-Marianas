@@ -7,7 +7,7 @@ import {
   collection,
   serverTimestamp,
 } from "firebase/firestore";
-import { firestoreSchema, subcollections } from "./firestoreSchema";
+import { firestoreSchema } from "./firestoreSchema";
 import { initializeAdminsFromEnv } from "./initAdmin";
 
 const collectionHasDocs = async (name) => {

@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 import { Link, useLocation } from "react-router-dom";
 import Cursor from "../common/cusor";
 
@@ -75,7 +75,7 @@ function Footer() {
     path.startsWith("/subscription") ||
     path.startsWith("/view/") ||
     (path.match(/^\/[^/]+$/) && !nonTemplateSinglePaths.includes(path.toLowerCase()));
-    
+
 
 
 
@@ -93,7 +93,7 @@ function Footer() {
     path === '/company' ||
     path === '/contributor';
 
-    
+
 
   // Agar dashboard page hai to footer show nahi karo
   if (isDashboardPage) {
@@ -134,7 +134,7 @@ function Footer() {
                   <h6 className="p-color fw-400 mb-15">
                     <a href="mailto:info@shammarianas.com" aria-label="Email Sham Marianas">info@shammarianas.com</a>
                   </h6>
-                 
+
                 </div>
               </div>
             )}

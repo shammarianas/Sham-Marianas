@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
+//= Scripts
 //= Scripts
 
 import scrollToTop from "../common/scrollToTop";

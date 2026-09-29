@@ -561,7 +561,7 @@ export const getProductSchema = (productData) => ({
 // =========================================================
 //   Automatic FAQ from blog HTML content (logic same rakha gaya hai)
 // =========================================================
-export const getAutoFaqSchema = (htmlContent = '', blogData = {}, pageUrl = '') => {
+export const getAutoFaqSchema = (htmlContent = '', _blogData = {}, pageUrl = '') => {
   if (!htmlContent) return null;
 
   // Simple DOM parser use karo (browser mein safe hai)

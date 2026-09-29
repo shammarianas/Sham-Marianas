@@ -1,14 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  sendPasswordResetEmail,
-  signOut,
-  sendEmailVerification,
-  onAuthStateChanged,
-  fetchSignInMethodsForEmail, // ✅ ADD THIS LINE
-} from "firebase/auth";
+import { useRef, useState, useEffect } from "react";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, signOut, sendEmailVerification, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../firebase";
 import {
   doc,
@@ -23,11 +14,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import eye_icon from "../../assets/Icons/eye.png";
-import {
-  loginWithGoogle,
-  googleContributorSignup,
-  loginWithGoogleContributor,
-} from "./GoogleLogin";
+import { googleContributorSignup, loginWithGoogleContributor } from "./GoogleLogin";
 import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 import SEO from "../../common/SEO";
@@ -94,7 +81,7 @@ const ContributorLogin = () => {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [tempUser, setTempUser] = useState(null);
-  const [authMethod, setAuthMethod] = useState(null); // 'email_password', 'google', or null
+  const [, setAuthMethod] = useState(null); // 'email_password', 'google', or null
   const [isGoogleUser, setIsGoogleUser] = useState(false);
   // ✅ CONTRIBUTOR SPECIFIC FIELDS
   const [fullName, setFullName] = useState("");

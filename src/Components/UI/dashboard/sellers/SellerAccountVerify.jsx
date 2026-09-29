@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   FiUserCheck,
   FiUserX,
@@ -26,7 +26,7 @@ import {
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
-import { exportSellersVerifyData } from "../../../../utils/exportUtils";
+import "../../../../utils/exportUtils";
 
 const normalizeDate = (value) => {
   if (!value) return null;
@@ -55,7 +55,7 @@ const formatDate = (date) => {
 
 const SellerAccountVerify = () => {
   const [sellers, setSellers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   const sellerColumns = [
     { header: "Seller Name", accessor: (item) => item.name || "N/A" },
@@ -64,8 +64,8 @@ const SellerAccountVerify = () => {
       header: "Specialization",
       accessor: (item) => item.specialization || "Unknown",
     },
-    { 
-      header: "Location", 
+    {
+      header: "Location",
       accessor: (item) => {
         if (item.city && item.country) {
           return `${item.city}, ${item.country}`;
@@ -97,34 +97,34 @@ const SellerAccountVerify = () => {
 
         const data = snapshot.docs.map((docSnap) => {
           const sellerData = docSnap.data();
-          
+
           return {
             id: docSnap.id,
             ...sellerData,
-            
+
             // Personal Information
             name: sellerData.fullName || sellerData.username || "N/A",
             username: sellerData.username || "N/A",
             email: sellerData.email || "N/A",
             phone: sellerData.phone || "N/A",
            birthday: formatDate(sellerData.birthday),
-            
+
             // Location Information
             city: sellerData.city || "N/A",
             country: sellerData.country || sellerData.countryCode || "N/A",
-            
+
             // Professional Information
             specialization: sellerData.specialization || "Unknown",
             portfolioLink: sellerData.portfolioLink || sellerData.website || "N/A",
             keywords: sellerData.keywords || sellerData.skills || "N/A",
             bio: sellerData.bio || sellerData.description || "N/A",
-            
+
             // Dates
             joinDate: sellerData.joinDate?.toDate().toLocaleDateString() || "N/A",
-            
+
             // Status
             status: sellerData.status || "pending",
-            
+
             // Other
             documents: sellerData.documents || [],
           };
@@ -215,11 +215,7 @@ const SellerAccountVerify = () => {
   };
 
   // Export handler with callbacks
-  const handleExport = (format) => {
-    console.log("Exporting data:", filteredSellers);
-    console.log("First seller:", filteredSellers[0]);
-    exportSellersVerifyData(filteredSellers, format);
-  };
+
 
   const filteredSellers = sellers.filter((seller) => {
     const matchesSearch =
@@ -464,7 +460,7 @@ const SellerAccountVerify = () => {
                       {seller.specialization}
                     </div>
                   </td>
-                  
+
                   <td>
                     <div className="comp-dis">
                       <FiMapPin style={{ marginRight: "4px" }} />

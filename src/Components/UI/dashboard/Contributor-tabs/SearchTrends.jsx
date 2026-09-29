@@ -1,21 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  FiTrendingUp,
-  FiSearch,
-  FiFilter,
-  FiCalendar,
-  FiDownload,
-  FiEye,
-  FiBarChart2,
-  FiPieChart,
-  FiRefreshCw,
-  FiClock,
-  FiUsers,
-  FiStar,
-  FiArrowUp,
-  FiArrowDown,
-  FiExternalLink
-} from "react-icons/fi";
+import { useState, useEffect, useMemo } from "react";
+import { FiTrendingUp, FiSearch, FiFilter, FiDownload, FiEye, FiBarChart2, FiPieChart, FiUsers, FiStar, FiArrowUp, FiArrowDown } from "react-icons/fi";
 
 const SearchTrends = () => {
   const [trends, setTrends] = useState([]);
@@ -509,7 +493,7 @@ const SearchTrends = () => {
               <div className="detail-row">
                 <div className="detail-item">
                   <span className="detail-label">Competition</span>
-                  <span 
+                  <span
                     className="detail-value competition"
                     style={{ color: getCompetitionColor(trend.competition) }}
                   >

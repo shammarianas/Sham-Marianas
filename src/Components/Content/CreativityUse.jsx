@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 import ReusableSection from "./ReusableSection";
 
 const Creativity = () => {

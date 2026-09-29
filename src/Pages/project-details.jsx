@@ -6,7 +6,7 @@ import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
 import Marq2 from "../Components/marq2";
 import Next from "../Components/portfolio-details/Next";
-import { Helmet } from "react-helmet-async";
+import "react-helmet-async";
 import SEO from "../common/SEO.jsx";
 import { SEO_CONFIG } from "../utils/seoConfig.js";
 
@@ -14,7 +14,7 @@ export default function ProjectDetails() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-   const location = useLocation(); // ✅ Import useLocation
+   useLocation(); // ✅ Import useLocation
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -40,7 +40,7 @@ export default function ProjectDetails() {
   if (loading) {
     return (
       <>
-        <SEO 
+        <SEO
           title="Loading Project | Shammarianas Portfolio"
           description="Loading project details from Shammarianas portfolio..."
           keywords="Portfolio, Projects, Loading"
@@ -56,7 +56,7 @@ export default function ProjectDetails() {
   if (!project) {
     return (
       <>
-        <SEO 
+        <SEO
           title="Project Not Found | Shammarianas"
           description="The requested project was not found in Shammarianas portfolio."
           keywords="Project Not Found, Portfolio, Shammarianas"
@@ -115,7 +115,7 @@ export default function ProjectDetails() {
         }
         .project-section .content {
           display: flex;
-          gap: 1rem; 
+          gap: 1rem;
           padding: 0 5rem;
         }
         .project-section h2 {
@@ -123,7 +123,7 @@ export default function ProjectDetails() {
           font-size: 2rem;
           font-weight: 700;
           color: #FFFFFF;
-          margin: 0 0 1rem 0; 
+          margin: 0 0 1rem 0;
         }
         .project-description {
           font-size: 1rem;

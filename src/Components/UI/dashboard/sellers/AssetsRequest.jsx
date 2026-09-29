@@ -1,21 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { 
-  FiPackage, 
-  FiCheckCircle, 
-  FiXCircle, 
-  FiEye, 
-  FiClock, 
-  FiSearch, 
-  FiFilter,
-  FiRefreshCw,
-  FiDownload,
-  FiList,
-  FiTrendingUp,
-  FiX,
-  FiUser,
-  FiDollarSign,
-  FiFileText
-} from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { FiPackage, FiCheckCircle, FiXCircle, FiEye, FiClock, FiSearch, FiFilter, FiRefreshCw, FiList, FiX, FiUser, FiDollarSign } from "react-icons/fi";
 import { addDoc, collection, getDocs, query, where, updateDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
@@ -24,7 +8,7 @@ import { exportAssetRequestsData } from "../../../../utils/exportUtils";
 
 const AssetRequestsDashboard = () => {
   const [assetRequests, setAssetRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -37,7 +21,7 @@ const AssetRequestsDashboard = () => {
       try {
         setLoading(true);
         const assetsRef = collection(db, "Assets");
-        
+
         // ✅ GET ALL ASSETS first, then filter for contributors only
         const assetsSnapshot = await getDocs(assetsRef);
 
@@ -45,10 +29,10 @@ const AssetRequestsDashboard = () => {
 
         assetsSnapshot.forEach((doc) => {
           const data = doc.data();
-          
+
           // ✅ CONDITION: Only include contributor assets (not admin uploaded)
-          const isContributorAsset = 
-            data.uploadedBy !== "admin" && 
+          const isContributorAsset =
+            data.uploadedBy !== "admin" &&
             data.uploadedBy !== "Admin" &&
             data.ownerId && // Contributor assets have ownerId
             data.status !== "admin_uploaded"; // Exclude admin uploaded status
@@ -158,7 +142,7 @@ const AssetRequestsDashboard = () => {
   const handleApprove = async (assetId) => {
     try {
       const asset = assetRequests.find(a => a.id === assetId);
-      
+
       const assetRef = doc(db, "Assets", assetId);
       await updateDoc(assetRef, {
         status: "approved",
@@ -169,10 +153,10 @@ const AssetRequestsDashboard = () => {
       await createAssetNotification(asset.ownerId, assetId, asset.title, "approved");
 
       // Update local state
-      setAssetRequests(assetRequests.map(a => 
+      setAssetRequests(assetRequests.map(a =>
         a.id === assetId ? { ...a, status: "approved" } : a
       ));
-      
+
       console.log("✅ Asset approved and notifications sent");
     } catch (error) {
       console.error("Error approving asset:", error);
@@ -184,7 +168,7 @@ const AssetRequestsDashboard = () => {
   const handleReject = async (assetId, reason = "") => {
     try {
       const asset = assetRequests.find(a => a.id === assetId);
-      
+
       const assetRef = doc(db, "Assets", assetId);
       await updateDoc(assetRef, {
         status: "rejected",
@@ -196,10 +180,10 @@ const AssetRequestsDashboard = () => {
       await createAssetNotification(asset.ownerId, assetId, asset.title, "rejected");
 
       // Update local state
-      setAssetRequests(assetRequests.map(a => 
+      setAssetRequests(assetRequests.map(a =>
         a.id === assetId ? { ...a, status: "rejected", rejectionReason: reason } : a
       ));
-      
+
       console.log("✅ Asset rejected and notifications sent");
     } catch (error) {
       console.error("Error rejecting asset:", error);
@@ -218,10 +202,10 @@ const AssetRequestsDashboard = () => {
       });
 
       // Update local state
-      setAssetRequests(assetRequests.map(asset => 
+      setAssetRequests(assetRequests.map(asset =>
         asset.id === assetId ? { ...asset, status: "pending", rejectionReason: "" } : asset
       ));
-      
+
       console.log("✅ Asset moved to pending:", assetId);
     } catch (error) {
       console.error("Error moving asset to pending:", error);
@@ -261,14 +245,14 @@ const AssetRequestsDashboard = () => {
 
   // ✅ Filter assets based on search and filters
   const filteredAssets = assetRequests.filter(asset => {
-    const matchesSearch = 
+    const matchesSearch =
       asset.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (asset.author && asset.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (asset.description && asset.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     const matchesStatus = statusFilter === "all" || asset.status === statusFilter;
     const matchesType = typeFilter === "all" || asset.type === typeFilter;
-    
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -288,7 +272,7 @@ const AssetRequestsDashboard = () => {
 
   // Price type badge
   const getPriceBadge = (priceType) => {
-    return priceType === "paid" 
+    return priceType === "paid"
       ? <span className="price-badge paid"><FiDollarSign /> Paid</span>
       : <span className="price-badge free">Free</span>;
   };
@@ -324,7 +308,7 @@ const AssetRequestsDashboard = () => {
     try {
       const date = timestamp?.toDate?.() || new Date(timestamp);
       return date.toLocaleDateString();
-    } catch (error) {
+    } catch (_error) {
       return "Invalid Date";
     }
   };
@@ -562,8 +546,8 @@ const AssetRequestsDashboard = () => {
                     </td>
                     <td>
                       <span className={`report-category-badge ${
-                        asset.type === 'models' ? 'technical' : 
-                        asset.type === 'videos' ? 'billing' : 
+                        asset.type === 'models' ? 'technical' :
+                        asset.type === 'videos' ? 'billing' :
                         asset.type === 'images' ? 'general' : 'feature'
                       }`}>
                         {typeInfo.icon} {typeInfo.label}
@@ -599,7 +583,7 @@ const AssetRequestsDashboard = () => {
                         >
                           <FiEye />
                         </button>
-                        
+
                         {/* Always show Reject button for non-rejected assets */}
                         {asset.status !== "rejected" && (
                           <button
@@ -638,7 +622,7 @@ const AssetRequestsDashboard = () => {
                   </tr>
                 );
               })}
-              
+
               {filteredAssets.length === 0 && (
                 <tr>
                   <td colSpan="7" className="no-reports">
@@ -661,7 +645,7 @@ const AssetRequestsDashboard = () => {
                 <FiX />
               </button>
             </div>
-            
+
             <div className="modal-body">
               <div className="report-detail-grid">
                 <div className="detail-section">
@@ -755,7 +739,7 @@ const AssetRequestsDashboard = () => {
               <button className="action-button secondary" onClick={() => setShowDetailsModal(false)}>
                 Close
               </button>
-              
+
               {/* Always show all action buttons in modal */}
               {selectedAsset.status !== "approved" && (
                 <button
@@ -768,7 +752,7 @@ const AssetRequestsDashboard = () => {
                   <FiCheckCircle /> Approve Asset
                 </button>
               )}
-              
+
               {selectedAsset.status !== "rejected" && (
                 <button
                   className="action-button danger"
@@ -783,7 +767,7 @@ const AssetRequestsDashboard = () => {
                   <FiXCircle /> Reject Asset
                 </button>
               )}
-              
+
               {(selectedAsset.status === "approved" || selectedAsset.status === "rejected") && (
                 <button
                   className="action-button warning"

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import "react";
 
 function Intro2() {
   function openAccordion(event) {
@@ -38,7 +38,7 @@ function Intro2() {
                   </div>
                   <div className="accordion-info">
                     <p className="">
-                      At Sham Marianas F.Z.C, we believe in tailored strategies 
+                      At Sham Marianas F.Z.C, we believe in tailored strategies
                       because one size never fits all. Backed by in-depth
                       research and the power of AI, we create smart, data-driven
                       solutions that take your brand to the next level with

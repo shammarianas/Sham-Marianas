@@ -1,30 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  FiPackage,
-  FiRefreshCw,
-  FiTrendingUp,
-  FiTrendingDown,
-  FiClock,
-  FiStar,
-  FiPieChart,
-  FiFilter,
-  FiSearch,
-  FiDownload,
-  FiList,
-  FiEye,
-  FiCheckCircle,
-  FiX,
-  FiDollarSign,
-  FiUsers,
-  FiHeart,
-  FiVideo,
-  FiImage,
-  FiCode,
-  FiBox,
-  FiLayers,
-  FiType,
-  FiFile,
-} from "react-icons/fi";
+import { useState, useEffect, useMemo } from "react";
+import { FiPackage, FiRefreshCw, FiTrendingUp, FiTrendingDown, FiFilter, FiSearch, FiDownload, FiList, FiEye, FiCheckCircle, FiX, FiDollarSign, FiUsers, FiVideo, FiImage, FiCode, FiBox, FiLayers, FiType, FiFile } from "react-icons/fi";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { useUser } from "../../../../Context/UserProvider"; // Import user context
@@ -388,7 +363,7 @@ const PublishedFiles = () => {
     }
 
     const totalPublished = allAssets.length;
-    const filteredTotal = assets.length;
+    assets.length;
 
     const totalDownloads = assets.reduce(
       (sum, asset) => sum + (asset.downloads || 0),
@@ -494,34 +469,7 @@ const PublishedFiles = () => {
   };
 
   // ✅ UPDATED: Get asset type icon based on type
-  const getAssetTypeIcon = (type) => {
-    switch (type) {
-      case "models":
-        return <FiBox />;
-      case "videos":
-        return <FiVideo />;
-      case "images":
-        return <FiImage />;
-      case "scripts":
-        return <FiCode />;
-      case "textures":
-        return <FiLayers />;
-      case "hdris":
-        return <FiImage />;
-      case "icons":
-        return <FiLayers />;
-      case "graphics":
-        return <FiFile />;
-      case "mockups":
-        return <FiBox />;
-      case "fonts":
-        return <FiType />;
-      case "video-templates":
-        return <FiVideo />;
-      default:
-        return <FiFile />;
-    }
-  };
+
 
   const getRatingStars = (rating) => {
     if (!rating) return "No ratings";
@@ -570,37 +518,11 @@ const PublishedFiles = () => {
     setSelectedAsset(null);
   };
 
-  const categoryStats = getCategoryStats();
-  const totalRatedAssets = Object.values(
-    performanceMetrics.distribution
-  ).reduce((a, b) => a + b, 0);
-
-  // Calculate percentages for performance distribution
-  const performancePercentages = {
-    excellent:
-      totalRatedAssets > 0
-        ? (performanceMetrics.distribution.excellent / totalRatedAssets) * 100
-        : 0,
-    good:
-      totalRatedAssets > 0
-        ? (performanceMetrics.distribution.good / totalRatedAssets) * 100
-        : 0,
-    average:
-      totalRatedAssets > 0
-        ? (performanceMetrics.distribution.average / totalRatedAssets) * 100
-        : 0,
-    poor:
-      totalRatedAssets > 0
-        ? (performanceMetrics.distribution.poor / totalRatedAssets) * 100
-        : 0,
-  };
-
+  getCategoryStats();
   // Top performing assets
-  const topPerformingAssets = useMemo(() => {
-    return [...assets]
-      .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
-      .slice(0, 3);
-  }, [assets]);
+  useMemo(() => {
+  return [...assets].sort((a, b) => (b.downloads || 0) - (a.downloads || 0)).slice(0, 3);
+}, [assets]);
 
   // Show message if no user is logged in
   if (!currentUser) {
@@ -854,7 +776,7 @@ const PublishedFiles = () => {
               </div>
             </div>
           </div>
-         
+
         </div>
 
         {/* Filter Bar */}
@@ -903,7 +825,7 @@ const PublishedFiles = () => {
               <option value="other">Other</option>
             </select>
 
-            
+
 
             <select
               className="filter-select"
@@ -952,7 +874,7 @@ const PublishedFiles = () => {
                   <tr key={asset.id}>
                     <td>
                       <div className="report-user">
-                        
+
                         <div className="report-user-info">
                           <div className="report-user-name">
                             {asset.title || "Untitled Asset"}
@@ -984,7 +906,7 @@ const PublishedFiles = () => {
                         {formatCurrency(asset.earnings || 0)}
                       </div>
                     </td>
-                    
+
                     <td>{formatDate(asset.publishedAt)}</td>
                     <td>
                       <div className="report-actions">

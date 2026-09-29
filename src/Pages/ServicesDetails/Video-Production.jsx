@@ -1,8 +1,8 @@
 "use client";
-import React from "react";
+import "react";
 import HeaderSection from "../../Components/ServicesDetails/HeaderSection";
 import IntroSection from "../../Components/ServicesDetails/IntroSection";
-import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";
+import "../../Components/ServicesDetails/ContentSection";
 import FAQAccordion from "../../Components/ServicesDetails/FAQAccordion";
 import Marq2 from "../../Components/marq2";
 import SEO from "../../common/SEO";
@@ -12,22 +12,6 @@ import SchemaMarkup from "../../Components/SchemaMarkup";
 const VideoProductionPage = () => {
 
 
-  const sectionTwo = {
-    title:
-      "Framing Brands with Purpose,  Photography & Video Production That Converts",
-    paragraphs: [
-      <>
-        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
-        , it’s more than just visuals,  it’s about crafting high-impact photo
-        and video content that tells your story, connects with your audience,
-        and fuels business growth. Our photography & video production services
-        are built to elevate your brand through clear, compelling, and
-        conversion-driven visuals.
-      </>,
-      "Whether it’s fashion campaigns, product photography, behind-the-scenes content, or cinematic brand videos, we align each frame with your vision and marketing goals. From creative direction to post-production, we deliver polished, platform-ready content that not only looks stunning but also drives real engagement and results.",
-    ],
-    image: "/assets/imgs/PhotographyVideo/008.png",
-  };
   const faqs = [
     {
       question:

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import "react";
 
 function ReusableSection({
   sectionOne = {},

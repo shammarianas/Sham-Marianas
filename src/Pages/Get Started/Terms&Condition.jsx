@@ -1,6 +1,6 @@
-import React from "react";
-import SEO from "../../common/SEO"; 
-import { SEO_CONFIG } from "../../utils/seoConfig"; 
+import "react";
+import SEO from "../../common/SEO";
+import { SEO_CONFIG } from "../../utils/seoConfig";
 
 const TermsandCondition = () => {
   return (
@@ -19,15 +19,15 @@ const TermsandCondition = () => {
 
         <ul className="fotter-police-p p-color mb-2 list-disc p-0">
           <li className="relative pl-6 p-color">
-          
+
             “You” refers to our amazing clients, visitors, and collaborators.
           </li>
           <li className="relative pl-6 p-color">
-          
+
             “We,” “us,” or “our” means the creative minds behind Sham Marianas F.Z.C.
           </li>
           <li className="relative pl-6 p-color">
-          
+
             “Parties” refers to both of us, building something together.
           </li>
         </ul>
@@ -62,11 +62,11 @@ const TermsandCondition = () => {
             We don’t make promises we can’t back, including any implied warranties, accuracy claims, or third-party info that might be outdated, incomplete, or just plain wrong.
           </li>
           <li className="relative pl-6  p-color">
-          
+
             We won’t be held responsible for any damages, direct or indirect, from using our website. This covers everything from business hiccups to software glitches, device crashes, or unexpected data loss.
           </li>
           <li className="relative pl-6  p-color">
-          
+
             However, we never dodge what truly matters. If there’s ever a legal responsibility involving injury or safety, we fully stand by our accountability.
           </li>
         </ul>

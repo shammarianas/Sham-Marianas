@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const BillingInvoices = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -115,11 +115,11 @@ const BillingInvoices = () => {
                       <p>7. Any fraudulent activity will result in immediate account suspension.</p>
                     </div>
                   </div>
-                  
+
                   <div className="agreement-checkbox mt-40">
                     <label className="checkbox-container">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={agreementAccepted}
                         onChange={handleAgreementChange}
                       />
@@ -144,8 +144,8 @@ const BillingInvoices = () => {
                     </div>
                     <h5>Government ID</h5>
                     <p>Upload a clear photo of your government-issued ID</p>
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept=".jpg,.jpeg,.png,.pdf"
                       onChange={(e) => handleDocumentUpload('idCard', e.target.files[0])}
                     />
@@ -167,8 +167,8 @@ const BillingInvoices = () => {
                     </div>
                     <h5>Proof of Address</h5>
                     <p>Utility bill or bank statement (not older than 3 months)</p>
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept=".jpg,.jpeg,.png,.pdf"
                       onChange={(e) => handleDocumentUpload('proofOfAddress', e.target.files[0])}
                     />
@@ -195,8 +195,8 @@ const BillingInvoices = () => {
                   <div className="col-md-6">
                     <div className="form-group">
                       <label>Full Name *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="fullName"
                         value={billingInfo.fullName}
                         onChange={handleBillingInfoChange}
@@ -207,8 +207,8 @@ const BillingInvoices = () => {
                   <div className="col-md-6">
                     <div className="form-group">
                       <label>Email Address *</label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         name="email"
                         value={billingInfo.email}
                         onChange={handleBillingInfoChange}
@@ -219,8 +219,8 @@ const BillingInvoices = () => {
                   <div className="col-md-6">
                     <div className="form-group">
                       <label>Phone Number *</label>
-                      <input 
-                        type="tel" 
+                      <input
+                        type="tel"
                         name="phone"
                         value={billingInfo.phone}
                         onChange={handleBillingInfoChange}
@@ -243,8 +243,8 @@ const BillingInvoices = () => {
                   <div className="col-12">
                     <div className="form-group">
                       <label>Address *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="address"
                         value={billingInfo.address}
                         onChange={handleBillingInfoChange}
@@ -255,8 +255,8 @@ const BillingInvoices = () => {
                   <div className="col-md-6">
                     <div className="form-group">
                       <label>City *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="city"
                         value={billingInfo.city}
                         onChange={handleBillingInfoChange}
@@ -267,8 +267,8 @@ const BillingInvoices = () => {
                   <div className="col-md-6">
                     <div className="form-group">
                       <label>ZIP/Postal Code *</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="zipCode"
                         value={billingInfo.zipCode}
                         onChange={handleBillingInfoChange}
@@ -311,8 +311,8 @@ const BillingInvoices = () => {
                       <div className="col-12">
                         <div className="form-group">
                           <label>Card Number *</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             name="cardNumber"
                             value={paymentMethod.cardNumber}
                             onChange={handlePaymentMethodChange}
@@ -324,8 +324,8 @@ const BillingInvoices = () => {
                       <div className="col-12">
                         <div className="form-group">
                           <label>Card Holder Name *</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             name="cardHolder"
                             value={paymentMethod.cardHolder}
                             onChange={handlePaymentMethodChange}
@@ -336,8 +336,8 @@ const BillingInvoices = () => {
                       <div className="col-md-6">
                         <div className="form-group">
                           <label>Expiry Date *</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             name="expiryDate"
                             value={paymentMethod.expiryDate}
                             onChange={handlePaymentMethodChange}
@@ -349,8 +349,8 @@ const BillingInvoices = () => {
                       <div className="col-md-6">
                         <div className="form-group">
                           <label>CVV *</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             name="cvv"
                             value={paymentMethod.cvv}
                             onChange={handlePaymentMethodChange}
@@ -374,10 +374,10 @@ const BillingInvoices = () => {
               </div>
               <h4 className="mb-20">Verification in Progress</h4>
               <p className="p-color mb-40">
-                Your information is being verified. This process usually takes 24-48 hours. 
+                Your information is being verified. This process usually takes 24-48 hours.
                 You will receive an email notification once your account is approved.
               </p>
-              
+
               <div className="status-timeline">
                 <div className="status-item active">
                   <div className="status-dot"></div>
@@ -412,8 +412,8 @@ const BillingInvoices = () => {
             </div>
             <div className="col-md-4 text-end">
               {currentStep < steps.length ? (
-                <button 
-                  className="butn-contribute butn butn-bg" 
+                <button
+                  className="butn-contribute butn butn-bg"
                   onClick={nextStep}
                   disabled={
                     (currentStep === 1 && !agreementAccepted) ||

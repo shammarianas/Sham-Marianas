@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   FiRefreshCw,
   FiAlertTriangle,
@@ -62,13 +62,13 @@ const Rejections = () => {
 
         assetsSnapshot.forEach((doc) => {
           const data = doc.data();
-          
+
           // ✅ UPDATED: Filter assets that are:
           // 1. Rejected
           // 2. Belong to current user
           const isCurrentUserAsset = data.ownerId === currentUser?.uid;
           const isRejectedAsset = data.status === "rejected" || data.isRejected === true;
-          
+
           if (isCurrentUserAsset && isRejectedAsset) {
             rejectedAssets.push({
               id: doc.id,
@@ -115,12 +115,12 @@ const Rejections = () => {
     const now = new Date();
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const previous30Days = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-    
+
     const currentPeriodAssets = allAssets.filter(asset => {
       const assetDate = asset.rejectedAt?.toDate?.() || new Date(asset.rejectedAt);
       return assetDate >= last30Days;
     });
-    
+
     const previousPeriodAssets = allAssets.filter(asset => {
       const assetDate = asset.rejectedAt?.toDate?.() || new Date(asset.rejectedAt);
       return assetDate >= previous30Days && assetDate < last30Days;
@@ -130,18 +130,18 @@ const Rejections = () => {
     const previousTotal = previousPeriodAssets.length;
     const totalTrend = previousTotal > 0 ? ((currentTotal - previousTotal) / previousTotal) * 100 : 0;
 
-    const currentQualityIssues = currentPeriodAssets.filter(a => 
+    const currentQualityIssues = currentPeriodAssets.filter(a =>
       a.rejectionReason === "quality" || a.rejectionReason === "technical_issues"
     ).length;
-    const previousQualityIssues = previousPeriodAssets.filter(a => 
+    const previousQualityIssues = previousPeriodAssets.filter(a =>
       a.rejectionReason === "quality" || a.rejectionReason === "technical_issues"
     ).length;
-    const qualityIssuesTrend = previousQualityIssues > 0 ? 
+    const qualityIssuesTrend = previousQualityIssues > 0 ?
       ((currentQualityIssues - previousQualityIssues) / previousQualityIssues) * 100 : 0;
 
     const currentResubmitted = currentPeriodAssets.filter(a => a.resubmitted === true).length;
     const previousResubmitted = previousPeriodAssets.filter(a => a.resubmitted === true).length;
-    const resubmittedTrend = previousResubmitted > 0 ? 
+    const resubmittedTrend = previousResubmitted > 0 ?
       ((currentResubmitted - previousResubmitted) / previousResubmitted) * 100 : 0;
 
     // Calculate rejection time trend
@@ -161,15 +161,15 @@ const Rejections = () => {
         return (rejected - created) / (1000 * 60 * 60 * 24);
       });
 
-    const currentAvgTime = currentWithTime.length > 0 
-      ? currentWithTime.reduce((a, b) => a + b, 0) / currentWithTime.length 
-      : 0;
-    
-    const previousAvgTime = previousWithTime.length > 0 
-      ? previousWithTime.reduce((a, b) => a + b, 0) / previousWithTime.length 
+    const currentAvgTime = currentWithTime.length > 0
+      ? currentWithTime.reduce((a, b) => a + b, 0) / currentWithTime.length
       : 0;
 
-    const averageTimeTrend = previousAvgTime > 0 ? 
+    const previousAvgTime = previousWithTime.length > 0
+      ? previousWithTime.reduce((a, b) => a + b, 0) / previousWithTime.length
+      : 0;
+
+    const averageTimeTrend = previousAvgTime > 0 ?
       ((previousAvgTime - currentAvgTime) / previousAvgTime) * 100 : 0;
 
     return {
@@ -195,7 +195,7 @@ const Rejections = () => {
   // Client-side filtering
   const assets = useMemo(() => {
     if (loading || !currentUser) return [];
-    
+
     return allAssets.filter((asset) => {
       if (
         filters.search &&
@@ -281,10 +281,10 @@ const Rejections = () => {
     else if (resubmissionRate < 20) overall -= 1.0; // Low resubmission is bad
 
     // Adjust based on rejection reasons distribution
-    const qualityRejections = allAssets.filter(a => 
+    const qualityRejections = allAssets.filter(a =>
       a.rejectionReason === "quality" || a.rejectionReason === "technical_issues"
     ).length;
-    
+
     const qualityPercentage = (qualityRejections / allAssets.length) * 100;
     if (qualityPercentage > 60) overall -= 1.5; // High quality issues is bad
     else if (qualityPercentage < 30) overall += 1.0; // Low quality issues is good
@@ -297,7 +297,7 @@ const Rejections = () => {
       quality: allAssets.filter(a => a.rejectionReason === "quality").length,
       guidelines: allAssets.filter(a => a.rejectionReason === "guidelines_violation").length,
       technical: allAssets.filter(a => a.rejectionReason === "technical_issues").length,
-      other: allAssets.filter(a => !a.rejectionReason || 
+      other: allAssets.filter(a => !a.rejectionReason ||
         !["quality", "guidelines_violation", "technical_issues"].includes(a.rejectionReason)).length
     };
 
@@ -320,9 +320,9 @@ const Rejections = () => {
     }
 
     const totalRejections = allAssets.length;
-    const filteredTotal = assets.length;
+    assets.length;
 
-    const qualityIssues = assets.filter((a) => 
+    const qualityIssues = assets.filter((a) =>
       a.rejectionReason === "quality" || a.rejectionReason === "technical_issues"
     ).length;
 
@@ -357,12 +357,12 @@ const Rejections = () => {
         status: newStatus,
         updatedAt: new Date(),
       };
-      
+
       if (newStatus === "pending") {
         updateData.resubmitted = true;
         updateData.resubmittedAt = new Date();
       }
-      
+
       await updateDoc(assetRef, updateData);
 
       setAllAssets((prev) =>
@@ -429,7 +429,7 @@ const Rejections = () => {
     return date.toLocaleDateString();
   };
 
- 
+
 
   const getRejectionReasonText = (reason) => {
     switch (reason) {
@@ -488,17 +488,7 @@ const Rejections = () => {
     setSelectedAsset(null);
   };
 
-  const categoryStats = getCategoryStats();
-  const totalRejectedAssets = Object.values(rejectionMetrics.distribution).reduce((a, b) => a + b, 0);
-
-  // Calculate percentages for rejection distribution
-  const rejectionPercentages = {
-    quality: totalRejectedAssets > 0 ? (rejectionMetrics.distribution.quality / totalRejectedAssets) * 100 : 0,
-    guidelines: totalRejectedAssets > 0 ? (rejectionMetrics.distribution.guidelines / totalRejectedAssets) * 100 : 0,
-    technical: totalRejectedAssets > 0 ? (rejectionMetrics.distribution.technical / totalRejectedAssets) * 100 : 0,
-    other: totalRejectedAssets > 0 ? (rejectionMetrics.distribution.other / totalRejectedAssets) * 100 : 0,
-  };
-
+  getCategoryStats();
   // Show message if no user is logged in
   if (!currentUser) {
     return (
@@ -679,7 +669,7 @@ const Rejections = () => {
                   Your assets rejected overall
                 </div>
                 <div className={`report-stat-trend ${trends.total.isPositive ? 'positive' : 'negative'}`}>
-                  {trends.total.value > 0 ? '+' : ''}{trends.total.value.toFixed(1)}% 
+                  {trends.total.value > 0 ? '+' : ''}{trends.total.value.toFixed(1)}%
                   {trends.total.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
                 </div>
               </div>
@@ -702,7 +692,7 @@ const Rejections = () => {
                     : "0% of your rejections"}
                 </div>
                 <div className={`report-stat-trend ${trends.qualityIssues.isPositive ? 'positive' : 'negative'}`}>
-                  {trends.qualityIssues.value > 0 ? '+' : ''}{trends.qualityIssues.value.toFixed(1)}% 
+                  {trends.qualityIssues.value > 0 ? '+' : ''}{trends.qualityIssues.value.toFixed(1)}%
                   {trends.qualityIssues.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
                 </div>
               </div>
@@ -725,7 +715,7 @@ const Rejections = () => {
                     : "0% resubmission rate"}
                 </div>
                 <div className={`report-stat-trend ${trends.resubmitted.isPositive ? 'positive' : 'negative'}`}>
-                  {trends.resubmitted.value > 0 ? '+' : ''}{trends.resubmitted.value.toFixed(1)}% 
+                  {trends.resubmitted.value > 0 ? '+' : ''}{trends.resubmitted.value.toFixed(1)}%
                   {trends.resubmitted.isPositive ? <FiTrendingUp /> : <FiTrendingDown />}
                 </div>
               </div>
@@ -748,7 +738,7 @@ const Rejections = () => {
               <div className="report-stat-content">
                 <div className="report-stat-subtext">days to rejection</div>
                 <div className={`report-stat-trend ${trends.averageTimeToReject.isPositive ? 'positive' : 'negative'}`}>
-                  {trends.averageTimeToReject.value > 0 ? '+' : ''}{trends.averageTimeToReject.value.toFixed(1)}% 
+                  {trends.averageTimeToReject.value > 0 ? '+' : ''}{trends.averageTimeToReject.value.toFixed(1)}%
                   {trends.averageTimeToReject.isPositive ? <FiTrendingDown /> : <FiTrendingUp />}
                 </div>
               </div>
@@ -862,7 +852,7 @@ const Rejections = () => {
                     <tr key={asset.id}>
                       <td>
                         <div className="report-user">
-                          
+
                           <div className="report-user-info">
                             <div className="report-user-name">
                               {asset.title || "Untitled Asset"}
@@ -933,7 +923,7 @@ const Rejections = () => {
             </div>
           </div>
         </>
-    
+
     </div>
   );
 };

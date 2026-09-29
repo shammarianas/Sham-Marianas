@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import "axios";
 import { useUser } from "../Context/UserProvider";
 // import { Button } from "@/components/ui/button";
-import { Lock, Eye, Check, Clipboard } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+import { Check, Clipboard } from "lucide-react";
 
 const ContentViewer = ({ fileUrl, fileName, fileType, price, id }) => {
   const { currentUser, userProfile } = useUser();

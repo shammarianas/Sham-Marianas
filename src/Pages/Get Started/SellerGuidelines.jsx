@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 import SEO from "../../common/SEO";
 import { SEO_CONFIG } from "../../utils/seoConfig";
 function openAccordion(event) {

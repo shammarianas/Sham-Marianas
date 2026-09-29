@@ -1,27 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  onSnapshot,
-  query,
-  collection,
-  getDocs,
-  deleteDoc,
-  where,
-  addDoc,
-  Timestamp,
-} from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, onSnapshot, query, collection, getDocs, deleteDoc, where, Timestamp } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  deleteUser,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
+import { EmailAuthProvider, reauthenticateWithCredential, deleteUser, signInWithPopup } from "firebase/auth";
 
 import { db, auth } from "../../firebase";
 import { useUser } from "../Context/UserProvider";
@@ -56,7 +37,7 @@ const Profile = () => {
 
   const [userId, setUserId] = useState(null);
   // ✅ SEO State
-  const [seoData, setSeoData] = useState(null);
+  const [, setSeoData] = useState(null);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -262,13 +243,7 @@ const Profile = () => {
   };
 
   // ✅ Loading SEO for initial state
-  const getLoadingSEO = () => ({
-    title: "Loading Profile | Shammarianas",
-    description: "Loading user profile information...",
-    keywords: "profile, user, loading, Shammarianas",
-    ogImage: "/assets/imgs/default-profile.jpg",
-    twitterImage: "/assets/imgs/default-profile.jpg",
-  });
+
 
   // ✅ Update SEO when user data or items change
   useEffect(() => {
@@ -642,31 +617,7 @@ const Profile = () => {
       fetchTeamDetails();
     }
   }, [fetchTeamDetails, isOwnProfile, userId]);
-  const fetchPendingInvites = async () => {
-    if (!userId) return;
 
-    try {
-      const invitesRef = collection(db, "TeamInvites");
-      const q = query(
-        invitesRef,
-        where("ownerId", "==", userId),
-        where("status", "==", "pending")
-      );
-      const querySnapshot = await getDocs(q);
-
-      const invites = [];
-      querySnapshot.forEach((doc) => {
-        invites.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-
-      setPendingInvites(invites);
-    } catch (error) {
-      console.error("Error fetching pending invites:", error);
-    }
-  };
 
   const inviteTeamMember = async () => {
     if (!inviteEmail || !userId) return;
@@ -1528,9 +1479,7 @@ const Profile = () => {
     setConfirmPassword("");
   };
 
-  const handleOpenBillingModal = () => {
-    setShowBillingModal(true);
-  };
+
 
   const handleCloseBillingModal = () => {
     setShowBillingModal(false);
@@ -2455,7 +2404,7 @@ const Profile = () => {
                   </h2>
                 </div>
                 <div className="item_listing">
-                  {groupedItems[category].map((item, index) => (
+                  {groupedItems[category].map((item, _index) => (
                     <ListedItemCard key={item.id} id={item.id} data={item} />
                   ))}
                 </div>

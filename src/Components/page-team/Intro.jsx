@@ -1,6 +1,6 @@
 'use client';
 import isInView from '../../common/isInView';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 function Intro() {
   function handleShowProgressValues() {

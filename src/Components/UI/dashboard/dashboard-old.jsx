@@ -1,5 +1,5 @@
-import { auth, db, storage } from "../../../../firebase";
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import { auth, db } from "../../../../firebase";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   doc,
@@ -42,23 +42,8 @@ import BlogEditorModal from "../../../Pages/BlogEditor";
 import ProjectModal from "../../../Pages/PortfolioUpload";
 
 // Import icons - اضافی آئیکن شامل کیا
-import {
-  FiUsers,
-  FiFileText,
-  FiChevronDown,
-  FiX,
-  FiBell,
-  FiSettings,
-  FiUser,
-  FiLogOut,
-  FiCheckCircle,
-  FiClock,
-  FiRefreshCw,
-  FiBriefcase,
-  FiMessageCircle,
-  FiMenu, // ہیمبرگر مینو آئیکن
-  FiChevronLeft, // بند کرنے کا آئیکن
-} from "react-icons/fi";
+// Import icons - اضافی آئیکن شامل کیا
+import { FiUsers, FiFileText, FiChevronDown, FiX, FiBell, FiSettings, FiUser, FiLogOut, FiCheckCircle, FiClock, FiBriefcase, FiMessageCircle, FiMenu } from "react-icons/fi";
 
 import "./style.css";
 
@@ -75,8 +60,7 @@ const UnauthorizedAccess = ({ error }) => {
 const NotificationDropdown = ({
   notifications,
   onMarkAsRead,
-  onMarkAllAsRead,
-  onClose,
+  onMarkAllAsRead
 }) => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -154,7 +138,7 @@ const formatNotificationTime = (timestamp) => {
     if (diffInSeconds < 86400)
       return `${Math.floor(diffInSeconds / 3600)}h ago`;
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  } catch (error) {
+  } catch (_error) {
     return "Just now";
   }
 };
@@ -162,15 +146,15 @@ const formatNotificationTime = (timestamp) => {
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState(1);
   const [users, setUsers] = useState([]);
-  const [supportMessages, setSupportMessages] = useState([]);
+  const [, setSupportMessages] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [portfolios, setPortfolios] = useState([]);
-  const [assets, setAssets] = useState([]);
-  const [search, setSearch] = useState("");
+  const [, setAssets] = useState([]);
+  useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [selectedProfileId, setSelectedProfileId] = useState(null);
+  const [, setSelectedProfileId] = useState(null);
   const [selectedDashboard, setSelectedDashboard] = useState("admin");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
@@ -826,7 +810,7 @@ const AdminDashboard = () => {
     return null;
   };
 
-  const handleRoleChange = async (userId, newRole, userEmail) => {
+  const handleRoleChange = async (userId, newRole, _userEmail) => {
     if (!isAdmin) {
       setError("Only admins can change user roles");
       return;
@@ -862,12 +846,12 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteUser = async (userId, email) => {
+  const handleDeleteUser = async (userId, _email) => {
     if (!isAdmin) {
       setError("Only admins can delete users");
       return;
     }
-    try {      
+    try {
       await deleteDoc(doc(db, "Profiles", userId));
     } catch (error) {
       setError(`Failed to delete user: ${error.message}`);
@@ -995,7 +979,7 @@ const AdminDashboard = () => {
               transform: translateX(0) !important;
               transition: transform 0.3s ease-in-out !important;
             }
-            
+
             .admin-main-content {
               margin-left: 260px !important;
               padding: 2rem !important;
@@ -1003,12 +987,12 @@ const AdminDashboard = () => {
               background-color: #121212 !important;
               transition: margin-left 0.3s ease-in-out !important;
             }
-            
+
             .mobile-header {
               display: none !important;
             }
           }
-          
+
           /* Mobile Styles */
           @media (max-width: 768px) {
             .admin-sidebar {
@@ -1026,22 +1010,22 @@ const AdminDashboard = () => {
               transition: transform 0.3s ease-in-out !important;
               box-shadow: 2px 0 10px rgba(0,0,0,0.3) !important;
             }
-            
+
             .admin-sidebar.open {
               transform: translateX(0) !important;
             }
-            
+
             .admin-sidebar.closed {
               transform: translateX(-100%) !important;
             }
-            
+
             .admin-main-content {
               margin-left: 0 !important;
               padding: 5rem 1rem 1rem 1rem !important;
               min-height: 100vh !important;
               background-color: #121212 !important;
             }
-            
+
             .mobile-header {
               display: flex !important;
               align-items: center !important;
@@ -1057,7 +1041,7 @@ const AdminDashboard = () => {
               height: 60px !important;
               border-bottom: 1px solid #333 !important;
             }
-            
+
             .hamburger-menu {
               background: none !important;
               border: none !important;
@@ -1066,7 +1050,7 @@ const AdminDashboard = () => {
               cursor: pointer !important;
               padding: 0.5rem !important;
             }
-            
+
             .sidebar-overlay {
               display: block !important;
               position: fixed !important;
@@ -1078,7 +1062,7 @@ const AdminDashboard = () => {
               z-index: 999 !important;
             }
           }
-          
+
           /* Common Styles */
           .admin-dashboard-container {
             position: relative;
@@ -1086,9 +1070,9 @@ const AdminDashboard = () => {
             background-color: #121212;
             color: white;
           }
-          
-        
-          
+
+
+
           .header-btn {
             position: relative;
             background: none;
@@ -1102,7 +1086,7 @@ const AdminDashboard = () => {
             align-items: center;
             justify-content: center;
           }
-          
+
           .header-btn:hover {
             background: rgba(255, 255, 255, 0.05);
             color: white;

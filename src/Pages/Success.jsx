@@ -2,18 +2,18 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useUser } from "../Context/UserProvider";
-import { db } from '../../firebase'
-import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import '../../firebase';
+import "firebase/firestore";
 import { loadStripe } from "@stripe/stripe-js";
 
 
 const Success = () => {
-    const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+    loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
   const { currentUser } = useUser();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState("processing");
-  const [purchasedItems, setPurchasedItems] = useState([]);
+  const [purchasedItems] = useState([]);
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -74,7 +74,7 @@ const Success = () => {
               <li key={item.id}>
                 <strong>{item.title}</strong> (${item.price})
                 {item.type === 'images' && (
-                  <button 
+                  <button
                     onClick={() => navigate(`/download/${item.id}`)}
                     className="download-btn"
                   >

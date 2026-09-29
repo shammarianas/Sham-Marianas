@@ -1,4 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+
+// import ProgressScroll from "../components/common/ProgressScroll";
+// import { ScrollSmoother } from 'gsap-trial/ScrollSmoother';
+
+// import Lines from "../Components/Lines";
+// import Cursor from "../common/cusor";
 
 // import ProgressScroll from "../components/common/ProgressScroll";
 // import { ScrollSmoother } from 'gsap-trial/ScrollSmoother';

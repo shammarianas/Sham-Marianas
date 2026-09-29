@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const ComingSoon = () => {
   const [text, setText] = useState('');
@@ -20,7 +20,7 @@ const ComingSoon = () => {
   }, []);
 
   // Generate 40 glowing floating circles
-  const circles = [...Array(40)].map((_, i) => ({
+  const circles = [...Array(40)].map((_, _i) => ({
     size: Math.random() * 2 + 3, // Tiny glowing dots
     left: Math.random() * 100,
     top: Math.random() *  100, // Start from random position

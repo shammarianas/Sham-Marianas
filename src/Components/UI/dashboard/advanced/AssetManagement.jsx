@@ -1,43 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  FiBox,
-  FiTrendingUp,
-  FiDownload,
-  FiUsers,
-  FiDollarSign,
-  FiSearch,
-  FiFilter,
-  FiEye,
-  FiEdit,
-  FiUpload,
-  FiTrash2,
-  FiPlus,
-  FiStar,
-  FiTag,
-  FiUser,
-  FiCalendar,
-  FiImage,
-  FiMoreHorizontal,
-  FiX,
-  FiRefreshCw,
-} from "react-icons/fi";
-import {
-  collection,
-  query,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp,
-  onSnapshot,
-  getDoc,
-} from "firebase/firestore";
+import { useState, useEffect, useCallback } from "react";
+import { FiBox, FiTrendingUp, FiDownload, FiUsers, FiDollarSign, FiSearch, FiFilter, FiEye, FiEdit, FiUpload, FiTrash2, FiPlus, FiStar, FiTag, FiUser, FiImage, FiX, FiRefreshCw } from "react-icons/fi";
+import { collection, query, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { db } from "../../../../../firebase";
 import Upload from "../../../../Pages/Upload";
 import { useUser } from "../../../../Context/UserProvider";
 import SimpleModelViewer from "../../../UI/SimpleModelViewer"; // Adjust path as needed
 
-const AssetManagement = ({ createAssetNotification }) => {
+const AssetManagement = () => {
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -48,7 +17,7 @@ const AssetManagement = ({ createAssetNotification }) => {
   const [showCreateAssetDialog, setShowCreateAssetDialog] = useState(false);
   const [showEditAssetDialog, setShowEditAssetDialog] = useState(false);
   const [assetToEdit, setAssetToEdit] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [, setRefreshKey] = useState(0);
 
   // Asset categories
   const ASSET_CATEGORIES = [
@@ -66,39 +35,16 @@ const AssetManagement = ({ createAssetNotification }) => {
     "Templates",
   ];
 
-  const { currentUser } = useUser();
+  useUser();
 
 // When approving an asset
-const handleApproveAsset = async (assetId, assetName, contributorId) => {
-  try {
-    // Your existing approval logic...
-    
-    // Create notification
-    await createAssetNotification(contributorId, assetId, assetName, 'approved');
-  } catch (error) {
-    console.error("Error approving asset:", error);
-  }
-};
 
-// When rejecting an asset  
-const handleRejectAsset = async (assetId, assetName, contributorId) => {
-  try {
-    // Your existing rejection logic...
-    
-    // Create notification
-    await createAssetNotification(contributorId, assetId, assetName, 'rejected');
-  } catch (error) {
-    console.error("Error rejecting asset:", error);
-  }
-};
+
+// When rejecting an asset
+
 
   // Helper functions
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount || 0);
-  };
+
 
   const formatDate = (date) => {
     if (!date) return "N/A";
@@ -122,11 +68,7 @@ const handleRejectAsset = async (assetId, assetName, contributorId) => {
   };
 
   // Function to detect 3D model files
-  const is3DModel = (url) => {
-    if (!url) return false;
-    const extension = url.split(".").pop()?.toLowerCase().split("?")[0];
-    return ["glb", "gltf", "fbx", "obj", "stl", "3ds"].includes(extension);
-  };
+
 
   // Get 3D model URL from asset data
   const get3DModelUrl = (asset) => {
@@ -146,7 +88,7 @@ const handleRejectAsset = async (assetId, assetName, contributorId) => {
     console.log("✅ Using thumbnailModel:", asset.thumbnailModel);
     return asset.thumbnailModel;
   }
-  
+
   // Priority 2: Direct model file (check if it's 3D format)
   if (asset.model) {
     const is3DFile = asset.model.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
@@ -157,7 +99,7 @@ const handleRejectAsset = async (assetId, assetName, contributorId) => {
       console.log("❌ Model field but not 3D format:", asset.model);
     }
   }
-  
+
   // Priority 3: Thumbnail is 3D model (unlikely but check)
   if (asset.thumbnail) {
     const is3DFile = asset.thumbnail.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
@@ -172,47 +114,13 @@ const handleRejectAsset = async (assetId, assetName, contributorId) => {
 };
 
   // Check if asset has 3D model
- const has3DModel = (asset) => {
-  if (!asset) return false;
-  
-  const hasThumbnailModel = !!asset.thumbnailModel;
-  const has3DModelFile = asset.model && asset.model.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
-  const has3DThumbnail = asset.thumbnail && asset.thumbnail.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
-  
-  const result = hasThumbnailModel || has3DModelFile || has3DThumbnail;
-  
-  console.log("🔍 has3DModel check:", {
-    title: asset.title,
-    hasThumbnailModel,
-    has3DModelFile,
-    has3DThumbnail,
-    result
-  });
-  
-  return result;
-};
+
 
   // Download tracking function
-  const trackDownload = async (assetId) => {
-    try {
-      const assetRef = doc(db, "Assets", assetId);
-      const assetDoc = await getDoc(assetRef);
-
-      if (assetDoc.exists()) {
-        const currentDownloads = assetDoc.data().downloads || 0;
-        await updateDoc(assetRef, {
-          downloads: currentDownloads + 1,
-          lastDownloadedAt: serverTimestamp(),
-        });
-        console.log("✅ Download tracked for asset:", assetId);
-      }
-    } catch (error) {
-      console.error("❌ Failed to track download:", error);
-    }
-  };
 
 
-  
+
+
   // Consistent author name extraction
   const getAuthorName = (asset) => {
     // 1. Highest priority – the fields we write in Upload

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 
 const FAQAccordion = ({ title, faqs = [], imageSrc = "" }) => {
   const [activeIndex, setActiveIndex] = useState(null);

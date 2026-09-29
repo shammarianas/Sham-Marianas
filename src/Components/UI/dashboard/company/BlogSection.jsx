@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FiFileText, FiSearch, FiFilter, FiPlus, FiEye, FiTrash2, FiUser, FiX } from "react-icons/fi";
 import BlogEditorModal from "../../../../Pages/BlogEditor";
 
@@ -166,65 +166,7 @@ const BlogDetailsModal = ({ blog, onClose, formatDate }) => {
 };
 
 // BlogList Component
-const BlogList = ({ blogs, onDelete, onCreate, onToggleStatus }) => {
-  return (
-    <div className="table-container">
-      <div className="table-actions">
-        <button onClick={onCreate} className="action-button">
-          Create New Blog
-        </button>
-      </div>
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {blogs.length === 0 ? (
-            <tr>
-              <td colSpan="4" className="no-data">
-                No blogs found
-              </td>
-            </tr>
-          ) : (
-            blogs.map((blog) => {
-              const status = (blog.status || "draft").toLowerCase();
-              return (
-                <tr key={blog.id}>
-                  <td>{blog.title || "Untitled"}</td>
-                  <td>{blog.author || "Unknown"}</td>
-                  <td>
-                    {blog.createdAt?.toDate?.().toLocaleDateString?.() || "N/A"}
-                  </td>
-                  <td>
-                    <div className="actions">
-                      <button
-                        className="action-button secondary"
-                        onClick={() => onToggleStatus(blog.id, status)}
-                      >
-                        {status === "published" ? "Make Draft" : "Publish"}
-                      </button>
-                      <button
-                        onClick={() => onDelete(blog.id)}
-                        className="action-button delete-button"
-                      >
-                        <FiTrash2 /> Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+
 
 // Main BlogSection Component
 const BlogSection = ({
@@ -248,12 +190,12 @@ const BlogSection = ({
   const filteredBlogs = blogs.filter((blog) => {
     try {
       const term = (blogSearchTerm || "").toLowerCase();
-      
+
       // Safe string conversions
       const blogTitle = (blog.title || "").toLowerCase();
       const blogExcerpt = (blog.excerpt || "").toLowerCase();
       const blogContent = (blog.content || "").toLowerCase();
-      
+
       const matchesSearch =
         blogTitle.includes(term) ||
         blogExcerpt.includes(term) ||
@@ -264,7 +206,7 @@ const BlogSection = ({
       // FIX: Safely handle undefined status with proper fallback
       const blogStatus = (blog.status || "draft").toLowerCase();
       const selectedStatus = (selectedBlogStatus || "all").toLowerCase();
-      
+
       const matchesStatus =
         selectedStatus === "all" ||
         blogStatus === selectedStatus;
@@ -370,10 +312,7 @@ const BlogSection = ({
               blog.thumbnail ||
               "";
             const dateText = formatDate ? formatDate(blog.createdAt) : "";
-            const firstTag =
-              Array.isArray(blog.tags) && blog.tags.length > 0
-                ? blog.tags[0]
-                : "General";
+            Array.isArray(blog.tags) && blog.tags.length > 0 ? blog.tags[0] : "General";
 
             return (
               <div key={blog.id || blog._id} className="asset-card">

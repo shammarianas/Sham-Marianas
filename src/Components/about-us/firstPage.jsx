@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useLayoutEffect } from "react";
+import { useEffect } from "react";
 
 import loadBackgroudImages from "../../common/loadBackgroudImages";
 function Header() {
@@ -11,7 +11,7 @@ function Header() {
       className=" page-header bg-img section-padding valign"
       data-background="/assets/imgs/background/bg4.webp"
       data-overlay-dark="8"
-      fetchPriority="high" 
+      fetchPriority="high"
     >
       <div className="container pt-80">
         <div className="row">

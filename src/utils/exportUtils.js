@@ -1,4 +1,6 @@
-import { FiDownload } from "react-icons/fi";
+import "react-icons/fi";
+
+// Smart header name generator
 
 // Smart header name generator
 const generateHeaderName = (key) => {

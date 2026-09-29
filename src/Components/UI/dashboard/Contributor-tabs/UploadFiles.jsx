@@ -1,38 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  FiBox,
-  FiTrendingUp,
-  FiDownload,
-  FiUsers,
-  FiDollarSign,
-  FiSearch,
-  FiFilter,
-  FiEye,
-  FiEdit,
-  FiUpload,
-  FiTrash2,
-  FiPlus,
-  FiStar,
-  FiTag,
-  FiUser,
-  FiCalendar,
-  FiImage,
-  FiMoreHorizontal,
-  FiX,
-  FiRefreshCw,
-} from "react-icons/fi";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp,
-  onSnapshot,
-  getDoc,
-} from "firebase/firestore";
+import { useState, useEffect, useCallback } from "react";
+import { FiBox, FiTrendingUp, FiDownload, FiUsers, FiDollarSign, FiSearch, FiFilter, FiEye, FiEdit, FiUpload, FiTrash2, FiPlus, FiStar, FiTag, FiUser, FiImage, FiX, FiRefreshCw } from "react-icons/fi";
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 import { db } from "../../../../../firebase";
 import Upload from "../../../../Pages/Upload";
 import { useUser } from "../../../../Context/UserProvider";
@@ -49,7 +17,7 @@ const UploadFiles = () => {
   const [showCreateAssetDialog, setShowCreateAssetDialog] = useState(false);
   const [showEditAssetDialog, setShowEditAssetDialog] = useState(false);
   const [assetToEdit, setAssetToEdit] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [, setRefreshKey] = useState(0);
 
   // Asset categories
   const ASSET_CATEGORIES = [
@@ -70,12 +38,7 @@ const UploadFiles = () => {
   const { currentUser } = useUser();
 
   // Helper functions
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount || 0);
-  };
+
 
   const formatDate = (date) => {
     if (!date) return "N/A";
@@ -99,11 +62,7 @@ const UploadFiles = () => {
   };
 
   // Function to detect 3D model files
-  const is3DModel = (url) => {
-    if (!url) return false;
-    const extension = url.split(".").pop()?.toLowerCase().split("?")[0];
-    return ["glb", "gltf", "fbx", "obj", "stl", "3ds"].includes(extension);
-  };
+
 
   // Get 3D model URL from asset data
   const get3DModelUrl = (asset) => {
@@ -153,50 +112,10 @@ const UploadFiles = () => {
   };
 
   // Check if asset has 3D model
-  const has3DModel = (asset) => {
-    if (!asset) return false;
 
-    const hasThumbnailModel = !!asset.thumbnailModel;
-    const has3DModelFile =
-      asset.model &&
-      asset.model.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
-    const has3DThumbnail =
-      asset.thumbnail &&
-      asset.thumbnail
-        .toLowerCase()
-        .match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
-
-    const result = hasThumbnailModel || has3DModelFile || has3DThumbnail;
-
-    console.log("🔍 has3DModel check:", {
-      title: asset.title,
-      hasThumbnailModel,
-      has3DModelFile,
-      has3DThumbnail,
-      result,
-    });
-
-    return result;
-  };
 
   // Download tracking function
-  const trackDownload = async (assetId) => {
-    try {
-      const assetRef = doc(db, "Assets", assetId);
-      const assetDoc = await getDoc(assetRef);
 
-      if (assetDoc.exists()) {
-        const currentDownloads = assetDoc.data().downloads || 0;
-        await updateDoc(assetRef, {
-          downloads: currentDownloads + 1,
-          lastDownloadedAt: serverTimestamp(),
-        });
-        console.log("✅ Download tracked for asset:", assetId);
-      }
-    } catch (error) {
-      console.error("❌ Failed to track download:", error);
-    }
-  };
 
   // Consistent author name extraction
   const getAuthorName = (asset) => {
@@ -237,7 +156,7 @@ const UploadFiles = () => {
     return "Free";
   };
 
-  
+
  // ✅ UPDATED: Fetch assets by userId field (jo aapke data mein hai)
 const fetchAssets = useCallback(() => {
   if (!currentUser?.uid) {
@@ -303,7 +222,7 @@ const refreshAssets = useCallback(() => {
     collection(db, "Assets"),
     where("userId", "==", currentUser.uid)
   );
-  
+
   getDocs(q)
     .then((querySnapshot) => {
       const assetsData = querySnapshot.docs.map((doc) => ({
@@ -601,7 +520,7 @@ const refreshAssets = useCallback(() => {
               ownerId: asset.ownerId,
               createdBy: asset.createdBy,
             });
-            
+
             return (
               <div key={asset.id} className="asset-card">
                 <div className="asset-image-wrapper">

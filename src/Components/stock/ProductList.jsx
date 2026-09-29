@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 import PageTitle from "../UI/PageTitle";
 import ItemsListing from "../ItemsListing";
 

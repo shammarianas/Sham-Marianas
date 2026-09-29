@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { db, storage } from "../../firebase";
 import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
@@ -199,7 +199,7 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
 
     try {
       let descriptionImgUrls = [...projectData.descriptionImgUrls];
-      
+
       // New description images upload karo
       if (projectData.descriptionImages.length > 0) {
         const uploadPromises = projectData.descriptionImages.map(async (image) => {
@@ -304,8 +304,8 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
     <div className="blog-modal-overlay">
       <style>{`
         .blog-modal-overlay {
-          position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
-          display: flex; align-items: center; justify-content: center; 
+          position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+          display: flex; align-items: center; justify-content: center;
           z-index: 9999; padding: 1rem;
         }
         .blog-modal-container {
@@ -314,29 +314,29 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
         }
         .blog-modal-content { padding: 2rem; height: 90vh; overflow-y: auto; }
         .blog-modal-header {
-          display: flex; justify-content: space-between; align-items: center; 
+          display: flex; justify-content: space-between; align-items: center;
           margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;
         }
-        .blog-modal-title { 
-          font-size: 1.5rem; font-weight: 700; color: #1f2937; 
-          margin: 0; 
+        .blog-modal-title {
+          font-size: 1.5rem; font-weight: 700; color: #1f2937;
+          margin: 0;
         }
         .blog-modal-close {
-          background: none; border: none; color: #6b7280; cursor: pointer; 
+          background: none; border: none; color: #6b7280; cursor: pointer;
           padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s;
         }
-        .blog-modal-close:hover { 
-          background: #fee2e2; color: #dc2626; 
+        .blog-modal-close:hover {
+          background: #fee2e2; color: #dc2626;
         }
         .blog-form-group { margin-bottom: 1.75rem; }
         .blog-form-label {
-          display: block; font-size: 0.95rem; font-weight: 600; 
+          display: block; font-size: 0.95rem; font-weight: 600;
           color: #374151; margin-bottom: 0.5rem;
         }
         .blog-form-required { color: #dc2626; }
         .blog-form-input, .blog-form-select, .blog-form-textarea {
-          width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
-          border-radius: 0.75rem; font-size: 1rem; outline: none; 
+          width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb;
+          border-radius: 0.75rem; font-size: 1rem; outline: none;
           transition: all 0.2s; background: #fafafa;
           font-family: inherit;
         }
@@ -346,51 +346,51 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
         }
         .blog-form-file {
           color:#000;
-          width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db; 
-          border-radius: 0.75rem; padding: 2rem; text-align: center; 
+          width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db;
+          border-radius: 0.75rem; padding: 2rem; text-align: center;
           background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
           transition: all 0.2s; cursor: pointer;
         }
         .blog-form-file:hover { border-color: #3b82f6; background: #eff6ff; }
-        .blog-form-hint { 
-          font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; 
+        .blog-form-hint {
+          font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;
           font-style: italic;
         }
         .blog-form-buttons {
-          display: flex; justify-content: flex-end; gap: 1rem; 
+          display: flex; justify-content: flex-end; gap: 1rem;
           padding-top: 2rem; border-top: 1px solid #e5e7eb; margin-top: 2rem;
         }
         .blog-btn {
-          padding: 0.75rem 2rem; border-radius: 0.75rem; border: none; 
-          font-size: 1rem; font-weight: 600; cursor: pointer; 
+          padding: 0.75rem 2rem; border-radius: 0.75rem; border: none;
+          font-size: 1rem; font-weight: 600; cursor: pointer;
           transition: all 0.2s;
         }
-        .blog-btn-cancel { 
-          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); 
-          color: #374151; 
+        .blog-btn-cancel {
+          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+          color: #374151;
         }
-        .blog-btn-cancel:hover { 
-          background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); 
+        .blog-btn-cancel:hover {
+          background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
           transform: translateY(-1px);
         }
-        .blog-btn-submit { 
-          background: #52b0b4; 
+        .blog-btn-submit {
+          background: #52b0b4;
           color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
         }
-        .blog-btn-submit:hover:not(:disabled) { 
-          background: #52b0b4; 
+        .blog-btn-submit:hover:not(:disabled) {
+          background: #52b0b4;
           transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
         }
-        .blog-btn-submit:disabled { 
-          opacity: 0.6; cursor: not-allowed; transform: none; 
+        .blog-btn-submit:disabled {
+          opacity: 0.6; cursor: not-allowed; transform: none;
         }
         .blog-image-preview {
-          margin-top: 1rem; max-width: 250px; max-height: 150px; 
-          object-fit: cover; border-radius: 0.75rem; 
+          margin-top: 1rem; max-width: 250px; max-height: 150px;
+          object-fit: cover; border-radius: 0.75rem;
           border: 2px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .current-image-note {
-          font-size: 0.875rem; color: #059669; font-style: italic; 
+          font-size: 0.875rem; color: #059669; font-style: italic;
           margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
           border-radius: 0.5rem; border-left: 4px solid #10b981;
         }
@@ -488,14 +488,14 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
               <label className="blog-form-label">
                 Project Title <span className="blog-form-required">*</span>
               </label>
-              <input 
-                type="text" 
-                name="title" 
-                value={projectData.title} 
-                onChange={handleInputChange} 
-                required 
-                className="blog-form-input" 
-                placeholder="Enter project title" 
+              <input
+                type="text"
+                name="title"
+                value={projectData.title}
+                onChange={handleInputChange}
+                required
+                className="blog-form-input"
+                placeholder="Enter project title"
               />
             </div>
 
@@ -515,14 +515,14 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
               <label className="blog-form-label">
                 Country <span className="blog-form-required">*</span>
               </label>
-              <input 
-                type="text" 
-                name="client" 
-                value={projectData.client} 
-                onChange={handleInputChange} 
-                required 
-                className="blog-form-input" 
-                placeholder="Enter client name" 
+              <input
+                type="text"
+                name="client"
+                value={projectData.client}
+                onChange={handleInputChange}
+                required
+                className="blog-form-input"
+                placeholder="Enter client name"
               />
             </div>
 
@@ -530,13 +530,13 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
               <label className="blog-form-label">
                 Start Date <span className="blog-form-required">*</span>
               </label>
-              <input 
-                type="date" 
-                name="startDate" 
-                value={projectData.startDate} 
-                onChange={handleInputChange} 
-                required 
-                className="blog-form-input" 
+              <input
+                type="date"
+                name="startDate"
+                value={projectData.startDate}
+                onChange={handleInputChange}
+                required
+                className="blog-form-input"
               />
             </div>
 
@@ -544,14 +544,14 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
               <label className="blog-form-label">
                 Designer <span className="blog-form-required">*</span>
               </label>
-              <input 
-                type="text" 
-                name="designer" 
-                value={projectData.designer} 
-                onChange={handleInputChange} 
-                required 
-                className="blog-form-input" 
-                placeholder="Enter designer name" 
+              <input
+                type="text"
+                name="designer"
+                value={projectData.designer}
+                onChange={handleInputChange}
+                required
+                className="blog-form-input"
+                placeholder="Enter designer name"
               />
             </div>
 
@@ -559,14 +559,14 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
               <label className="blog-form-label">
                 Challenge Title <span className="blog-form-required">*</span>
               </label>
-              <input 
-                type="text" 
-                name="challengeTitle" 
-                value={projectData.challengeTitle} 
-                onChange={handleInputChange} 
-                required 
-                className="blog-form-input" 
-                placeholder="Enter challenge title" 
+              <input
+                type="text"
+                name="challengeTitle"
+                value={projectData.challengeTitle}
+                onChange={handleInputChange}
+                required
+                className="blog-form-input"
+                placeholder="Enter challenge title"
               />
             </div>
 
@@ -589,26 +589,26 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
               <label className="blog-form-label">
                 Project Cover Image {!isEditMode && <span className="blog-form-required">*</span>}
               </label>
-              <input 
-                type="file" 
-                ref={coverImageInputRef} 
-                onChange={handleCoverImgChange} 
-                accept="image/jpeg,image/png,image/gif,image/webp" 
-                className="blog-form-file" 
+              <input
+                type="file"
+                ref={coverImageInputRef}
+                onChange={handleCoverImgChange}
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="blog-form-file"
               />
               <p className="blog-form-hint">🖼️ JPG, PNG, WebP • Max 1.25MB • 1600x900px recommended</p>
               {(projectData.coverImage || projectData.coverImgUrl) && (
                 <div className="mt-2">
                   <div className="image-preview-container">
                     <div className="image-preview">
-                      <img  loading="lazy"  
-                        src={projectData.coverImgUrl} 
-                        alt="Cover preview" 
+                      <img  loading="lazy"
+                        src={projectData.coverImgUrl}
+                        alt="Cover preview"
                       />
-                      <button 
-                        type="button" 
-                        onClick={clearCoverImage} 
-                        className="remove-image-btn" 
+                      <button
+                        type="button"
+                        onClick={clearCoverImage}
+                        className="remove-image-btn"
                         title="Remove image"
                       >
                         ×
@@ -626,26 +626,26 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
               <label className="blog-form-label">
                 Project Feature Image {!isEditMode && <span className="blog-form-required">*</span>}
               </label>
-              <input 
-                type="file" 
-                ref={featureImageInputRef} 
-                onChange={handleFeatureImgChange} 
-                accept="image/jpeg,image/png,image/gif,image/webp" 
-                className="blog-form-file" 
+              <input
+                type="file"
+                ref={featureImageInputRef}
+                onChange={handleFeatureImgChange}
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="blog-form-file"
               />
               <p className="blog-form-hint">⭐ JPG, PNG, WebP • Max 1.25MB • 1200x630px recommended</p>
               {(projectData.featureImage || projectData.featureImgUrl) && (
                 <div className="mt-2">
                   <div className="image-preview-container">
                     <div className="image-preview">
-                      <img  loading="lazy"  
-                        src={projectData.featureImgUrl} 
-                        alt="Feature preview" 
+                      <img  loading="lazy"
+                        src={projectData.featureImgUrl}
+                        alt="Feature preview"
                       />
-                      <button 
-                        type="button" 
-                        onClick={clearFeatureImage} 
-                        className="remove-image-btn" 
+                      <button
+                        type="button"
+                        onClick={clearFeatureImage}
+                        className="remove-image-btn"
                         title="Remove image"
                       >
                         ×
@@ -672,7 +672,7 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
                 className="blog-form-file"
               />
               <p className="blog-form-hint">📸 JPG, PNG, WebP • Max 1.25MB • Multiple images supported</p>
-              
+
               {/* Existing description images (edit mode mein) */}
               {isEditMode && projectData.descriptionImgUrls.length > 0 && (
                 <div className="existing-images-section">
@@ -681,10 +681,10 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
                     {projectData.descriptionImgUrls.map((imgUrl, index) => (
                       <div key={index} className="image-preview">
                         <img  loading="lazy"  src={imgUrl} alt={`Description ${index}`} />
-                        <button 
-                          type="button" 
-                          onClick={() => removeExistingDescriptionImage(index)} 
-                          className="remove-image-btn" 
+                        <button
+                          type="button"
+                          onClick={() => removeExistingDescriptionImage(index)}
+                          className="remove-image-btn"
                           title="Remove image"
                         >
                           ×

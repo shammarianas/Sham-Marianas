@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   doc,
@@ -19,7 +19,7 @@ import Cursor from "../common/cusor";
 import Next from "../Components/blog-classic/Next";
 import Marq2 from "../Components/marq2";
 import sanitizeHtml from "sanitize-html";
-import { SEO_CONFIG } from "../utils/seoConfig";
+import "../utils/seoConfig";
 import SchemaMarkup from "../Components/SchemaMarkup";
 import SEO from "../common/SEO";
 import ErrorPage from "./Error";
@@ -31,7 +31,7 @@ function BlogDetails() {
 
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Updated to match BlogEditorModal
@@ -308,8 +308,8 @@ function BlogDetails() {
       {blog && (
         <>
           <SchemaMarkup type="agency" />
-    <SchemaMarkup 
-      type="blog" 
+    <SchemaMarkup
+      type="blog"
       data={{
         ...blog,
         slug: blog.slug || blog.id,

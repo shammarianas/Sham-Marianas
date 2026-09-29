@@ -2,7 +2,7 @@ import Isotope from 'isotope-layout';
 import matchesSelector from 'matches-selector';
 import imagesLoaded from 'imagesloaded';
 
-const initIsotope = (father) => {
+const initIsotope = (_father) => {
   const grids = document.querySelectorAll(`.gallery`);
   const grids2 = document.querySelectorAll(`.gallery2`);
   let isos = [];

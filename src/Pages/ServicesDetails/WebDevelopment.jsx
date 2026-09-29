@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import "react";
 import HeaderSection from "../../Components/ServicesDetails/HeaderSection";
 import IntroSection from "../../Components/ServicesDetails/IntroSection";
 import BrandingContentSection from "../../Components/ServicesDetails/ContentSection";

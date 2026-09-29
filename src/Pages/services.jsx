@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import AOS from "aos"; // Import AOS (Animate On Scroll) library
 
 import Lines from "../Components/Lines";
@@ -32,7 +32,7 @@ export default function PageServices() {
       {/* <Cursor /> */}
       <SchemaMarkup type="servicesListing" />
       <SEO {...SEO_CONFIG.services} />
-      
+
       <ProgressScroll />
       <Lines />
       <div id="smooth-wrapper" ref={main}>

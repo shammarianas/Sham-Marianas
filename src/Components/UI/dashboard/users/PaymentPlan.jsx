@@ -1,31 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  FiDollarSign,
-  FiCreditCard,
-  FiCalendar,
-  FiCheckCircle,
-  FiXCircle,
-  FiClock,
-  FiUser,
-  FiPackage,
-  FiSearch,
-  FiRefreshCw,
-  FiUsers,
-  FiTrendingUp,
-  FiActivity,
-  FiStar,
-  FiDownload,
-  FiShoppingCart,
-  FiMapPin,
-  FiEye,
-  FiChevronDown,
-  FiChevronUp,
-  FiFilter,
-  FiList,
-  FiFileText,
-  FiAlertCircle,
-  FiPieChart,
-} from "react-icons/fi";
+import { useState, useEffect, useMemo } from "react";
+import { FiDollarSign, FiCreditCard, FiCalendar, FiCheckCircle, FiXCircle, FiClock, FiUser, FiPackage, FiSearch, FiRefreshCw, FiUsers, FiTrendingUp, FiActivity, FiDownload, FiMapPin, FiEye, FiFilter, FiList } from "react-icons/fi";
 import {
   collection,
   getDocs,
@@ -37,9 +11,12 @@ import {
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
 import { exportPaymentsData } from "../../../../utils/exportUtils";
-import { doc, updateDoc } from "firebase/firestore";
+import "firebase/firestore";
 
-const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
+const PaymentPlan = ({
+  formatCurrency,
+  formatDate
+}) => {
   const [subscriptionData, setSubscriptionData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -71,7 +48,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
   const currencyFormatter = formatCurrency || defaultFormatCurrency;
   const dateFormatter = formatDate || defaultFormatDate;
 
-  
+
   // 🔥 Firebase Data Fetching - Updated to use Profiles collection
   useEffect(() => {
     const fetchSubscriptions = async () => {
@@ -167,7 +144,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
 
     return featuresMap[planType?.toLowerCase()] || ["Standard Features"];
   };
-  
+
   // Dynamic Stats Calculation
   const stats = useMemo(() => {
     const totalSubscriptions = subscriptionData.length;
@@ -348,12 +325,6 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       alert(`Error: ${error.message}`);
     }
   };
-  // Handle payment download
-  const handleDownloadInvoice = (invoiceId) => {
-    console.log(`Downloading invoice: ${invoiceId}`);
-    alert(`Downloading invoice ${invoiceId}`);
-  };
-
   // View subscription details in modal
   const handleViewSubscription = (subscription) => {
     setSelectedSubscription(subscription);
@@ -686,7 +657,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
                     </div>
                   </td>
 
-                 
+
 
                   {/* Plan Column (NEW) */}
                   <td>

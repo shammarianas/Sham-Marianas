@@ -32,7 +32,7 @@ const SingleImage = ({ coverImgUrl, title }) => {
 
 function Header() {
   const [projects, setProjects] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [, setIsAdmin] = useState(false);
   const [filter, setFilter] = useState("*");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);

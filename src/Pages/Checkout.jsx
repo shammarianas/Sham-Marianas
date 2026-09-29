@@ -96,9 +96,7 @@ const CheckoutForm = () => {
 
     try {
       const userRef = doc(db, "Profiles", currentUser.uid);
-      const pendingSub = JSON.parse(
-        localStorage.getItem("pendingSubscription") || "{}"
-      );
+      JSON.parse(localStorage.getItem("pendingSubscription") || "{}");
 
       const basicUpdate = {
         subscription: {

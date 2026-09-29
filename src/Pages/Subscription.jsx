@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useUser } from "../Context/UserProvider";
 import { useNavigate } from "react-router-dom";
 
 const Subscription = () => {
-  const { userProfile, currentUser } = useUser();
+  useUser();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState("individual");
+  useState("individual");
   const [billingCycle, setBillingCycle] = useState("monthly");
-  const [activeAccordion, setActiveAccordion] = useState(null);
   const [teamMembers, setTeamMembers] = useState(2);
   const teamPlanPrice = (billingCycle === "monthly" ? 8 : 96) * teamMembers;
   function openAccordion(event) {
@@ -187,7 +186,7 @@ const Subscription = () => {
     });
   };
 
-  const isCurrentPlan = (plan) => {
+  const isCurrentPlan = (_plan) => {
     return false;
   };
 
@@ -195,9 +194,7 @@ const Subscription = () => {
     setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly");
   };
 
-  const toggleAccordion = (index) => {
-    setActiveAccordion(activeAccordion === index ? null : index);
-  };
+
 
   const handleTeamMembersChange = (e) => {
     const members = parseInt(e.target.value);

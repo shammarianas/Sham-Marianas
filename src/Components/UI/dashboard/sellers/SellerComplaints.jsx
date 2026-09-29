@@ -1,32 +1,6 @@
-import React, { useState, useEffect } from "react";
-import {
-  FiAlertTriangle,
-  FiCheckCircle,
-  FiTrendingUp,
-  FiClock,
-  FiSearch,
-  FiFilter,
-  FiEye,
-  FiMessageSquare,
-  FiUser,
-  FiXCircle,
-  FiRefreshCw,
-  FiDownload,
-  FiList,
-  FiX,
-  FiMail,
-  FiCalendar,
-  FiHash,
-} from "react-icons/fi";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { FiAlertTriangle, FiCheckCircle, FiClock, FiSearch, FiFilter, FiEye, FiMessageSquare, FiRefreshCw, FiList, FiX, FiMail, FiCalendar, FiHash } from "react-icons/fi";
+import { collection, getDocs, query, orderBy, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../../firebase"; // Adjust path as needed
 import ExportButton from "../../../ExportButton";
 import { exportSellerComplaintsData } from "../../../../utils/exportUtils";
@@ -114,7 +88,7 @@ const SellerComplaints = () => {
 
   const filteredComplaints = complaints.filter((complaint) => {
     const searchLower = searchTerm.toLowerCase();
-    
+
     // Search in multiple fields including complaint ID
     const matchesSearch =
       complaint.sellerName.toLowerCase().includes(searchLower) ||
@@ -130,21 +104,11 @@ const SellerComplaints = () => {
   });
 
  // Export handler with callbacks
-  const handleExportStart = () => {
-    console.log("Export started...");
-  };
 
-  const handleExportComplete = (success) => {
-    if (success) {
-      console.log("Export completed successfully");
-    } else {
-      console.log("Export failed");
-    }
-  };
 
-  const handleExportError = (error) => {
-    console.error("Export error:", error);
-  };  
+
+
+
 
   // Statistics
   const stats = {
@@ -446,8 +410,8 @@ const SellerComplaints = () => {
               {filteredComplaints.map((complaint) => (
                 <tr key={complaint.id}>
                   <td>
-                    <div 
-                      className="complaint-id-cell" 
+                    <div
+                      className="complaint-id-cell"
                       title="Click to copy Complaint ID"
                       onClick={() => copyComplaintId(complaint.complaintId)}
                       style={{ cursor: 'pointer' }}
@@ -587,10 +551,10 @@ const SellerComplaints = () => {
                       {selectedComplaint.complaintId}
                       <button
                         onClick={() => copyComplaintId(selectedComplaint.complaintId)}
-                        style={{ 
-                          marginLeft: '8px', 
-                          background: 'none', 
-                          border: 'none', 
+                        style={{
+                          marginLeft: '8px',
+                          background: 'none',
+                          border: 'none',
                           color: '#6b7280',
                           cursor: 'pointer',
                           fontSize: '0.9rem'

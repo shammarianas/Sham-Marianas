@@ -1,45 +1,19 @@
-import { auth, db, storage } from "../../../../firebase";
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import { auth, db } from "../../../../firebase";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  doc,
-  getDoc,
-  getDocs,
-  collection,
-  updateDoc,
-  setDoc,
-  deleteDoc,
-  orderBy,
-  onSnapshot,
-  query,
-  where,
-  serverTimestamp,
-} from "firebase/firestore";
-import { signOut } from "firebase/auth";
+import { doc, getDoc, getDocs, collection, updateDoc, orderBy, onSnapshot, query, where, serverTimestamp } from "firebase/firestore";
+import "firebase/auth";
 
 // Import icons
-import {
-  FiHome,
-  FiUpload,
-  FiFileText,
-  FiCheckCircle,
-  FiXCircle,
-  FiTrendingUp,
-  FiPieChart,
-  FiList,
-  FiSearch,
-  FiBell,
-  FiSettings,
-  FiUser,
-  FiLogOut,
-  FiMessageSquare,
-  FiShoppingBag,
-  FiDollarSign,
-  FiStar,
-  FiClock,
-  FiMenu, // Hamburger icon
-  FiX, // Close icon
+
+// Import icons
+// Import icons
+import { FiHome, FiUpload, FiFileText, FiCheckCircle, FiXCircle, FiTrendingUp, FiList, FiBell, FiUser, FiMessageSquare, FiShoppingBag, FiClock, FiMenu,
+// Hamburger icon
+FiX // Close icon
 } from "react-icons/fi";
+
+// Import Components
 
 // Import Components
 import DashboardOverview from "../Contributor-tabs/DashboardOverview";
@@ -48,14 +22,16 @@ import UnderRevision from "../Contributor-tabs/UnderRevision";
 import Rejections from "../Contributor-tabs/Rejections";
 import PublishedFiles from "../Contributor-tabs/PublishedFiles";
 import Statistics from "../Contributor-tabs/Statistics";
-import SearchTrends from "../Contributor-tabs/SearchTrends";
+import "../Contributor-tabs/SearchTrends";
 import Support from "../../../../Pages/Support";
 import ReportTrack from "../Contributor-tabs/ReportTrack";
 import BillingInvoices from "../Contributor-tabs/BillingInvoices";
 import SellerGuideline from "../../../../Pages/Get Started/SellerGuidelines";
 // ✅ ADDED: Import Profile component
-import Profile from "../../../../Pages/Profile"; // Adjust path as needed
-import Error from "../../../../Pages/Error";
+// ✅ ADDED: Import Profile component
+import "../../../../Pages/Profile"; // Adjust path as needed // Adjust path as needed
+// Adjust path as needed
+import "../../../../Pages/Error";
 import Cursor from "../../../../common/cusor";
 
 
@@ -82,7 +58,11 @@ const ProfileWrapper = ({ username }) => {
 };
 
 // ✅ ADDED: Notification Dropdown Component
-const NotificationDropdown = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
+const NotificationDropdown = ({
+  notifications,
+  onMarkAsRead,
+  onMarkAllAsRead
+}) => {
   return (
     <div className="notification-dropdown">
       <div className="notification-header">
@@ -142,7 +122,7 @@ const SellerDashboard = () => {
   const [unresolvedReportsCount, setUnresolvedReportsCount] = useState(0);
   const [userData, setUserData] = useState(null);
   const [assets, setAssets] = useState([]);
-  const [reports, setReports] = useState([]);
+  const [, setReports] = useState([]);
   const [stats, setStats] = useState({
     totalUploads: 0,
     underRevision: 0,
@@ -174,19 +154,9 @@ const SellerDashboard = () => {
   };
 
   // ✅ ADDED: Report track handler
-  const handleReportTrack = () => {
-    setActiveTab("report-track");
-    if (window.innerWidth <= 768) {
-      setSidebarOpen(false);
-    }
-  };
 
-  const handleSellerGuidelines = () => {
-    setActiveTab("guidelines");
-    if (window.innerWidth <= 768) {
-      setSidebarOpen(false);
-    }
-  };
+
+
 
   // ✅ ADDED: Handle tab click
   const handleTabClick = (tabName) => {
@@ -362,23 +332,7 @@ const SellerDashboard = () => {
   };
 
   // ✅ ADDED: Create notification function (for testing or manual triggers)
-  const createNotification = async (type, message, assetId = null) => {
-    if (!userData?.uid) return;
 
-    try {
-      const notificationData = {
-        type,
-        message,
-        assetId,
-        read: false,
-        timestamp: serverTimestamp(),
-      };
-
-      await setDoc(doc(collection(db, `Contributors/${userData.uid}/Notifications`)), notificationData);
-    } catch (error) {
-      console.error("Error creating notification:", error);
-    }
-  };
 
   // ✅ ADDED: Toggle notifications dropdown
   const toggleNotifications = () => {
@@ -863,7 +817,7 @@ const SellerDashboard = () => {
                   <FiDollarSign className="nav-c-icon" />
                   <span className="nav-c-label">Billing and invoices</span>
                 </li> */}
-                
+
               </ul>
             </div>
           </nav>

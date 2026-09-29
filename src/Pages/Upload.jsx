@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { db, storage } from "../../firebase";
 import {
   collection,
@@ -11,21 +11,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUser } from "../Context/UserProvider";
 import { Helmet } from "react-helmet-async";
-import {
-  FiUpload,
-  FiX,
-  FiPlus,
-  FiImage,
-  FiVideo,
-  FiFile,
-  FiCode,
-  FiMusic,
-  FiBox,
-  FiChevronDown,
-  FiPlay,
-  FiPause,
-  FiFileText,
-} from "react-icons/fi";
+import { FiUpload, FiX, FiImage, FiVideo, FiFile, FiCode, FiBox, FiChevronDown, FiPlay, FiPause, FiFileText } from "react-icons/fi";
 import useImageSizeConverter from "../hooks/ImageSizeConverter";
 
 const filterData = {
@@ -551,15 +537,12 @@ const specializationToAssetTypes = {
 const Upload = ({
   onUploadSuccess,
   onUploadClose,
-  compactView = false,
   editMode = false,
   assetToEdit = null,
-  isUpdating = false,
-  setIsUpdating = () => {},
+  isUpdating = false
 }) => {
   const { currentUser } = useUser();
-  const { converting, generateAllSizes, uploadAllSizes } =
-    useImageSizeConverter();
+  const { converting } = useImageSizeConverter();
 
   // State definitions
   const [userRole, setUserRole] = useState("contributor");
@@ -630,7 +613,7 @@ const Upload = ({
   });
 
   const [tags, setTags] = useState([]);
-  const [loadingState, setLoadingState] = useState(false);
+  const [, setLoadingState] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [thumbnailType, setThumbnailType] = useState(null);
@@ -826,72 +809,6 @@ const Upload = ({
     }
   }, [editMode, assetToEdit]);
 
-  // File preview handling function
-  const handleFilePreview = (file, fileType) => {
-    if (!file) return;
-
-    if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFilePreviews((prev) => ({
-          ...prev,
-          [fileType]: reader.result,
-        }));
-        setFilePreviewTypes((prev) => ({
-          ...prev,
-          [fileType]: "image",
-        }));
-      };
-      reader.readAsDataURL(file);
-    } else if (file.type.startsWith("video/")) {
-      const videoURL = URL.createObjectURL(file);
-      setFilePreviews((prev) => ({
-        ...prev,
-        [fileType]: videoURL,
-      }));
-      setFilePreviewTypes((prev) => ({
-        ...prev,
-        [fileType]: "video",
-      }));
-    } else {
-      // For other file types, show file info
-      setFilePreviews((prev) => ({
-        ...prev,
-        [fileType]: {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-        },
-      }));
-      setFilePreviewTypes((prev) => ({
-        ...prev,
-        [fileType]: "file",
-      }));
-    }
-  };
-
-  // Handle multiple files preview (for images, icons, textures)
-  const handleMultipleFilesPreview = (files, fileType) => {
-    if (!files || files.length === 0) return;
-
-    const previews = [];
-    Array.from(files).forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          previews.push(reader.result);
-          if (previews.length === files.length) {
-            setFilePreviews((prev) => ({
-              ...prev,
-              [fileType]: previews,
-            }));
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  };
-
   // Video playback functions
   const handleVideoPlay = async () => {
     if (videoRef.current) {
@@ -1037,8 +954,6 @@ const Upload = ({
   // File upload functions
   const uploadFile = async (file, fileType, userId) => {
     try {
-      setLoadingState(`Optimizing ${fileType}: ${file.name}`);
-
       // ✅ STEP 1: Image optimization BEFORE upload
       let optimizedFile = file;
 
@@ -1392,8 +1307,6 @@ const Upload = ({
 
   const uploadImages = async (files, fileType, userId) => {
     try {
-      setLoadingState(`Processing ${files.length} images...`);
-
       const uploadPromises = Array.from(files).map(async (file, index) => {
         // Create multiple sizes for each image
         const sizes = await generateImageSizes(file);
@@ -1909,31 +1822,8 @@ const Upload = ({
     );
   };
 
-  const getAssetTypeIcon = (type) => {
-    switch (type) {
-      case "models":
-        return <FiBox />;
-      case "videos":
-        return <FiVideo />;
-      case "images":
-        return <FiImage />;
-      case "scripts":
-        return <FiCode />;
-      default:
-        return <FiFile />;
-    }
-  };
-
   // Update your modal title based on mode
   const modalTitle = editMode ? "Edit Asset" : "Upload New Asset";
-  const submitButtonText = editMode
-    ? isUpdating
-      ? "Updating..."
-      : "Update Asset"
-    : isSubmitting
-    ? "Uploading..."
-    : "Upload Asset";
-
   if (!currentUser) {
     return (
       <div className="blog-modal-overlay">
@@ -1980,8 +1870,8 @@ const Upload = ({
       <style>
         {`
           .blog-modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
-            display: flex; align-items: center; justify-content: center; 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            display: flex; align-items: center; justify-content: center;
             z-index: 9999; padding: 1rem;
           }
           .blog-modal-container {
@@ -1990,45 +1880,45 @@ const Upload = ({
           }
           .blog-modal-content { padding: 2rem; height: 90vh; overflow-y: auto; }
           .blog-modal-header {
-            display: flex; justify-content: space-between; align-items: center; 
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;
           }
           .blog-modal-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0; }
           .blog-modal-close {
-            background: none; border: none; color: #6b7280; cursor: pointer; 
+            background: none; border: none; color: #6b7280; cursor: pointer;
             padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s;
           }
           .blog-modal-close:hover { background: #fee2e2; color: #dc2626; }
           .blog-form-group { margin-bottom: 1.75rem; }
           .blog-form-label {
               text-align: left;
-            display: block; font-size: 0.95rem; font-weight: 600; 
+            display: block; font-size: 0.95rem; font-weight: 600;
             color: #374151; margin-bottom: 0.5rem;
           }
           .blog-form-required { color: #dc2626; }
           .blog-form-input, .blog-form-textarea {
-            width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
-            border-radius: 0.75rem; font-size: 1rem; outline: none; 
+            width: 100%; padding: 0.875rem 1rem; border: 2px solid #e5e7eb;
+            border-radius: 0.75rem; font-size: 1rem; outline: none;
             transition: all 0.2s; background: #fafafa; font-family: inherit;
           }
           .blog-form-input:focus, .blog-form-textarea:focus {
             border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             background: #fff;
           }
-          
+
           .select-wrapper {
             position: relative;
             width: 100%;
           }
           .blog-form-select {
-            width: 100%; 
-            padding: 0.875rem 1rem; 
-            border: 2px solid #e5e7eb; 
-            border-radius: 0.75rem; 
-            font-size: 1rem; 
-            outline: none; 
-            transition: all 0.2s; 
-            background: #fafafa; 
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+            background: #fafafa;
             font-family: inherit;
             appearance: none;
             -webkit-appearance: none;
@@ -2036,7 +1926,7 @@ const Upload = ({
             cursor: pointer;
           }
           .blog-form-select:focus {
-            border-color: #3b82f6; 
+            border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             background: #fff;
           }
@@ -2074,10 +1964,10 @@ const Upload = ({
             color: #3b82f6;
             transform: translateY(-50%) rotate(180deg);
           }
-          
+
           .blog-tags-container {
-            display: flex; flex-wrap: wrap; gap: 0.5rem; 
-            padding: 0.875rem 1rem; border: 2px solid #e5e7eb; 
+            display: flex; flex-wrap: wrap; gap: 0.5rem;
+            padding: 0.875rem 1rem; border: 2px solid #e5e7eb;
             border-radius: 0.75rem; background: #fafafa;
             min-height: 48px; align-items: center;
           }
@@ -2086,7 +1976,7 @@ const Upload = ({
             background: #fff;
           }
           .blog-tag-input {
-            flex: 1; border: none; outline: none; background: transparent; 
+            flex: 1; border: none; outline: none; background: transparent;
             font-size: 1rem; min-width: 100px;
           }
           .blog-tag-input::placeholder { color: #9ca3af; }
@@ -2108,8 +1998,8 @@ const Upload = ({
           .blog-tag-remove:hover { background: rgba(255,255,255,0.5); transform: scale(1.1); }
           @keyframes tagSlideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
           .blog-form-file {
-            width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db; 
-            border-radius: 0.75rem; padding: 2rem; text-align: center; 
+            width: 100%; font-size: 0.95rem; border: 2px dashed #d1d5db;
+            border-radius: 0.75rem; padding: 2rem; text-align: center;
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             transition: all 0.2s; cursor: pointer; color: #374151;
           }
@@ -2118,7 +2008,7 @@ const Upload = ({
             display: inline-block;
             cursor: pointer;
           }
-          
+
           .blog-video-preview {
             width: 250px;
             height: 150px;
@@ -2128,7 +2018,7 @@ const Upload = ({
             object-fit: cover;
             background: #000;
           }
-          
+
           .video-play-button {
             position: absolute;
             top: 50%;
@@ -2146,17 +2036,17 @@ const Upload = ({
             transition: all 0.3s ease;
             z-index: 10;
           }
-          
+
           .video-play-button:hover {
             background: rgba(0, 0, 0, 0.9);
             transform: translate(-50%, -50%) scale(1.1);
           }
-          
+
           .video-play-button svg {
             color: white;
             font-size: 24px;
           }
-          
+
           .video-loading {
             position: absolute;
             top: 50%;
@@ -2192,28 +2082,28 @@ const Upload = ({
             border-color: #9ca3af;
           }
           .blog-btn {
-            padding: 0.75rem 2rem; border-radius: 0.75rem; border: none; 
+            padding: 0.75rem 2rem; border-radius: 0.75rem; border: none;
             font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
           }
-          .blog-btn-cancel { 
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); color: #374151; 
+          .blog-btn-cancel {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); color: #374151;
           }
           .blog-btn-cancel:hover { background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); transform: translateY(-1px); }
-          .blog-btn-submit { 
+          .blog-btn-submit {
             background: #52b0b4; color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
           }
-          .blog-btn-submit:hover:not(:disabled) { 
+          .blog-btn-submit:hover:not(:disabled) {
             background: #52b0b4; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
           }
           .blog-btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
           .blog-image-preview {
-            margin-top: 1rem; max-width: 250px; max-height: 150px; 
-            object-fit: cover; border-radius: 0.75rem; 
+            margin-top: 1rem; max-width: 250px; max-height: 150px;
+            object-fit: cover; border-radius: 0.75rem;
             border: 2px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
           }
           .current-image-note {
           text-align: left;
-            font-size: 0.875rem; color: #059669; font-style: italic; 
+            font-size: 0.875rem; color: #059669; font-style: italic;
             margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
             border-radius: 0.5rem; border-left: 4px solid #10b981;
           }

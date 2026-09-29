@@ -1,14 +1,18 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 
-const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen }) => {
+const VideoViewer = ({
+  videoUrl,
+  videoName,
+  previewUrl
+}) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Check if preview is video or image
   const isPreviewVideo = previewUrl && (
-    previewUrl.includes('.mp4') || 
-    previewUrl.includes('.mov') || 
+    previewUrl.includes('.mp4') ||
+    previewUrl.includes('.mov') ||
     previewUrl.includes('.webm') ||
     previewUrl.includes('video/')
   );
@@ -78,10 +82,10 @@ const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen }) => {
         <div className="video_wrapper">
           {/* ✅ AGAR PREVIEW VIDEO HAI - VIDEO PLAY HO */}
           {previewUrl && isPreviewVideo ? (
-            <video 
-              ref={videoRef} 
-              controls 
-              width="100%" 
+            <video
+              ref={videoRef}
+              controls
+              width="100%"
               style={{ width: '100%', height: '-webkit-fill-available' }}
             >
               <source src={previewUrl} type="video/mp4" />
@@ -98,10 +102,10 @@ const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen }) => {
             />
           ) : /* ✅ AGAR PREVIEW NAHI HAI - ACTUAL VIDEO SHOW HO */
           videoUrl ? (
-            <video 
-              ref={videoRef} 
-              controls 
-              width="100%" 
+            <video
+              ref={videoRef}
+              controls
+              width="100%"
               style={{ width: '100%', height: 'auto' }}
             >
               <source src={videoUrl} type="video/mp4" />
@@ -110,9 +114,9 @@ const VideoViewer = ({ videoUrl, videoName, previewUrl, onFullscreen }) => {
             </video>
           ) : (
             /* ✅ KOI BHI CONTENT NAHI HAI */
-            <div className="no-content" style={{ 
-              padding: '2rem', 
-              textAlign: 'center', 
+            <div className="no-content" style={{
+              padding: '2rem',
+              textAlign: 'center',
               color: '#666',
               border: '2px dashed #ddd',
               borderRadius: '8px'

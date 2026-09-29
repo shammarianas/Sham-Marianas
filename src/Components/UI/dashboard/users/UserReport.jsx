@@ -1,24 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  FiFileText,
-  FiRefreshCw,
-  FiUsers,
-  FiAlertCircle,
-  FiClock,
-  FiTrendingUp,
-  FiTrendingDown,
-  FiStar,
-  FiPieChart,
-  FiFilter,
-  FiSearch,
-  FiDownload,
-  FiList,
-  FiEye,
-  FiCheckCircle,
-  FiCornerUpLeft,
-  FiX,
-  FiHash,
-} from "react-icons/fi";
+import { useState, useEffect, useMemo } from "react";
+import { FiFileText, FiRefreshCw, FiUsers, FiAlertCircle, FiClock, FiTrendingUp, FiTrendingDown, FiStar, FiPieChart, FiFilter, FiSearch, FiList, FiEye, FiCheckCircle, FiCornerUpLeft, FiX, FiHash } from "react-icons/fi";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
@@ -256,7 +237,7 @@ const UserReport = () => {
 
     return allReports.filter((report) => {
       const searchLower = filters.search.toLowerCase();
-      
+
       // Search in multiple fields including complaint ID
       if (
         filters.search &&
@@ -507,7 +488,7 @@ const UserReport = () => {
     return date.toLocaleDateString();
   };
 
- 
+
   const getUserName = (email) => (email ? email.split("@")[0] : "Unknown User");
 
   const openReportDetails = (report) => {
@@ -587,10 +568,10 @@ const UserReport = () => {
                       {selectedReport.complaintId}
                       <button
                         onClick={() => copyComplaintId(selectedReport.complaintId)}
-                        style={{ 
-                          marginLeft: '8px', 
-                          background: 'none', 
-                          border: 'none', 
+                        style={{
+                          marginLeft: '8px',
+                          background: 'none',
+                          border: 'none',
                           color: '#6b7280',
                           cursor: 'pointer',
                           fontSize: '0.9rem'
@@ -1091,8 +1072,8 @@ const UserReport = () => {
               {reports.slice(0, 10).map((report) => (
                 <tr key={`${report.userId}-${report.id}`}>
                   <td>
-                    <div 
-                      className="complaint-id-cell" 
+                    <div
+                      className="complaint-id-cell"
                       title="Click to copy Complaint ID"
                       onClick={() => copyComplaintId(report.complaintId)}
                       style={{ cursor: 'pointer' }}
@@ -1107,7 +1088,7 @@ const UserReport = () => {
                   </td>
                   <td>
                     <div className="report-user">
-                      
+
                       <div className="report-user-info">
                         <div className="report-user-name">
                           {getUserName(report.email)}
@@ -1127,7 +1108,7 @@ const UserReport = () => {
                       {report.issueType === "general" && "General Inquiry"}
                     </span>
                   </td>
-                 
+
                   <td>
                     <span
                       className={`report-status-badge ${

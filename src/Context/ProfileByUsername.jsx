@@ -1,5 +1,6 @@
 // ProfileByUsername.jsx
-import React, { useEffect, useState } from "react";
+// ProfileByUsername.jsx
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { query, collection, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -19,7 +20,7 @@ const ProfileByUsername = () => {
           where("username", "==", username)
         );
         const querySnapshot = await getDocs(q);
-        
+
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           setUserId(userDoc.id);

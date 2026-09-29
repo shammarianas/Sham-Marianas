@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 
 function MarqStock() {
   const marquess = ["Templates"]; // Replace with your actual array

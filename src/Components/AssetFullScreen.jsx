@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiX, FiPlay, FiPause, FiMaximize2, FiMinimize2, FiDownload } from "react-icons/fi";
 import { useUser } from "../Context/UserProvider";
 import { saveAs } from "file-saver";
 
-const AssetFullScreen = ({ 
-  asset, 
-  isOpen, 
+const AssetFullScreen = ({
+  asset,
+  isOpen,
   onClose,
   assetType,
-  onDownload 
+  onDownload
 }) => {
   const { currentUser } = useUser();
   const videoRef = useRef(null);
@@ -55,25 +55,25 @@ const AssetFullScreen = ({
   const isVideo = () => {
     const url = getAssetUrl();
     const ext = getFileExtension(url);
-    return ['mp4', 'mov', 'webm', 'avi', 'mkv'].includes(ext) || 
-           assetType === "videos" || 
+    return ['mp4', 'mov', 'webm', 'avi', 'mkv'].includes(ext) ||
+           assetType === "videos" ||
            assetType === "video-templates";
   };
 
   const isImage = () => {
     const url = getAssetUrl();
     const ext = getFileExtension(url);
-    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext) || 
-           assetType === "images" || 
-           assetType === "textures" || 
-           assetType === "icons" || 
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext) ||
+           assetType === "images" ||
+           assetType === "textures" ||
+           assetType === "icons" ||
            assetType === "graphics";
   };
 
   const is3DModel = () => {
     const url = getAssetUrl();
     const ext = getFileExtension(url);
-    return ['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(ext) || 
+    return ['glb', 'gltf', 'obj', 'fbx', 'stl'].includes(ext) ||
            assetType === "models";
   };
 
@@ -335,16 +335,16 @@ const AssetFullScreen = ({
             .asset-fullscreen-overlay {
               padding: 1rem;
             }
-            
+
             .asset-fullscreen-container {
               max-width: 98vw;
               max-height: 98vh;
             }
-            
+
             .asset-fullscreen-header {
               padding: 0.75rem 1rem;
             }
-            
+
             .asset-fullscreen-title {
               font-size: 1rem;
               max-width: 60%;
@@ -353,21 +353,21 @@ const AssetFullScreen = ({
         `}
       </style>
 
-      <div className="asset-fullscreen-overlay" 
+      <div className="asset-fullscreen-overlay"
         onClick={onClose}
-        role="button"          
-        tabIndex={-1}           
+        role="button"
+        tabIndex={-1}
         aria-label="Close preview">
-        <div 
+        <div
           ref={containerRef}
-          className="asset-fullscreen-container" 
+          className="asset-fullscreen-container"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="asset-fullscreen-header">
             <h3 className="asset-fullscreen-title">{assetName}</h3>
             <div className="asset-fullscreen-controls">
-              
-              <button 
+
+              <button
                 className="asset-fullscreen-btn"
                 type="button"
                 onClick={toggleFullscreen}
@@ -375,7 +375,7 @@ const AssetFullScreen = ({
               >
                 {isFullscreen ? <FiMinimize2 size={18} /> : <FiMaximize2 size={18} />}
               </button>
-              <button 
+              <button
                 className="asset-fullscreen-btn"
                 onClick={onClose}
                 type="button"
@@ -387,8 +387,8 @@ const AssetFullScreen = ({
           </div>
 
           <div className="asset-fullscreen-content">
-           
-            
+
+
             {isVideo() && assetUrl ? (
               <>
                 <video
@@ -420,7 +420,7 @@ const AssetFullScreen = ({
             ) : assetUrl ? (
               <div className="asset-fullscreen-unsupported">
                 <p>This asset type cannot be previewed in fullscreen.</p>
-                <button 
+                <button
                  aria-label="Download Asset"
                   className="asset-fullscreen-btn"
                   onClick={handleDownload}
@@ -439,7 +439,7 @@ const AssetFullScreen = ({
           {isVideo() && assetUrl && (
             <div className="asset-fullscreen-footer">
               <div className="video-controls">
-                <button 
+                <button
                   className="play-pause-btn"
                   onClick={togglePlay}
                   aria-label={isPlaying ? "Pause" : "Play"}

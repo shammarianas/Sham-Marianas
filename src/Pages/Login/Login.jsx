@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -27,8 +27,10 @@ import { loginWithApple } from "./AppleLogin";
 import { useLocation } from "react-router-dom";
 import SEO from "../../common/SEO";
 import { SEO_CONFIG } from "../../utils/seoConfig";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { functions } from "../../../firebase"; // Make sure you export functions from firebase.js
+import "firebase/functions";
+import "../../../firebase"; // Make sure you export functions from firebase.js
+
+// Country code data (for phone) // Make sure you export functions from firebase.js
 
 // Country code data (for phone)
 const countryCodes = [
@@ -218,38 +220,7 @@ const Login = () => {
   }, [location]);
 
   // Username validation function
-  const validateUsername = async (username) => {
-    if (/\s/.test(username)) {
-      return "Username cannot contain spaces";
-    }
 
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      return "Username can only contain letters, numbers and underscores (_)";
-    }
-
-    if (username.length < 3) {
-      return "Username must be at least 3 characters";
-    }
-
-    if (username.length > 20) {
-      return "Username must be less than 20 characters";
-    }
-
-    try {
-      const querySnapshot = await getDocs(
-        query(collection(db, "Profiles"), where("username", "==", username))
-      );
-
-      if (!querySnapshot.empty) {
-        return "Username already taken. Please choose another one.";
-      }
-    } catch (err) {
-      console.error("Error checking username:", err);
-      return "Error checking username availability";
-    }
-
-    return null;
-  };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
@@ -302,7 +273,7 @@ const Login = () => {
           setUsernameStatus("taken");
           setError("This username is already taken");
         }
-      } catch (err) {
+      } catch (_err) {
         setUsernameStatus("error");
         setError("Failed to check username");
       }
@@ -416,7 +387,7 @@ const sendVerificationEmail = async () => {
 
   } catch (err) {
     console.error("Full verification error:", err.code, err.message);
-    
+
     if (err.code === "auth/email-already-in-use") {
       setError(
         "Email already registered. Please login or use a different email."
@@ -430,7 +401,7 @@ const sendVerificationEmail = async () => {
     }
   }
 };
- 
+
 
 // Resend verification email
 const resendVerificationEmail = async () => {

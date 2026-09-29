@@ -40,7 +40,7 @@ const View = () => {
   const [isItemOwned, setIsItemOwned] = useState(false);
   const [markdown, setMarkdown] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
-  
+
 
   // Get price display text - UPDATED FOR FREE/PAID STRINGS
   const getPriceDisplay = (asset) => {
@@ -63,7 +63,12 @@ const View = () => {
   };
 
   const renderers = {
-    code({ node, inline, className, children, ...props }) {
+    code({
+  inline,
+  className,
+  children,
+  ...props
+}) {
       const match = /language-(\w+)/.exec(className || "");
       return !inline && match ? (
         <Suspense
@@ -85,7 +90,9 @@ const View = () => {
         </code>
       );
     },
-    image({ node, ...props }) {
+    image({
+  ...props
+}) {
       return <img  loading="lazy"  className="markdown-image" alt={props.alt} {...props} />;
     },
   };
@@ -162,17 +169,17 @@ const View = () => {
 // ✅ SEO FUNCTION
   const getAssetSEO = (assetData) => {
     if (!assetData || !assetData.title) return null;
-    
+
     return {
       title: `${assetData.title} | Shammarianas`,
-      description: assetData.description 
+      description: assetData.description
         ? assetData.description.substring(0, 160) + "..."
         : `Download ${assetData.title} from Shammarianas`,
       keywords: assetData.tags ? assetData.tags.join(", ") : "",
       ogImage: assetData.thumbnail || "/assets/imgs/default.jpg"
     };
   };
-  
+
   // ✅ LOADING SEO FUNCTION
   const getLoadingSEO = () => ({
     title: "Loading Asset | Shammarianas",
@@ -226,7 +233,7 @@ const View = () => {
             <Breadcrumbs
               links={[
                 { title: "Home", path: "/templates" },
-                { title: item.type, path: `/category/${item.type}` }, 
+                { title: item.type, path: `/category/${item.type}` },
                 { title: item.title, path: `/View/${item.slug}` },
               ]}
             />

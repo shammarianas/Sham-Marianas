@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 
 const Keywords = ({ keywords = [] }) => {
   // If keywords is undefined/null → treat as empty array

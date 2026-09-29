@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import AOS from "aos"; // Import AOS (Animate On Scroll) library
+import { useRef } from "react";
+import "aos"; // Import AOS (Animate On Scroll) library // Import AOS (Animate On Scroll) library
 
 import Cursor from "../../common/cusor";
 import ProgressScroll from "../../common/ProgressScroll";
@@ -10,7 +10,7 @@ import Header from "../../Components/Product-Design/Header";
 import Product from "../../Components/Product-Design/Product-design";
 
 export default function PageServicesDetails() {
-  const main = useRef();
+  useRef();
 
   return (
     <>

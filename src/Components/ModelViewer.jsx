@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { app } from "../firebase";
 
@@ -8,16 +8,16 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass";
+import "three/examples/jsm/postprocessing/EffectComposer";
+import "three/examples/jsm/postprocessing/RenderPass";
+import "three/examples/jsm/postprocessing/UnrealBloomPass";
+import "three/examples/jsm/postprocessing/BokehPass";
 import model_bg from "../assets/Images/Sections/model_bg.png";
 
 const ModelViewer = (props) => {
-  const [shadow, setShadow] = useState(2);
-  const [exposure, setExposure] = useState(1);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [shadow] = useState(2);
+  const [exposure] = useState(1);
+  const [isPlaying] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
@@ -29,8 +29,8 @@ const ModelViewer = (props) => {
   const controlsRef = useRef(null);
   const currentModelRef = useRef(null);
   const wireframeRef = useRef(false);
-  const [isWireframeOn, setIsWireframeOn] = useState(false);
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [isWireframeOn] = useState(false);
+  const [autoRotate] = useState(true);
 
   // Function to check if file is supported 3D format
   const isSupported3DFormat = (url) => {
@@ -53,13 +53,13 @@ const ModelViewer = (props) => {
       console.log("✅ Using thumbnailModel for 3D preview:", props.thumbnailModel);
       return props.thumbnailModel;
     }
-    
+
     // Priority 2: model field (only if supported format)
     if (props.model && isSupported3DFormat(props.model)) {
       console.log("✅ Using model field for 3D preview:", props.model);
       return props.model;
     }
-    
+
     console.log("❌ No supported 3D model found");
     return null;
   };
@@ -108,15 +108,15 @@ const ModelViewer = (props) => {
 
     // Initialize Renderer
     const renderer = new THREE.WebGLRenderer({
-      antialias: true, 
+      antialias: true,
       alpha: true,
       powerPreference: "high-performance"
     });
     rendererRef.current = renderer;
-    
+
     const width = mountRef.current?.clientWidth || window.innerWidth;
     const height = mountRef.current?.clientHeight || window.innerHeight;
-    
+
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -194,9 +194,9 @@ const ModelViewer = (props) => {
         const url = await getDownloadURL(modelRef);
 
         let extension = url.split('.').pop().toLowerCase().split('?')[0];
-        
+
         console.log("📦 Loading model:", { url, extension });
-        
+
         // Final check - agar ZIP file hai to error show karo
         if (extension === 'zip') {
           console.error('❌ ZIP files cannot be previewed in 3D viewer');
@@ -204,7 +204,7 @@ const ModelViewer = (props) => {
           setIsLoading(false);
           return;
         }
-        
+
         const manager = new THREE.LoadingManager();
         manager.onProgress = (url, itemsLoaded, itemsTotal) => {
           setLoadProgress((itemsLoaded / itemsTotal) * 100);
@@ -222,48 +222,48 @@ const ModelViewer = (props) => {
           case 'gltf':
             loader = new GLTFLoader(manager);
             loader.setDRACOLoader(dracoLoader);
-            
+
             loader.load(url, (gltf) => {
               // Remove previous model
               if (currentModelRef.current) {
                 scene.remove(currentModelRef.current);
               }
-              
+
               const model = gltf.scene;
               currentModelRef.current = model;
-              
+
               // GLB OPTIMIZED MATERIAL HANDLING
               model.traverse((node) => {
                 if (node.isMesh) {
                   node.castShadow = true;
                   node.receiveShadow = true;
-                  
+
                   // Enable wireframe if toggled
                   if (wireframeRef.current) {
                     node.material.wireframe = true;
                   }
-                  
+
                   // GLB SPECIFIC MATERIAL OPTIMIZATIONS
                   if (node.material) {
                     node.material.envMapIntensity = 1;
-                    
+
                     // For GLB files, preserve original material properties
                     if (node.material.isMeshStandardMaterial) {
                       // Keep original GLB material values
                       node.material.roughness = node.material.roughness !== undefined ? node.material.roughness : 0.5;
                       node.material.metalness = node.material.metalness !== undefined ? node.material.metalness : 0.1;
                     }
-                    
+
                     // Ensure material updates
                     node.material.needsUpdate = true;
                   }
                 }
               });
-              
+
               scene.add(model);
               centerAndScaleModel(model);
               fitModelToView(model);
-            }, 
+            },
             (progress) => {
               if (progress.lengthComputable) {
                 setLoadProgress((progress.loaded / progress.total) * 100);
@@ -282,7 +282,7 @@ const ModelViewer = (props) => {
               if (currentModelRef.current) {
                 scene.remove(currentModelRef.current);
               }
-              
+
               currentModelRef.current = obj;
               obj.traverse((node) => {
                 if (node.isMesh) {
@@ -297,7 +297,7 @@ const ModelViewer = (props) => {
                   }
                 }
               });
-              
+
               scene.add(obj);
               centerAndScaleModel(obj);
               fitModelToView(obj);
@@ -310,18 +310,18 @@ const ModelViewer = (props) => {
               if (currentModelRef.current) {
                 scene.remove(currentModelRef.current);
               }
-              
-              const material = new THREE.MeshPhongMaterial({ 
+
+              const material = new THREE.MeshPhongMaterial({
                 color: 0xaaaaaa,
                 specular: 0x111111,
                 shininess: 200,
                 wireframe: wireframeRef.current
               });
-              
+
               currentModelRef.current = new THREE.Mesh(geometry, material);
               currentModelRef.current.castShadow = true;
               currentModelRef.current.receiveShadow = true;
-              
+
               scene.add(currentModelRef.current);
               centerAndScaleModel(currentModelRef.current);
               fitModelToView(currentModelRef.current);
@@ -344,10 +344,10 @@ const ModelViewer = (props) => {
       const box = new THREE.Box3().setFromObject(model);
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
-      
+
       const maxDim = Math.max(size.x, size.y, size.z);
       const scale = 10 / maxDim;
-      
+
       model.scale.setScalar(scale);
       model.position.sub(center.multiplyScalar(scale));
     };
@@ -356,18 +356,18 @@ const ModelViewer = (props) => {
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
-      
+
       const maxSize = Math.max(size.x, size.y, size.z);
       const fitHeightDistance = maxSize / (2 * Math.atan((Math.PI * camera.fov) / 360));
       const fitWidthDistance = fitHeightDistance / camera.aspect;
       const distance = 1.2 * Math.max(fitHeightDistance, fitWidthDistance);
-      
+
       camera.position.copy(center);
       camera.position.x += distance;
       camera.position.y += distance * 0.5;
       camera.position.z += distance;
       camera.lookAt(center);
-      
+
       controls.target.copy(center);
       controls.update();
     };
@@ -379,23 +379,23 @@ const ModelViewer = (props) => {
     // Animation Loop
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      
+
       if (controls) {
         controls.update();
       }
-      
+
       if (renderer && scene && camera) {
         renderer.render(scene, camera);
       }
     };
-    
+
     animate();
 
     // Handle Resize
     const handleResize = () => {
       const width = mountNode?.clientWidth || window.innerWidth;
       const height = mountNode?.clientHeight || window.innerHeight;
-      
+
       if (camera) {
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
@@ -517,15 +517,15 @@ const ModelViewer = (props) => {
             <div className="loading-spinner"></div>
             <div className="loading-text">Loading Model...</div>
             <div className="loading-progress">
-              <div 
-                className="loading-progress-bar" 
+              <div
+                className="loading-progress-bar"
                 style={{ width: `${loadProgress}%` }}
               ></div>
             </div>
             <div className="loading-percentage">{Math.round(loadProgress)}%</div>
           </div>
         )}
-        
+
         {error && (
           <div className="error-overlay">
             <div className="error-icon">⚠️</div>
@@ -547,7 +547,7 @@ const ModelViewer = (props) => {
           background: #f0f0f0;
           box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
-        
+
         .model_showcase.fullscreen {
           position: fixed;
           top: 0;
@@ -556,17 +556,17 @@ const ModelViewer = (props) => {
           height: 100vh;
           z-index: 9999;
         }
-        
+
         .model_viewer {
           width: 100%;
           height: 100%;
           cursor: grab;
         }
-        
+
         .model_viewer:active {
           cursor: grabbing;
         }
-        
+
         .control-btn {
           background: none;
           border: none;
@@ -581,12 +581,12 @@ const ModelViewer = (props) => {
           width: 36px;
           height: 36px;
         }
-        
+
         .control-btn:hover {
           background: rgba(0,0,0,0.1);
           transform: scale(1.1);
         }
-        
+
         .loading-overlay {
           position: absolute;
           top: 0;
@@ -600,7 +600,7 @@ const ModelViewer = (props) => {
           justify-content: center;
           z-index: 20;
         }
-        
+
         .error-overlay {
           position: absolute;
           top: 0;
@@ -616,24 +616,24 @@ const ModelViewer = (props) => {
           text-align: center;
           padding: 20px;
         }
-        
+
         .error-icon {
           font-size: 48px;
           margin-bottom: 16px;
         }
-        
+
         .error-text {
           font-size: 18px;
           font-weight: 600;
           color: #dc2626;
           margin-bottom: 8px;
         }
-        
+
         .error-hint {
           font-size: 14px;
           color: #6b7280;
         }
-        
+
         .loading-spinner {
           width: 40px;
           height: 40px;
@@ -643,14 +643,14 @@ const ModelViewer = (props) => {
           animation: spin 1s linear infinite;
           margin-bottom: 15px;
         }
-        
+
         .loading-text {
           font-size: 16px;
           font-weight: 600;
           color: #333;
           margin-bottom: 10px;
         }
-        
+
         .loading-progress {
           width: 200px;
           height: 4px;
@@ -659,18 +659,18 @@ const ModelViewer = (props) => {
           overflow: hidden;
           margin-bottom: 8px;
         }
-        
+
         .loading-progress-bar {
           height: 100%;
           background: #3b82f6;
           transition: width 0.3s ease;
         }
-        
+
         .loading-percentage {
           font-size: 14px;
           color: #666;
         }
-        
+
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }

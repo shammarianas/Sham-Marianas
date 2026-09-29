@@ -30,7 +30,7 @@ function Blogs() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [, setIsAdmin] = useState(false);
   const [filter, setFilter] = useState("*");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -136,32 +136,7 @@ function Blogs() {
     startIndex + blogsPerPage
   );
 
-  const getPaginationItems = () => {
-    if (totalPages <= 7) {
-      return Array.from({ length: totalPages }, (_, index) => index + 1);
-    }
 
-    const pages = [1, 2];
-
-    if (currentPage > 4) {
-      pages.push("left-ellipsis");
-    }
-
-    const startPage = Math.max(3, currentPage - 1);
-    const endPage = Math.min(totalPages - 1, currentPage + 1);
-
-    for (let page = startPage; page <= endPage; page++) {
-      if (!pages.includes(page)) pages.push(page);
-    }
-
-    if (currentPage < totalPages - 3) {
-      pages.push("right-ellipsis");
-    }
-
-    pages.push(totalPages);
-
-    return pages;
-  };
 
   return (
     <>

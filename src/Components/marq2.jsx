@@ -1,4 +1,4 @@
-import React from "react";
+import "react";
 
 function Marq2() {
   const marquess = ["Get In Touch"]; // Replace with your actual array

@@ -1,34 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  FiPackage,
-  FiTrendingUp,
-  FiDownload,
-  FiDollarSign,
-  FiUsers,
-  FiStar,
-  FiCalendar,
-  FiFilter,
-  FiRefreshCw,
-  FiEye,
-  FiCheckCircle,
-  FiXCircle,
-  FiTrendingDown,
-  FiBarChart2,
-  FiPieChart,
-  FiVideo,
-  FiImage,
-  FiCode,
-  FiBox,
-  FiLayers,
-  FiType,
-  FiFile,
-} from "react-icons/fi";
+import { useState, useEffect, useMemo } from "react";
+import "react-router-dom";
+import { FiPackage, FiTrendingUp, FiDownload, FiDollarSign, FiUsers, FiStar, FiCalendar, FiRefreshCw, FiCheckCircle, FiTrendingDown, FiBarChart2, FiPieChart, FiVideo, FiImage, FiCode, FiBox, FiLayers, FiType, FiFile } from "react-icons/fi";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { useUser } from "../../../../Context/UserProvider";
 
-const Statistics = ({ setActiveTab }) => {
+const Statistics = () => {
   const { currentUser } = useUser();
   const [allAssets, setAllAssets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -366,7 +343,7 @@ const Statistics = ({ setActiveTab }) => {
         Statistics.totalAssets > 0 ? (count / Statistics.totalAssets) * 100 : 0,
     }));
   }, [filteredAssets, Statistics.totalAssets, loading]);
-  
+
   // ✅ UPDATED: Category Distribution - Only show categories that have assets
   const categoryDistribution = useMemo(() => {
     if (loading) return [];
@@ -397,7 +374,7 @@ const Statistics = ({ setActiveTab }) => {
 
     // ✅ FILTER: Only return categories that have assets
     return Object.entries(categories)
-      .filter(([category, count]) => count > 0) // Only categories with assets
+      .filter(([, count]) => count > 0) // Only categories with assets
       .map(([category, count]) => ({
         category,
         count,
@@ -915,7 +892,7 @@ const Statistics = ({ setActiveTab }) => {
                 </tr>
               </thead>
               <tbody>
-                {topPerformingAssets.map((asset, index) => (
+                {topPerformingAssets.map((asset) => (
                   <tr key={asset.id}>
                     <td>
                       <div className="report-user">
@@ -953,7 +930,7 @@ const Statistics = ({ setActiveTab }) => {
                         {formatCurrency(asset.earnings || 0)}
                       </div>
                     </td>
-                   
+
                   </tr>
                 ))}
                 {topPerformingAssets.length === 0 && !loading && (
@@ -986,7 +963,7 @@ const Statistics = ({ setActiveTab }) => {
                 </tr>
               </thead>
               <tbody>
-                {topTrendingAssets.map((asset, index) => (
+                {topTrendingAssets.map((asset) => (
                   <tr key={asset.id}>
                     <td>
                       <div className="report-user">
@@ -1019,7 +996,7 @@ const Statistics = ({ setActiveTab }) => {
                         </span>
                       </div>
                     </td>
-                    
+
                   </tr>
                 ))}
                 {topTrendingAssets.length === 0 && !loading && (

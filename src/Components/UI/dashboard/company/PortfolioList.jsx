@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FiBriefcase, FiSearch, FiFilter, FiPlus, FiEye, FiTrash2, FiUser, FiImage, FiTag, FiStar, FiX } from "react-icons/fi";
 import ProjectModal from "../../../../Pages/PortfolioUpload";
 
@@ -142,7 +142,7 @@ const PortfolioList = ({
   const handleCreateNew = () => {
     setPortfolioToEdit(null); // Ensure it's in create mode
     setIsCreateModalOpen(true); // YEH LINE ADD KARO
-    
+
     // Optional: If parent component wants to handle this
     if (typeof onCreate === 'function') {
       onCreate();
@@ -166,19 +166,19 @@ const PortfolioList = ({
   const filteredPortfolios = portfolios.filter((p) => {
     try {
       const matchesSearch = ((p.title || "").toLowerCase()).includes((portfolioSearchTerm || "").toLowerCase());
-      
+
       // FIX: Safely handle undefined category
       const portfolioCategory = (p.category || p.type || "").toString().trim();
       const matchesCategory =
         selectedPortfolioCategory === "all" ||
         portfolioCategory === selectedPortfolioCategory;
-      
+
       // FIX: Safely handle undefined status
       const status = (p.status || "draft").toLowerCase();
       const matchesStatus =
         selectedPortfolioStatus === "all" ||
         status === selectedPortfolioStatus;
-      
+
       return matchesSearch && matchesCategory && matchesStatus;
     } catch (error) {
       console.error("Error filtering portfolio:", p, error);

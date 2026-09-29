@@ -67,7 +67,7 @@ function startStaticServer(fallbackHtml) {
         // SPA Navigation fallback
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(fallbackHtml);
-      } catch (err) {
+      } catch (_err) {
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end('Server Error');
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "../Context/UserProvider";
 import { db } from "../../firebase";
 import {
@@ -47,26 +47,26 @@ const Support = () => {
   // ✅ Function to generate unique complaint ID
   const generateComplaintId = async () => {
     const prefix = isContributor ? "CO" : "US";
-    
+
     // Get current counter from Firestore or start from 1
     const counterRef = doc(db, "Counters", "supportComplaints");
-    
+
     try {
       const counterDoc = await getDoc(counterRef);
       let currentCount = 1;
-      
+
       if (counterDoc.exists()) {
         currentCount = counterDoc.data().count + 1;
         await setDoc(counterRef, { count: currentCount });
       } else {
         await setDoc(counterRef, { count: currentCount });
       }
-      
+
       // Format: US/CO + timestamp + 4-digit sequential number
       const timestamp = Date.now();
       const sequentialNumber = currentCount.toString().padStart(4, '0');
       return `${prefix}-${timestamp}-${sequentialNumber}`;
-      
+
     } catch (error) {
       console.error("Error generating complaint ID:", error);
       // Fallback: timestamp + random number
@@ -167,10 +167,10 @@ const Support = () => {
     setLoading(true);
     try {
       const userType = isContributor ? "contributor" : "regular";
-      
+
       // ✅ Generate unique complaint ID
       const complaintId = await generateComplaintId();
-      
+
       console.log("📝 Generated Complaint ID:", complaintId);
 
       // 1️⃣ Save complaint in user's Support subcollection with complaintId
@@ -223,7 +223,7 @@ const Support = () => {
 
       // Show success message with complaint ID
       alert(`Your report has been submitted successfully!\n\nComplaint ID: ${complaintId}\n\nPlease save this ID for future reference.`);
-      
+
       setSubject("");
       setDescription("");
       setIssueType("");

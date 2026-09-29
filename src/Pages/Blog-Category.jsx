@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SEO from "../common/SEO";
-import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const VALID_CATEGORIES = [
@@ -144,7 +144,7 @@ const BlogCategory = () => {
           <div className="container text-center py-5">Loading...</div>
         </section>
       ) : (
-      
+
     <section className="blog-main section-padding">
       <div className="container">
         <h2 className="fz-30 fw-600 mb-40">{categoryTitle}</h2>
@@ -163,7 +163,7 @@ const BlogCategory = () => {
                     {post.coverImage && (
                       <div className="img">
                         <Link to={`/blog/${post.slug}`}>
-                          <img  loading="lazy"  
+                          <img  loading="lazy"
                             className="gallery-image blog-cover-img"
                             src={post.coverImage}
                             alt={post.title}

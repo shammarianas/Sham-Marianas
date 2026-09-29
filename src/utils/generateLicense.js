@@ -3,7 +3,7 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 
 pdfMake.vfs = pdfFonts.pdfMake?.vfs || pdfFonts.vfs;
 
-const logoUrl = '/assets/imgs/logo.png';
+
 // Fonts ko lazy load karenge taaki "Roboto-Regular.ttf not found" na aaye
 const loadFonts = async () => {
   if (window.pdfMakeFontsLoaded) return;
@@ -55,7 +55,7 @@ const getFooterImage = async () => {
 };
 
 // Get license terms content based on license type
-const getLicenseTermsContent = (licenseType, asset) => {
+const getLicenseTermsContent = (licenseType, _asset) => {
   // Main Heading
   const header = {
     text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' :
@@ -277,7 +277,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
 };
 
 // Make getDocDefinition async for auto snapshot
-const getDocDefinition = async (asset, licenseType, user) => {
+const getDocDefinition = async (asset, licenseType, _user) => {
   const licenseId = `LIC-${Date.now().toString(36).toUpperCase()}`;
 
   // Auto detect if it's a 3D model
@@ -355,7 +355,7 @@ const getDocDefinition = async (asset, licenseType, user) => {
       ]
     },
 
-    footer: function (currentPage, pageCount) {
+    footer: function () {
       return {
         margin: [0, 0, 0, 0],
         // stack: [
@@ -455,11 +455,11 @@ const getDocDefinition = async (asset, licenseType, user) => {
         alignment: 'center',
         margin: [0, 20, 0, 30]
       },
-      // { 
-      //   text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' : 
+      // {
+      //   text: licenseType === 'Free for Personal Use' ? 'FREE FOR PERSONAL USE LICENSE' :
       //         licenseType === 'Free for Commercial Use' ? 'FREE FOR COMMERCIAL USE LICENSE' :
-      //         'DIGITAL ASSET LICENSE', 
-      //   style: 'header' 
+      //         'DIGITAL ASSET LICENSE',
+      //   style: 'header'
       // },
       // { text: 'Digital Asset License Agreement', style: 'subheader' },
       // { canvas: [{ type: 'line', x1: 100, y1: 15, x2: 495, y2: 15, lineWidth: 4, lineColor: '#102935' }], margin: [0, 20, 0, 30] },

@@ -1,25 +1,6 @@
-import React, { useState, useEffect } from "react";
-import {
-  FiBarChart2,
-  FiPieChart,
-  FiTrendingUp,
-  FiTrendingDown,
-  FiUsers,
-  FiDollarSign,
-  FiShoppingCart,
-  FiEye,
-  FiCalendar,
-  FiFilter,
-  FiDownload,
-  FiRefreshCw,
-  FiList,
-  FiX,
-  FiSearch,
-  FiCheckCircle,
-  FiStar,
-  FiXCircle,
-} from "react-icons/fi";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { FiBarChart2, FiPieChart, FiTrendingUp, FiTrendingDown, FiUsers, FiDollarSign, FiShoppingCart, FiEye, FiFilter, FiDownload, FiRefreshCw, FiList, FiX, FiSearch, FiCheckCircle, FiStar, FiXCircle } from "react-icons/fi";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../../firebase";
 
 const SellerAnalytics = () => {

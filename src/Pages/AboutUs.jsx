@@ -1,12 +1,12 @@
 import Intro from "./../Components/about-us/Introl";
 import Header from "./../Components/about-us/firstPage";
 import Numbers from "./../Components/about-us/Numbers";
-import Services from "../Components/about-us/aboutServices";
+import "../Components/about-us/aboutServices";
 import Team from "./../Components/about-us/Team";
-import Clients from "./../Components/about-us/Clients";
-import Blog from "./../Components/about-us/Blog";
+import "./../Components/about-us/Clients";
+import "./../Components/about-us/Blog";
 import Marq2 from "./../Components/marq2";
-import Testimonials from "../Components/services/Testimonials";
+import "../Components/services/Testimonials";
 import SEO from "../common/SEO";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SchemaMarkup from "../Components/SchemaMarkup";

@@ -1,4 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+
+//  IMPORTANT: Apna production webhook URL yahan daalein.
 
 //  IMPORTANT: Apna production webhook URL yahan daalein.
 const N8N_CHAT_WEBHOOK_URL = "https://n8n.agentixsystem.com/webhook/sham-marianas-chatbot";
@@ -274,7 +276,7 @@ const ChatWidget = () => {
         ...prev,
         { role: "bot", text: cleanText, showInquiryButton, showWhatsappButton, links },
       ]);
-    } catch (err) {
+    } catch (_err) {
       setMessages((prev) => [
         ...prev,
         {
