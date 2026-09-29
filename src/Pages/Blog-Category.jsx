@@ -147,7 +147,7 @@ const BlogCategory = () => {
 
     <section className="blog-main section-padding">
       <div className="container">
-        <h2 className="fz-30 fw-600 mb-40">{categoryTitle}</h2>
+        <h1 className="fz-30 fw-600 mb-40">{categoryTitle}</h1>
 
         <div className="row lg-marg justify-content-around">
           {/* ---------- BLOG LIST ---------- */}
