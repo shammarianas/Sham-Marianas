@@ -11,10 +11,12 @@ export const useUser = () => useContext(UserContext);
 export const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      setAuthLoading(false);
 
       // fetch user profile data from Firestore
       const fetchUserProfile = async () => {
@@ -52,7 +54,7 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ currentUser, userProfile, updateUserProfile }}
+      value={{ currentUser, userProfile, authLoading, updateUserProfile }}
     >
       {children}
     </UserContext.Provider>

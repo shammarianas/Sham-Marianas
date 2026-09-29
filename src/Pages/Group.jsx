@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import { db } from "../../firebase";
 import {
   collection,
@@ -13,7 +14,7 @@ import {
 import { useUser } from "../Context/UserProvider";
 
 const Group = () => {
-  const { currentUser } = useUser();
+  const { currentUser, authLoading } = useUser();
   const [mails, setMails] = useState([]);
   const [requests, setRequests] = useState([]);
 
@@ -111,8 +112,12 @@ const Group = () => {
     }
   }, [currentUser]);
 
-  if (!currentUser) {
+  if (authLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/Login" replace />;
   }
   const acceptTrade = async (groupId, userEmail) => {
     try {
