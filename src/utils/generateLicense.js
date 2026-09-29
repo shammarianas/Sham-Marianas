@@ -261,7 +261,7 @@ const getLicenseTermsContent = (licenseType, asset) => {
   } else {
     // Default license
     return [
-      commonHeader,
+      header,
       { text: 'This digital asset is licensed for use according to the terms specified by the creator. Please refer to the specific license type for detailed permissions and restrictions.', margin: [0, 0, 0, 20] },
       { text: 'General Terms:', style: 'subSection', color: '#2c3e50', margin: [0, 0, 0, 5] },
       {

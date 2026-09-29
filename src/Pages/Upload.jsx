@@ -739,10 +739,10 @@ const Upload = ({
           if (docSnap.exists()) {
             const spec = docSnap.data().specialization;
             setSpecialization(spec);
+            const allowedTypes = specializationToAssetTypes[spec] || [];
 
             // Auto-select first allowed type for new uploads
             if (!editMode) {
-              const allowedTypes = specializationToAssetTypes[spec] || [];
               if (
                 allowedTypes.length > 0 &&
                 !allowedTypes.includes(formData.type)
@@ -2448,7 +2448,6 @@ const Upload = ({
                       onEnded={handleVideoEnded}
                       onError={handleVideoError}
                       playsInline
-                      webkit-playsinline="true"
                       muted
                     >
                       Your browser does not support the video tag.

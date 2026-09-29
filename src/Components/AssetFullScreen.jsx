@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FiX, FiPlay, FiPause, FiMaximize2, FiMinimize2, FiDownload } from "react-icons/fi";
 import { useUser } from "../Context/UserProvider";
-// import { saveAs } from "file-saver";
+import { saveAs } from "file-saver";
 
 const AssetFullScreen = ({ 
   asset, 

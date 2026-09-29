@@ -37,7 +37,7 @@ import Upload from "../../../../Pages/Upload";
 import { useUser } from "../../../../Context/UserProvider";
 import SimpleModelViewer from "../../../UI/SimpleModelViewer"; // Adjust path as needed
 
-const AssetManagement = () => {
+const AssetManagement = ({ createAssetNotification }) => {
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

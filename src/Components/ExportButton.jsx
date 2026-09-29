@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiDownload, FiRefreshCw } from "react-icons/fi";
-import { exportToCSV } from "../utils/exportUtils";
+import { exportToCSV, exportToExcel, exportToJSON } from "../utils/exportUtils";
 
 const ExportButton = ({
   data,

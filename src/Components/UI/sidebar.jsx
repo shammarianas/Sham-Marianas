@@ -1,5 +1,4 @@
 import * as React from "react";
-import React from "react";
 import { Slot } from "./slot";
 import { cva } from "../../lib/class-variance-authority";
 import { PanelLeft } from "lucide-react";

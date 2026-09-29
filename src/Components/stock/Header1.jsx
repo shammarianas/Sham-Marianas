@@ -1,6 +1,6 @@
 import { db } from "../../../firebase";
 import { useState, useEffect, useCallback } from "react";
-import { getDocs, collection, query } from "firebase/firestore";
+import { getDocs, collection, query, where } from "firebase/firestore";
 import { Link } from "react-router-dom";
 
 const Search = () => {
@@ -199,7 +199,7 @@ const HeroSection = () => {
 
   useEffect(() => {
     console.log({ assets });
-  }, [assets, useUser]);
+  }, [assets]);
 
   return (
     <div className="hero-container">
