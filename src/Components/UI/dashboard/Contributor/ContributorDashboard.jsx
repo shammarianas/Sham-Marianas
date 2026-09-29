@@ -675,9 +675,6 @@ const SellerDashboard = () => {
       case "billing":
         return <BillingInvoices {...commonProps} />;
 
-      case "feedback":
-        return <Feedback {...commonProps} />;
-
       default:
         return <DashboardOverview {...commonProps} />;
     }
@@ -897,7 +894,6 @@ const SellerDashboard = () => {
                 {activeTab === "report-track" && "Track Reports"}
                 {activeTab === "profile" && "Profile"}
                 {activeTab === "billing" && "Billing & Invoices"}
-                {activeTab === "feedback" && "Feedback"}
               </h1>
             </div>
             <div className="header-right m-0">

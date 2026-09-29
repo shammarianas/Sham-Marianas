@@ -62,7 +62,7 @@ const Downloads = () => {
         const profilesSnapshot = await getDocs(profilesRef);
 
         if (profilesSnapshot.empty) {
-          await fetchUserDownloads();
+          setDownloads([]);
           return;
         }
 
@@ -159,7 +159,7 @@ const Downloads = () => {
         setDownloads(downloadsArray);
       } catch (error) {
         console.error("Error:", error);
-        await fetchUserDownloads();
+        setDownloads([]);
       } finally {
         setLoading(false);
       }
