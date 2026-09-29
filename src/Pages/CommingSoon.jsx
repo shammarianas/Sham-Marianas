@@ -85,7 +85,7 @@ const ComingSoon = () => {
       </div>
 
       {/* Inline Animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes floatGlow {
           0% {
             transform: translateY(0) translateX(0) scale(0.8);

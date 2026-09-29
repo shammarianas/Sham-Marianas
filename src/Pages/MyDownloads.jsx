@@ -458,7 +458,7 @@ const MyDownloads = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         
       `}</style>
     </>

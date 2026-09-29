@@ -210,7 +210,7 @@ function FirstPage() {
                     </label>
                     <input
                       type="text"
-                      class="input"
+                      className="input"
                       placeholder="Your name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -224,7 +224,7 @@ function FirstPage() {
                     </label>
                     <input
                       type="text"
-                      class="input"
+                      className="input"
                       placeholder="Your company"
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
@@ -240,7 +240,7 @@ function FirstPage() {
                     </label>
                     <input
                       type="email"
-                      class="input"
+                      className="input"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -290,7 +290,7 @@ function FirstPage() {
                       Service *
                     </label>
                     <select
-                      class="input"
+                      className="input"
                       value={service}
                       onChange={(e) => setService(e.target.value)}
                       disabled={isSubmitting}
@@ -329,7 +329,7 @@ function FirstPage() {
                       Budget *
                     </label>
                     <select
-                      class="input"
+                      className="input"
                       value={budget}
                       onChange={(e) => setBudget(e.target.value)}
                       disabled={isSubmitting}

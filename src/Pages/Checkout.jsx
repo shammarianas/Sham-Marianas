@@ -1730,7 +1730,7 @@ const CheckoutForm = () => {
       </div>
 
       {/* CSS for Stripe inputs */}
-      <style jsx="true">{`
+      <style>{`
         .stripe-input {
           width: 100%;
           background-color: transparent;

@@ -44,7 +44,7 @@ function Team() {
                 <div className="social">
                   <div className="links">
                     <a href="https://www.youtube.com/c/ShamMarianasSM" aria-label="Visit Sham Marianas YouTube channel">
-                      <i class="fab fa-youtube"></i>
+                      <i className="fab fa-youtube"></i>
                     </a>
                     <a href="https://www.behance.net/shammarianas" aria-label="Visit Sham Marianas Behance profile">
                       <i className="fab fa-behance"></i>

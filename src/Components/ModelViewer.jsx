@@ -522,7 +522,7 @@ const ModelViewer = (props) => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .model_showcase {
           position: relative;
           width: 100%;

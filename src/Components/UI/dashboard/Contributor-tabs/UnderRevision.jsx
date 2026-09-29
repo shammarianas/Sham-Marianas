@@ -264,20 +264,23 @@ const UnderRevisionAssets = () => {
           case "today":
             if (assetDate.toDateString() !== now.toDateString()) return false;
             break;
-          case "week":
+          case "week": {
             const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
             if (assetDate < weekAgo) return false;
             break;
-          case "month":
+          }
+          case "month": {
             const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
             if (assetDate < monthAgo) return false;
             break;
-          case "older":
+          }
+          case "older": {
             const olderThanMonth = new Date(
               now.getTime() - 30 * 24 * 60 * 60 * 1000
             );
             if (assetDate >= olderThanMonth) return false;
             break;
+          }
           default:
             break;
         }

@@ -231,7 +231,7 @@ function Contact() {
                     </a>
                   </div>
 
-                  <style jsx>{`
+                  <style>{`
                     .social-list {
                       display: flex;
                       gap: 8px;

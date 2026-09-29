@@ -285,20 +285,23 @@ const UserReport = () => {
           case "today":
             if (reportDate.toDateString() !== now.toDateString()) return false;
             break;
-          case "week":
+          case "week": {
             const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
             if (reportDate < weekAgo) return false;
             break;
-          case "month":
+          }
+          case "month": {
             const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
             if (reportDate < monthAgo) return false;
             break;
-          case "older":
+          }
+          case "older": {
             const olderThanMonth = new Date(
               now.getTime() - 30 * 24 * 60 * 60 * 1000
             );
             if (reportDate >= olderThanMonth) return false;
             break;
+          }
           default:
             break;
         }

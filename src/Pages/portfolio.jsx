@@ -358,7 +358,7 @@ function Header() {
 
       <Marq2 />
 
-      <style jsx>{`
+      <style>{`
         .search-icon-container:hover {
           transform: translateY(-50%) scale(1.05) !important;
           box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;

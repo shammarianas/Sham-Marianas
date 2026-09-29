@@ -995,7 +995,7 @@ const PaymentPlan = ({ users, formatCurrency, formatDate }) => {
       )}
 
       {/* Add CSS for animations */}
-      <style jsx>{`
+      <style>{`
         .error-text {
           color: #ef4444;
           margin-left: 1rem;

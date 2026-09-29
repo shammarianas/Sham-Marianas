@@ -192,9 +192,10 @@ const SearchTrends = () => {
           return b.growth - a.growth;
         case "volume":
           return b.volume - a.volume;
-        case "competition":
+        case "competition": {
           const competitionOrder = { low: 3, medium: 2, high: 1 };
           return competitionOrder[b.competition] - competitionOrder[a.competition];
+        }
         default:
           return b.popularity - a.popularity;
       }
@@ -614,7 +615,7 @@ const SearchTrends = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .user-reports-dashboard {
           padding: 20px;
           position: relative;
