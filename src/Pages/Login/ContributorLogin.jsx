@@ -191,6 +191,16 @@ const ContributorLogin = () => {
   }, [resendTimer]);
 
   useEffect(() => {
+    if (currentStep !== 2 || !isGoogleUser) return undefined;
+
+    const timer = setTimeout(() => {
+      setCurrentStep(3);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [currentStep, isGoogleUser]);
+
+  useEffect(() => {
     setError("");
     setSuccess("");
   }, [location, currentStep]);
@@ -1576,14 +1586,6 @@ const ContributorLogin = () => {
                           </small>
                         </p>
                       </div>
-
-                      {/* Auto-redirect after 2 seconds */}
-                      {useEffect(() => {
-                        const timer = setTimeout(() => {
-                          setCurrentStep(3);
-                        }, 2000);
-                        return () => clearTimeout(timer);
-                      }, [])}
 
                       <div
                         style={{
