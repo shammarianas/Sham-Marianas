@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   doc,
@@ -391,14 +391,7 @@ const Profile = () => {
     findUserByUsername();
   }, [urlUsername]);
 
-  // Fetch subscription data
-  useEffect(() => {
-    if (isOwnProfile && userId) {
-      fetchTeamDetails();
-    }
-  }, [isOwnProfile, userId]);
-
-  const fetchTeamDetails = async () => {
+  const fetchTeamDetails = useCallback(async () => {
     if (!isOwnProfile || !userId) return;
 
     try {
@@ -641,7 +634,14 @@ const Profile = () => {
     } finally {
       setLoadingSubscription(false);
     }
-  };
+  }, [isOwnProfile, userId]);
+
+  // Fetch subscription data
+  useEffect(() => {
+    if (isOwnProfile && userId) {
+      fetchTeamDetails();
+    }
+  }, [fetchTeamDetails, isOwnProfile, userId]);
   const fetchPendingInvites = async () => {
     if (!userId) return;
 
@@ -936,10 +936,6 @@ const Profile = () => {
             ...data,
           }));
 
-          // ✅ Update SEO when user data changes
-          const seo = getProfileSEO({ ...data, id: userId }, items);
-          setSeoData(seo);
-
           if (currentUser && currentUser.uid === userId) {
             setFirstName(data.firstName || "");
             setLastName(data.lastName || "");
@@ -993,11 +989,6 @@ const Profile = () => {
         }));
         setItems(itemsData);
         setLoading(false);
-        // ✅ Update SEO with new items
-        if (user) {
-          const seo = getProfileSEO(user, itemsData);
-          setSeoData(seo);
-        }
       } catch (error) {
         console.error("Error fetching items:", error);
         setLoading("error");

@@ -16,12 +16,14 @@ const SimpleModelViewer = ({ modelUrl }) => {
   useEffect(() => {
     if (!mountRef.current || !modelUrl) return;
 
+    const mountNode = mountRef.current;
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
     camera.position.set(5, 5, 5);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(300, 300);
-    mountRef.current.appendChild(renderer.domElement);
+    mountNode.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0x404040, 1);
     scene.add(ambientLight);
@@ -61,8 +63,8 @@ const SimpleModelViewer = ({ modelUrl }) => {
     animate();
 
     return () => {
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountNode.contains(renderer.domElement)) {
+        mountNode.removeChild(renderer.domElement);
       }
     };
   }, [modelUrl]);

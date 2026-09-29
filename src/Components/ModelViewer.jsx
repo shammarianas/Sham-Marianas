@@ -23,11 +23,14 @@ const ModelViewer = (props) => {
   const [loadProgress, setLoadProgress] = useState(0);
   const [error, setError] = useState(null);
   const mountRef = useRef(null);
+  const rendererRef = useRef(null);
+  const cameraRef = useRef(null);
+  const sceneRef = useRef(null);
+  const controlsRef = useRef(null);
+  const currentModelRef = useRef(null);
+  const wireframeRef = useRef(false);
   const [isWireframeOn, setIsWireframeOn] = useState(false);
   const [autoRotate, setAutoRotate] = useState(true);
-
-  let renderer, camera, scene, controls, composer;
-  let currentModel = null;
 
   // Function to check if file is supported 3D format
   const isSupported3DFormat = (url) => {
@@ -61,13 +64,15 @@ const ModelViewer = (props) => {
     return null;
   };
 
+  const modelToLoad = getModelToLoad();
+
   useEffect(() => {
+    const mountNode = mountRef.current;
+    let animationFrameId;
+
     setIsLoading(true);
     setLoadProgress(0);
     setError(null);
-
-    // ✅ SAHI MODEL URL GET KARO
-    const modelToLoad = getModelToLoad();
 
     console.log("🎯 ModelViewer will load:", modelToLoad);
 
@@ -87,24 +92,27 @@ const ModelViewer = (props) => {
     }
 
     // Initialize Scene
-    scene = new THREE.Scene();
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
     scene.background = new THREE.Color(0xf0f0f0);
 
     // Initialize Camera
-    camera = new THREE.PerspectiveCamera(
+    const camera = new THREE.PerspectiveCamera(
       35,
       mountRef.current?.clientWidth / mountRef.current?.clientHeight || 1,
       0.1,
       1000
     );
+    cameraRef.current = camera;
     camera.position.set(5, 5, 5);
 
     // Initialize Renderer
-    renderer = new THREE.WebGLRenderer({ 
+    const renderer = new THREE.WebGLRenderer({
       antialias: true, 
       alpha: true,
       powerPreference: "high-performance"
     });
+    rendererRef.current = renderer;
     
     const width = mountRef.current?.clientWidth || window.innerWidth;
     const height = mountRef.current?.clientHeight || window.innerHeight;
@@ -119,7 +127,8 @@ const ModelViewer = (props) => {
     renderer.physicallyCorrectLights = true;
 
     // Initialize Controls
-    controls = new OrbitControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controlsRef.current = controls;
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.rotateSpeed = 1.0;
@@ -127,7 +136,7 @@ const ModelViewer = (props) => {
     controls.panSpeed = 0.8;
     controls.minDistance = 1;
     controls.maxDistance = 50;
-    controls.autoRotate = autoRotate;
+    controls.autoRotate = true;
     controls.autoRotateSpeed = 2;
 
     // Touch controls for mobile
@@ -140,7 +149,7 @@ const ModelViewer = (props) => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, shadow);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
     directionalLight.position.set(10, 10, 5);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
@@ -173,8 +182,8 @@ const ModelViewer = (props) => {
     dracoLoader.setDecoderConfig({ type: 'js' });
 
     // Mount renderer
-    if (mountRef.current) {
-      mountRef.current.appendChild(renderer.domElement);
+    if (mountNode) {
+      mountNode.appendChild(renderer.domElement);
     }
 
     // Load Model Function - GLB OPTIMIZED
@@ -216,12 +225,12 @@ const ModelViewer = (props) => {
             
             loader.load(url, (gltf) => {
               // Remove previous model
-              if (currentModel) {
-                scene.remove(currentModel);
+              if (currentModelRef.current) {
+                scene.remove(currentModelRef.current);
               }
               
               const model = gltf.scene;
-              currentModel = model;
+              currentModelRef.current = model;
               
               // GLB OPTIMIZED MATERIAL HANDLING
               model.traverse((node) => {
@@ -230,7 +239,7 @@ const ModelViewer = (props) => {
                   node.receiveShadow = true;
                   
                   // Enable wireframe if toggled
-                  if (isWireframeOn) {
+                  if (wireframeRef.current) {
                     node.material.wireframe = true;
                   }
                   
@@ -270,16 +279,16 @@ const ModelViewer = (props) => {
           case 'obj':
             loader = new OBJLoader(manager);
             loader.load(url, (obj) => {
-              if (currentModel) {
-                scene.remove(currentModel);
+              if (currentModelRef.current) {
+                scene.remove(currentModelRef.current);
               }
               
-              currentModel = obj;
+              currentModelRef.current = obj;
               obj.traverse((node) => {
                 if (node.isMesh) {
                   node.castShadow = true;
                   node.receiveShadow = true;
-                  if (isWireframeOn) {
+                  if (wireframeRef.current) {
                     const wireframeMaterial = new THREE.MeshBasicMaterial({
                       color: 0xffffff,
                       wireframe: true
@@ -298,24 +307,24 @@ const ModelViewer = (props) => {
           case 'stl':
             loader = new STLLoader(manager);
             loader.load(url, (geometry) => {
-              if (currentModel) {
-                scene.remove(currentModel);
+              if (currentModelRef.current) {
+                scene.remove(currentModelRef.current);
               }
               
               const material = new THREE.MeshPhongMaterial({ 
                 color: 0xaaaaaa,
                 specular: 0x111111,
                 shininess: 200,
-                wireframe: isWireframeOn
+                wireframe: wireframeRef.current
               });
               
-              currentModel = new THREE.Mesh(geometry, material);
-              currentModel.castShadow = true;
-              currentModel.receiveShadow = true;
+              currentModelRef.current = new THREE.Mesh(geometry, material);
+              currentModelRef.current.castShadow = true;
+              currentModelRef.current.receiveShadow = true;
               
-              scene.add(currentModel);
-              centerAndScaleModel(currentModel);
-              fitModelToView(currentModel);
+              scene.add(currentModelRef.current);
+              centerAndScaleModel(currentModelRef.current);
+              fitModelToView(currentModelRef.current);
             });
             break;
 
@@ -369,10 +378,9 @@ const ModelViewer = (props) => {
 
     // Animation Loop
     const animate = () => {
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
       
       if (controls) {
-        controls.autoRotate = autoRotate && isPlaying;
         controls.update();
       }
       
@@ -385,8 +393,8 @@ const ModelViewer = (props) => {
 
     // Handle Resize
     const handleResize = () => {
-      const width = mountRef.current?.clientWidth || window.innerWidth;
-      const height = mountRef.current?.clientHeight || window.innerHeight;
+      const width = mountNode?.clientWidth || window.innerWidth;
+      const height = mountNode?.clientHeight || window.innerHeight;
       
       if (camera) {
         camera.aspect = width / height;
@@ -401,9 +409,10 @@ const ModelViewer = (props) => {
 
     // Cleanup
     return () => {
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
-      if (mountRef.current && renderer && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountNode?.contains(renderer.domElement)) {
+        mountNode.removeChild(renderer.domElement);
       }
       if (renderer) {
         renderer.dispose();
@@ -411,16 +420,22 @@ const ModelViewer = (props) => {
       if (controls) {
         controls.dispose();
       }
-      if (currentModel) {
-        scene.remove(currentModel);
+      if (currentModelRef.current) {
+        scene.remove(currentModelRef.current);
       }
+      rendererRef.current = null;
+      cameraRef.current = null;
+      sceneRef.current = null;
+      controlsRef.current = null;
+      currentModelRef.current = null;
     };
-  }, [props.thumbnailModel, props.model]); // 👈 DONO PROPS KO LISTEN KARO
+  }, [modelToLoad]);
 
   // Wireframe effect
   useEffect(() => {
-    if (currentModel) {
-      currentModel.traverse((node) => {
+    wireframeRef.current = isWireframeOn;
+    if (currentModelRef.current) {
+      currentModelRef.current.traverse((node) => {
         if (node.isMesh) {
           if (isWireframeOn) {
             if (node.material.isMaterial) {
@@ -446,16 +461,16 @@ const ModelViewer = (props) => {
 
   // Auto-rotate effect
   useEffect(() => {
-    if (controls) {
-      controls.autoRotate = autoRotate && isPlaying;
+    if (controlsRef.current) {
+      controlsRef.current.autoRotate = autoRotate && isPlaying;
     }
-  }, [autoRotate, isPlaying, controls]);
+  }, [autoRotate, isPlaying]);
 
   // Shadow intensity effect
   useEffect(() => {
-    if (scene) {
-      scene.traverse((node) => {
-        if (node.isDirectionalLight && node !== scene.children.find(child => child.isAmbientLight)) {
+    if (sceneRef.current) {
+      sceneRef.current.traverse((node) => {
+        if (node.isDirectionalLight) {
           node.intensity = shadow;
         }
       });
@@ -464,14 +479,14 @@ const ModelViewer = (props) => {
 
   // Exposure effect
   useEffect(() => {
-    if (scene) {
-      const ambientLight = scene.children.find(child => child.isAmbientLight);
+    if (sceneRef.current) {
+      const ambientLight = sceneRef.current.children.find(child => child.isAmbientLight);
       if (ambientLight) {
         ambientLight.intensity = exposure * 0.6;
       }
     }
-    if (renderer) {
-      renderer.toneMappingExposure = exposure;
+    if (rendererRef.current) {
+      rendererRef.current.toneMappingExposure = exposure;
     }
   }, [exposure]);
 

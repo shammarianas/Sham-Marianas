@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useUser } from "../Context/UserProvider";
 import { useNavigate } from "react-router-dom";
 
@@ -9,7 +9,7 @@ const Subscription = () => {
   const [billingCycle, setBillingCycle] = useState("monthly");
   const [activeAccordion, setActiveAccordion] = useState(null);
   const [teamMembers, setTeamMembers] = useState(2);
-  const [teamPlanPrice, setTeamPlanPrice] = useState(16); // Default for 2 members monthly
+  const teamPlanPrice = (billingCycle === "monthly" ? 8 : 96) * teamMembers;
   function openAccordion(event) {
     document.querySelectorAll(".accordion-info").forEach((element) => {
       element.classList.remove("active");
@@ -20,25 +20,6 @@ const Subscription = () => {
     event.currentTarget.nextElementSibling.style.maxHeight = "300px";
     event.currentTarget.nextElementSibling.classList.add("active");
   }
-  // Calculate team price based on members and billing cycle
-  useEffect(() => {
-    calculateTeamPrice();
-  }, [teamMembers, billingCycle]);
-
-  const calculateTeamPrice = () => {
-    let basePricePerMember = billingCycle === "monthly" ? 8 : 96; // $8/month or $96/year per member
-
-    // Calculate total price
-    const totalPrice = basePricePerMember * teamMembers;
-
-    // Apply yearly discount if yearly billing
-    if (billingCycle === "yearly") {
-      // Already accounted for in basePricePerMember
-    }
-
-    setTeamPlanPrice(totalPrice);
-  };
-
   const getPriceDisplay = () => {
     if (billingCycle === "monthly") {
       return `$${teamPlanPrice}`;

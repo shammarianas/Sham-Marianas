@@ -25,7 +25,7 @@ const SearchTrends = () => {
   const [sortBy, setSortBy] = useState("popularity");
 
   // Mock data for search trends (in real app, this would come from API)
-  const mockTrendsData = [
+  const mockTrendsData = useMemo(() => [
     {
       id: 1,
       keyword: "3D models",
@@ -130,7 +130,7 @@ const SearchTrends = () => {
       seasonality: "high",
       lastUpdated: "2024-01-15"
     }
-  ];
+  ], []);
 
   // Categories for filtering
   const categories = [
@@ -172,7 +172,7 @@ const SearchTrends = () => {
     };
 
     loadTrends();
-  }, [timeRange]);
+  }, [timeRange, mockTrendsData]);
 
   // Filter and sort trends
   const filteredTrends = useMemo(() => {

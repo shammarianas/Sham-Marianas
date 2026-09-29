@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -562,9 +562,29 @@ const resendVerificationEmail = async () => {
     await sendVerificationEmail();
   };
 
+  const resetForm = useCallback(() => {
+    setCurrentStep(1);
+    setIsEmailVerified(false);
+    setIsVerificationSent(false);
+    setTempUser(null);
+    setError("");
+    setSuccess("");
+    setResendTimer(0);
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setUsername("");
+    setName("");
+    setPhone("");
+    setBirthday("");
+    setCountryCode("+1");
+    setCountry("");
+    setCity("");
+    setTermsAccepted(false);
+  }, []);
+
   // Complete signup after email verification
-  // Complete signup after email verification
-  const completeSignup = async () => {
+  const completeSignup = useCallback(async () => {
     try {
       let user;
 
@@ -675,7 +695,7 @@ const resendVerificationEmail = async () => {
         setError("Sign-up failed: " + err.message);
       }
     }
-  };
+  }, [birthday, city, country, countryCode, email, name, password, phone, resetForm, tempUser, username]);
   // Add this function after other functions like completeSignup
 
   const loginWithEmailPassword = async (e) => {
@@ -718,21 +738,20 @@ const resendVerificationEmail = async () => {
 
   // Add this useEffect after your existing useEffects
   useEffect(() => {
-    const autoCompleteSignup = async () => {
-      if (
-        isEmailVerified &&
-        currentStep === 2 &&
-        !success.includes("Redirecting")
-      ) {
-        // Wait 2 seconds then automatically complete signup
-        setTimeout(async () => {
-          await completeSignup();
-        }, 2000);
-      }
-    };
+    if (
+      !isEmailVerified ||
+      currentStep !== 2 ||
+      success.includes("Redirecting")
+    ) {
+      return;
+    }
 
-    autoCompleteSignup();
-  }, [isEmailVerified, currentStep, success]);
+    const timer = setTimeout(() => {
+      completeSignup();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [completeSignup, currentStep, isEmailVerified, success]);
 
   // Add this useEffect to clear invitation codes on logout
 
@@ -744,29 +763,6 @@ const resendVerificationEmail = async () => {
     } catch (err) {
       setError("Failed: " + err.message);
     }
-  };
-
-  // Reset form when switching pages
-  const resetForm = () => {
-    setCurrentStep(1);
-    setIsEmailVerified(false);
-    setIsVerificationSent(false);
-    setTempUser(null);
-    setError("");
-    setSuccess("");
-    setResendTimer(0);
-    // Reset all form fields
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    setUsername("");
-    setName("");
-    setPhone("");
-    setBirthday("");
-    setCountryCode("+1");
-    setCountry("");
-    setCity("");
-    setTermsAccepted(false);
   };
 
   return (

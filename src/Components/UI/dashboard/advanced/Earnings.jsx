@@ -376,7 +376,6 @@ const Earnings = () => {
         });
 
         console.log("✅ Earnings data loaded successfully!");
-        console.log("📈 Growth Data:", growthData);
         console.log(`📊 Total Categories: ${categories.length}`);
 
       } catch (error) {

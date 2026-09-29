@@ -3,54 +3,36 @@ import { db } from "../../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Link } from "react-router-dom";
 
+const getUserDisplayName = (user) => {
+  if (!user) return "User";
+
+  const firstName = user.firstName || user.firstname || user.first_name;
+  const lastName = user.lastName || user.lastname || user.last_name;
+
+  if (firstName && lastName) return `${firstName} ${lastName}`.trim();
+  if (firstName) return firstName.trim();
+  if (lastName) return lastName.trim();
+  if (user.fullName?.trim()) return user.fullName.trim();
+  if (user.displayUsername?.trim()) return user.displayUsername.trim();
+  if (user.username?.trim()) return user.username.trim();
+  if (user.displayName?.trim()) return user.displayName.trim();
+  if (user.authorName?.trim()) return user.authorName.trim();
+
+  if (user.email) {
+    const emailName = user.email.split("@")[0];
+    return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+  }
+
+  return "User";
+};
+
 const UserCard = ({ userId }) => {
   const [user, setUser] = useState(null);
   const [profilePath, setProfilePath] = useState(null); // Start as null
 
-  const getDisplayName = () => {
-    if (!user) return "User";
-
-    const firstName = user.firstName || user.firstname || user.first_name;
-    const lastName = user.lastName || user.lastname || user.last_name;
-
-    if (firstName && lastName) {
-      return `${firstName} ${lastName}`.trim();
-    } else if (firstName) {
-      return firstName.trim();
-    } else if (lastName) {
-      return lastName.trim();
-    }
-
-    if (user.fullName && user.fullName.trim()) {
-      return user.fullName.trim();
-    }
-
-    if (user.displayUsername && user.displayUsername.trim()) {
-      return user.displayUsername.trim();
-    }
-
-    if (user.username && user.username.trim()) {
-      return user.username.trim();
-    }
-
-    if (user.displayName && user.displayName.trim()) {
-      return user.displayName.trim();
-    }
-
-    if (user.authorName && user.authorName.trim()) {
-      return user.authorName.trim();
-    }
-
-    if (user.email) {
-      const emailName = user.email.split("@")[0];
-      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
-    }
-
-    return "User";
-  };
+  const displayName = getUserDisplayName(user);
 
   const getInitials = () => {
-    const displayName = getDisplayName();
     if (displayName === "User") return "U";
 
     const words = displayName.split(" ");
@@ -98,9 +80,9 @@ const UserCard = ({ userId }) => {
             setProfilePath(`/${urlUsername}`);
           } else {
             // Generate username from display name
-            const displayName = getDisplayName();
-            if (displayName && displayName !== "User") {
-              const generatedUsername = getUsernameFromDisplayName(displayName);
+            const fetchedDisplayName = getUserDisplayName(userData);
+            if (fetchedDisplayName !== "User") {
+              const generatedUsername = getUsernameFromDisplayName(fetchedDisplayName);
               setProfilePath(`/${generatedUsername}`);
             } else {
               setProfilePath(`/user/${userId}`);
@@ -128,10 +110,10 @@ const UserCard = ({ userId }) => {
               );
               setProfilePath(`/${urlUsername}`);
             } else {
-              const displayName = getDisplayName();
-              if (displayName && displayName !== "User") {
+              const fetchedDisplayName = getUserDisplayName(userObj);
+              if (fetchedDisplayName !== "User") {
                 const generatedUsername =
-                  getUsernameFromDisplayName(displayName);
+                  getUsernameFromDisplayName(fetchedDisplayName);
                 setProfilePath(`/${generatedUsername}`);
               } else {
                 setProfilePath(`/user/${userId}`);
@@ -167,13 +149,13 @@ const UserCard = ({ userId }) => {
     <div className="user">
       <div className="user_image">
         {user?.profilePic ? (
-          <img  loading="lazy"  src={user.profilePic} alt={getDisplayName()} />
+          <img  loading="lazy"  src={user.profilePic} alt={displayName} />
         ) : (
           <div className="profile-initials">{getInitials()}</div>
         )}
       </div>
       <Link to={profilePath}>
-        <span className="username">{getDisplayName()}</span>
+        <span className="username">{displayName}</span>
       </Link>
     </div>
   );

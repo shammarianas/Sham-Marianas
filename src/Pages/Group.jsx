@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { db } from "../../firebase";
 import {
@@ -77,7 +77,7 @@ const Group = () => {
     }
   };
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       const requestsQuery = query(
         collection(db, "Groups")
@@ -104,13 +104,13 @@ const Group = () => {
       console.error("Error fetching group requests: ", error);
       throw error;
     }
-  };
+  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser) {
       fetchRequests();
     }
-  }, [currentUser]);
+  }, [currentUser, fetchRequests]);
 
   if (authLoading) {
     return <div>Loading...</div>;

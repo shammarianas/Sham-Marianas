@@ -16,7 +16,6 @@ const AssetFullScreen = ({
   const containerRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Get asset URL based on type
   const getAssetUrl = () => {
@@ -78,6 +77,8 @@ const AssetFullScreen = ({
            assetType === "models";
   };
 
+  const videoAsset = isVideo();
+
   // Video controls
   const togglePlay = () => {
     if (videoRef.current) {
@@ -133,7 +134,7 @@ const AssetFullScreen = ({
         } else {
           onClose();
         }
-      } else if (e.key === " " && isVideo()) {
+      } else if (e.key === " " && videoAsset) {
         e.preventDefault();
         togglePlay();
       } else if (e.key === "f") {
@@ -148,12 +149,11 @@ const AssetFullScreen = ({
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [onClose, videoAsset]);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      setIsLoading(true);
     } else {
       document.body.style.overflow = "unset";
     }
@@ -400,8 +400,6 @@ const AssetFullScreen = ({
                   playsInline
                   onPlay={() => setIsPlaying(true)}
                   onPause={() => setIsPlaying(false)}
-                  onLoadedData={() => setIsLoading(false)}
-                  onError={() => setIsLoading(false)}
                 >
                   Your browser does not support the video tag.
                 </video>
@@ -412,16 +410,12 @@ const AssetFullScreen = ({
                 className="asset-fullscreen-image"
                 src={assetUrl}
                 alt={assetName}
-                onLoad={() => setIsLoading(false)}
-                onError={() => setIsLoading(false)}
               />
             ) : is3DModel() && assetUrl ? (
               <iframe
                 className="asset-fullscreen-model"
                 src={assetUrl}
                 title={assetName}
-                onLoad={() => setIsLoading(false)}
-                onError={() => setIsLoading(false)}
               />
             ) : assetUrl ? (
               <div className="asset-fullscreen-unsupported">

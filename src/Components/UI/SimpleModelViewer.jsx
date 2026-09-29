@@ -12,6 +12,7 @@ const SimpleModelViewer = ({ modelUrl }) => {
     if (!modelUrl || !mountRef.current) return;
 
     let scene, camera, renderer, controls;
+    const mountNode = mountRef.current;
 
     const initThreeJS = async () => {
       try {
@@ -165,8 +166,8 @@ const SimpleModelViewer = ({ modelUrl }) => {
 
     // Cleanup
     return () => {
-      if (mountRef.current && renderer?.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountNode.contains(renderer?.domElement)) {
+        mountNode.removeChild(renderer.domElement);
       }
       renderer?.dispose();
       controls?.dispose();

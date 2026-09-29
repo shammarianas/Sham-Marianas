@@ -533,7 +533,7 @@ const AdminDashboard = () => {
           const unsubscribeNotifications = setupAdminNotificationsListener();
 
           // Fetch initial data
-          await Promise.all([fetchUsers(), fetchSupportMessages(null)]);
+          await Promise.all([fetchUsers(), fetchSupportMessages(null, true)]);
 
           setSelectedProfileId(uid);
 
@@ -615,12 +615,12 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchSupportMessages = async (profileId) => {
+  const fetchSupportMessages = async (profileId, adminAccess = false) => {
     setLoading(true);
     try {
       if (!db) throw new Error("Firebase not initialized");
 
-      if (isAdmin && !profileId) {
+      if (adminAccess && !profileId) {
         const q = query(
           collectionGroup(db, "Support"),
           orderBy("createdAt", "desc")

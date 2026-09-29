@@ -163,6 +163,7 @@ const SellerDashboard = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
   const sidebarRef = useRef(null);
+  const fetchSellerDataRef = useRef(null);
 
   // ✅ ADDED: Profile tab handler
   const handleProfileTab = () => {
@@ -274,9 +275,6 @@ const SellerDashboard = () => {
             if (sellerData.status === "pending") {
               // navigate("/contributor-pending");
               // alert("Your contributor account is still pending approval.");
-              if (error && !isSeller) {
-                return <UnauthorizedAccess error={error} />;
-              }
             } else if (sellerData.status === "rejected") {
               navigate("/error");
             } else {
@@ -289,7 +287,7 @@ const SellerDashboard = () => {
           setIsSeller(true);
           setUserData(sellerData);
           await Promise.all([
-            fetchSellerData(uid),
+            fetchSellerDataRef.current?.(uid),
             fetchUserReports(uid),
             setupNotificationsListener(uid), // ✅ ADDED: Setup notifications listener
           ]);
@@ -429,6 +427,7 @@ const SellerDashboard = () => {
       setLoading(false);
     }
   };
+  fetchSellerDataRef.current = fetchSellerData;
 
   // Fetch seller assets
   const fetchAssets = async (uid) => {

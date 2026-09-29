@@ -42,6 +42,9 @@ function Next() {
     fetchBlogs();
   }, [id]);
 
+  const prevBlog = currentIndex > 0 ? blogs[currentIndex - 1] : null;
+  const nextBlog = currentIndex < blogs.length - 1 ? blogs[currentIndex + 1] : null;
+
   useEffect(() => {
     if (blogs.length > 0) {
       // Set data-background attributes manually
@@ -58,10 +61,7 @@ function Next() {
       
       loadBackgroudImages();
     }
-  }, [blogs, currentIndex]);
-
-  const prevBlog = currentIndex > 0 ? blogs[currentIndex - 1] : null;
-  const nextBlog = currentIndex < blogs.length - 1 ? blogs[currentIndex + 1] : null;
+  }, [blogs, nextBlog, prevBlog]);
 
   const handlePrevClick = () => prevBlog && navigate(getBlogPath(prevBlog));
   const handleNextClick = () => nextBlog && navigate(getBlogPath(nextBlog));

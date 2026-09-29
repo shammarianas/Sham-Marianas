@@ -28,6 +28,31 @@ import { db } from "../../../../firebase";
 import ExportButton from "../../../ExportButton";
 import { exportSellersVerifyData } from "../../../../utils/exportUtils";
 
+const normalizeDate = (value) => {
+  if (!value) return null;
+  if (value.toDate) {
+    try {
+      return value.toDate();
+    } catch {
+      return null;
+    }
+  }
+  if (typeof value === "string") {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  if (value instanceof Date) {
+    return isNaN(value.getTime()) ? null : value;
+  }
+  return null;
+};
+
+const formatDate = (date) => {
+  if (!date) return "N/A";
+  const normalized = normalizeDate(date);
+  return normalized ? normalized.toLocaleDateString() : "N/A";
+};
+
 const SellerAccountVerify = () => {
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,38 +89,6 @@ const SellerAccountVerify = () => {
     { header: "Status", accessor: (item) => item.status || "Pending" },
   ];
 
-  // Helper functions for date formatting
-const normalizeDate = (value) => {
-  if (!value) return null;
-
-  // Handle Firestore Timestamp
-  if (value.toDate) {
-    try {
-      return value.toDate();
-    } catch {
-      return null;
-    }
-  }
-
-  // Handle string dates
-  if (typeof value === 'string') {
-    const date = new Date(value);
-    return isNaN(date.getTime()) ? null : date;
-  }
-
-  // Handle Date objects
-  if (value instanceof Date) {
-    return isNaN(value.getTime()) ? null : value;
-  }
-
-  return null;
-};
-
-const formatDate = (date) => {
-  if (!date) return "N/A";
-  const d = normalizeDate(date);
-  return d ? d.toLocaleDateString() : "N/A";
-};
   useEffect(() => {
     const fetchSellers = async () => {
       try {

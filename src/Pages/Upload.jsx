@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { db, storage } from "../../firebase";
 import {
   collection,
@@ -691,7 +691,7 @@ const Upload = ({
   };
 
   // ✅ Function to fetch user role
-  const fetchUserRole = async () => {
+  const fetchUserRole = useCallback(async () => {
     if (!currentUser) return "contributor";
 
     try {
@@ -707,7 +707,7 @@ const Upload = ({
       console.error("Error fetching user role:", error);
       return "contributor";
     }
-  };
+  }, [currentUser]);
 
   // Function to generate slug from title
   const generateSlug = (title) => {
@@ -773,7 +773,7 @@ const Upload = ({
     };
 
     fetchUserData();
-  }, [currentUser?.uid, editMode, assetToEdit]);
+  }, [currentUser?.uid, editMode, assetToEdit, fetchUserRole, formData.type, onUploadClose]);
 
   // Initialize form data with existing asset data when in edit mode
   useEffect(() => {

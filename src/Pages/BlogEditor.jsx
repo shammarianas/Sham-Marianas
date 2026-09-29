@@ -105,14 +105,14 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
     }
   }, [quill, blogToEdit?.content, isOpen, isEditorLoaded]);
 
-  const initializeEditor = () => {
+  const initializeEditor = useCallback(() => {
     if (quill && isOpen && !blogToEdit) {
       setTimeout(() => {
         quill.clipboard.dangerouslyPasteHTML(0, '<p><br></p>', 'user');
         setIsEditorLoaded(true);
       }, 100);
     }
-  };
+  }, [blogToEdit, isOpen, quill]);
 
   const getCurrentContent = () => {
     if (!quill) return "";
@@ -165,11 +165,11 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
       setIsEditorLoaded(true);
       if (!blogToEdit) initializeEditor();
     }
-  }, [quill, isOpen, blogToEdit]);
+  }, [quill, isOpen, blogToEdit, initializeEditor]);
 
   useEffect(() => {
     if (isEditorLoaded && blogToEdit) loadContent();
-  }, [isEditorLoaded, loadContent]);
+  }, [blogToEdit, isEditorLoaded, loadContent]);
 
   // Header labels
   useEffect(() => {

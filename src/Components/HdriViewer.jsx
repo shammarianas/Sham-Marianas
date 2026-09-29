@@ -11,6 +11,7 @@ const HdriViewer = (props) => {
 
   useEffect(() => {
     let scene, camera, renderer, controls;
+    const mountNode = mountRef.current;
 
     scene = new THREE.Scene();
 
@@ -42,8 +43,8 @@ const HdriViewer = (props) => {
       }
     );
 
-    if (mountRef.current) {
-      mountRef.current.appendChild(renderer.domElement);
+    if (mountNode) {
+      mountNode.appendChild(renderer.domElement);
     }
 
     scene.add(new THREE.AmbientLight(0xffffff, 1));
@@ -73,8 +74,8 @@ const HdriViewer = (props) => {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (mountRef.current) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountNode?.contains(renderer.domElement)) {
+        mountNode.removeChild(renderer.domElement);
       }
       controls.dispose();
       renderer.dispose();
