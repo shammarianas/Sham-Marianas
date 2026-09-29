@@ -1,13 +1,22 @@
 import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
+import helvetica from '@foliojs-fork/pdfkit/js/data/Helvetica.afm?raw';
+import helveticaBold from '@foliojs-fork/pdfkit/js/data/Helvetica-Bold.afm?raw';
+import helveticaOblique from '@foliojs-fork/pdfkit/js/data/Helvetica-Oblique.afm?raw';
+import helveticaBoldOblique from '@foliojs-fork/pdfkit/js/data/Helvetica-BoldOblique.afm?raw';
 
-pdfMake.vfs = pdfFonts.pdfMake?.vfs || pdfFonts.vfs;
-
-
-// Fonts ko lazy load karenge taaki "Roboto-Regular.ttf not found" na aaye
-const loadFonts = async () => {
-  if (window.pdfMakeFontsLoaded) return;
-  window.pdfMakeFontsLoaded = true;
+pdfMake.vfs = {
+  'data/Helvetica.afm': helvetica,
+  'data/Helvetica-Bold.afm': helveticaBold,
+  'data/Helvetica-Oblique.afm': helveticaOblique,
+  'data/Helvetica-BoldOblique.afm': helveticaBoldOblique
+};
+pdfMake.fonts = {
+  Helvetica: {
+    normal: 'Helvetica',
+    bold: 'Helvetica-Bold',
+    italics: 'Helvetica-Oblique',
+    bolditalics: 'Helvetica-BoldOblique'
+  }
 };
 
 // Convert image to base64 for PDF (cached)
@@ -582,7 +591,7 @@ const getDocDefinition = async (asset, licenseType, _user) => {
     },
 
     defaultStyle: {
-      font: 'Roboto',
+      font: 'Helvetica',
       fontSize: 10,
       lineHeight: 1.3
     }
@@ -592,8 +601,6 @@ const getDocDefinition = async (asset, licenseType, _user) => {
 // MAIN FUNCTION
 export const downloadLicense = async (asset, user = null) => {
   try {
-    await loadFonts();
-
     const price = Number(asset.price) || 0;
     const discount = Number(asset.discount ?? 0) || 0;
     const finalPrice = Math.max(0, price - (price * discount) / 100);
