@@ -386,6 +386,20 @@ function Header() {
         .filter span:hover {
           color: #52b0b4;
         }
+        @media (max-width: 767px) {
+          .work-grid .filter {
+            padding-right: 45px;
+          }
+          .work-grid .search-icon-container {
+            right: 0 !important;
+          }
+          .work-grid .search-bar-container {
+            right: 0 !important;
+            width: 280px !important;
+            min-width: 0 !important;
+            max-width: 100%;
+          }
+        }
       `}</style>
     </>
   );
