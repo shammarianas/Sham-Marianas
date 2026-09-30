@@ -104,16 +104,6 @@
     ],
     "redirects": [
       {
-        "source": "/category/**",
-        "destination": "/services",
-        "type": 301
-      },
-      {
-        "source": "/templates",
-        "destination": "/services",
-        "type": 301
-      },
-      {
         "source": "/services/demo",
         "destination": "/services",
         "type": 301

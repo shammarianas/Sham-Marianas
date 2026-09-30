@@ -8,9 +8,7 @@
   RewriteCond %{HTTP_HOST} ^shammarianas\.com$ [NC]
   RewriteRule ^ https://www.shammarianas.com%{REQUEST_URI} [R=301,L]
 
-  # Retire the old digital-asset marketplace URLs.
-  RewriteRule ^category(?:/.*)?$ /services [R=301,L,NC]
-  RewriteRule ^templates/?$ /services [R=301,L,NC]
+  # Retire only legacy URLs; public asset pages remain directly accessible.
   RewriteRule ^services/demo/?$ /services [R=301,L,NC]
   RewriteRule ^services/brandingpage/?$ /services/uiux-design [R=301,L,NC]
   RewriteRule ^blogs/?$ /blog [R=301,L,NC]
