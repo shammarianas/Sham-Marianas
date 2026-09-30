@@ -78,7 +78,7 @@ function Intro() {
 
           <div className="col-lg-4">
             <div className="img-full fit-img">
-              <img  loading="lazy"  src="/assets/imgs/intro/04.jpg" alt="intro full" />
+              <img  loading="lazy"  src="/assets/imgs/intro/04.webp" alt="intro full" />
             </div>
           </div>
         </div>

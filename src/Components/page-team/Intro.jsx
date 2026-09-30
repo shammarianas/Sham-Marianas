@@ -57,7 +57,7 @@ function Intro() {
                 <img  loading="lazy"  src="/assets/imgs/intro/03.jpg" alt="" />
               </div>
               <div className="img3">
-                <img  loading="lazy"  src="/assets/imgs/intro/04.jpg" alt="" />
+                <img  loading="lazy"  src="/assets/imgs/intro/04.webp" alt="" />
               </div>
             </div>
           </div>
