@@ -1,7 +1,7 @@
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
-import { getDoc, doc } from "firebase/firestore";
+import { getDoc, doc, collection, getDocs, query, where } from "firebase/firestore";
 import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
 import Marq2 from "../Components/marq2";
@@ -12,6 +12,7 @@ import { SEO_CONFIG } from "../utils/seoConfig.js";
 
 export default function ProjectDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
    useLocation(); // ✅ Import useLocation
@@ -20,9 +21,31 @@ export default function ProjectDetails() {
     const fetchPortfolio = async () => {
       try {
         const docRef = doc(db, "projects", id);
-        const docSnap = await getDoc(docRef);
+        let docSnap = await getDoc(docRef);
+
+        // Sitemap URLs use project slugs. Fall back to a slug lookup when the
+        // URL value is not the Firestore document ID.
+        if (!docSnap.exists()) {
+          const slugQuery = query(
+            collection(db, "projects"),
+            where("slug", "==", id)
+          );
+          const slugSnapshot = await getDocs(slugQuery);
+          if (!slugSnapshot.empty) {
+            docSnap = slugSnapshot.docs[0];
+          }
+        }
+
         if (docSnap.exists()) {
-          setProject({ id: docSnap.id, ...docSnap.data() });
+          const projectData = { id: docSnap.id, ...docSnap.data() };
+          setProject(projectData);
+
+          const canonicalId = projectData.slug || projectData.id;
+          if (id !== canonicalId) {
+            navigate(`/project-details/${encodeURIComponent(canonicalId)}`, {
+              replace: true,
+            });
+          }
         } else {
           setProject(null);
         }
