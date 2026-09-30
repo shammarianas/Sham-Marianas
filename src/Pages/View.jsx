@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import ItemInfoTable from "../Components/ItemInfoTable";
 import Keywords from "../Components/Keywords";
 import Breadcrumbs from "../Components/Breadcrumbs";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { db } from "../../firebase";
 import {
   query,
@@ -30,9 +30,17 @@ const MarkdownCodeBlock = lazy(() => import("../Components/MarkdownCodeBlock"));
 const View = () => {
   const { userProfile } = useUser();
   const { slug } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [seoData, setSeoData] = useState(null);
 
   const [toastMessage, setToastMessage] = useState("");
+
+  useEffect(() => {
+    if (/^\/view\//i.test(location.pathname) && location.pathname !== location.pathname.toLowerCase()) {
+      navigate(`/view/${encodeURIComponent(slug || "")}`, { replace: true });
+    }
+  }, [location.pathname, navigate, slug]);
   const [toastState, setToastState] = useState("");
   const [item, setItem] = useState(null);
   const [loadStatus, setLoadStatus] = useState("loading");
@@ -234,7 +242,7 @@ const View = () => {
               links={[
                 { title: "Home", path: "/templates" },
                 { title: item.type, path: `/category/${item.type}` },
-                { title: item.title, path: `/View/${item.slug}` },
+                { title: item.title, path: `/view/${item.slug}` },
               ]}
             />
             <div className="content">

@@ -125,7 +125,7 @@ const Search = () => {
           <div className="search-results">
             {results.map((result) => (
               <Link
-                to={`/View/${result.id}`}
+                to={`/view/${result.id}`}
                 key={result.id}
                 onClick={() => {
                   setDisplayResults(false);

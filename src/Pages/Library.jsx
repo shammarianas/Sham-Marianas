@@ -74,7 +74,7 @@ const Library = () => {
             </div>
           ) : (
             assets.map((asset, index) => (
-              <Link to={`/View/${asset.id}`} key={index}>
+              <Link to={`/view/${asset.id}`} key={index}>
                 <div className="item_card">
                   <div className="card_image">
                     {asset.discount > 0 ? (

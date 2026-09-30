@@ -42,6 +42,16 @@ const ROUTES_CONFIG = [
   { path: '/blog', dynamic: false, priority: '0.9', freq: 'daily' },
   { path: '/contact-us', dynamic: false, priority: '0.8', freq: 'monthly' },
   { path: '/page-team', dynamic: false, priority: '0.7', freq: 'monthly' },
+  { path: '/templates', dynamic: false, priority: '0.8', freq: 'weekly' },
+
+  // Public asset category landing pages
+  ...['videos', 'models', 'video-templates', 'images', 'graphics', 'mockups', 'fonts', 'more', 'icons', 'textures', 'scripts', 'hdris', 'hot']
+    .map((category) => ({
+      path: `/category/${category}`,
+      dynamic: false,
+      priority: '0.7',
+      freq: 'weekly'
+    })),
 
   // Service Detail Pages (High Commercial Intent)
   { path: '/services/branding-design', dynamic: false, priority: '0.85', freq: 'weekly' },
@@ -71,7 +81,6 @@ const ROUTES_CONFIG = [
   // Dynamic routes fetched from Firebase Firestore
   { path: '/blog/:slug', dynamic: true, collection: 'blogs', field: 'slug' },
   { path: '/project-details/:slug', dynamic: true, collection: 'projects', field: 'slug' },
-  { path: '/view/:slug', dynamic: true, collection: 'Assets', field: 'slug' },
 ];
 
 const generateUrlsFromRoutes = async () => {

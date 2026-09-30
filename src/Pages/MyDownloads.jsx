@@ -328,13 +328,13 @@ const MyDownloads = () => {
                       <div className="asset-preview">
                         {is3D ? (
                           <div className="model-preview">
-                         <Link to={`/View/${asset.slug || asset.id}`}>
+                         <Link to={`/view/${asset.slug || asset.id}`}>
                               <SimpleModelViewer modelUrl={modelUrl} />
                             </Link>
                           </div>
                         ) : (
                           <div className="image-preview">
-                            <Link to={`/View/${asset.slug || asset.id}`}>
+                            <Link to={`/view/${asset.slug || asset.id}`}>
                               {(() => {
                                 const src = asset.thumbnail;
                                 if (!src) return <div className="no-preview">No Preview</div>;
@@ -384,7 +384,7 @@ const MyDownloads = () => {
                         <div className="creator-info col-md-4">
                           <div>
                             <div className="asset-info">
-                              <Link to={`/View/${asset.id}`} className="asset-title-link">
+                              <Link to={`/view/${asset.id}`} className="asset-title-link">
                                 <h3 className="asset-title">{asset.title}</h3>
                               </Link>
                               <div className="asset-meta">

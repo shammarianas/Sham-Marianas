@@ -511,10 +511,10 @@ const getDocDefinition = async (asset, licenseType, _user) => {
             [
               { text: 'URL:', fillColor: '#4a4a4a', color: 'white' },
               {
-                text: asset.viewUrl || `https://www.shammarianas.com/View/${asset.slug || asset.id || asset._id}`,
+                text: asset.viewUrl || `https://www.shammarianas.com/view/${asset.slug || asset.id || asset._id}`,
                 bold: true,
                 color: '#52b0b4',
-                link: asset.viewUrl || `https://www.shammarianas.com/View/${asset.slug || asset.id || asset._id}`,
+                link: asset.viewUrl || `https://www.shammarianas.com/view/${asset.slug || asset.id || asset._id}`,
                 decoration: 'underline',
                 fillColor: '#e0e0e0'
               }

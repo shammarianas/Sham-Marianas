@@ -10,6 +10,7 @@ const SEO = ({
   keywords = "Web development, Digital Marketing, SEO, Social Media Marketing, Branding, Advertising Agency",
   canonical,
   ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.png",
+  twitterImage,
   ogType = "website",
   twitterCard = "summary_large_image",
   robots = "index, follow",
@@ -56,7 +57,7 @@ const SEO = ({
       <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:image" content={twitterImage || ogImage} />
 
       {/* Additional Tags */}
       <meta name="robots" content={robots} />

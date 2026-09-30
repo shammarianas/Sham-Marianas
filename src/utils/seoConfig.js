@@ -182,8 +182,8 @@ export const SEO_CONFIG = {
       title: `${blogData.title} | Shammarianas Blog`,
       description: getDescription(),
       keywords: getKeywords(),
-      ogImage: blogData.featuredImageUrl || blogData.featureImgUrl || blogData.coverImageUrl || "/assets/imgs/og-default.jpg",
-      twitterImage: blogData.featuredImageUrl || blogData.featureImgUrl || blogData.coverImageUrl || "/assets/imgs/twitter-default.jpg",
+      ogImage: blogData.featuredImageUrl || blogData.featureImgUrl || blogData.coverImageUrl || "/assets/imgs/arrow-image.png",
+      twitterImage: blogData.featuredImageUrl || blogData.featureImgUrl || blogData.coverImageUrl || "/assets/imgs/arrow-image.png",
       ogType: "article",
       twitterCard: "summary_large_image",
       publishedTime: blogData.publishedAt ? blogData.publishedAt.toDate().toISOString() : new Date().toISOString(),
@@ -273,7 +273,7 @@ export const SEO_CONFIG = {
       return assetData.thumbnail ||
         assetData.previewImage ||
         assetData.featuredImage ||
-        "/assets/imgs/default-asset.jpg";
+        "/assets/imgs/arrow-image.png";
     };
 
 
@@ -305,73 +305,73 @@ export const SEO_CONFIG = {
         title: "Stock Videos | Shammarianas - HD & 4K Footage",
         description: "Browse premium stock videos, HD and 4K footage for films, commercials, and social media. Royalty-free video downloads.",
         keywords: "Stock Videos, HD Footage, 4K Videos, Royalty-Free Videos, Video Clips, Background Videos",
-        ogImage: "/assets/imgs/categories/videos-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "models": {
         title: "3D Models | Shammarianas - 3D Assets & CGI Models",
         description: "High-quality 3D models for animation, gaming, and design. Ready-to-use assets for Blender, Maya, 3ds Max.",
         keywords: "3D Models, 3D Assets, CGI Models, Animation Models, Game Assets, Blender Models",
-        ogImage: "/assets/imgs/categories/3d-models-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "video-templates": {
         title: "Video Templates | Shammarianas - Motion Graphics",
         description: "Professional video templates for After Effects, Premiere Pro. Motion graphics, intros, and social media templates.",
         keywords: "Video Templates, After Effects Templates, Premiere Pro Templates, Motion Graphics, Social Media Templates",
-        ogImage: "/assets/imgs/categories/video-templates-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "images": {
         title: "Stock Images | Shammarianas - High-Resolution Photos",
         description: "Download stunning stock photos and images for websites, marketing, and creative projects. Royalty-free high-resolution photos.",
         keywords: "Stock Photos, Royalty-Free Images, High-Resolution Photos, Background Images, Commercial Photos",
-        ogImage: "/assets/imgs/categories/images-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "graphics": {
         title: "Graphic Templates | Shammarianas - Design Assets",
         description: "Creative graphic templates for Photoshop, Illustrator. Social media posts, banners, flyers, and business cards.",
         keywords: "Graphic Templates, Photoshop Templates, Illustrator Templates, Social Media Templates, Design Templates",
-        ogImage: "/assets/imgs/categories/graphics-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "mockups": {
         title: "Mockups | Shammarianas - Product Presentation",
         description: "Realistic product mockups for branding and presentation. App mockups, packaging, stationery, and device mockups.",
         keywords: "Product Mockups, App Mockups, Packaging Mockups, Device Mockups, Branding Mockups",
-        ogImage: "/assets/imgs/categories/mockups-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "fonts": {
         title: "Fonts | Shammarianas - Typography & Typefaces",
         description: "Beautiful typography and font collections for web and print. Modern, classic, and decorative fonts.",
         keywords: "Fonts, Typography, Web Fonts, Google Fonts, Display Fonts, Script Fonts",
-        ogImage: "/assets/imgs/categories/fonts-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "icons": {
         title: "Icons | Shammarianas - Icon Sets & UI Assets",
         description: "Icon sets for UI/UX design and applications. Vector icons, app icons, and web icons in multiple formats.",
         keywords: "Icons, UI Icons, App Icons, Vector Icons, Icon Sets, Web Icons",
-        ogImage: "/assets/imgs/categories/icons-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "textures": {
         title: "Textures | Shammarianas - Seamless Textures",
         description: "High-resolution textures for 3D modeling and design. Seamless textures, materials, and patterns.",
         keywords: "Textures, Seamless Textures, 3D Textures, Materials, Patterns, Background Textures",
-        ogImage: "/assets/imgs/categories/textures-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "scripts": {
         title: "Scripts | Shammarianas - Automation & Plugins",
         description: "Useful scripts and plugins for creative software. Automation tools and productivity enhancers.",
         keywords: "Scripts, Plugins, Automation Scripts, Photoshop Scripts, Blender Scripts, Productivity Tools",
-        ogImage: "/assets/imgs/categories/scripts-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "hdris": {
         title: "HDRIs | Shammarianas - HDRI Environments",
         description: "HDRI environments for realistic 3D rendering. Studio lighting, outdoor scenes, and panoramic environments.",
         keywords: "HDRI, HDR Environments, Panoramic Images, Lighting HDRIs, Studio HDRIs, Outdoor HDRIs",
-        ogImage: "/assets/imgs/categories/hdris-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       },
       "hot": {
         title: "Trending Assets | Shammarianas - Popular Downloads",
         description: "Trending and popular assets on Shammarianas. Best-selling and most downloaded creative resources.",
         keywords: "Trending Assets, Popular Downloads, Best Sellers, Featured Assets, Top Downloads",
-        ogImage: "/assets/imgs/categories/hot-og.jpg"
+        ogImage: "/assets/imgs/arrow-image.png"
       }
     };
 
@@ -380,7 +380,7 @@ export const SEO_CONFIG = {
       title: `${categoryName} | Shammarianas - Digital Assets`,
       description: `Browse through a wide range of ${categoryName} on Shammarianas. Download premium digital assets for your creative projects.`,
       keywords: `${categoryName}, Digital Assets, Creative Resources, Downloadable Files, ${categoryName} Collection`,
-      ogImage: "/assets/imgs/categories/default-og.jpg"
+      ogImage: "/assets/imgs/arrow-image.png"
     };
 
 
@@ -429,8 +429,8 @@ export const SEO_CONFIG = {
       title: `${projectData.title} - Shammarianas Portfolio`,
       description: description.length > 160 ? description.substring(0, 160) + '...' : description,
       keywords: keywords,
-      ogImage: projectData.featureImgUrl || projectData.coverImgUrl || "/assets/imgs/og-default.jpg",
-      twitterImage: projectData.featureImgUrl || projectData.coverImgUrl || "/assets/imgs/twitter-default.jpg",
+      ogImage: projectData.featureImgUrl || projectData.coverImgUrl || "/assets/imgs/arrow-image.png",
+      twitterImage: projectData.featureImgUrl || projectData.coverImgUrl || "/assets/imgs/arrow-image.png",
       ogType: "article",
       twitterCard: "summary_large_image"
     };
@@ -601,6 +601,4 @@ export const SEO_CONFIG = {
     keywords: "service terms template, platform rules agreement"
   }
 };
-
-
 

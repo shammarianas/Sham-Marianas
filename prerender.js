@@ -150,6 +150,22 @@ async function prerender() {
     '/blog',
     '/contact-us',
     '/page-team',
+    '/templates',
+
+    // Public asset category landing pages
+    '/category/videos',
+    '/category/models',
+    '/category/video-templates',
+    '/category/images',
+    '/category/graphics',
+    '/category/mockups',
+    '/category/fonts',
+    '/category/more',
+    '/category/icons',
+    '/category/textures',
+    '/category/scripts',
+    '/category/hdris',
+    '/category/hot',
 
     // High commercial intent service pages
     '/services/branding-design',

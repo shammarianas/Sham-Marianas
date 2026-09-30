@@ -6,7 +6,7 @@ import "./assets/Styles/Style.css";
 import "./assets/Styles/stock.css";
 import "./assets/Styles/video-viewer.css";
 import "./assets/Styles/profile-edit.css";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import Home from "./Pages/Home";
 import Footer from "./Components/Footer";
 import { FilterProvider } from "./Context/FilterContext";
@@ -82,6 +82,11 @@ const RouteFallback = () => (
     Loading...
   </div>
 );
+
+const LegacyAssetRedirect = () => {
+  const { slug } = useParams();
+  return <Navigate to={`/view/${encodeURIComponent(slug || "")}`} replace />;
+};
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -177,7 +182,12 @@ export const AppRoutes = () => (
     <Route path="/blogs" element={<Navigate to="/blog" replace />} />
     <Route path="/subscription" element={noIndex(<Subscription />)} />
     {/* Dynamic routes with parameters - order matters! */}
-    <Route path="/View/:slug" element={<View />} />
+    {/* Canonical asset URLs are lowercase; keep the legacy uppercase path working. */}
+    <Route path="/view/:slug" caseSensitive element={<View />} />
+    <Route
+      path="/View/:slug"
+      element={<LegacyAssetRedirect />}
+    />
     <Route path="/blog/:id" element={<BlogDetails />} />
     <Route path="/blog-details/:id" element={<BlogDetails />} />
     <Route path="/project-details/:id" element={<PortfolioDetails />} />

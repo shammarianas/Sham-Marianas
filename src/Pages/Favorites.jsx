@@ -159,16 +159,16 @@ const Favorites = () => {
     
     // Priority: slug -> id -> title as slug
     if (asset.slug) {
-      return `/View/${asset.slug}`;
+      return `/view/${asset.slug}`;
     } else if (asset.id) {
-      return `/View/${asset.id}`;
+      return `/view/${asset.id}`;
     } else if (asset.title) {
       // Create a slug from title
       const slug = asset.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
-      return `/View/${slug}`;
+      return `/view/${slug}`;
     }
     return "#";
   };

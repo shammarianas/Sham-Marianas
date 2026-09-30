@@ -611,7 +611,7 @@ const ListedItemCard = ({
               </span>
             </div>
           ) : null}
-          <Link className="card_image" to={`/View/${data.slug}`}>
+          <Link className="card_image" to={`/view/${data.slug}`}>
             {(() => {
               const src = data.thumbnail;
 
@@ -692,7 +692,7 @@ const ListedItemCard = ({
         <div className="card_content">
           <div className="title">
             <Link
-              to={`/View/${data.slug}`}
+              to={`/view/${data.slug}`}
               className="title-link"
               style={{ textDecoration: "none", color: "inherit" }}
             >
