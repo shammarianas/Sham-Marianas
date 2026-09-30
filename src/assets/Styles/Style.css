@@ -427,6 +427,13 @@ a {
   right: 280px;
 }
 
+.navbar .navbar-nav .dropdown:hover > .services-dropdown-menu,
+.navbar .navbar-nav .dropdown:focus-within > .services-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
 .dropdown-menu.services-dropdown-menu li {
   width: 100%;
 }
