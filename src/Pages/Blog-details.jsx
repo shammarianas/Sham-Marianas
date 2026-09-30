@@ -313,6 +313,7 @@ function BlogDetails() {
       data={{
         ...blog,
         slug: blog.slug || blog.id,
+        url: `https://www.shammarianas.com/blog/${encodeURIComponent(blog.slug || blog.id)}`,
         publishedTime: blog.publishedAt ? blog.publishedAt.toDate().toISOString() : new Date().toISOString(),
         updatedTime: blog.updatedAt ? blog.updatedAt.toDate().toISOString() : blog.publishedAt?.toDate().toISOString(),
         description: blog.excerpt || "Blog description",
