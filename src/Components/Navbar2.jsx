@@ -391,12 +391,12 @@ const Navbar = () => {
               </ul>
             </div>
             <div className="contact-button">
-              <Link
-                to="/services"
+              <a
+                href="https://agentixsystem.com/"
                 className="butn butn-sm butn-bg main-colorbg radius-5"
               >
-                <span className="text">Explore Services</span>
-              </Link>
+                <span className="text">Agentix System</span>
+              </a>
             </div>
           </div>
         </nav>
