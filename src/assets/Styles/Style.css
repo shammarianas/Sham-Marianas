@@ -424,17 +424,7 @@ a {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 24px;
   min-width: 600px;
-  left: 0;
-  right: auto;
-}
-
-.navbar .navbar-nav .services-nav-item {
-  position: relative !important;
-}
-
-.navbar .navbar-nav .services-nav-item:hover > .services-dropdown-menu,
-.navbar .navbar-nav .services-nav-item:focus-within > .services-dropdown-menu {
-  display: grid !important;
+  right: 280px;
 }
 
 .dropdown-menu.services-dropdown-menu li {

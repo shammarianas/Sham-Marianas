@@ -251,7 +251,7 @@ const Navbar = () => {
                 </li>
                 <li
                   onMouseLeave={handleDropdownMouseLeave}
-                  onMouseEnter={handleDropdownMouseMove}
+                  onMouseMove={handleDropdownMouseMove}
                   className="nav-item dropdown"
                 >
                   <Link
@@ -275,8 +275,8 @@ const Navbar = () => {
 
                 <li
                   onMouseLeave={handleDropdownMouseLeave}
-                  onMouseEnter={handleDropdownMouseMove}
-                  className="nav-item dropdown services-nav-item"
+                  onMouseMove={handleDropdownMouseMove}
+                  className="nav-item dropdown"
                 >
                   <Link
                     className="nav-link dropdown-toggle"
@@ -354,7 +354,7 @@ const Navbar = () => {
                 </li>
                 <li
                   onMouseLeave={handleDropdownMouseLeave}
-                  onMouseEnter={handleDropdownMouseMove}
+                  onMouseMove={handleDropdownMouseMove}
                   className="nav-item dropdown"
                 >
                   <Link
@@ -370,7 +370,7 @@ const Navbar = () => {
 
                 <li
                   onMouseLeave={handleDropdownMouseLeave}
-                  onMouseEnter={handleDropdownMouseMove}
+                  onMouseMove={handleDropdownMouseMove}
                   className="nav-item dropdown"
                 >
                   <Link
@@ -799,7 +799,7 @@ const Navbar = () => {
                             <span className="navbar-nav">
                               <li
                                 onMouseLeave={handleDropdownMouseLeave}
-                                onMouseEnter={handleDropdownMouseMove}
+                                onMouseMove={handleDropdownMouseMove}
                                 className="nav-item dropdown"
                               >
                                 <p
