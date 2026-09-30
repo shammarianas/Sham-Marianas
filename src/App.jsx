@@ -64,6 +64,8 @@ const TermsandConditionTemplate = lazy(() => import("./Pages/Get Started/termsOf
 const SellerGuideline = lazy(() => import("./Pages/Get Started/SellerGuidelines"));
 const PricingAndFees = lazy(() => import("./Pages/Get Started/pricing&fee"));
 const ContributorPolicies = lazy(() => import("./Pages/Get Started/ContributorPolicies"));
+const StockPage = lazy(() => import("./Pages/templates"));
+const CategoryTemplate = lazy(() => import("./Pages/Types/CategoryTemplate"));
 
 const RouteFallback = () => (
   <div
@@ -135,8 +137,8 @@ export const AppRoutes = () => (
     <Route path="/about" element={<AboutUs />} />
     <Route path="/page-team" element={<PageTeam />} />
     <Route path="/services" element={<Services />} />
-    <Route path="/templates" element={<Navigate to="/services" replace />} />
-    <Route path="/category/:category" element={<Navigate to="/services" replace />} />
+    <Route path="/templates" element={<StockPage />} />
+    <Route path="/category/:category" element={<CategoryTemplate />} />
     <Route path="/success" element={noIndex(<Success />)} />
     <Route path="/services/branding-design" element={<BrandingDesignPage />} />
     <Route path="/services/uiux-design" element={<UiUxDesignPage />} />
