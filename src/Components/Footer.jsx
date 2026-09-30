@@ -192,6 +192,7 @@ function Footer() {
                       <li className="mb-15"><Link to="/">Home</Link></li>
                       <li className="mb-15"><Link to="/services">Services</Link></li>
                       <li className="mb-15"><Link to="/portfolio">Portfolio</Link></li>
+                      <li className="mb-15"><Link to="/templates">Templates</Link></li>
                       <li className="mb-15"><Link to="/about">About us</Link></li>
                       <li className="mb-15"><Link to="/blog">Blog</Link></li>
                       <li><Link to="/contact-us">Contact us</Link></li>
