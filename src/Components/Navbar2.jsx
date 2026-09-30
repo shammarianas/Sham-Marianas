@@ -276,7 +276,7 @@ const Navbar = () => {
                 <li
                   onMouseLeave={handleDropdownMouseLeave}
                   onMouseMove={handleDropdownMouseMove}
-                  className="nav-item dropdown"
+                  className="nav-item dropdown services-nav-item"
                 >
                   <Link
                     className="nav-link dropdown-toggle"
