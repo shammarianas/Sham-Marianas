@@ -432,6 +432,11 @@ a {
   position: relative !important;
 }
 
+.navbar .navbar-nav .services-nav-item:hover > .services-dropdown-menu,
+.navbar .navbar-nav .services-nav-item:focus-within > .services-dropdown-menu {
+  display: grid !important;
+}
+
 .dropdown-menu.services-dropdown-menu li {
   width: 100%;
 }
