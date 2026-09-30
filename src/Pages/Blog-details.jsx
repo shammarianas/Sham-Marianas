@@ -252,7 +252,7 @@ function BlogDetails() {
         .header-blog .sub-title { color: #D1D5DB; font-size: 0.9rem; text-transform: uppercase; }
         .info { color: #D1D5DB; justify-content: center; }
         .info .left-info, .info .right-info { color: #D1D5DB; }
-        .info .date a, .info .right-info span { color: #FFFFFF; }
+        .info .date .published-date, .info .right-info span { color: #FFFFFF; }
         .info .date span.opacity-7, .info .right-info span.opacity-7 { opacity: 0.7; font-size: 0.9rem; }
         .section-padding { padding: 80px 0; }
         body { background: #000000; color: #FFFFFF; }
@@ -345,14 +345,16 @@ function BlogDetails() {
                   <div className="left-info">
                     <div className="d-flex align-items-center">
                       <div className="date">
-                        <a href="" aria-label={`Published on ${blog.publishedAt ? new Date(blog.publishedAt.toDate()).toDateString() : "Unknown date"}`}>
+                        <div className="published-date" aria-label={`Published on ${blog.publishedAt ? new Date(blog.publishedAt.toDate()).toDateString() : "Unknown date"}`}>
                           <span className="opacity-7">Published</span>
                           <h6 className="fz-14">
-                            {blog.publishedAt
-                              ? new Date(blog.publishedAt.toDate()).toDateString()
-                              : "—"}
+                            <time dateTime={blog.publishedAt ? blog.publishedAt.toDate().toISOString() : undefined}>
+                              {blog.publishedAt
+                                ? new Date(blog.publishedAt.toDate()).toDateString()
+                                : "—"}
+                            </time>
                           </h6>
-                        </a>
+                        </div>
                       </div>
                     </div>
                   </div>
