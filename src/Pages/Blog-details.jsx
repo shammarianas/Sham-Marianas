@@ -24,6 +24,11 @@ import SchemaMarkup from "../Components/SchemaMarkup";
 import SEO from "../common/SEO";
 import ErrorPage from "./Error";
 
+const normalizeBlogContentLinks = (content) =>
+  typeof content === "string"
+    ? content.replace(/href\s*=\s*(["'])(.*?)\1/gi, (_match, quote, href) => `href=${quote}${href.trim()}${quote}`)
+    : "";
+
 function BlogDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -80,7 +85,7 @@ function BlogDetails() {
             blogData.coverImageUrl ||
             "/assets/imgs/background/bg4.webp";
 
-          blogData.content = sanitizeHtml(blogData.content, {
+          blogData.content = sanitizeHtml(normalizeBlogContentLinks(blogData.content), {
             allowedTags: [
               "p", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "ul", "ol", "li",
               "a", "img", "div", "span", "br", "blockquote", "code", "pre"
