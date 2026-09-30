@@ -1,0 +1,52 @@
+# ==================================
+# Robots.txt for shammarianas.com
+# ==================================
+
+User-agent: *
+Allow: /
+
+# Keep API endpoints out of search crawlers. Private HTML routes stay crawlable
+# so search engines can read their noindex meta tags.
+Disallow: /api
+
+# AI & LLM Crawlers
+User-agent: GPTBot
+Allow: /
+Disallow: /api
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /api
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api
+
+User-agent: CCBot
+Allow: /
+Disallow: /api
+
+User-agent: Bytespider
+Allow: /
+Disallow: /api
+
+# Block heavy commercial scrapers (recommended)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Sitemap
+Sitemap: https://www.shammarianas.com/sitemap.xml
+
