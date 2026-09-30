@@ -80,6 +80,49 @@ function startStaticServer(fallbackHtml) {
   });
 }
 
+// Some managed/macOS environments block Chromium's Mach rendezvous service.
+// Keep the production pipeline usable there by writing crawlable SPA shells
+// with route-specific metadata when a browser cannot be launched.
+function buildFallbackHtml(baseHtml, route) {
+  const labels = {
+    '/': 'Sham Marianas F.Z.C | Advertising Agency in Dubai, UAE',
+    '/about': "About Sham Marianas F.Z.C | Dubai's Top Advertising Agency",
+    '/services': 'Dubai Advertising Agency Services | Sham Marianas F.Z.C.',
+    '/portfolio': 'Sham Marianas F.Z.C Portfolio | Dubai Creative Projects',
+    '/blog': 'Sham Marianas F.Z.C. Blog | Advertising Insights Dubai',
+    '/contact-us': 'Contact Sham Marianas F.Z.C | Dubai Agency',
+    '/templates': 'Templates | Sham Marianas F.Z.C Dubai Designs',
+  };
+  const title = labels[route] || `${route.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || 'Sham Marianas'} | Sham Marianas F.Z.C.`;
+  const canonical = `${SITE_URL}${route === '/' ? '/' : route}`;
+  const description = 'Sham Marianas F.Z.C. provides advertising, branding, digital marketing and creative services in Dubai, UAE.';
+  const metadata = `
+    <title>${title}</title>
+    <meta name="description" content="${description}" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="${canonical}" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:url" content="${canonical}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="${SITE_URL}/assets/imgs/arrow-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${SITE_URL}/assets/imgs/arrow-image.png" />`;
+  return baseHtml.replace('</head>', `${metadata}\n</head>`);
+}
+
+function writeFallbackPages(baseHtml, routes) {
+  for (const route of routes) {
+    const filePath = route === '/'
+      ? path.join(DIST_DIR, 'index.html')
+      : path.join(DIST_DIR, route.replace(/^\//, ''), 'index.html');
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, buildFallbackHtml(baseHtml, route), 'utf8');
+  }
+}
+
 // 2. Fetch dynamic routes from Firebase Firestore
 async function getDynamicRoutes() {
   const dynamicRoutes = [];
@@ -227,18 +270,28 @@ async function prerender() {
   }
 
   // Launch Puppeteer with optimized flags
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    executablePath: chromePath,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-web-security',
-      '--disable-features=IsolateOrigins,site-per-process',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-    ],
-  });
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: chromePath,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
+    });
+  } catch (error) {
+    console.warn(`⚠️ Browser prerender unavailable: ${error.message}`);
+    console.warn('🧩 Generating crawlable route shells with SEO metadata instead.');
+    writeFallbackPages(baseHtml, allRoutes);
+    server.close();
+    console.log(`\n🎉 Generated ${allRoutes.length} SEO-ready route shells in ${DIST_DIR}`);
+    process.exit(0);
+  }
 
   const page = await browser.newPage();
   await page.setViewport({ width: 1440, height: 900 });
