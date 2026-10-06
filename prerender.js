@@ -125,7 +125,9 @@ function buildFallbackHtml(baseHtml, route) {
           <a href="/contact-us">Contact Sham Marianas</a>
         </nav>
       </main>`
-    : '';
+    : `<nav class="seo-fallback-navigation" aria-label="Site navigation">
+        <a href="${SITE_URL}/">Sham Marianas F.Z.C. Home</a>
+      </nav>`;
   const fallbackHtml = baseHtml.replace(
     '<div id="root">',
     `<div id="root">${crawlableContent}`
