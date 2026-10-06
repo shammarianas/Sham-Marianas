@@ -3,24 +3,24 @@ export const SEO_CONFIG = {
   //   Main Pages SEO
   // =========================================================
   home: {
-    title: "Sham Marianas F.Z.C | Advertising Agency in Dubai,UAE",
-    description: "Sham Marianas F.Z.C. Dubai's best advertising agency. Online marketing, social, branding & revenue strategies. Let's grow your business in the UAE!",
-    keywords: " Digital marketing agency Dubai, advertising agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
+    title: "Sham Marianas F.Z.C | Marketing Agency in Dubai,UAE",
+    description: "Sham Marianas F.Z.C. Dubai's best marketing agency. Online marketing, social, branding & revenue strategies. Let's grow your business in the UAE!",
+    keywords: " Digital marketing agency Dubai, marketing agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
   },
   about: {
-    title: "About Sham Marianas F.Z.C | Dubai's Top Advertising Agency",
+    title: "About Sham Marianas F.Z.C | Dubai's Top Marketing Agency",
     description: "Sham Marianas F.Z.C started in 2022. We're a full-service digital agency. We bring fresh marketing, websites, and creative ideas to help UAE businesses grow.",
-    keywords: "about advertising agency Dubai, digital agency UAE, branding specialists Dubai, social campaigns UAE",
+    keywords: "about marketing agency Dubai, digital agency UAE, branding specialists Dubai, social campaigns UAE",
   },
   services: {
-    title: "Dubai Advertising Agency Services | Sham Marianas F.Z.C.",
+    title: "Dubai Marketing Agency Services | Sham Marianas F.Z.C.",
     description: "Sham Marianas F.Z.C. offers top advertising services in Dubai: online marketing, social media management, branding & growth strategies. Boost UAE business revenue!",
     keywords: "Digital Marketing Services, Web Development Services, SEO Services, Social Media Marketing, Branding Services",
   },
   aiAutomation: {
     title: "AI Automation Services Dubai | Sham Marianas F.Z.C.",
     description: "Sham Marianas offers AI automation in Dubai BPA, workflow optimization & intelligent systems for growth. Enhance performance, boost UAE efficiency!",
-    keywords: "AI automation Dubai, business automation UAE, chatbots Dubai, workflow automation UAE, CRM automation Dubai,AI services advertising agency",
+    keywords: "AI automation Dubai, business automation UAE, chatbots Dubai, workflow automation UAE, CRM automation Dubai,AI services marketing agency",
   },
   boothDesign: {
     title: "Exhibition Booth Design Dubai | Sham Marianas F.Z.C.",
@@ -85,13 +85,13 @@ export const SEO_CONFIG = {
   blogHome: {
     title: "Sham Marianas F.Z.C. Blog | Advertising Insights Dubai",
     description: "Explore Sham Marianas F.Z.C. blog for expert insights on advertising, branding, AI automation, and UAE growth from Dubai's top agency.",
-    keywords: "advertising agency Dubai, business insights UAE, AI automation blog, business growth UAE, Dubai marketing blog, AI marketing trends",
+    keywords: "marketing agency Dubai, business insights UAE, AI automation blog, business growth UAE, Dubai marketing blog, AI marketing trends",
   },
 
   blogCategories: {
     business: {
       title: "Dubai Marketing & Business Insights",
-      description: "Explore expert business strategy, growth hacking, and entrepreneurial insights from Dubai's leading advertising agency.",
+      description: "Explore expert business strategy, growth hacking, and entrepreneurial insights from Dubai's leading marketing agency.",
       keywords: "business strategy Dubai, business growth UAE, entrepreneurship tips, startup advice Dubai,business insights UAE",
     },
     technology: {
@@ -116,14 +116,14 @@ export const SEO_CONFIG = {
     },
     marketing: {
       title: "Marketing Strategies & Advertising Insights",
-      description: "Get expert marketing strategies, advertising insights, and digital marketing tips from Dubai's top advertising agency.",
+      description: "Get expert marketing strategies, advertising insights, and digital marketing tips from Dubai's top marketing agency.",
       keywords: "marketing strategies Dubai, advertising insights UAE, digital marketing tips, social media marketing",
     },
     // Default for any other category
     default: {
       title: "Blog Category | Shammarianas Blog",
-      description: "Explore insightful articles and expert advice from Dubai's leading advertising agency.",
-      keywords: "blog articles, expert insights, Dubai advertising agency, UAE business tips",
+      description: "Explore insightful articles and expert advice from Dubai's leading marketing agency.",
+      keywords: "blog articles, expert insights, Dubai marketing agency, UAE business tips",
     }
   },
 
@@ -454,7 +454,7 @@ export const SEO_CONFIG = {
   contact: {
     title: "Contact Sham Marianas F.Z.C | Dubai Agency",
     description: " Reach out to Sham Marianas F.Z.C for Dubai advertising and branding. Our team elevates UAE businesses—connect now!",
-    keywords: "contact Sham Marianas F.Z.C Dubai, advertising agency UAE, branding inquiry Dubai, AI services contact UAE",
+    keywords: "contact Sham Marianas F.Z.C Dubai, marketing agency UAE, branding inquiry Dubai, AI services contact UAE",
   },
 
 
@@ -601,4 +601,3 @@ export const SEO_CONFIG = {
     keywords: "service terms template, platform rules agreement"
   }
 };
-

@@ -85,9 +85,9 @@ function startStaticServer(fallbackHtml) {
 // with route-specific metadata when a browser cannot be launched.
 function buildFallbackHtml(baseHtml, route) {
   const labels = {
-    '/': 'Sham Marianas F.Z.C | Advertising Agency in Dubai, UAE',
-    '/about': "About Sham Marianas F.Z.C | Dubai's Top Advertising Agency",
-    '/services': 'Dubai Advertising Agency Services | Sham Marianas F.Z.C.',
+    '/': 'Sham Marianas F.Z.C | Marketing Agency in Dubai, UAE',
+    '/about': "About Sham Marianas F.Z.C | Dubai's Top Marketing Agency",
+    '/services': 'Dubai Marketing Agency Services | Sham Marianas F.Z.C.',
     '/portfolio': 'Sham Marianas F.Z.C Portfolio | Dubai Creative Projects',
     '/blog': 'Sham Marianas F.Z.C. Blog | Advertising Insights Dubai',
     '/contact-us': 'Contact Sham Marianas F.Z.C | Dubai Agency',

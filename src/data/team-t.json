@@ -1,6 +1,11 @@
 [
   {
     "img": "/assets/imgs/patterns/about-img.png",
+    "name": "Mubarrah Ansari",
+    "subName": "Project Manager"
+  },
+  {
+    "img": "/assets/imgs/patterns/about-img.png",
     "name": "Sahrish Anfal",
     "subName": "Full Stack Developer"
   },

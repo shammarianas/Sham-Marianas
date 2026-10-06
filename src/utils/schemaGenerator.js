@@ -134,7 +134,7 @@ export const getSchema = (type, data = {}) => {
         "@type": "WebPage",
         "@id": `${SITE_URL}/#webpage`,
         "url": `${SITE_URL}/`,
-        "name": data.title || "Sham Marianas F.Z.C. | Advertising Agency in Dubai, UAE",
+        "name": data.title || "Sham Marianas F.Z.C. | Marketing Agency in Dubai, UAE",
         "isPartOf": { "@id": WEBSITE_ID },
         "about": { "@id": ORG_ID },
         "mainEntity": { "@id": ORG_ID },

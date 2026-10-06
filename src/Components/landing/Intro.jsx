@@ -27,7 +27,7 @@ function Intro() {
                       {" "}
                       Sham Marianas F.Z.C
                     </span>{" "}
-                    is a top advertising agency that helps businesses grow with
+                    is a top marketing agency that helps businesses grow with
                     digital marketing, brand building, and ROI-focused
                     advertising. We employ tried-and-true marketing techniques
                     to increase our internet presence, draw in new clients, and

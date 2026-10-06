@@ -26,7 +26,7 @@ function Intro() {
               staff and innovative tactics.
             </p>
             <p className="mb-30 fw-300 align-text" style={{ fontSize: "24px" }}>
-              Sham Marianas F.Z.C wants to become a prominent advertising agency brand
+              Sham Marianas F.Z.C wants to become a prominent marketing agency brand
               by offering high-quality, reasonably priced solutions and ranking
               highly in search results. For success, Sham Marianas F.Z.C is your go-to
               source for site design, SEO optimization, and professional digital
