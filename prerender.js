@@ -110,7 +110,28 @@ function buildFallbackHtml(baseHtml, route) {
     <meta name="twitter:title" content="${title}" />
     <meta name="twitter:description" content="${description}" />
     <meta name="twitter:image" content="${SITE_URL}/assets/imgs/arrow-image.png" />`;
-  return baseHtml.replace('</head>', `${metadata}\n</head>`);
+  // Keep the fallback shell crawlable even when Puppeteer cannot run. The
+  // React homepage renders this heading after hydration, but crawlers that
+  // only receive the static shell still need a real H1 to evaluate.
+  const crawlableContent = route === '/'
+    ? `<main class="seo-fallback-content">
+        <h1>Let's Scale Your Business</h1>
+        <p>Sham Marianas F.Z.C. is a Dubai-based advertising and creative agency helping businesses grow through clear strategy, memorable branding, digital marketing and high-performing websites.</p>
+        <h2>Creative services for growing businesses</h2>
+        <p>Our team delivers branding, web development, social media marketing, content creation, AI automation, video production and print media solutions tailored to each business goal.</p>
+        <nav aria-label="Main services">
+          <a href="/services">Explore our services</a>
+          <a href="/portfolio">View our portfolio</a>
+          <a href="/contact-us">Contact Sham Marianas</a>
+        </nav>
+      </main>`
+    : '';
+  const fallbackHtml = baseHtml.replace(
+    '<div id="root">',
+    `<div id="root">${crawlableContent}`
+  );
+
+  return fallbackHtml.replace('</head>', `${metadata}\n</head>`);
 }
 
 function writeFallbackPages(baseHtml, routes) {
