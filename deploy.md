@@ -15,8 +15,8 @@ This guide explains how to configure Firebase, set environment variables, build 
    - Enable providers you need (Google, GitHub, Email/Password, etc.)
    - Settings → Authorized domains: add shammarianas.com and www.shammarianas.com
 4. Firestore → Create a database (Production). Apply the provided firestore.rules.
-5. Storage → Ensure bucket matches this pattern: `PROJECT_ID.appspot.com`
-   - For this project: `sham-marianas.appspot.com` (NOT firebasestorage.app)
+5. Storage → Use the bucket shown in your Firebase project configuration.
+   - For this project: `sham-marianas.firebasestorage.app`
 6. (Optional) Firebase Functions (if you’ll use admin actions):
    - Deploy `functions/` with `firebase deploy --only functions` from your local dev machine. These cannot run on cPanel; they run on Firebase.
 
@@ -29,7 +29,7 @@ Create a file named `.env.production` in the project root before building (used 
 VITE_FIREBASE_API_KEY=AIzaSyCC_cEqxB99hMW16aowMs6AJ3-k52VasW0
 VITE_FIREBASE_AUTH_DOMAIN=sham-marianas.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=sham-marianas
-VITE_FIREBASE_STORAGE_BUCKET=sham-marianas.appspot.com
+VITE_FIREBASE_STORAGE_BUCKET=sham-marianas.firebasestorage.app
 VITE_FIREBASE_MESSAGING_SENDER_ID=607689609153
 VITE_FIREBASE_APP_ID=1:607689609153:web:3d76a1c337979a691a6940
 VITE_FIREBASE_MEASUREMENT_ID=G-Y0VR1HQNCG

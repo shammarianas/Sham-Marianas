@@ -119,7 +119,7 @@ export const AppRoutes = () => (
 
     <Route path="/login" element={noIndex(<Login />)} />
     <Route path="/ContributorLogin" element={noIndex(<ContributorLogin />)} />
-    <Route path="/ContributorDashboard" element={noIndex(<ContributorDashboard />)} />
+    <Route path="/contributordashboard" element={noIndex(<ContributorDashboard />)} />
     <Route path="/Admin" element={noIndex(<Admin />)} />
     <Route path="/Reset" element={noIndex(<PasswordReset />)} />
     <Route path="/reset" element={noIndex(<PasswordReset />)} />

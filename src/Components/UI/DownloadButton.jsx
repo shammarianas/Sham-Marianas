@@ -7,6 +7,7 @@ import { db } from "../../../firebase";
 import "firebase/functions";
 import { getAuth } from "firebase/auth";
 import "../../../firebase";
+import { getAssetDownloadFilename } from "../../utils/assetDownload";
 
 const DownloadButton = ({
   item,
@@ -187,6 +188,9 @@ const DownloadButton = ({
       case "scripts":
         pushUrl(item.script);
         break;
+      case "prompts":
+        pushUrl(item.promptFile);
+        break;
       case "videos":
         pushUrl(item.video);
         break;
@@ -269,7 +273,7 @@ const DownloadButton = ({
       console.log("⬇️ Downloading via fetch-blob:", url);
 
       // Extract filename from URL
-      const filename = url.split("/").pop().split("?")[0] || "download";
+      const filename = getAssetDownloadFilename(item.title, url);
 
       try {
         // Use fetch-blob method for better compatibility
@@ -333,9 +337,10 @@ const DownloadButton = ({
       }
 
       // Step 2: ✅ NEW - FETCH AND DOWNLOAD METHOD (This will force download)
+      const fileName = getAssetDownloadFilename(item.title, downloadData.url);
       console.log(
         "⬇️ Force downloading file via fetch-blob method:",
-        downloadData.fileName
+        fileName
       );
 
       // New function to handle force download
@@ -418,7 +423,7 @@ const DownloadButton = ({
       };
 
       // Use the new download method
-      await downloadFileFromUrl(downloadData.url, downloadData.fileName);
+      await downloadFileFromUrl(downloadData.url, fileName);
 
       // Step 3: Save to downloads collection
       await addToDownloads(item);
@@ -430,7 +435,7 @@ const DownloadButton = ({
 
       // Step 5: Show success message
       setToastMessage(
-        `"${downloadData.fileName}" has been downloaded. Check your downloads folder.`
+        `"${fileName}" has been downloaded. Check your downloads folder.`
       );
       setToastState("success");
       setShowToast(true);

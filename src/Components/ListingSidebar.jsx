@@ -274,6 +274,19 @@ const filterData = {
       options: ["Stripe / PayPal", "Firebase", "MongoDB / MySQL / PostgreSQL", "Mailchimp / SendGrid", "Google Maps / APIs", "Auth0 / Firebase Auth", "ChatGPT / OpenAI API"],
     },
   },
+  Prompts: {
+    categories: {
+      label: "Categories",
+      options: [
+        "Image Prompt",
+        "Video Prompt",
+        "Song Prompt",
+        "Website Prompt",
+        "3D model Prompt",
+        "Claude Ai Skills",
+      ],
+    },
+  },
 };
 
 // Map route paths to filterData keys
@@ -289,11 +302,12 @@ const categoryMapping = {
   Textures: "Textures",
   HDRIs: "HDRIs",
   Scripts: "Scripts",
+  prompts: "Prompts",
 };
 
 const ListingSidebar = () => {
-  const { Category } = useParams();
-  const normalizedCategory = Category ? categoryMapping[Category] || Category.charAt(0).toUpperCase() + Category.slice(1) : "Videos";
+  const { category } = useParams();
+  const normalizedCategory = category ? categoryMapping[category] || category.charAt(0).toUpperCase() + category.slice(1) : "Videos";
   const categoryFilters = normalizedCategory !== "Hot" ? filterData[normalizedCategory] || {} : {};
 
   const defaultPrice = 1000;
@@ -353,20 +367,22 @@ const ListingSidebar = () => {
           </div>
         ))}
 
-        <div className="filter_section">
-          <div className="section_title">
-            <h4>Price</h4>
-          </div>
-          <div className="filter_options">
-            <div className="range">
-              <input className="price_range" type="range" min={0} max={1000} value={price} onChange={(e) => setPrice(e.target.value)} />
-              <div className="range_values">
-                <span className="value">Free</span>
-                <span className="value">${price > 999 ? "999+" : price}</span>
+        {normalizedCategory !== "Prompts" && (
+          <div className="filter_section">
+            <div className="section_title">
+              <h4>Price</h4>
+            </div>
+            <div className="filter_options">
+              <div className="range">
+                <input className="price_range" type="range" min={0} max={1000} value={price} onChange={(e) => setPrice(e.target.value)} />
+                <div className="range_values">
+                  <span className="value">Free</span>
+                  <span className="value">${price > 999 ? "999+" : price}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </form>
     </div>
   );

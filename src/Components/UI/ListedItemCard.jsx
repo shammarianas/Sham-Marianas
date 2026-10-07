@@ -9,6 +9,7 @@ import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import { doc, updateDoc, increment, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { getAuth } from "firebase/auth";
+import { getAssetDownloadFilename } from "../../utils/assetDownload";
 
 const ListedItemCard = ({
   id,
@@ -88,6 +89,9 @@ const ListedItemCard = ({
       case "scripts":
         if (data.script) urls.push(data.script);
         break;
+      case "prompts":
+        if (data.promptFile) urls.push(data.promptFile);
+        break;
       case "videos":
         if (data.video) urls.push(data.video);
         break;
@@ -160,7 +164,6 @@ const ListedItemCard = ({
   const downloadURL = async (urlOrObj) => {
     try {
       let url = urlOrObj;
-      let filename = "download";
 
       // ✅ FIXED: Handle image objects with sizes
       if (typeof urlOrObj === "object") {
@@ -171,10 +174,6 @@ const ListedItemCard = ({
           url = urlOrObj.url;
         }
 
-        // Try to get filename from originalName property
-        if (urlOrObj.originalName) {
-          filename = urlOrObj.originalName;
-        }
       }
 
       if (typeof url !== "string") {
@@ -184,10 +183,7 @@ const ListedItemCard = ({
 
       console.log("⬇️ Downloading:", url);
 
-      // Extract filename from URL if not already set
-      if (filename === "download") {
-        filename = url.split("/").pop().split("?")[0] || "download";
-      }
+      const filename = getAssetDownloadFilename(data.title, url);
 
       try {
         // Use fetch-blob method for better compatibility
@@ -420,7 +416,8 @@ const ListedItemCard = ({
       }
 
       // Step 2: Download file
-      await downloadFileFromUrl(downloadData.url, downloadData.fileName);
+      const fileName = getAssetDownloadFilename(data.title, downloadData.url);
+      await downloadFileFromUrl(downloadData.url, fileName);
 
       // Step 3: Save to downloads collection
       await addToDownloads(data);

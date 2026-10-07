@@ -13,7 +13,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCC_cEqxB99hMW16aowMs6AJ3-k52VasW0",
   authDomain: "sham-marianas.firebaseapp.com",
   projectId: "sham-marianas",
-  storageBucket: "sham-marianas.appspot.com",
+  storageBucket: "sham-marianas.firebasestorage.app",
   messagingSenderId: "607689609153",
   appId: "1:607689609153:web:3d76a1c337979a691a6940",
 };

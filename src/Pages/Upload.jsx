@@ -503,6 +503,19 @@ const filterData = {
       ],
     },
   },
+  Prompts: {
+    categories: {
+      label: "Categories",
+      options: [
+        "Image Prompt",
+        "Video Prompt",
+        "Song Prompt",
+        "Website Prompt",
+        "3D model Prompt",
+        "Claude Ai Skills",
+      ],
+    },
+  },
 };
 
 const assetTypeToFilterData = {
@@ -517,6 +530,7 @@ const assetTypeToFilterData = {
   textures: "Textures",
   hdris: "HDRIs",
   scripts: "Scripts",
+  prompts: "Prompts",
   other: null,
 };
 
@@ -530,6 +544,7 @@ const specializationToAssetTypes = {
   fonts: ["fonts"],
   icons: ["icons"],
   scripts: ["scripts"],
+  prompts: ["prompts"],
   hdris: ["hdris"],
   textures: ["textures"],
 };
@@ -568,6 +583,7 @@ const Upload = ({
     video: null,
     icons: [],
     script: null,
+    promptFile: null,
     hdri: null,
     graphicsTemplate: null,
     mockupFile: null,
@@ -625,6 +641,7 @@ const Upload = ({
     model: null,
     video: null,
     script: null,
+    promptFile: null,
     hdri: null,
     graphicsTemplate: null,
     mockupFile: null,
@@ -640,6 +657,7 @@ const Upload = ({
     model: null,
     video: null,
     script: null,
+    promptFile: null,
     hdri: null,
     graphicsTemplate: null,
     mockupFile: null,
@@ -974,7 +992,17 @@ const Upload = ({
       // ✅ STEP 3: Set metadata for CACHING
       const metadata = {
         cacheControl: "public, max-age=31536000", // 1 year cache
-        contentType: optimizedFile.type,
+        contentType:
+          optimizedFile.type ||
+          (fileType === "prompts"
+            ? {
+                ".pdf": "application/pdf",
+                ".docx":
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".txt": "text/plain",
+              }[file.name.slice(file.name.lastIndexOf(".")).toLowerCase()] ||
+              "application/octet-stream"
+            : "application/octet-stream"),
         customMetadata: {
           originalSize: file.size.toString(),
           optimizedSize: optimizedFile.size.toString(),
@@ -1011,7 +1039,7 @@ const Upload = ({
       };
     } catch (error) {
       console.error(`❌ Error uploading ${fileType}:`, error);
-      return null;
+      throw error;
     }
   };
 
@@ -1213,7 +1241,9 @@ const Upload = ({
       });
 
       // User-friendly error messages
-      let errorMessage = "Failed to upload thumbnail. ";
+      let errorMessage = `Failed to upload thumbnail${
+        error.code ? ` (${error.code})` : ""
+      }. `;
 
       if (error.message.includes("storage/unauthorized")) {
         errorMessage +=
@@ -1228,11 +1258,13 @@ const Upload = ({
       } else if (error.message.includes("User not authenticated")) {
         errorMessage += "Please log in to upload files.";
       } else {
-        errorMessage += error.message || "Unknown error occurred.";
+        errorMessage +=
+          `${error.message || "Unknown error occurred."} ` +
+          "Check that Firebase Storage is enabled, the configured bucket exists, " +
+          "and its CORS policy allows this site origin.";
       }
 
-      alert(`❌ ${errorMessage}`);
-      return null;
+      throw new Error(errorMessage);
     }
   };
 
@@ -1374,7 +1406,7 @@ const Upload = ({
       return results;
     } catch (error) {
       console.error(`Error uploading ${fileType}:`, error);
-      return [];
+      throw error;
     }
   };
   // Generate multiple image sizes
@@ -1452,6 +1484,14 @@ const Upload = ({
 
       // 10MB limit for all main files
       const file = files[0];
+      if (
+        name === "promptFile" &&
+        !/\.(pdf|docx|txt)$/i.test(file.name)
+      ) {
+        alert("Prompt files must be PDF, DOCX, or TXT files.");
+        e.target.value = "";
+        return;
+      }
       if (file && file.size > 10 * 1024 * 1024) {
         alert(`${name} file size must be under 10MB!`);
         e.target.value = "";
@@ -1472,6 +1512,8 @@ const Upload = ({
 
     if (name === "title") {
       setFormData(prev => ({ ...prev, title: value, slug: generateSlug(value) }));
+    } else if (name === "type") {
+      setFormData(prev => ({ ...prev, type: value, category: "" }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -1740,6 +1782,7 @@ const Upload = ({
       mockups: { field: "mockupFile", multiple: false, folder: "mockups" },
       fonts: { field: "fontFile", multiple: false, folder: "fonts" },
       "video-templates": { field: "videoTemplateFile", multiple: false, folder: "video-templates" },
+      prompts: { field: "promptFile", multiple: false, folder: "prompts" },
       other: { field: "other", multiple: false, folder: "other" },
     }[type];
 
@@ -2434,6 +2477,7 @@ const Upload = ({
                       <option value="video-templates">Video Templates</option>
                       <option value="icons">Icons</option>
                       <option value="hdris">HDRIs</option>
+                      <option value="prompts">Prompts</option>
                       <option value="other">Other</option>
                     </>
                   ) : (
@@ -2453,6 +2497,7 @@ const Upload = ({
                         "video-templates": "Video Templates",
                         icons: "Icons",
                         hdris: "HDRIs",
+                        prompts: "Prompts",
                       };
 
                       if (allowedTypes.length === 0) {
@@ -2905,6 +2950,31 @@ const Upload = ({
                     <p className="current-image-note">
                       Current video template file will be kept if no new file is
                       selected
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "prompts" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">
+                    Prompt File{" "}
+                    {!editMode && <span className="blog-form-required">*</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="promptFile"
+                    onChange={handleChange}
+                    accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                    className="blog-form-file"
+                    required={!editMode}
+                  />
+                  <p className="blog-form-hint">
+                    Supported formats: PDF, DOCX, TXT • Max 10MB
+                  </p>
+                  {editMode && assetToEdit.promptFile && (
+                    <p className="current-image-note">
+                      Current prompt file will be kept if no new file is selected
                     </p>
                   )}
                 </div>

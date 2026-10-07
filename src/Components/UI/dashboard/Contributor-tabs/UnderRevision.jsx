@@ -475,6 +475,7 @@ const UnderRevisionAssets = () => {
       mockups: { name: "Mockups", count: 0, color: "excellent", icon: <FiBox /> },
       fonts: { name: "Fonts", count: 0, color: "good", icon: <FiType /> },
       "video-templates": { name: "Video Templates", count: 0, color: "average", icon: <FiVideo /> },
+      prompts: { name: "Prompts", count: 0, color: "poor", icon: <FiFile /> },
       other: { name: "Other", count: 0, color: "poor", icon: <FiFile /> },
     };
 
@@ -530,6 +531,8 @@ const UnderRevisionAssets = () => {
         return "Fonts";
       case "video-templates":
         return "Video Templates";
+      case "prompts":
+        return "Prompts";
       default:
         return "Other";
     }
@@ -919,6 +922,7 @@ const UnderRevisionAssets = () => {
               <option value="mockups">Mockups</option>
               <option value="fonts">Fonts</option>
               <option value="video-templates">Video Templates</option>
+              <option value="prompts">Prompts</option>
               <option value="other">Other</option>
             </select>
 

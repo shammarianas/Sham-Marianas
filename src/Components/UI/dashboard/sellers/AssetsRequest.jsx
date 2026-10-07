@@ -297,6 +297,7 @@ const AssetRequestsDashboard = () => {
       "mockups": { label: "Mockup" },
       "fonts": { label: "Font" },
       "video-templates": { label: "Video Template" },
+      "prompts": { label: "Prompts" },
       "other": { label: "Other" }
     };
     return types[type] || {label: type || "Asset" };
@@ -468,6 +469,7 @@ const AssetRequestsDashboard = () => {
             <option value="videos">Videos</option>
             <option value="images">Images</option>
             <option value="graphics">Graphics</option>
+            <option value="prompts">Prompts</option>
             <option value="scripts">Scripts</option>
             <option value="hdris">HDRIs</option>
             <option value="icons">Icons</option>

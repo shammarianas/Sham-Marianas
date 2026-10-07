@@ -63,11 +63,13 @@ const NotificationDropdown = ({
   onMarkAsRead,
   onMarkAllAsRead
 }) => {
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+
   return (
     <div className="notification-dropdown">
       <div className="notification-header">
-        <h3>Notifications</h3>
-        {notifications.length > 0 && (
+        <h3>Notifications {unreadCount > 0 && `(${unreadCount})`}</h3>
+        {unreadCount > 0 && (
           <button className="mark-all-read" onClick={onMarkAllAsRead}>
             Mark all as read
           </button>
@@ -75,12 +77,15 @@ const NotificationDropdown = ({
       </div>
       <div className="notification-list">
         {notifications.length === 0 ? (
-          <div className="no-notifications">No new notifications</div>
+          <div className="notification-empty-state">
+            <div className="notification-empty-title">No notifications</div>
+            <div className="notification-empty-text">You&apos;re all caught up!</div>
+          </div>
         ) : (
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+              className={`notification-item ${notification.read ? "read" : "unread"} ${notification.type || ""}`}
               onClick={() => onMarkAsRead(notification.id)}
             >
               <div className="notification-icon">

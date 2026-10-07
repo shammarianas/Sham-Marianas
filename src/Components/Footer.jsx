@@ -72,6 +72,7 @@ function Footer() {
     path.startsWith("/category/images") ||
     path.startsWith("/category/scripts") ||
     path.startsWith("/category/hdri") ||
+    path.startsWith("/category/prompts") ||
     path.startsWith("/subscription") ||
     path.startsWith("/view/") ||
     (path.match(/^\/[^/]+$/) && !nonTemplateSinglePaths.includes(path.toLowerCase()));

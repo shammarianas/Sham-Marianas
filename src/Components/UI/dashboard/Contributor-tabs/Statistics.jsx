@@ -360,6 +360,7 @@ const Statistics = () => {
       mockups: 0,
       fonts: 0,
       "video-templates": 0,
+      prompts: 0,
       other: 0,
     };
 
@@ -425,6 +426,7 @@ const Statistics = () => {
       mockups: "#ec4899",
       fonts: "#14b8a6",
       "video-templates": "#a855f7",
+      prompts: "#f97316",
       other: "#6b7280",
     };
     return colors[category] || "#6b7280";
@@ -470,6 +472,8 @@ const Statistics = () => {
         return "Fonts";
       case "video-templates":
         return "Video Templates";
+      case "prompts":
+        return "Prompts";
       case "other":
         return "Other";
       default:

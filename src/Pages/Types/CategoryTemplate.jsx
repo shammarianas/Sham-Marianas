@@ -24,6 +24,7 @@ const CategoryTemplate = () => {
     "/category/textures": "Textures",
     "/category/scripts": "Scripts",
     "/category/hdris": "HDRIs",
+    "/category/prompts": "Prompts",
     "/category/hot": "Hot"
   };
 

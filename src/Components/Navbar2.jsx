@@ -215,6 +215,7 @@ const Navbar = () => {
     { path: "/category/textures", label: "Textures" },
     { path: "/category/scripts", label: "Scripts" },
     { path: "/category/hdris", label: "HDRIs" },
+    { path: "/category/prompts", label: "Prompts" },
   ];
 
   // ✅ IF ON COMPANY PAGES (Home, About, Services, etc.) - Show company navbar
