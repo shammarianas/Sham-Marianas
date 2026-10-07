@@ -27,6 +27,48 @@ import SEO from "../common/SEO";
 const ModelViewer = lazy(() => import("../Components/ModelViewer"));
 const MarkdownCodeBlock = lazy(() => import("../Components/MarkdownCodeBlock"));
 
+const getAssetString = (value) => {
+  if (typeof value === "string") return value;
+  if (value && typeof value.url === "string") return value.url;
+  return "";
+};
+
+const getAssetStringArray = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(getAssetString).filter(Boolean);
+  }
+
+  const stringValue = getAssetString(value);
+  return stringValue ? [stringValue] : [];
+};
+
+const normalizeAsset = (data, id) => {
+  const tags = Array.isArray(data.tags)
+    ? data.tags.filter((tag) => typeof tag === "string")
+    : typeof data.tags === "string"
+      ? data.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
+      : [];
+
+  return {
+    ...data,
+    id,
+    title: typeof data.title === "string" && data.title.trim()
+      ? data.title.trim()
+      : "Untitled asset",
+    description: typeof data.description === "string" ? data.description : "",
+    type: typeof data.type === "string" ? data.type.toLowerCase() : "",
+    category: typeof data.category === "string" ? data.category : "",
+    tags,
+    thumbnail: getAssetString(data.thumbnail),
+    thumbnailModel: getAssetString(data.thumbnailModel),
+    model: getAssetString(data.model),
+    video: getAssetString(data.video),
+    videoTemplateFile: getAssetString(data.videoTemplateFile),
+    images: getAssetStringArray(data.images),
+    icons: getAssetStringArray(data.icons),
+  };
+};
+
 const View = () => {
   const { userProfile } = useUser();
   const { slug } = useParams();
@@ -134,7 +176,7 @@ const View = () => {
           return;
         }
 
-        const fetchedItemData = { id: docId, ...docData };
+        const fetchedItemData = normalizeAsset(docData, docId);
 
         setItem(fetchedItemData);
         setMarkdown(docData.description || "");
@@ -183,7 +225,7 @@ const View = () => {
       description: assetData.description
         ? assetData.description.substring(0, 160) + "..."
         : `Download ${assetData.title} from Shammarianas`,
-      keywords: assetData.tags ? assetData.tags.join(", ") : "",
+      keywords: Array.isArray(assetData.tags) ? assetData.tags.join(", ") : "",
       ogImage: assetData.thumbnail || "/assets/imgs/default.jpg"
     };
   };

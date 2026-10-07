@@ -68,42 +68,52 @@ const UploadFiles = () => {
   const get3DModelUrl = (asset) => {
     if (!asset) return null;
 
+    const getUrlString = (value) => {
+      if (typeof value === "string") return value;
+      if (value && typeof value.url === "string") return value.url;
+      return null;
+    };
+
+    const thumbnailModelUrl = getUrlString(asset.thumbnailModel);
+    const modelUrl = getUrlString(asset.model);
+    const thumbnailUrl = getUrlString(asset.thumbnail);
+
     // Debug log
     console.log("🔍 Checking 3D model for asset:", {
       id: asset.id,
       title: asset.title,
-      thumbnailModel: asset.thumbnailModel,
-      model: asset.model,
+      thumbnailModel: thumbnailModelUrl,
+      model: modelUrl,
       type: asset.type,
     });
 
     // Priority 1: thumbnailModel field (preview ke liye)
-    if (asset.thumbnailModel) {
-      console.log("✅ Using thumbnailModel:", asset.thumbnailModel);
-      return asset.thumbnailModel;
+    if (thumbnailModelUrl) {
+      console.log("✅ Using thumbnailModel:", thumbnailModelUrl);
+      return thumbnailModelUrl;
     }
 
     // Priority 2: Direct model file (check if it's 3D format)
-    if (asset.model) {
-      const is3DFile = asset.model
+    if (modelUrl) {
+      const is3DFile = modelUrl
         .toLowerCase()
         .match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
       if (is3DFile) {
-        console.log("✅ Using model field (3D format):", asset.model);
-        return asset.model;
+        console.log("✅ Using model field (3D format):", modelUrl);
+        return modelUrl;
       } else {
-        console.log("❌ Model field but not 3D format:", asset.model);
+        console.log("❌ Model field but not 3D format:", modelUrl);
       }
     }
 
     // Priority 3: Thumbnail is 3D model (unlikely but check)
-    if (asset.thumbnail) {
-      const is3DFile = asset.thumbnail
+    if (thumbnailUrl) {
+      const is3DFile = thumbnailUrl
         .toLowerCase()
         .match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
       if (is3DFile) {
-        console.log("✅ Using thumbnail (3D format):", asset.thumbnail);
-        return asset.thumbnail;
+        console.log("✅ Using thumbnail (3D format):", thumbnailUrl);
+        return thumbnailUrl;
       }
     }
 

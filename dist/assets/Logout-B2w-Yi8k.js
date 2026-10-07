@@ -1,1 +1,0 @@
-import{i as s,j as r}from"./vendor-DJcWBMKH.js";import{t}from"./firebase-Bbgk9vYU.js";import{a as o}from"./index-1Sr3Jep6.js";import"./ui-8oM1u8yD.js";import"./gsap-BYJNJUll.js";const a=()=>{const a=s();return t(o).then(()=>{a("/")}).catch(s=>{}),r.jsx("div",{})};export{a as default};

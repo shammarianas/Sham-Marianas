@@ -11,6 +11,12 @@ import { db } from "../../../firebase";
 import { getAuth } from "firebase/auth";
 import { getAssetDownloadFilename } from "../../utils/assetDownload";
 
+const getAssetUrl = (value) => {
+  if (typeof value === "string") return value;
+  if (value && typeof value.url === "string") return value.url;
+  return "";
+};
+
 const ListedItemCard = ({
   id,
   data,
@@ -549,40 +555,44 @@ const ListedItemCard = ({
 
   // Get 3D model URL from data
   const get3DModelUrl = () => {
+    const thumbnailModelUrl = getAssetUrl(data.thumbnailModel);
+    const modelUrl = getAssetUrl(data.model);
+    const thumbnailUrl = getAssetUrl(data.thumbnail);
+
     console.log("🔍 Checking 3D model data:", {
-      thumbnailModel: data.thumbnailModel,
-      model: data.model,
-      thumbnail: data.thumbnail,
+      thumbnailModel: thumbnailModelUrl,
+      model: modelUrl,
+      thumbnail: thumbnailUrl,
       type: data.type,
     });
 
     // Function to check if file is supported 3D format (ZIP KO EXCLUDE KARO)
     const isSupported3DFormat = (url) => {
-      if (!url) return false;
+      if (typeof url !== "string" || !url) return false;
       const extension = url.split(".").pop()?.toLowerCase().split("?")[0];
       // ZIP KO HATA DO - sirf 3D formats rahenge
       return ["glb", "gltf", "fbx", "obj", "stl", "3ds"].includes(extension);
     };
 
     // Priority 1: thumbnailModel field (preview ke liye) - ZIP FREE
-    if (data.thumbnailModel && isSupported3DFormat(data.thumbnailModel)) {
+    if (thumbnailModelUrl && isSupported3DFormat(thumbnailModelUrl)) {
       console.log(
         "✅ Using thumbnailModel for 3D preview:",
-        data.thumbnailModel
+        thumbnailModelUrl
       );
-      return data.thumbnailModel;
+      return thumbnailModelUrl;
     }
 
     // Priority 2: Direct model file - ONLY IF NOT ZIP
-    if (data.model && isSupported3DFormat(data.model)) {
-      console.log("✅ Using model for 3D preview:", data.model);
-      return data.model;
+    if (modelUrl && isSupported3DFormat(modelUrl)) {
+      console.log("✅ Using model for 3D preview:", modelUrl);
+      return modelUrl;
     }
 
     // Priority 3: Thumbnail is 3D model
-    if (data.thumbnail && isSupported3DFormat(data.thumbnail)) {
-      console.log("✅ Using thumbnail for 3D preview:", data.thumbnail);
-      return data.thumbnail;
+    if (thumbnailUrl && isSupported3DFormat(thumbnailUrl)) {
+      console.log("✅ Using thumbnail for 3D preview:", thumbnailUrl);
+      return thumbnailUrl;
     }
 
     console.log("❌ No supported 3D model found for preview");
@@ -610,7 +620,7 @@ const ListedItemCard = ({
           ) : null}
           <Link className="card_image" to={`/view/${data.slug}`}>
             {(() => {
-              const src = data.thumbnail;
+              const src = getAssetUrl(data.thumbnail);
 
               // Detect video
               const isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src);
