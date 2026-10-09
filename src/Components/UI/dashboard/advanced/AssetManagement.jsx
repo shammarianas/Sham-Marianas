@@ -37,6 +37,16 @@ const AssetManagement = () => {
 
   useUser();
 
+  // Firestore records can contain legacy object values for file fields.
+  // Normalize them before applying string methods or passing URLs to viewers.
+  const getFileUrl = (value) => {
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object") {
+      return value.url || value.downloadURL || value.href || "";
+    }
+    return "";
+  };
+
 // When approving an asset
 
 
@@ -84,28 +94,31 @@ const AssetManagement = () => {
   });
 
   // Priority 1: thumbnailModel field (preview ke liye)
-  if (asset.thumbnailModel) {
-    console.log("✅ Using thumbnailModel:", asset.thumbnailModel);
-    return asset.thumbnailModel;
+  const thumbnailModelUrl = getFileUrl(asset.thumbnailModel);
+  if (thumbnailModelUrl) {
+    console.log("✅ Using thumbnailModel:", thumbnailModelUrl);
+    return thumbnailModelUrl;
   }
 
   // Priority 2: Direct model file (check if it's 3D format)
-  if (asset.model) {
-    const is3DFile = asset.model.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
+  const modelUrl = getFileUrl(asset.model);
+  if (modelUrl) {
+    const is3DFile = modelUrl.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
     if (is3DFile) {
-      console.log("✅ Using model field (3D format):", asset.model);
-      return asset.model;
+      console.log("✅ Using model field (3D format):", modelUrl);
+      return modelUrl;
     } else {
-      console.log("❌ Model field but not 3D format:", asset.model);
+      console.log("❌ Model field but not 3D format:", modelUrl);
     }
   }
 
   // Priority 3: Thumbnail is 3D model (unlikely but check)
-  if (asset.thumbnail) {
-    const is3DFile = asset.thumbnail.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
+  const thumbnailUrl = getFileUrl(asset.thumbnail);
+  if (thumbnailUrl) {
+    const is3DFile = thumbnailUrl.toLowerCase().match(/\.(gltf|glb|obj|stl|fbx|blend)($|\?)/);
     if (is3DFile) {
-      console.log("✅ Using thumbnail (3D format):", asset.thumbnail);
-      return asset.thumbnail;
+      console.log("✅ Using thumbnail (3D format):", thumbnailUrl);
+      return thumbnailUrl;
     }
   }
 
