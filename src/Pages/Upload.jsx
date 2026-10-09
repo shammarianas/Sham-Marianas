@@ -584,6 +584,7 @@ const Upload = ({
     icons: [],
     script: null,
     promptFile: null,
+    previewUrl: "",
     hdri: null,
     graphicsTemplate: null,
     mockupFile: null,
@@ -786,7 +787,8 @@ const Upload = ({
         description: assetToEdit.description || "",
         price: assetToEdit.price || "free",
         category: assetToEdit.category || "",
-        type: assetToEdit.type || "",
+        type: String(assetToEdit.type || "").toLowerCase(),
+        previewUrl: assetToEdit.previewUrl || "",
         is3d: assetToEdit.is3d || false,
         aiGenerated: assetToEdit.aiGenerated || "",
         resolution: assetToEdit.resolution || "",
@@ -1715,6 +1717,9 @@ const Upload = ({
         tags,
         category: formData.category || "",
         licenseType: formData.licenseType || "",
+        ...(formData.type?.toLowerCase() === "prompts"
+          ? { previewUrl: formData.previewUrl.trim() }
+          : {}),
         userId: currentUser.uid,
         ownerId: currentUser.uid,
         authorName: userName,
@@ -2955,7 +2960,25 @@ const Upload = ({
                 </div>
               )}
 
-              {formData.type === "prompts" && (
+              {formData.type?.toLowerCase() === "prompts" && (
+                <>
+                <div className="blog-form-group">
+                  <label className="blog-form-label" htmlFor="prompt-preview-url">
+                    Preview Button URL
+                  </label>
+                  <input
+                    id="prompt-preview-url"
+                    type="url"
+                    name="previewUrl"
+                    value={formData.previewUrl}
+                    onChange={handleChange}
+                    className="blog-form-input"
+                    placeholder="https://example.com/preview"
+                  />
+                  <p className="blog-form-hint">
+                    Add a link for the Preview button on the asset page.
+                  </p>
+                </div>
                 <div className="blog-form-group">
                   <label className="blog-form-label">
                     Prompt File{" "}
@@ -2978,6 +3001,7 @@ const Upload = ({
                     </p>
                   )}
                 </div>
+                </>
               )}
 
               {formData.type === "other" && (

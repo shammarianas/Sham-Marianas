@@ -251,6 +251,7 @@ const HeroSection = () => {
 
 
             {[
+              { title: "Prompts", category: "prompts" },
               { title: "Videos", category: "videos" },
               { title: "Video Templates", category: "video-templates" },
               { title: "Images", category: "images" },

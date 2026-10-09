@@ -3252,7 +3252,7 @@ body.loaded {
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  background: transparent;
+  background: #000;
   z-index: 99999999999999;
 }
 

@@ -1,0 +1,1 @@
+import{j as s}from"./vendor-DJcWBMKH.js";function n(){return s.jsxs("div",{className:"lines",children:[s.jsx("span",{}),s.jsx("span",{}),s.jsx("span",{}),s.jsx("span",{}),s.jsx("span",{})]})}export{n as L};

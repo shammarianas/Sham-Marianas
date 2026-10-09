@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 //  IMPORTANT: Apna production webhook URL yahan daalein.
 
@@ -227,6 +228,23 @@ if (barePhoneRegex.test(text)) {
 }
 
 const ChatWidget = () => {
+  const { pathname } = useLocation();
+  const companyPages = [
+    "/",
+    "/about",
+    "/terms-and-conditions",
+    "/privacy-policy",
+    "/services",
+    "/portfolio",
+    "/blog",
+    "/contact-us",
+    "/project-details",
+    "/Blog-details",
+    "/page-team",
+  ];
+  const isCompanyPage = companyPages.some((path) =>
+    path === "/" ? pathname === "/" : pathname.startsWith(path)
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: "bot", text: "Hi! 👋 Welcome to Sham Marianas!", showInquiryButton: false, showWhatsappButton: false, links: [] },
@@ -298,6 +316,8 @@ const ChatWidget = () => {
       sendMessage();
     }
   };
+
+  if (!isCompanyPage) return null;
 
   return (
     <>

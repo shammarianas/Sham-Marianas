@@ -49,6 +49,14 @@ const Navbar = () => {
 
   // Check if current page is an admin/contributor page
   const isAdminPage = adminPages.some((path) => currentPage.startsWith(path));
+  const isTemplatesPage = ["/templates", "/category", "/view", "/View"].some(
+    (path) => currentPage === path || currentPage.startsWith(`${path}/`)
+  );
+  const normalizedPage = currentPage.toLowerCase();
+  const isDashboardLogoPage = ["/admin", "/contributor", "/contributordashboard"].some(
+    (path) => normalizedPage === path || normalizedPage.startsWith(`${path}/`)
+  );
+  const logoDestination = isTemplatesPage || isDashboardLogoPage ? "/templates" : "/";
 
   useEffect(() => {
     const checkContributorStatus = async () => {
@@ -224,7 +232,7 @@ const Navbar = () => {
       <>
         <nav className="navbar navbar-expand-lg bord blur">
           <div className="container o-hidden">
-            <Link to="/" className="logo site-logo-link" aria-label="Home">
+            <Link to={logoDestination} className="logo site-logo-link" aria-label={logoDestination === "/" ? "Home" : "Templates"}>
               <img
                 src="/assets/imgs/logo.png"
                 className="site-logo-img"
@@ -558,7 +566,7 @@ const Navbar = () => {
   return (
     <>
       <div className="navbar navbar-expand-lg bord blur">
-        <Link to="/" className="logo site-logo-link" aria-label="Home">
+        <Link to={logoDestination} className="logo site-logo-link" aria-label={logoDestination === "/" ? "Home" : "Templates"}>
           <img
             src="/assets/imgs/logo.png"
             className="site-logo-img"

@@ -91,6 +91,28 @@ const View = () => {
   const [markdown, setMarkdown] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const handleShareAsset = async () => {
+    const shareUrl = new URL(`/view/${encodeURIComponent(item.slug)}`, window.location.origin).toString();
+    const shareData = { title: item.title, url: shareUrl };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        setToastMessage("Asset link copied to clipboard");
+        setToastState("success");
+        setShowToast(true);
+        window.setTimeout(() => setShowToast(false), 3000);
+      }
+    } catch (error) {
+      if (error.name === "AbortError") return;
+      setToastMessage("Could not share this asset. Please try again.");
+      setToastState("error");
+      setShowToast(true);
+      window.setTimeout(() => setShowToast(false), 3000);
+    }
+  };
 
   // Get price display text - UPDATED FOR FREE/PAID STRINGS
   const getPriceDisplay = (asset) => {
@@ -331,20 +353,31 @@ const View = () => {
                     <div
                       className="details-media-frame"
                       onClick={handleOpenFullscreen}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: "pointer", position: "relative" }}
                     >
                       <img
                         src={item.thumbnail}
                         alt={item.title}
                         className="details-media-img"
                       />
+                      {item.type === "prompts" && item.previewUrl && (
+                        <a
+                          href={item.previewUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="asset-preview-button"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          Preview
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
 
                 <div className="asset_details d-md-block d-none mt-4">
                   <div className="description">
-                    <h2 className="title">Details</h2>
+                    <h2 className="title">Overview</h2>
                     <div className="content" />
                     <div className="markdown-preview">
                       <ReactMarkdown
@@ -356,7 +389,7 @@ const View = () => {
                     </div>
                   </div>
                   <div className="keywords_section">
-                    <h2 className="title">Assets Tags</h2>
+                    <h2 className="title">Tags</h2>
                     <div>
                       <Keywords keywords={item.tags} />
                     </div>
@@ -404,6 +437,15 @@ const View = () => {
                     />
 
                     <FavoriteButton assetId={item.id} />
+                    <button
+                      type="button"
+                      className="add_to_wishlist_btn share_asset_btn"
+                      onClick={handleShareAsset}
+                      aria-label="Share asset"
+                      title="Share asset"
+                    >
+                      <i className="icon fas fa-share-alt" aria-hidden="true"></i>
+                    </button>
                   </div>
                 </div>
 
