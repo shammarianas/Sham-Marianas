@@ -592,7 +592,7 @@ const Navbar = () => {
         {/* Explore and Search - Hide on admin pages */}
         {!isCompanyPage && !isAdminPage && (
           <>
-            <Link to="/services">
+            <Link to="/templates">
               <div className="d-none d-md-block ml-auto vi-more">
                 <span className="butn butn-sm butn-bord radius-30">
                   <span>Explore</span>
