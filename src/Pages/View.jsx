@@ -9,6 +9,9 @@ import {
   where,
   collection,
   getDocs,
+  doc,
+  updateDoc,
+  increment,
 } from "firebase/firestore";
 import UserCard from "../Components/UI/UserCard";
 import ToastAlert from "../Components/UI/ToastAlert";
@@ -40,6 +43,22 @@ const getAssetStringArray = (value) => {
 
   const stringValue = getAssetString(value);
   return stringValue ? [stringValue] : [];
+};
+
+const trackAssetViewOnce = async (assetId) => {
+  const storageKey = `viewed-asset:${assetId}`;
+  if (window.sessionStorage.getItem(storageKey)) return;
+
+  window.sessionStorage.setItem(storageKey, "1");
+
+  try {
+    await updateDoc(doc(db, "Assets", assetId), {
+      views: increment(1),
+    });
+  } catch (error) {
+    window.sessionStorage.removeItem(storageKey);
+    throw error;
+  }
 };
 
 const normalizeAsset = (data, id) => {
@@ -199,6 +218,10 @@ const View = () => {
         }
 
         const fetchedItemData = normalizeAsset(docData, docId);
+
+        void trackAssetViewOnce(docId).catch((error) => {
+          console.error("Error tracking asset view:", error);
+        });
 
         setItem(fetchedItemData);
         setMarkdown(docData.description || "");

@@ -55,7 +55,8 @@ const formatDate = (date) => {
 
 const SellerAccountVerify = () => {
   const [sellers, setSellers] = useState([]);
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const sellerColumns = [
     { header: "Seller Name", accessor: (item) => item.name || "N/A" },
@@ -94,6 +95,7 @@ const SellerAccountVerify = () => {
       try {
         const ref = collection(db, "Contributors");
         const snapshot = await getDocs(ref);
+        console.info("Loaded contributor accounts:", snapshot.size);
 
         const data = snapshot.docs.map((docSnap) => {
           const sellerData = docSnap.data();
@@ -120,7 +122,7 @@ const SellerAccountVerify = () => {
             bio: sellerData.bio || sellerData.description || "N/A",
 
             // Dates
-            joinDate: sellerData.joinDate?.toDate().toLocaleDateString() || "N/A",
+            joinDate: formatDate(sellerData.joinDate),
 
             // Status
             status: sellerData.status || "pending",
@@ -131,9 +133,10 @@ const SellerAccountVerify = () => {
         });
 
         setSellers(data);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching sellers:", error);
+        setLoadError(error.message || "Could not load contributor accounts.");
+      } finally {
         setLoading(false);
       }
     };
@@ -430,6 +433,11 @@ const SellerAccountVerify = () => {
           />
         </div>
         <div className="recent-reports-body">
+          {loadError && (
+            <div className="no-reports" role="alert">
+              Could not load contributor accounts: {loadError}
+            </div>
+          )}
           <table className="report-table">
             <thead>
               <tr>
@@ -534,10 +542,19 @@ const SellerAccountVerify = () => {
                 </tr>
               ))}
 
-              {filteredSellers.length === 0 && (
+              {loading && (
                 <tr>
                   <td colSpan="6" className="no-reports">
-                    No sellers found matching your filters
+                    Loading contributor accounts...
+                  </td>
+                </tr>
+              )}
+              {!loading && !loadError && filteredSellers.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="no-reports">
+                    {sellers.length === 0
+                      ? "No contributor accounts found in the Contributors collection"
+                      : "No sellers found matching your filters"}
                   </td>
                 </tr>
               )}

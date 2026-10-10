@@ -152,28 +152,12 @@ const Search = () => {
   const {
     searchTerm,
     setSearchTerm,
-    setDisplayResults,
     overlay,
     setOverlay,
   } = useSearchStore();
 
-  // Debounce function
-  const debounce = (func, delay) => {
-    let debounceTimer;
-    return function (...args) {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => func.apply(this, args), delay);
-    };
-  };
-
-  // Handle search input change
-  const handleSearchChange = debounce((e) => {
-    setSearchTerm(e.target.value);
-  }, 1000);
-
   // Clear search input
   const clearSearch = () => {
-    document.querySelector("#search_input").value = "";
     setSearchTerm("");
   };
 
@@ -199,9 +183,9 @@ const Search = () => {
             type="text"
             placeholder="Find more than 1000 quality assets"
             id="search_input"
-            onChange={handleSearchChange}
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
             onClick={() => {
-              setDisplayResults(false);
               overlay ? "" : setOverlay(true);
             }}
           />

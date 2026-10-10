@@ -6,6 +6,7 @@ import { useFilters } from "../Context/FilterContext";
 import "react-router-dom";
 import useSearchStore from "../store/searchStore";
 import { useUser } from "../Context/UserProvider";
+import { rankAssetsByRelevance } from "../utils/assetSearch";
 // Import the Zustand store
 
 const ItemsListing = (props) => {
@@ -65,11 +66,6 @@ const ItemsListing = (props) => {
     const discount = Number(item.discount ?? 0) || 0;
     const afterDiscountPrice = Math.max(0, price - (price * discount) / 100);
 
-    // Apply search term filter
-    const searchTermFilterPassed = searchTerm
-      ? item.title.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
-
     // Apply category filter
     let categoryFilterPassed = true;
     if (filters && filters.categories && filters.categories.length !== 0) {
@@ -89,12 +85,14 @@ const ItemsListing = (props) => {
     }
 
     return (
-      searchTermFilterPassed &&
       categoryFilterPassed &&
       priceFilterPassed &&
       discountFilterPassed
     );
   });
+  const searchFilteredItems = searchTerm
+    ? rankAssetsByRelevance(filteredItems, searchTerm)
+    : filteredItems;
 
   return (
     <div className="item_listing">
@@ -108,7 +106,7 @@ const ItemsListing = (props) => {
         </div>
       )} */}
 
-      {filteredItems.map((item) => (
+      {searchFilteredItems.map((item) => (
         <ListedItemCard
           key={item.id}
           id={item.id}

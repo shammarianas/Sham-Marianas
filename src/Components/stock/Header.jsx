@@ -1,118 +1,73 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../../../firebase";
 import ListedItemCard from "../UI/ListedItemCard";
 import PageTitle from "../UI/PageTitle";
 import ItemsListing from "../ItemsListing";
 import { Link } from "react-router-dom";
+import { rankAssetsByRelevance } from "../../utils/assetSearch";
 
 const HeroSection = () => {
   // Search State
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [displayResults, setDisplayResults] = useState(false);
-  const [, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [searchError, setSearchError] = useState("");
   const [overlay, setOverlay] = useState(false);
+  const [assets, setAssets] = useState([]);
 
-  // Assets State
-  const [, setAssets] = useState([]);
-  const [, setFilteredAssets] = useState([]);
-  const [, setError] = useState(null);
+  useEffect(() => {
+    let isMounted = true;
 
-  // Debounce Function
-  const debounce = (func, delay) => {
-    let debounceTimer;
-    return function (...args) {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => func.apply(this, args), delay);
+    const fetchAssets = async () => {
+      try {
+        const assetsQuery = query(
+          collection(db, "Assets"),
+          where("status", "==", "approved")
+        );
+        const snapshot = await getDocs(assetsQuery);
+        const assetsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        if (isMounted) setAssets(assetsData);
+      } catch (error) {
+        console.error("Error fetching assets for search:", error);
+        if (isMounted) setSearchError("Search is temporarily unavailable.");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     };
-  };
 
-  // Fetch Search Results
-  const fetchSearchResults = useCallback(async () => {
-    if (searchTerm.trim() === "") return;
+    fetchAssets();
 
-    setLoading(true);
-
-    const q = query(
-      collection(db, "Assets"),
-      where("status", "==", "approved") // ✅ Only approved assets
-    );
-
-    const querySnapshot = await getDocs(q);
-    const allResults = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    const newResults = allResults
-      .filter((result) =>
-        result.title.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .slice(0, 7);
-
-    setSearchResults(newResults);
-    setLoading(false);
-    setDisplayResults(searchTerm !== "");
-  }, [searchTerm]);
-
-  // Fetch All Assets
-  const fetchAssets = useCallback(async () => {
-    try {
-      const q = query(
-        collection(db, "Assets"),
-        where("status", "==", "approved") // ✅ Only approved assets
-      );
-
-      const querySnapshot = await getDocs(q);
-
-      const assetsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setAssets(assetsData);
-      setFilteredAssets(assetsData);
-    } catch (error) {
-      setError(error.message);
-    }
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Handle Search Input Change
-  const handleSearchChange = debounce((e) => {
-    setSearchTerm(e.target.value);
-  }, 1000);
+  useEffect(() => {
+    const trimmedSearchTerm = searchTerm.trim();
+
+    if (!trimmedSearchTerm) {
+      setSearchResults([]);
+      setDisplayResults(false);
+      return;
+    }
+
+    setSearchResults(rankAssetsByRelevance(assets, trimmedSearchTerm).slice(0, 7));
+    setDisplayResults(true);
+  }, [assets, searchTerm]);
 
   // Handle Search Submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetchSearchResults();
+    setDisplayResults(Boolean(searchTerm.trim()));
   };
 
-  // Filter Assets by Category
-  // const filterAssetsByCategory = (category) => {
-  //   return assets.filter((asset) => asset.type === category);
-  // };
-
-  // Effects
-  useEffect(() => {
-    if (searchTerm !== "") {
-      fetchSearchResults();
-    } else {
-      setSearchResults([]);
-      setDisplayResults(false);
-    }
-  }, [searchTerm, fetchSearchResults]);
-
-  useEffect(() => {
-    fetchAssets();
-  }, [fetchAssets]);
-
-  useEffect(() => {
-    console.log({ searchResults });
-  }, [searchResults]);
-
-  const sortedResults = searchResults.sort((a, b) =>
+  const sortedResults = [...searchResults].sort((a, b) =>
     a.type.localeCompare(b.type)
   );
 
@@ -159,7 +114,8 @@ const HeroSection = () => {
                     type="text"
                     placeholder="Search all assets"
                     className="search-input search-hero-input"
-                    onChange={handleSearchChange}
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
                     onClick={() => {
                       setDisplayResults(false);
                       overlay ? "" : setOverlay(true);
@@ -211,7 +167,12 @@ const HeroSection = () => {
                 </div>
               </div> */}
             <div className="page_content">
-              {Object.keys(groupedResults).map((type) => (
+            {loading && <div className="loading">Loading...</div>}
+            {searchError && <div role="alert">{searchError}</div>}
+            {!loading && !searchError && searchResults.length === 0 && (
+              <div className="no_results">No matching assets found.</div>
+            )}
+            {Object.keys(groupedResults).map((type) => (
                 <>
                   <PageTitle title={type} />
                   <div className="listing_section">

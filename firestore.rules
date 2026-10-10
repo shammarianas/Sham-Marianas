@@ -5,8 +5,8 @@ service cloud.firestore {
     function isAuthenticated() { return request.auth != null; }
     function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email.toLowerCase() in ["admin@shammarianas.com", "shammarianas@gmail.com"] ||
-        exists(/databases/$(database)/documents/adminUsers/$(request.auth.token.email.toLowerCase()))
+        request.auth.token.email.lower() in ["admin@shammarianas.com", "shammarianas@gmail.com", "sahrishanfal@gmail.com"] ||
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.token.email.lower()))
       );
     }
     function isOwnerOrAdmin(userId) {
@@ -17,7 +17,44 @@ service cloud.firestore {
     match /Assets/{assetId} {
       allow get, list: if true;
       allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if (
+        isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          isAdmin() ||
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(["downloadsCount", "lastDownloadedAt"]) &&
+            request.resource.data.downloadsCount == resource.data.get("downloadsCount", 0) + 1 &&
+            request.resource.data.lastDownloadedAt == request.time
+          )
+        )
+      ) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["views"]) &&
+        request.resource.data.views == resource.data.get("views", 0) + 1
+      );
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Contributor profiles contain private account information.
+    match /Contributors/{contributorId} {
+      allow get: if isAdmin() || (
+        isAuthenticated() && request.auth.uid == contributorId
+      );
+      allow list: if isAdmin();
+      allow create: if isAdmin() || (
+        isAuthenticated() && request.auth.uid == contributorId
+      );
+      allow update: if isAdmin() || (
+        isAuthenticated() &&
+        request.auth.uid == contributorId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["lastLogin"])
+      );
+      allow delete: if isAdmin();
+
+      match /{subCollection}/{documentId} {
+        allow read, write: if isAdmin() || (
+          isAuthenticated() && request.auth.uid == contributorId
+        );
+      }
     }
 
     // Profiles and subcollections

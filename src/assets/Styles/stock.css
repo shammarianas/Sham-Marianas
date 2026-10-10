@@ -28,7 +28,7 @@
 }
 
 .details-media-img {
-    object-fit: cover;
+    object-fit: fill;
     width: 100%;
     height: -webkit-fill-available;
     display: block

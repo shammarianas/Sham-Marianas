@@ -311,7 +311,7 @@ const ListedItemCard = ({
 
       // Use Firestore increment to atomically update download count
       await updateDoc(assetRef, {
-        downloads: increment(1),
+        downloadsCount: increment(1),
         lastDownloadedAt: serverTimestamp(),
       });
 
@@ -428,10 +428,6 @@ const ListedItemCard = ({
       // Step 3: Save to downloads collection
       await addToDownloads(data);
       console.log("✅ Saved to downloads collection");
-
-      // Step 4: Track download in Firestore
-      await trackDownloadInFirestore(id);
-      console.log("✅ Download tracked in Firestore");
 
       console.log("✅ Paid asset downloaded successfully via force method");
     } catch (error) {
