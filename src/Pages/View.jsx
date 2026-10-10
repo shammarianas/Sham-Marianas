@@ -47,16 +47,16 @@ const getAssetStringArray = (value) => {
 
 const trackAssetViewOnce = async (assetId) => {
   const storageKey = `viewed-asset:${assetId}`;
-  if (window.localStorage.getItem(storageKey)) return;
+  if (window.sessionStorage.getItem(storageKey)) return;
 
-  window.localStorage.setItem(storageKey, "1");
+  window.sessionStorage.setItem(storageKey, "1");
 
   try {
     await updateDoc(doc(db, "Assets", assetId), {
       views: increment(1),
     });
   } catch (error) {
-    window.localStorage.removeItem(storageKey);
+    window.sessionStorage.removeItem(storageKey);
     throw error;
   }
 };
