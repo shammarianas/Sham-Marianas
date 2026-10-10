@@ -67,15 +67,19 @@ const AssetRequestsDashboard = () => {
         const contributorsMap = {};
 
         if (ownerIds.length > 0) {
-          // Handle Firestore 'in' query limit (10 items max)
-          const batchSize = 10;
-          for (let i = 0; i < ownerIds.length; i += batchSize) {
-            const batch = ownerIds.slice(i, i + batchSize);
-            const contributorsQuery = query(collection(db, "Contributors"), where("__name__", "in", batch));
-            const contributorsSnapshot = await getDocs(contributorsQuery);
-            contributorsSnapshot.forEach(doc => {
-              contributorsMap[doc.id] = doc.data().email;
-            });
+          try {
+            // Handle Firestore 'in' query limit (10 items max)
+            const batchSize = 10;
+            for (let i = 0; i < ownerIds.length; i += batchSize) {
+              const batch = ownerIds.slice(i, i + batchSize);
+              const contributorsQuery = query(collection(db, "Contributors"), where("__name__", "in", batch));
+              const contributorsSnapshot = await getDocs(contributorsQuery);
+              contributorsSnapshot.forEach(doc => {
+                contributorsMap[doc.id] = doc.data().email;
+              });
+            }
+          } catch (error) {
+            console.error("Error fetching contributor emails for asset requests:", error);
           }
         }
 
