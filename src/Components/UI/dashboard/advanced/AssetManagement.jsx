@@ -638,7 +638,7 @@ const AssetManagement = () => {
                     </span>
                     <span className="meta-item">
                       <FiDownload className="meta-icon" />
-                      {asset.downloads || 0} downloads
+                      {asset.downloadsCount ?? asset.downloads ?? 0}
                     </span>
                     {is3D && (
                       <span className="meta-item">

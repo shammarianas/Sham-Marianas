@@ -153,7 +153,7 @@ const DownloadButton = ({
 
       // Use Firestore increment to atomically update download count
       await updateDoc(assetRef, {
-        downloads: increment(1),
+        downloadsCount: increment(1),
         lastDownloadedAt: serverTimestamp(),
       });
 
@@ -428,10 +428,6 @@ const DownloadButton = ({
       // Step 3: Save to downloads collection
       await addToDownloads(item);
       console.log("✅ Saved to downloads collection");
-
-      // Step 4: Track download in Firestore
-      await trackDownloadInFirestore(item.id);
-      console.log("✅ Download tracked in Firestore");
 
       // Step 5: Show success message
       setToastMessage(

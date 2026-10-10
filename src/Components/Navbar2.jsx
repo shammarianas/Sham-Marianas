@@ -565,7 +565,11 @@ const Navbar = () => {
   // ✅ FOR ALL OTHER PAGES (Templates, Categories, Upload, etc.) - Show templates navbar
   return (
     <>
-      <div className="navbar navbar-expand-lg bord blur">
+      <div
+        className={`navbar navbar-expand-lg bord blur ${
+          !isAdminPage ? "template-navbar" : ""
+        }`}
+      >
         <Link to={logoDestination} className="logo site-logo-link" aria-label={logoDestination === "/" ? "Home" : "Templates"}>
           <img
             src="/assets/imgs/logo.png"
@@ -573,29 +577,6 @@ const Navbar = () => {
             alt="Sham Marianas F.Z.C logo"
           />
         </Link>
-
-        {/* Mobile Hamburger Button - Hide on admin pages */}
-        {!isCompanyPage && !isAdminPage && (
-          <div
-            className="mobile-menu-toggle d-lg-none"
-            style={{
-              position: "absolute",
-              left: "20px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 100,
-              background: "transparent",
-              color: "white",
-              fontSize: "20px",
-              cursor: "pointer",
-            }}
-          >
-            <i
-              className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`}
-              onClick={toggleMobileMenu}
-            ></i>
-          </div>
-        )}
 
         {/* Explore and Search - Hide on admin pages */}
         {!isCompanyPage && !isAdminPage && (
@@ -614,6 +595,7 @@ const Navbar = () => {
 
         <div className="right">
           <div className="nav_buttons">
+           
             <div className="navbar_dropdown">
               {currentUser?.uid ? (
                 <Link to={getProfileLink()}>
@@ -660,6 +642,24 @@ const Navbar = () => {
                 </ul>
               </div>
             </div>
+            {!isCompanyPage && !isAdminPage && (
+              <button
+                type="button"
+                className="template-mobile-menu-toggle"
+                aria-label={
+                  isMobileMenuOpen
+                    ? "Close categories menu"
+                    : "Open categories menu"
+                }
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="template-mobile-menu"
+                onClick={toggleMobileMenu}
+              >
+                <i
+                  className={`fas ${isMobileMenuOpen ? "fa-times" : "fa-bars"}`}
+                ></i>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -668,7 +668,8 @@ const Navbar = () => {
       {!isCompanyPage && !isAdminPage && (
         <>
           <div
-            className={`mobile-menu-overlay ${isMobileMenuOpen ? "open" : ""}`}
+            id="template-mobile-menu"
+            className={`mobile-menu-overlay template-mobile-menu-overlay ${isMobileMenuOpen ? "open" : ""}`}
             style={{
               position: "fixed",
               top: 0,
@@ -677,7 +678,6 @@ const Navbar = () => {
               height: "100%",
               background: "rgba(0, 0, 0, 0.95)",
               zIndex: 999,
-              display: isMobileMenuOpen ? "block" : "none",
               paddingTop: "80px",
             }}
           >
