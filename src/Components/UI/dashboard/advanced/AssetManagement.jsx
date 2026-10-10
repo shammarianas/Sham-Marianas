@@ -640,6 +640,10 @@ const AssetManagement = () => {
                       <FiDownload className="meta-icon" />
                       {asset.downloadsCount ?? asset.downloads ?? 0}
                     </span>
+                    <span className="meta-item">
+                      <FiEye className="meta-icon" />
+                      {asset.views ?? 0}
+                    </span>
                     {is3D && (
                       <span className="meta-item">
                         <FiBox className="meta-icon" />

@@ -17,14 +17,19 @@ service cloud.firestore {
     match /Assets/{assetId} {
       allow get, list: if true;
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (
-        resource.data.userId == request.auth.uid ||
-        isAdmin() ||
-        (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(["downloadsCount", "lastDownloadedAt"]) &&
-          request.resource.data.downloadsCount == resource.data.get("downloadsCount", 0) + 1 &&
-          request.resource.data.lastDownloadedAt == request.time
+      allow update: if (
+        isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          isAdmin() ||
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(["downloadsCount", "lastDownloadedAt"]) &&
+            request.resource.data.downloadsCount == resource.data.get("downloadsCount", 0) + 1 &&
+            request.resource.data.lastDownloadedAt == request.time
+          )
         )
+      ) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["views"]) &&
+        request.resource.data.views == resource.data.get("views", 0) + 1
       );
       allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
     }
