@@ -8,8 +8,8 @@ export const SEO_CONFIG = {
     keywords: " Digital marketing agency Dubai, marketing agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
   },
   about: {
-    title: "About Sham Marianas F.Z.C | Dubai's Top Marketing Agency",
-    description: "Sham Marianas F.Z.C started in 2022. We're a full-service digital agency. We bring fresh marketing, websites, and creative ideas to help UAE businesses grow.",
+    title: "About Sham Marianas | B2B Digital Marketing Agency in Dubai",
+    description: "Meet Sham Marianas FZC, a Dubai-based B2B digital marketing and IT solutions agency helping UAE businesses grow through SEO, paid media, branding, web development and lead generation.",
     keywords: "about marketing agency Dubai, digital agency UAE, branding specialists Dubai, social campaigns UAE",
   },
   services: {
