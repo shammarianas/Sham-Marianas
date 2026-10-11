@@ -3,6 +3,7 @@
 const SITE_URL = "https://www.shammarianas.com";
 const ORG_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
+const FOUNDER_ID = `${SITE_URL}/about#founder`;
 
 // =========================================================
 //   ORGANIZATION SCHEMA (Global - reference ke tor par har page par reuse hoga)
@@ -23,6 +24,8 @@ const organizationSchema = {
   "telephone": "+971528036012",
   "legalName": "Sham Marianas F.Z.C.",
   "foundingDate": "2022",
+  "founder": { "@id": FOUNDER_ID },
+  "hasOfferCatalog": { "@id": `${SITE_URL}/about#services-offered` },
   "priceRange": "$$",
   "knowsLanguage": ["en", "ur"],
   "areaServed": [
@@ -375,6 +378,57 @@ export const getHomepageSchema = () => ({
 export const getAboutSchema = () => ({
   "@context": "https://schema.org",
   "@graph": [
+    organizationSchema,
+    websiteSchema,
+    {
+      "@type": "Person",
+      "@id": FOUNDER_ID,
+      "name": "Ehtasham ul Haq",
+      "jobTitle": "Founder",
+      "description": "Founder of Sham Marianas F.Z.C. with more than 12 years of experience in advertising and digital marketing.",
+      "worksFor": { "@id": ORG_ID },
+      "knowsAbout": [
+        "Digital marketing",
+        "Advertising",
+        "Search engine optimization",
+        "Brand strategy"
+      ],
+      "url": `${SITE_URL}/about`
+    },
+    {
+      "@type": "OfferCatalog",
+      "@id": `${SITE_URL}/about#services-offered`,
+      "name": "Sham Marianas digital services",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Digital marketing",
+            "provider": { "@id": ORG_ID },
+            "areaServed": { "@type": "Country", "name": "United Arab Emirates" }
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Web development",
+            "provider": { "@id": ORG_ID },
+            "areaServed": { "@type": "Country", "name": "United Arab Emirates" }
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Logo and brand design",
+            "provider": { "@id": ORG_ID },
+            "areaServed": { "@type": "Country", "name": "United Arab Emirates" }
+          }
+        }
+      ]
+    },
     getSchema("about"),
     buildBreadcrumb(`${SITE_URL}/about#breadcrumb`, [
       homeCrumb,
