@@ -1,12 +1,21 @@
 "use client";
 import "react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
 
 function Clients() {
   const swiperOptions = {
     slidesPerView: 5,
     loop: true,
     spaceBetween: 40,
+    speed: 6000,
+    autoplay: {
+      delay: 0,
+      disableOnInteraction: false,
+      reverseDirection: true,
+      pauseOnMouseEnter: false,
+    },
+    allowTouchMove: false,
     breakpoints: {
       0: {
         slidesPerView: 2,
@@ -38,11 +47,11 @@ function Clients() {
         }}
       >
         <div className="row justify-content-center">
-          <div className="col-lg-6 col-md-10">
-            <div className="sec-head text-center mb-80">
+          <div className="col-lg-10 col-md-11">
+            <div className="sec-head text-center mb-80 clients-heading">
               <h3>
-                We&lsquo;re proud to work with <br /> a{" "}
-                <span className="opacity-7">diverse range of companies.</span>
+                We&lsquo;re proud to work with{" "}
+                <span className="opacity-7">a diverse range of companies.</span>
               </h3>
             </div>
           </div>
@@ -57,7 +66,8 @@ function Clients() {
           <Swiper
             {...swiperOptions}
             id="content-carousel-container-unq-clients"
-            className="swiper-container"
+            className="swiper-container clients-loop-swiper"
+            modules={[Autoplay]}
             data-swiper="container"
           >
             <SwiperSlide>

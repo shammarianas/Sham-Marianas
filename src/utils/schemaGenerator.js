@@ -258,13 +258,13 @@ export const getSchema = (type, data = {}) => {
     case "portfolioListing":
       return {
         "@type": "CollectionPage",
-        "@id": `${SITE_URL}/portfolio#webpage`,
-        "url": `${SITE_URL}/portfolio`,
+        "@id": `${SITE_URL}/case-study#webpage`,
+        "url": `${SITE_URL}/case-study`,
         "name": "Portfolio | Sham Marianas F.Z.C.",
         "isPartOf": { "@id": WEBSITE_ID },
         "about": { "@id": ORG_ID },
         "publisher": { "@id": ORG_ID },
-        "breadcrumb": { "@id": `${SITE_URL}/portfolio#breadcrumb` },
+        "breadcrumb": { "@id": `${SITE_URL}/case-study#breadcrumb` },
         "inLanguage": "en"
       };
 
@@ -490,9 +490,9 @@ export const getPortfolioListingSchema = () => ({
   "@context": "https://schema.org",
   "@graph": [
     getSchema("portfolioListing"),
-    buildBreadcrumb(`${SITE_URL}/portfolio#breadcrumb`, [
+    buildBreadcrumb(`${SITE_URL}/case-study#breadcrumb`, [
       homeCrumb,
-      { name: "Portfolio", url: `${SITE_URL}/portfolio` }
+      { name: "Case Study", url: `${SITE_URL}/case-study` }
     ])
   ]
 });
@@ -515,7 +515,7 @@ export const getPortfolioSchema = (projectData) => {
       },
       buildBreadcrumb(`${url}#breadcrumb`, [
         homeCrumb,
-        { name: "Portfolio", url: `${SITE_URL}/portfolio` },
+        { name: "Case Study", url: `${SITE_URL}/case-study` },
         { name: projectData.title || "", url }
       ])
     ]

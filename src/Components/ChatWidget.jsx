@@ -115,7 +115,7 @@ function renderMessageHtml(rawText) {
 function isGenericPortfolioUrl(url) {
   try {
     const path = new URL(url).pathname.replace(/\/+$/, "");
-    return path === "/portfolio";
+    return path === "/case-study";
   } catch {
     return false;
   }
@@ -235,7 +235,7 @@ const ChatWidget = () => {
     "/terms-and-conditions",
     "/privacy-policy",
     "/services",
-    "/portfolio",
+    "/case-study",
     "/blog",
     "/contact-us",
     "/project-details",

@@ -168,15 +168,15 @@ function FirstPage() {
         <div className="row align-items-center g-4 g-lg-5">
           <div className="col-lg-6">
             <div className="caption" style={{ maxWidth: "620px" }}>
-              <h1 className="new">Let's Scale Your Business </h1>
-              <h5>
-                We Build <span className="main-color">Brand</span>  the Future Remembers
+              <h1 className="new">B2B Digital Marketing Agency</h1>
+              <h5 style={{ fontWeight: "400" }}>
+                Helping Businesses Grow and Generate Quality Leads in Dubai, UAE
               </h5>
 
             </div>
 
             <div className="mt-4">
-              <div className="icon-img">
+              <div className="icon-img" style={{ transform: "translateY(2cm)" }}>
                 <img src="/assets/imgs/icon-img/arrow-down-big.png" alt="" />
               </div>
             </div>
@@ -275,7 +275,7 @@ function FirstPage() {
                       </select>
                       <input
                         type="tel"
-                        placeholder="123 4567"
+                        placeholder="12 345 6789"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         disabled={isSubmitting}

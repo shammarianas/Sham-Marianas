@@ -16,18 +16,15 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <h3 className="mb-30">
-                    Sham Marianas F.Z.C{" "}
-                    <span className="fw-300">
-                      Powering Creativity & Boosting Digital Growth with Top
-                      Advertising Strategies
-                    </span>
+                    We know how to work with B2B Digital Marketing to grow your
+                    business
                   </h3>
                   <p>
                     <span className="text-bold underline main-color">
-                      Sham Marianas F.Z.C
+                      Sham Marianas FZC
                     </span>{" "}
                     is a top marketing agency that helps businesses grow with
-                    digital marketing, brand building, and ROI-focused
+                    digital marketing, IT Solution, brand building, and ROI-focused
                     advertising. We employ tried-and-true marketing techniques
                     to increase our internet presence, draw in new clients, and
                     provide tangible outcomes. Let's grow your company to new

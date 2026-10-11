@@ -38,7 +38,7 @@ const ROUTES_CONFIG = [
   { path: '/', dynamic: false, priority: '1.0', freq: 'daily' },
   { path: '/about', dynamic: false, priority: '0.9', freq: 'weekly' },
   { path: '/services', dynamic: false, priority: '0.9', freq: 'weekly' },
-  { path: '/portfolio', dynamic: false, priority: '0.9', freq: 'weekly' },
+  { path: '/case-study', dynamic: false, priority: '0.9', freq: 'weekly' },
   { path: '/blog', dynamic: false, priority: '0.9', freq: 'daily' },
   { path: '/contact-us', dynamic: false, priority: '0.8', freq: 'monthly' },
   { path: '/page-team', dynamic: false, priority: '0.7', freq: 'monthly' },

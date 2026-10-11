@@ -13,7 +13,7 @@ function Footer() {
     "/about",
     "/contact-us",
     "/blog",
-    "/portfolio",
+    "/case-study",
     "/support",
     "/page-team",
     "/analytics",
@@ -192,7 +192,7 @@ function Footer() {
                     <ul className="rest fz-14 opacity-7">
                       <li className="mb-15"><Link to="/">Home</Link></li>
                       <li className="mb-15"><Link to="/services">Services</Link></li>
-                      <li className="mb-15"><Link to="/portfolio">Portfolio</Link></li>
+                      <li className="mb-15"><Link to="/case-study">Case Study</Link></li>
                       <li className="mb-15"><Link to="/templates">Templates</Link></li>
                       <li className="mb-15"><Link to="/about">About us</Link></li>
                       <li className="mb-15"><Link to="/blog">Blog</Link></li>
@@ -241,37 +241,37 @@ function Footer() {
                     /* TEMPLATE PAGE SOCIAL LINKS */
                     <>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="#" target="_blank" rel="noreferrer" aria-label="YouTube Channel of Sham Marianas">
+                        <a href="https://www.instagram.com/shammarianastemplate/" target="_blank" rel="noreferrer" aria-label="Instagram Template Channel of Sham Marianas">
+                          <div className="hover-anim circle-a">
+                            <i className="fab fa-instagram"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.youtube.com/@ShamMarianasTemplate" target="_blank" rel="noreferrer" aria-label="YouTube Template Channel of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-youtube"></i>
                           </div>
                         </a>
                       </li>
                       <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.pinterest.com/shammarianas" target="_blank" rel="noreferrer" aria-label="Pinterest Profile of Sham Marianas">
+                        <a href="https://www.reddit.com/user/shammarianastemplate/" target="_blank" rel="noreferrer" aria-label="Reddit Template Profile of Sham Marianas">
+                          <div className="hover-anim circle-a">
+                            <i className="fab fa-reddit-alien"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.facebook.com/profile.php?id=61595174736095" target="_blank" rel="noreferrer" aria-label="Facebook Template Profile of Sham Marianas">
+                          <div className="hover-anim circle-a">
+                            <i className="fab fa-facebook-f"></i>
+                          </div>
+                        </a>
+                      </li>
+                      <li className="hover-this cursor-pointer ml-10">
+                        <a href="https://www.pinterest.com/shammarianast/" target="_blank" rel="noreferrer" aria-label="Pinterest Template Profile of Sham Marianas">
                           <div className="hover-anim circle-a">
                             <i className="fab fa-pinterest"></i>
-                          </div>
-                        </a>
-                      </li>
-                      <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.behance.net/shammarianas" target="_blank" rel="noreferrer" aria-label="Behance Profile of Sham Marianas">
-                          <div className="hover-anim circle-a">
-                            <i className="fab fa-behance"></i>
-                          </div>
-                        </a>
-                      </li>
-                      <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://dribbble.com/shammarianas" target="_blank" rel="noreferrer" aria-label="Dribbble Profile of Sham Marianas">
-                          <div className="hover-anim circle-a">
-                            <i className="fab fa-dribbble"></i>
-                          </div>
-                        </a>
-                      </li>
-                      <li className="hover-this cursor-pointer ml-10">
-                        <a href="https://www.instagram.com/sham_marianas" target="_blank" rel="noreferrer" aria-label="Instagram Profile of Sham Marianas">
-                          <div className="hover-anim circle-a">
-                            <i className="fab fa-instagram"></i>
                           </div>
                         </a>
                       </li>

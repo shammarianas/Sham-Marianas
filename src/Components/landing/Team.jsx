@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import data from "../../data/team.json";
 function Team() {
   return (
-    <section className="team section-padding pt-0">
+    <section className="team team-section section-padding pt-0">
       <div className="container">
         <div className="sec-head mb-80">
           <div className="d-flex align-items-center">

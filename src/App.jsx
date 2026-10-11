@@ -137,7 +137,7 @@ export const AppRoutes = () => (
     <Route path="/Privacy" element={noIndex(<Privacy />)} />
     <Route path="/contact-us" element={<Contact />} />
     <Route path="/blog" element={<Blog />} />
-    <Route path="/portfolio" element={<Portfolio />} />
+    <Route path="/case-study" element={<Portfolio />} />
     <Route path="/Support" element={noIndex(<Support />)} />
     <Route path="/about" element={<AboutUs />} />
     <Route path="/page-team" element={<PageTeam />} />

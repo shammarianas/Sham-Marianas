@@ -8,10 +8,11 @@ import FirstPage from "../Components/landing/firstPage";
 import Intro from "../Components/landing/Intro";
 import Marq from "../Components/landing/marq";
 import Services from "../Components/landing/Services";
+import HowWeWork from "../Components/landing/HowWeWork";
 
 import Team from "../Components/landing/Team";
 import Clients from "../Components/landing/Clients";
-import Contact from "../Components/landing/Contact";
+import FAQ from "../Components/landing/FAQ";
 import Marq2 from "../Components/marq2";
 
 import Cursor from "../common/cusor";
@@ -46,9 +47,10 @@ const Home = () => {
               <Intro />
               <Marq />
               <Services />
+              <HowWeWork />
               <Team />
               <Clients />
-              <Contact />
+              <FAQ />
               <Marq2 />
             </main>
           </div>

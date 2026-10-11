@@ -9010,3 +9010,28 @@ h2.title{
     opacity: 0;
   }
 }
+/* Continuous right-to-left client logo marquee */
+.clients-loop-swiper .swiper-wrapper {
+  transition-timing-function: linear !important;
+}
+
+.team-section {
+  padding-top: 96px !important;
+}
+
+@media (max-width: 767px) {
+  .team-section {
+    padding-top: 64px !important;
+  }
+}
+
+.clients-heading {
+  padding-top: 70px;
+}
+
+@media (max-width: 767px) {
+  .clients-heading {
+    padding-top: 40px;
+  }
+}
+

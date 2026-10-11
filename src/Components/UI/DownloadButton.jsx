@@ -471,6 +471,17 @@ const DownloadButton = ({
   const handleDownload = async () => {
     console.log("🚀 Starting download process...");
 
+    // Every download requires an authenticated account, including free assets.
+    const currentUser = getAuth().currentUser;
+    if (!currentUser) {
+      setToastMessage("Please sign in to download this file.");
+      setToastState("warning");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      navigate("/login");
+      return;
+    }
+
     // ✅ Check if user is contributor - prevent all downloads
     if (isContributor) {
       setToastMessage("Contributors cannot download files. Please login as a regular user.");
@@ -609,6 +620,16 @@ const DownloadButton = ({
     }
 
  if (isFree()) {
+      if (!getAuth().currentUser) {
+        return {
+          text: "Sign in to Download",
+          icon: "fas fa-sign-in-alt",
+          onClick: () => navigate("/login"),
+          enabled: true,
+          className: "download_btn",
+        };
+      }
+
       return {
         text: isDownloaded ? "Downloaded" : "Download",
         icon: "fas fa-download",

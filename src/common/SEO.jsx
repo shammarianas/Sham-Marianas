@@ -6,7 +6,7 @@ import '../utils/seoConfig';
 
 const SEO = ({
   title = "Sham Marianas F.Z.C",
-  description = "Sham Marianas F.Z.C is a top marketing agency that helps businesses grow with digital marketing, brand building, and ROI-focused advertising. We employ tried-and-true marketing techniques to increase our internet presence, draw in new clients, and provide tangible outcomes. Let's grow your company to new heights!",
+  description = "Sham Marianas FZC is a top marketing agency that helps businesses grow with digital marketing, IT Solution, brand building, and ROI-focused advertising. We employ tried-and-true marketing techniques to increase our internet presence, draw in new clients, and provide tangible outcomes. Let's grow your company to new heights!",
   keywords = "Web development, Digital Marketing, SEO, Social Media Marketing, Branding, Marketing Agency",
   canonical,
   ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.png",

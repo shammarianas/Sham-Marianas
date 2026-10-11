@@ -26,7 +26,7 @@ const Navbar = () => {
     "/terms-and-conditions",
     "/privacy-policy",
     "/services",
-    "/portfolio",
+    "/case-study",
     "/blog",
     "/contact-us",
     "/project-details",
@@ -56,7 +56,9 @@ const Navbar = () => {
   const isDashboardLogoPage = ["/admin", "/contributor", "/contributordashboard"].some(
     (path) => normalizedPage === path || normalizedPage.startsWith(`${path}/`)
   );
-  const logoDestination = isTemplatesPage || isDashboardLogoPage ? "/templates" : "/";
+  const isSignInPage = normalizedPage === "/login";
+  const logoDestination =
+    isTemplatesPage || isDashboardLogoPage || isSignInPage ? "/templates" : "/";
 
   useEffect(() => {
     const checkContributorStatus = async () => {
@@ -368,12 +370,12 @@ const Navbar = () => {
                 >
                   <Link
                     className="nav-link"
-                    to="/portfolio"
+                    to="/case-study"
                     role="button"
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    <span className="rolling-text">Portfolio</span>
+                    <span className="rolling-text">Case Study</span>
                   </Link>
                 </li>
 

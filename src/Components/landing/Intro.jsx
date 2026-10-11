@@ -3,7 +3,7 @@ import "react";
 import { Link } from "react-router-dom";
 function Intro() {
   return (
-    <section className="intro section-padding" >
+    <section className="intro section-padding" style={{ paddingTop: "10rem" }}>
       <div className="container">
         <div className="row lg-marg">
           <div className="col-lg-8 md-mb80">
@@ -16,19 +16,16 @@ function Intro() {
               <div className="col-md-6">
                 <div className="text">
                   <h3 className="mb-30">
-                    Sham Marianas F.Z.C{" "}
-                    <span className="fw-300">
-                      Powering Creativity & Boosting Digital Growth with Top
-                      Advertising Strategies
-                    </span>
+                    We know how to work with B2B Digital Marketing to grow your
+                    business
                   </h3>
                   <p className="align-text">
                     <span className="text-bold underline main-color ">
                       {" "}
-                      Sham Marianas F.Z.C
+                      Sham Marianas FZC
                     </span>{" "}
                     is a top marketing agency that helps businesses grow with
-                    digital marketing, brand building, and ROI-focused
+                    digital marketing, IT Solution, brand building, and ROI-focused
                     advertising. We employ tried-and-true marketing techniques
                     to increase our internet presence, draw in new clients, and
                     provide tangible outcomes. Let&apos;s grow your company to

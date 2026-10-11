@@ -12,7 +12,7 @@ const db = getFirestore(app);
 export async function getAllRoutes() {
   const routes = {
     static: [
-      '/', '/blog', '/portfolio', '/services', '/about',
+      '/', '/blog', '/case-study', '/services', '/about',
       '/contact-us', '/templates', '/Login', '/profile',
       // ... all your static routes
     ],

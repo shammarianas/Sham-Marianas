@@ -124,7 +124,8 @@ function Header() {
             <div className="col-12">
               <div className="text-center">
                 <h1 className="text-u ls1 fz-80">
-                  Portfolio <span className="fw-200"></span>
+                  Case Study
+                   <span className="fw-200"></span>
                 </h1>
               </div>
             </div>

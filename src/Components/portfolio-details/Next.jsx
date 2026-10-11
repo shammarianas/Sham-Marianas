@@ -155,7 +155,7 @@ function Next() {
         </div>
       </div>
       <div>
-        <a href="/portfolio" className="all-works-butn text-center" aria-label="View all projects">
+        <a href="/case-study" className="all-works-butn text-center" aria-label="View all projects">
           <span className="ti-view-grid fz-24 mb-10"></span>
           <span className="d-block fz-12 text-u ls1">All Projects</span>
         </a>

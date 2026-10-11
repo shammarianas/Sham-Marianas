@@ -7,7 +7,7 @@
 - [Home](https://www.shammarianas.com/): Overview of Sham Marianas and its creative services.
 - [About Us](https://www.shammarianas.com/about): Company background and team information.
 - [Services](https://www.shammarianas.com/services): Advertising, branding and digital services.
-- [Portfolio](https://www.shammarianas.com/portfolio): Selected creative and digital projects.
+- [Case Study](https://www.shammarianas.com/case-study): Selected creative and digital projects.
 - [Blog](https://www.shammarianas.com/blog): Marketing, design, technology and advertising insights.
 - [Contact](https://www.shammarianas.com/contact-us): Contact details and project enquiry form.
 

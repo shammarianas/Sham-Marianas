@@ -88,7 +88,7 @@ function buildFallbackHtml(baseHtml, route) {
     '/': 'Sham Marianas F.Z.C | Marketing Agency in Dubai, UAE',
     '/about': "About Sham Marianas F.Z.C | Dubai's Top Marketing Agency",
     '/services': 'Dubai Marketing Agency Services | Sham Marianas F.Z.C.',
-    '/portfolio': 'Sham Marianas F.Z.C Portfolio | Dubai Creative Projects',
+    '/case-study': 'Sham Marianas F.Z.C Portfolio | Dubai Creative Projects',
     '/blog': 'Sham Marianas F.Z.C. Blog | Advertising Insights Dubai',
     '/contact-us': 'Contact Sham Marianas F.Z.C | Dubai Agency',
     '/templates': 'Templates | Sham Marianas F.Z.C Dubai Designs',
@@ -121,7 +121,7 @@ function buildFallbackHtml(baseHtml, route) {
         <p>Our team delivers branding, web development, social media marketing, content creation, AI automation, video production and print media solutions tailored to each business goal.</p>
         <nav aria-label="Main services">
           <a href="/services">Explore our services</a>
-          <a href="/portfolio">View our portfolio</a>
+          <a href="/case-study">View our portfolio</a>
           <a href="/contact-us">Contact Sham Marianas</a>
         </nav>
       </main>`
@@ -212,7 +212,7 @@ async function prerender() {
     '/',
     '/about',
     '/services',
-    '/portfolio',
+    '/case-study',
     '/blog',
     '/contact-us',
     '/page-team',
