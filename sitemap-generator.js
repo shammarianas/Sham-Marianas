@@ -36,7 +36,7 @@ const escapeXml = (value) => String(value).replace(/[<>&'"]/g, (character) => ({
 const ROUTES_CONFIG = [
   // Primary Static Routes
   { path: '/', dynamic: false, priority: '1.0', freq: 'daily' },
-  { path: '/about', dynamic: false, priority: '0.9', freq: 'weekly' },
+  { path: '/about/', dynamic: false, priority: '0.9', freq: 'weekly' },
   { path: '/services', dynamic: false, priority: '0.9', freq: 'weekly' },
   { path: '/case-study', dynamic: false, priority: '0.9', freq: 'weekly' },
   { path: '/blog', dynamic: false, priority: '0.9', freq: 'daily' },
