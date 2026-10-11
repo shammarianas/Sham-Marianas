@@ -3,7 +3,7 @@
 const SITE_URL = "https://www.shammarianas.com";
 const ORG_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
-const FOUNDER_ID = `${SITE_URL}/about#founder`;
+const FOUNDER_ID = `${SITE_URL}/about/#founder`;
 
 // =========================================================
 //   ORGANIZATION SCHEMA (Global - reference ke tor par har page par reuse hoga)
@@ -25,7 +25,7 @@ const organizationSchema = {
   "legalName": "Sham Marianas F.Z.C.",
   "foundingDate": "2022",
   "founder": { "@id": FOUNDER_ID },
-  "hasOfferCatalog": { "@id": `${SITE_URL}/about#services-offered` },
+  "hasOfferCatalog": { "@id": `${SITE_URL}/about/#services-offered` },
   "priceRange": "$$",
   "knowsLanguage": ["en", "ur"],
   "areaServed": [
@@ -151,13 +151,14 @@ export const getSchema = (type, data = {}) => {
     case "about":
       return {
         "@type": "AboutPage",
-        "@id": `${SITE_URL}/about#webpage`,
-        "url": `${SITE_URL}/about`,
+        "@id": `${SITE_URL}/about/#webpage`,
+        "url": `${SITE_URL}/about/`,
         "name": "About Sham Marianas F.Z.C.",
         "isPartOf": { "@id": WEBSITE_ID },
         "about": { "@id": ORG_ID },
         "mainEntity": { "@id": ORG_ID },
-        "breadcrumb": { "@id": `${SITE_URL}/about#breadcrumb` },
+        "publisher": { "@id": ORG_ID },
+        "breadcrumb": { "@id": `${SITE_URL}/about/#breadcrumb` },
         "inLanguage": "en"
       };
 
@@ -393,11 +394,11 @@ export const getAboutSchema = () => ({
         "Search engine optimization",
         "Brand strategy"
       ],
-      "url": `${SITE_URL}/about`
+      "url": `${SITE_URL}/about/`
     },
     {
       "@type": "OfferCatalog",
-      "@id": `${SITE_URL}/about#services-offered`,
+      "@id": `${SITE_URL}/about/#services-offered`,
       "name": "Sham Marianas digital services",
       "itemListElement": [
         {
@@ -430,9 +431,9 @@ export const getAboutSchema = () => ({
       ]
     },
     getSchema("about"),
-    buildBreadcrumb(`${SITE_URL}/about#breadcrumb`, [
+    buildBreadcrumb(`${SITE_URL}/about/#breadcrumb`, [
       homeCrumb,
-      { name: "About", url: `${SITE_URL}/about` }
+      { name: "About", url: `${SITE_URL}/about/` }
     ])
   ]
 });

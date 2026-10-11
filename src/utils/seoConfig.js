@@ -9,7 +9,8 @@ export const SEO_CONFIG = {
   },
   about: {
     title: "About Sham Marianas | B2B Digital Marketing Agency in Dubai",
-    description: "Meet Sham Marianas FZC, a Dubai-based B2B digital marketing and IT solutions agency helping UAE businesses grow through SEO, paid media, branding, web development and lead generation.",
+    description: "Meet Sham Marianas FZC, a Dubai-based B2B digital marketing agency helping UAE businesses grow through SEO, paid media, branding and web development.",
+    canonical: "https://www.shammarianas.com/about/",
     keywords: "about marketing agency Dubai, digital agency UAE, branding specialists Dubai, social campaigns UAE",
   },
   services: {
