@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { doc, updateDoc, increment, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
 import "firebase/functions";
@@ -21,6 +21,7 @@ const DownloadButton = ({
   addToDownloads
 } = useSaveToDownloads(item.id, item);
   const navigate = useNavigate();
+  const location = useLocation();
   const [isContributor, setIsContributor] = useState(false);
 
   useEffect(() => {
@@ -478,7 +479,11 @@ const DownloadButton = ({
       setToastState("warning");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
-      navigate("/login");
+      navigate("/login", {
+        state: {
+          from: `${location.pathname}${location.search}${location.hash}`,
+        },
+      });
       return;
     }
 

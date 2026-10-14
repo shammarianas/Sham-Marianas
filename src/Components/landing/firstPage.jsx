@@ -316,8 +316,8 @@ function FirstPage() {
                       <option value="Product Design">Product Design</option>
                       <option value="Social Media & Digital Marketing">Social Media & Digital Marketing</option>
                       <option value="Photography & Video Production">Photography & Video Production</option>
-                      <option value="VFX and CGI ADs">VFX and CGI ADs</option>
-                      <option value="Print Media Solution">Print Media Solution</option>
+                      <option value="VFX and CGI Ads">VFX and CGI Ads</option>
+                      <option value="Print Media Solutions">Print Media Solutions</option>
                       <option value="AI & Automation">AI & Automation</option>
                       <option value="Exhibition Booth Design">Exhibition Booth Design</option>
 

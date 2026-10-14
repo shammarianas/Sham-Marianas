@@ -1,11 +1,53 @@
 "use client";
 import { useState } from "react";
 
-const FAQAccordion = ({ title, faqs = [], imageSrc = "" }) => {
+const FAQAccordion = ({ title, faqs = [], imageSrc = "", imageAlt = "Frequently asked questions" }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
   const toggleAccordion = (index) => {
     setActiveIndex(index === activeIndex ? null : index);
+  };
+
+  const renderAnswer = (faq) => {
+    const linkConfig = faq.contactLink
+      ? { marker: "contact us", href: "/contact-us" }
+      : faq.socialMediaLink
+        ? {
+            marker: "social media",
+            href: "/services/social-media-digital-marketing",
+          }
+        : null;
+    if (!linkConfig) return faq.answer;
+
+    const { marker, href } = linkConfig;
+    const markerIndex = faq.answer.indexOf(marker);
+    if (markerIndex === -1) return faq.answer;
+
+    return (
+      <>
+        {faq.answer.slice(0, markerIndex)}
+        <a href={href} style={{ color: "#8fe3e6" }}>
+          {marker}
+        </a>
+        {faq.answer.slice(markerIndex + marker.length)}
+      </>
+    );
+  };
+
+  const renderQuestion = (faq) => {
+    if (!faq.questionBreakAfter) return faq.question;
+
+    const marker = faq.questionBreakAfter;
+    const markerIndex = faq.question.indexOf(marker);
+    if (markerIndex === -1) return faq.question;
+
+    return (
+      <>
+        {faq.question.slice(0, markerIndex + marker.length)}
+        <br />
+        {faq.question.slice(markerIndex + marker.length).trimStart()}
+      </>
+    );
   };
 
   return (
@@ -27,14 +69,14 @@ const FAQAccordion = ({ title, faqs = [], imageSrc = "" }) => {
                   key={index}
                 >
                   <div onClick={() => toggleAccordion(index)} className="title">
-                    <h6>{faq.question}</h6>
+                    <h6>{renderQuestion(faq)}</h6>
                     <span className="ico ti-plus"></span>
                   </div>
                   <div
                     className="accordion-info"
                     style={{ maxHeight: activeIndex === index ? "300px" : 0 }}
                   >
-                    <p>{faq.answer}</p>
+                    <p>{renderAnswer(faq)}</p>
                   </div>
                 </div>
               ))}
@@ -44,7 +86,7 @@ const FAQAccordion = ({ title, faqs = [], imageSrc = "" }) => {
           {imageSrc && (
             <div className="col-lg-6">
               <div className="img md-mb50">
-                <img  loading="lazy"  src={imageSrc} alt="FAQ illustration" />
+                <img loading="lazy" src={imageSrc} alt={imageAlt} />
               </div>
             </div>
           )}

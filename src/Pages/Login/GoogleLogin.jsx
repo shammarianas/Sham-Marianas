@@ -5,7 +5,7 @@ import { auth } from "../../../firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
 // Regular User Google Login (for templates page)
-export const loginWithGoogle = () => {
+export const loginWithGoogle = (redirectTo = "/templates") => {
   const provider = new GoogleAuthProvider();
 
   signInWithPopup(auth, provider)
@@ -26,7 +26,7 @@ export const loginWithGoogle = () => {
       );
 
       alert("Login with Google successful!");
-      window.location.href = "/templates";
+      window.location.href = redirectTo.startsWith("/") ? redirectTo : "/templates";
     })
     .catch((error) => {
       alert("Login with Google failed: " + error.message);

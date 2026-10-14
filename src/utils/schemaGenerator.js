@@ -1,4 +1,5 @@
 // utils/schemaGenerator.js
+import { servicesFaqs } from "../data/servicesFaqs.js";
 
 const SITE_URL = "https://www.shammarianas.com";
 const ORG_ID = `${SITE_URL}/#organization`;
@@ -114,6 +115,75 @@ const buildBreadcrumb = (id, items) => ({
 
 const homeCrumb = { name: "Home", url: `${SITE_URL}/` };
 
+const servicesAreaServed = [
+  { "@type": "Place", "name": "Dubai" },
+  { "@type": "Country", "name": "United Arab Emirates" }
+];
+
+// Keep this list aligned with the visible service cards on the Services page.
+const servicesListingData = [
+  {
+    name: "Branding Design",
+    description: "For startups and established UAE businesses, we create logos, visual identities and brand guidelines that make your company memorable and consistent across every touchpoint.",
+    url: `${SITE_URL}/services/branding-design`
+  },
+  {
+    name: "UI-UX Design",
+    description: "We design clear, user-friendly interfaces for UAE websites and digital products, including wireframes, prototypes and responsive designs that improve usability and conversions.",
+    url: `${SITE_URL}/services/uiux-design`
+  },
+  {
+    name: "Web Development",
+    description: "We build fast corporate websites, landing pages and custom web platforms for Dubai businesses, with responsive development, CMS integration and SEO-ready structure.",
+    url: `${SITE_URL}/services/web-development`
+  },
+  {
+    name: "E-Commerce Solutions",
+    description: "We create online stores for UAE brands with product setup, payment integration, mobile-friendly layouts and conversion-focused shopping journeys.",
+    url: `${SITE_URL}/services/ecommerce-solutions`
+  },
+  {
+    name: "Content Writing",
+    description: "We write SEO content, website copy, service pages and blogs that match how UAE customers search, helping businesses build authority and attract relevant visitors.",
+    url: `${SITE_URL}/services/content-writing`
+  },
+  {
+    name: "Product Design",
+    description: "We help startups and growing businesses turn ideas into practical digital products through research, user flows, prototypes and interface design.",
+    url: `${SITE_URL}/services/product-design`
+  },
+  {
+    name: "Social Media & Digital Marketing",
+    description: "We manage strategy, content, campaigns, community engagement and reporting on the platforms popular with audiences in Dubai and across the UAE.",
+    url: `${SITE_URL}/services/social-media-digital-marketing`
+  },
+  {
+    name: "Photography & Video Production",
+    description: "We produce brand photography, promotional videos and social content for UAE companies that need professional visuals for campaigns, websites and digital channels.",
+    url: `${SITE_URL}/services/video-production`
+  },
+  {
+    name: "VFX and CGI Ads",
+    description: "We create VFX and CGI advertisements for brands that want to explain products, launch campaigns or stand out in Dubai’s competitive digital market.",
+    url: `${SITE_URL}/services/vfx-and-cgi-ads`
+  },
+  {
+    name: "Print Media Solutions",
+    description: "We design brochures, business stationery, exhibition materials and promotional assets that keep your brand consistent across offline and UAE business environments.",
+    url: `${SITE_URL}/services/print-media-solutions`
+  },
+  {
+    name: "AI & Automation",
+    description: "We build practical AI workflows, system integrations and business-process automations that reduce repetitive work and help teams operate more efficiently.",
+    url: "https://agentixsystem.com/"
+  },
+  {
+    name: "Exhibition Booth Design",
+    description: "We design exhibition booths for UAE trade shows and business events, including creative concepts, layouts, graphics and branded visitor experiences.",
+    url: `${SITE_URL}/services/exhibition-booth-design`
+  }
+];
+
 // =========================================================
 //   getSchema: single-node generator per type
 //   (baaki file ka dispatcher-based logic same rakha gaya hai)
@@ -168,13 +238,14 @@ export const getSchema = (type, data = {}) => {
     case "servicesListing":
       return {
         "@type": "CollectionPage",
-        "@id": `${SITE_URL}/services#webpage`,
-        "url": `${SITE_URL}/services`,
+        "@id": `${SITE_URL}/services/#webpage`,
+        "url": `${SITE_URL}/services/`,
         "name": "Services | Sham Marianas F.Z.C.",
         "isPartOf": { "@id": WEBSITE_ID },
         "about": { "@id": ORG_ID },
         "publisher": { "@id": ORG_ID },
-        "breadcrumb": { "@id": `${SITE_URL}/services#breadcrumb` },
+        "mainEntity": { "@id": `${SITE_URL}/services/#service-list` },
+        "breadcrumb": { "@id": `${SITE_URL}/services/#breadcrumb` },
         "inLanguage": "en"
       };
 
@@ -443,9 +514,42 @@ export const getServicesListingSchema = () => ({
   "@context": "https://schema.org",
   "@graph": [
     getSchema("servicesListing"),
-    buildBreadcrumb(`${SITE_URL}/services#breadcrumb`, [
+    {
+      "@type": "ItemList",
+      "@id": `${SITE_URL}/services/#service-list`,
+      "name": "Digital Marketing and IT Services",
+      "numberOfItems": servicesListingData.length,
+      "itemListElement": servicesListingData.map((service, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": { "@id": `${service.url}#service` }
+      }))
+    },
+    ...servicesListingData.map((service) => ({
+      "@type": "Service",
+      "@id": `${service.url}#service`,
+      "name": service.name,
+      "description": service.description,
+      "url": service.url,
+      "provider": { "@id": ORG_ID },
+      "areaServed": servicesAreaServed,
+      "serviceType": service.name
+    })),
+    {
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}/services/#faq`,
+      "mainEntity": servicesFaqs.map((item) => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.answer
+        }
+      }))
+    },
+    buildBreadcrumb(`${SITE_URL}/services/#breadcrumb`, [
       homeCrumb,
-      { name: "Services", url: `${SITE_URL}/services` }
+      { name: "Services", url: `${SITE_URL}/services/` }
     ])
   ]
 });
@@ -467,7 +571,7 @@ export const getServiceSchema = (serviceData) => {
     },
     buildBreadcrumb(`${url}#breadcrumb`, [
       homeCrumb,
-      { name: "Services", url: `${SITE_URL}/services` },
+      { name: "Services", url: `${SITE_URL}/services/` },
       { name: serviceData.title || "", url }
     ])
   ];

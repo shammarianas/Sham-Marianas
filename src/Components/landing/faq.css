@@ -1,7 +1,7 @@
 .faq-section {
   background: #0d0d0d;
   color: #fff;
-  padding: 14px 0 120px;
+  padding: 0 0 120px !important;
 }
 
 .faq-heading {
@@ -92,7 +92,7 @@
 }
 
 @media (max-width: 767px) {
-  .faq-section { padding: 20px 0 86px; }
+  .faq-section { padding: 0 0 86px !important; }
   .faq-heading { margin-bottom: 38px; }
   .faq-heading p { font-size: 16px; }
   .faq-item summary { grid-template-columns: 38px 1fr 24px; gap: 12px; padding: 20px 16px; }

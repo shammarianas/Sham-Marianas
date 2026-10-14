@@ -20,7 +20,11 @@ const ContentSection = ({ sectionOne, sectionTwo }) => {
             </div>
             <div className="col-lg-6">
               <div className="services-images">
-                <img  loading="lazy"  src={sectionOne.image} alt="services images" />
+                <img
+                  loading="lazy"
+                  src={sectionOne.image}
+                  alt={sectionOne.imageAlt || sectionOne.title || "Branding design visual"}
+                />
               </div>
             </div>
           </div>
@@ -32,7 +36,11 @@ const ContentSection = ({ sectionOne, sectionTwo }) => {
           <div className="row xlg-marg">
             <div className="col-lg-6">
               <div className="services-images">
-                <img  loading="lazy"  src={sectionTwo.image} alt="services images" />
+                <img
+                  loading="lazy"
+                  src={sectionTwo.image}
+                  alt={sectionTwo.imageAlt || sectionTwo.title || "Branding design visual"}
+                />
               </div>
             </div>
             <div className="col-lg-6 valign">

@@ -3,7 +3,7 @@ import { signInWithPopup, OAuthProvider } from "firebase/auth";
 import { auth, db } from "../../../firebase";
 import { doc, setDoc } from "firebase/firestore";
 
-export const loginWithApple = () => {
+export const loginWithApple = (redirectTo = "/templates") => {
   const provider = new OAuthProvider("apple.com");
   // Optional: Add scopes if needed
   // provider.addScope('email');
@@ -34,7 +34,7 @@ export const loginWithApple = () => {
       );
 
       alert("Login with Apple successful!");
-      window.location.href = "/templates";
+      window.location.href = redirectTo.startsWith("/") ? redirectTo : "/templates";
     })
     .catch((error) => {
       console.error("Apple Login Error:", error);

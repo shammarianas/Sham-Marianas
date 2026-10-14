@@ -336,7 +336,7 @@ function Footer() {
         </div>
 
         <div className="circle-blur">
-          <img  loading="lazy"  src="/assets/imgs/patterns/blur1.png" alt="" />
+          <img loading="lazy" src="/assets/imgs/patterns/blur1.png" alt="" aria-hidden="true" />
         </div>
       </footer>
     </>

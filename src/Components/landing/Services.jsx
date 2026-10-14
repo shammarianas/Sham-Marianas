@@ -37,7 +37,7 @@ const data = [
   {
     title: "6. Product Design",
     img: "/assets/imgs/serv-icons/5.png",
-    desc: "We provide the best product design, creating seamless, user-focused experiences that drive engagement, innovation, and business success.",
+    desc: "We help startups and growing businesses turn ideas into practical digital products through research, user flows, prototypes and interface design.",
     link: "/services/product-design",
   },
   {
@@ -53,13 +53,13 @@ const data = [
     link: "/services/video-production",
   },
   {
-    title: "9. VFX and CGI ADs",
+    title: "9. VFX and CGI Ads",
     img: "/assets/imgs/serv-icons/4.png",
     desc: "We design eye-catching VFX and CGI ads that boost brand visibility, engagement, and audience impact with stunning, high-quality visuals.",
     link: "/services/vfx-and-cgi-ads",
   },
   {
-    title: "10. Print Media Solution",
+    title: "10. Print Media Solutions",
     img: "/assets/imgs/serv-icons/5.png",
     desc: "We craft print media solutions that boost brand visibility, marketing impact, and audience engagement with high-quality designs and materials.",
     link: "/services/print-media-solutions",

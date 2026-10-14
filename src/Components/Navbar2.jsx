@@ -232,7 +232,7 @@ const Navbar = () => {
   if (isCompanyPage) {
     return (
       <>
-        <nav className="navbar navbar-expand-lg bord blur">
+        <nav className="navbar navbar-expand-lg bord blur company-navbar">
           <div className="container o-hidden">
             <Link to={logoDestination} className="logo site-logo-link" aria-label={logoDestination === "/" ? "Home" : "Templates"}>
               <img
@@ -287,7 +287,7 @@ const Navbar = () => {
                 <li
                   onMouseLeave={handleDropdownMouseLeave}
                   onMouseMove={handleDropdownMouseMove}
-                  className="nav-item dropdown"
+                  className="nav-item dropdown services-nav-item"
                 >
                   <Link
                     className="nav-link dropdown-toggle"
@@ -343,12 +343,12 @@ const Navbar = () => {
                     </li>
                     <li>
                       <Link className="dropdown-item" to="/services/vfx-and-cgi-ads">
-                        VFX and CGI ADs
+                        VFX and CGI Ads
                       </Link>
                     </li>
                     <li>
                       <Link className="dropdown-item" to="/services/print-media-solutions">
-                        Print Media Solution
+                        Print Media Solutions
                       </Link>
                     </li>
                     <li>
