@@ -1,0 +1,1 @@
+import{j as s}from"./vendor-DJcWBMKH.js";import"./index-v8swRViy.js";import"./firebase-Bbgk9vYU.js";import"./ui-D0s6tkEq.js";import"./gsap-BYJNJUll.js";const i=()=>s.jsx("div",{className:"page_content",children:s.jsx("h1",{children:"Analytics"})});export{i as default};
