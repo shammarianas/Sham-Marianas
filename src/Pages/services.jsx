@@ -11,6 +11,7 @@ import Intro2 from "../Components/services/Intro2";
 import Services from "./../Components/services/Services";
 import Contact from "../Components/landing/Contact";
 import Testimonials from "../Components/services/Testimonials";
+import ServicesFAQ from "../Components/services/ServicesFAQ";
 import WhatsAppButton from "../Components/whatsappButton";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SEO from "../common/SEO.jsx";
@@ -42,6 +43,7 @@ export default function PageServices() {
           <Intro2 />
           {/* <Numbers /> */}
           <Testimonials />
+          <ServicesFAQ />
           <Contact />
           <Marq2 />
         </main>

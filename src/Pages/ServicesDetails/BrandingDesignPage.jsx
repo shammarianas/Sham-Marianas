@@ -13,10 +13,20 @@ const BrandingDesignPage = () => {
   const sectionOne = {
     title: "The Importance of Effective Branding Design",
     paragraphs: [
-      "Effective branding design is key to building trust and recognition. It gives your business a unique identity that helps you stand out and stay memorable in a competitive market. From your logo to your website, consistent visuals create a professional and polished image.",
+      <>
+        Effective branding design is key to building trust and recognition. It
+        gives your business a{" "}
+        <a href="/case-study" style={{ color: "#8fe3e6" }}>
+          unique identity
+        </a>{" "}
+        that helps you stand out
+        and stay memorable in a competitive market. From your logo to your
+        website, consistent visuals create a professional and polished image.
+      </>,
       "More than just looks, great branding creates emotional connections. It makes your business feel relatable and reliable, encouraging customer loyalty and repeat visits. A well-designed brand doesn't just attract attention, it builds lasting relationships.",
     ],
     image: "/assets/imgs/Branding/01.png",
+    imageAlt: "Brand identity design elements and visual branding system",
   };
 
   const sectionTwo = {
@@ -25,7 +35,14 @@ const BrandingDesignPage = () => {
       <>
         In today&apos;s fast-paced digital world, branding design is essential
         for businesses to stand out and build connections with their audience.
-        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
+        At{" "}
+        <a
+          href="/"
+          className="text-bold underline"
+          style={{ color: "#8fe3e6" }}
+        >
+          Sham Marianas F.Z.C
+        </a>
         , we create unique branding designs that help define your identity,
         communicate your message clearly, and leave a lasting impression.
       </>,
@@ -33,7 +50,7 @@ const BrandingDesignPage = () => {
         Good branding isn&apos;t just about aesthetics; it&apos;s about
         consistency and trust. A cohesive design across all platforms builds
         loyalty and keeps your brand relevant. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>,
+        <span className="text-bold underline">Sham Marianas F.Z.C</span>,
         we ensure your brand evolves with the digital trends, keeping it fresh
         and engaging.{" "}
       </>,
@@ -44,48 +61,58 @@ const BrandingDesignPage = () => {
       </>,
     ],
     image: "/assets/imgs/Branding/001.png",
+    imageAlt: "Visual identity design for a modern digital brand",
   };
   const faqs = [
     {
-      question: "How do you determine the right design elements for my brand?",
+      question: "What is included in a brand identity design package?",
       answer:
-        " We begin with a deep understanding of your business, audience, and goals. Our team conducts research to create a design that aligns with your brand values, ensuring your logo, color scheme, and messaging reflect your identity clearly.",
+        "A brand identity design package typically includes a logo, colour palette, typography, visual style, and brand guidelines. Depending on your needs, it can also include brand strategy, stationery, social media assets, and website visual direction.",
     },
     {
-      question: "Can branding design help increase customer loyalty?",
+      question: "How much does brand identity design cost in Dubai?",
       answer:
-        "Absolutely! Strong branding creates a connection with your audience, making your business more relatable and trustworthy. This emotional connection leads to customer loyalty, repeat visits, and long-term engagement with your brand.",
+        "Brand identity design in Dubai can cost from a few thousand dirhams to a larger project investment, depending on the scope and deliverables. The final price depends on research, strategy, logo development, brand guidelines, and the number of applications required.",
     },
     {
-      question: "How long does the branding design process take?",
+      question: "How long does a branding project take?",
       answer:
-        "The timeline for branding design varies depending on the complexity of the project. On average, it takes 4-6 weeks to complete the entire process, from initial concepts to final designs.",
+        "A branding project usually takes 4–6 weeks from discovery to final delivery. Larger projects with extensive research, multiple concepts, or detailed brand guidelines may require additional time.",
     },
     {
-      question: "Why is branding design important for my business?",
+      question: "What is the difference between a logo and a brand identity?",
       answer:
-        "Effective branding design builds trust, recognition, and emotional connections with your customers. It sets you apart from competitors, creates a memorable identity, and fosters customer loyalty, which drives long-term success.",
+        "A logo is one visual mark, while a brand identity is the complete visual system that represents a business. Brand identity includes the logo, colours, typography, imagery, messaging style, and guidelines for consistent use.",
     },
     {
-      question: "How do I get started with your branding design services?",
+      question: "Do you provide brand guidelines for social media and websites?",
+      socialMediaLink: true,
       answer:
-        " To get started, simply contact us through our website or reach out to our team at Sham Marianas F.Z.C . We'll schedule a consultation to understand your needs and begin the process of crafting your unique brand identity.",
+        "Yes, we provide brand guidelines that show how to use your identity consistently across social media and websites. Guidelines can cover logo usage, colour codes, typography, layouts, imagery, and digital content examples.",
+    },
+    {
+      question: "Do you work with startups and UAE businesses?",
+      answer:
+        "Yes, we work with startups, growing companies, and established UAE businesses. Our branding process is tailored to your market, audience, business goals, and stage of growth.",
     },
   ];
 
   return (
     <>
-      <SchemaMarkup type="service" data={SEO_CONFIG.branding} />
+      <SchemaMarkup
+        type="service"
+        data={{ ...SEO_CONFIG.branding, faqs }}
+      />
       <SEO {...SEO_CONFIG.branding} />
       <HeaderSection
-        title="Branding"
-        highlightedText="Design"
+        title="Brand Identity Design"
+        highlightedText=""
         backgroundImage="/assets/imgs/background/bg4.webp"
         overlayDark="8"
       />
       <IntroSection
         title="Building Brands"
-        highlightedWords={["That", " ", "Speak"]}
+        highlightedWords={["That Speak"]}
         paragraphs={[
           <>
             At{" "}
@@ -106,7 +133,7 @@ const BrandingDesignPage = () => {
           "Brand Strategy & Messaging",
         ]}
         imageSrc="/assets/imgs/Branding/1.png"
-        imageAlt="Intro branding"
+        imageAlt="Brand identity design and logo development services"
       />
       <div className="branding-page-section">
         <BrandingContentSection
@@ -119,6 +146,7 @@ const BrandingDesignPage = () => {
         title="Frequently Asked Questions"
         faqs={faqs}
         imageSrc="/assets/imgs/FAQ.png"
+        imageAlt="Brand identity design frequently asked questions"
       />
       ;
       <Marq2 />

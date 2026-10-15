@@ -3,7 +3,7 @@ import { db } from "../../../firebase";
 import { auth } from "../../../firebase";
 import { doc, setDoc } from "firebase/firestore";
 
-export const loginWithGithub = () => {
+export const loginWithGithub = (redirectTo = "/templates") => {
   const provider = new GithubAuthProvider();
   signInWithPopup(auth, provider)
     .then(async (result) => {
@@ -25,7 +25,7 @@ export const loginWithGithub = () => {
       ); // Use merge option to avoid overwriting existing fields
 
       alert("Login with GitHub successful!");
-      window.location.href = "/templates"; // Redirect to the home page after login
+      window.location.href = redirectTo.startsWith("/") ? redirectTo : "/templates";
     })
     .catch((error) => {
       alert("Login with GitHub failed: " + error.message);

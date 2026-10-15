@@ -22,7 +22,11 @@ function Team() {
               <div className="item mb-50">
                 <div className="bg-blur">
                   <div className="img">
-                    <img  loading="lazy"  src={item.img} alt="" />
+                    <img
+                      loading="lazy"
+                      src={item.img}
+                      alt={`${item.name.trim()} - ${item.subName} at Sham Marianas`}
+                    />
                     {/* <div className="social">
                       <div className="links">
                         <a

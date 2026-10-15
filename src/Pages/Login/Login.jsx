@@ -113,6 +113,20 @@ const Login = () => {
   const navigate = useNavigate();
   const usernameTimeoutRef = useRef(null);
 
+  const getRedirectPath = useCallback(() => {
+    const from = location.state?.from;
+
+    if (typeof from === "string" && from.startsWith("/")) {
+      return from;
+    }
+
+    if (from?.pathname?.startsWith("/")) {
+      return `${from.pathname}${from.search || ""}${from.hash || ""}`;
+    }
+
+    return "/templates";
+  }, [location.state]);
+
   // ✅ FETCH COUNTRIES FROM API
   useEffect(() => {
     const fetchCountries = async () => {
@@ -701,7 +715,7 @@ const resendVerificationEmail = async () => {
         }
       );
 
-      setTimeout(() => navigate("/templates", { replace: true }), 3000);
+      setTimeout(() => navigate(getRedirectPath(), { replace: true }), 3000);
     } catch (err) {
       setError("Login failed: " + err.message);
     }
@@ -815,14 +829,14 @@ const resendVerificationEmail = async () => {
                 <button
                   className="google"
                   type="button"
-                  onClick={loginWithGoogle}
+                  onClick={() => loginWithGoogle(getRedirectPath())}
                 >
                   <i className="fab fa-google"></i>
                 </button>
                 <button
                   className="apple"
                   type="button"
-                  onClick={loginWithApple}
+                  onClick={() => loginWithApple(getRedirectPath())}
                 >
                   <i className="fab fa-apple"></i>
                 </button>
@@ -1208,14 +1222,14 @@ const resendVerificationEmail = async () => {
                   <button
                     className="google"
                     type="button"
-                    onClick={loginWithGoogle}
+                    onClick={() => loginWithGoogle(getRedirectPath())}
                   >
                     <i className="fab fa-google"></i>
                   </button>
                   <button
                     className="apple"
                     type="button"
-                    onClick={loginWithApple}
+                    onClick={() => loginWithApple(getRedirectPath())}
                   >
                     <i className="fab fa-apple"></i>
                   </button>

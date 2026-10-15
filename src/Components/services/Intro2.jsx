@@ -23,11 +23,11 @@ function Intro2() {
           </div>
           <div className="col-lg-6 valign">
             <div>
-              <div className="sec-head mb-50 mt-50">
-                <h6 className="sub-title main-color mb-50">Why choose us?</h6>
-                <h3>
-                  We exceed expectations by blending creativity, <br />
-                  expertise, and innovation to drive your success.
+              <div className="sec-head mb-50 mt-50 services-why-heading">
+                <h2 className="sub-title main-color mb-50">Why Choose Sham Marianas</h2>
+                <h3 className="services-why-title">
+                  We exceed expectations by blending creativity, expertise, and
+                  innovation to drive your success.
                 </h3>
               </div>
               <div className="accordion bord">
@@ -90,7 +90,7 @@ function Intro2() {
                 </div>
                 <div className="item wow fadeInUp" data-wow-delay=".5s">
                   <div onClick={openAccordion} className="title">
-                    <h6>At Your Services</h6>
+                    <h6>Ongoing Support</h6>
                     <span className="ico ti-plus"></span>
                   </div>
                   <div className="accordion-info">

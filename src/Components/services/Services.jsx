@@ -9,7 +9,7 @@ function Services() {
       category: "Branding Design",
       title: "Creative Identity",
       description:
-        "Our branding design creates strong brand identities that attract audiences, build recognition, and grow businesses for long-term success.",
+        "For startups and established UAE businesses, we create logos, visual identities and brand guidelines that make your company memorable and consistent across every touchpoint.",
       img: "/assets/imgs/serv-img/1.jpg",
     },
     {
@@ -18,7 +18,7 @@ function Services() {
       category: "UI-UX Design",
       title: "User Experience",
       description:
-        "We offer UI/UX design that creates smooth, user-friendly experiences that boost engagement, conversions, and brand success, making every interaction seamless and enjoyable.",
+        "We design clear, user-friendly interfaces for UAE websites and digital products, including wireframes, prototypes and responsive designs that improve usability and conversions.",
       img: "/assets/imgs/serv-img/2.jpg",
     },
     {
@@ -27,7 +27,7 @@ function Services() {
       category: "Web Development",
       title: "Innovative Solutions",
       description:
-        "At Sham Marianas F.Z.C, we build cutting-edge web development solutions that blend innovation, performance, and seamless user experiences to help businesses thrive online.",
+        "We build fast corporate websites, landing pages and custom web platforms for Dubai businesses, with responsive development, CMS integration and SEO-ready structure.",
       img: "/assets/imgs/serv-img/3.jpg",
     },
     {
@@ -36,7 +36,7 @@ function Services() {
       category: "E-Commerce Solutions",
       title: "Seamless Shopping",
       description:
-        "We build e-commerce solutions that make online selling seamless and profitable. Our expert services enhance customer reach, conversions, and sales growth",
+        "We create online stores for UAE brands with product setup, payment integration, mobile-friendly layouts and conversion-focused shopping journeys.",
       img: "/assets/imgs/serv-img/4.jpg",
     },
     {
@@ -45,7 +45,7 @@ function Services() {
       category: "Content Writing",
       title: "SEO-Optimized Content",
       description:
-        "We create SEO-friendly content writing that captures attention, builds authority, and boosts online presence.",
+        "We write SEO content, website copy, service pages and blogs that match how UAE customers search, helping businesses build authority and attract relevant visitors.",
       img: "/assets/imgs/serv-img/5.jpg",
     },
     {
@@ -54,7 +54,7 @@ function Services() {
       category: "Product Design",
       title: "User-Centric Design",
       description:
-        "We provide the best product design, creating seamless, user-focused experiences that drive engagement, innovation, and business success.",
+        "We help startups and growing businesses turn ideas into practical digital products through research, user flows, prototypes and interface design.",
       img: "/assets/imgs/serv-img/6.jpg",
     },
     {
@@ -63,7 +63,7 @@ function Services() {
       category: "Social Media & Digital Marketing",
       title: "Brand Growth",
       description:
-        "We help businesses grow with social media & digital marketing, increasing brand awareness, interaction, and online reach.",
+        "We manage strategy, content, campaigns, community engagement and reporting on the platforms popular with audiences in Dubai and across the UAE.",
       img: "/assets/imgs/serv-img/7.jpg",
     },
     {
@@ -72,25 +72,25 @@ function Services() {
       category: "Photography & Video Production",
       title: "Visual Storytelling",
       description:
-        "We deliver photography & video production that captures your brand’s story, enhancing engagement, visibility, and trust with high-impact visuals.",
+        "We produce brand photography, promotional videos and social content for UAE companies that need professional visuals for campaigns, websites and digital channels.",
       img: "/assets/imgs/serv-img/8.jpg",
     },
     {
       num: "09",
       slug: "vfx-and-cgi-ads",
-      category: "VFX and CGI ADs",
+      category: "VFX and CGI Ads",
       title: "High-Impact Visuals",
       description:
-        "We design eye-catching VFX and CGI ads that boost brand visibility, engagement, and audience impact with stunning, high-quality visuals.",
+        "We create VFX and CGI advertisements for brands that want to explain products, launch campaigns or stand out in Dubai’s competitive digital market.",
       img: "/assets/imgs/serv-img/9.jpg",
     },
     {
       num: "10",
       slug: "print-media-solutions",
-      category: "Print Media Solution",
+      category: "Print Media Solutions",
       title: "Effective Branding",
       description:
-        "We craft print media solutions that boost brand visibility, marketing impact, and audience engagement with high-quality designs and materials.",
+        "We design brochures, business stationery, exhibition materials and promotional assets that keep your brand consistent across offline and UAE business environments.",
       img: "/assets/imgs/serv-img/10.jpg",
     },
     {
@@ -99,7 +99,7 @@ function Services() {
       category: "AI & Automation",
       title: "Smart workflows",
       description:
-        "We empower businesses with AI automation that transforms workflows, boosts productivity, and accelerates growth through intelligent solutions.",
+        "We build practical AI workflows, system integrations and business-process automations that reduce repetitive work and help teams operate more efficiently.",
       img: "/assets/imgs/serv-img/11.png",
     },
     {
@@ -108,7 +108,7 @@ function Services() {
       category: "Exhibition Booth Design",
       title: "Engaging Spaces",
       description:
-        "We develop exhibition booth designs that bring your brand to life with stunning visuals, smart layouts, and engaging displays that attract audiences and build memorable connections.",
+        "We design exhibition booths for UAE trade shows and business events, including creative concepts, layouts, graphics and branded visitor experiences.",
       img: "/assets/imgs/serv-img/12.png",
     },
   ];
@@ -119,14 +119,20 @@ function Services() {
         <div className="sec-head mb-80">
           <div className="d-flex align-items-center">
             <div>
-              <span className="sub-title main-color mb-5">
-                Our Specializations
-              </span>
-              <h3 className="fw-600 fz-50 text-u d-rotate wow">
+              <h5 className="fw-600 fz-40 text-u d-rotate wow">
                 <span className="rotate-text">
-                  Featured <span className="fw-200">Services</span>
+                  Digital Marketing &amp;
+                  <br />
+                  IT Services in Dubai, UAE
                 </span>
-              </h3>
+              </h5>
+              <p className="mt-10 mb-0">
+                Sham Marianas is a Dubai-based digital marketing and IT agency
+                helping UAE businesses
+                <br />
+                grow through SEO, paid media, branding,
+                web development, social media and AI automation.
+              </p>
             </div>
           </div>
         </div>
@@ -144,12 +150,12 @@ function Services() {
                       <span className="sub-title main-color mb-10">
                         {service.category}
                       </span>
-                      <h2>
+                      <h3>
                         {service.title.split(" ")[0]}{" "}
                         <span className="fw-200">
                           {service.title.split(" ")[1] || ""}
                         </span>
-                      </h2>
+                      </h3>
                     </div>
                   </div>
                 </div>

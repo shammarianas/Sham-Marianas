@@ -3,18 +3,20 @@ export const SEO_CONFIG = {
   //   Main Pages SEO
   // =========================================================
   home: {
-    title: "Sham Marianas F.Z.C | Marketing Agency in Dubai,UAE",
-    description: "Sham Marianas F.Z.C. Dubai's best marketing agency. Online marketing, social, branding & revenue strategies. Let's grow your business in the UAE!",
+    title: "B2B Digital Marketing Agency in Dubai | 300+ UAE Happy Clients",
+    description: "Sham Marianas FZC is a Dubai marketing agency for digital marketing, branding, web development, social media, and creative production for UAE businesses.",
     keywords: " Digital marketing agency Dubai, marketing agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
   },
   about: {
-    title: "About Sham Marianas F.Z.C | Dubai's Top Marketing Agency",
-    description: "Sham Marianas F.Z.C started in 2022. We're a full-service digital agency. We bring fresh marketing, websites, and creative ideas to help UAE businesses grow.",
+    title: "About Sham Marianas | B2B Digital Marketing Agency in Dubai",
+    description: "Meet Sham Marianas FZC, a Dubai-based B2B digital marketing agency helping UAE businesses grow through SEO, paid media, branding and web development.",
+    canonical: "https://www.shammarianas.com/about/",
     keywords: "about marketing agency Dubai, digital agency UAE, branding specialists Dubai, social campaigns UAE",
   },
   services: {
-    title: "Dubai Marketing Agency Services | Sham Marianas F.Z.C.",
-    description: "Sham Marianas F.Z.C. offers top advertising services in Dubai: online marketing, social media management, branding & growth strategies. Boost UAE business revenue!",
+    title: "Full-Service Digital Marketing Agency in Dubai | Sham Marianas FZC",
+    description: "Explore Sham Marianas' digital marketing and IT services in Dubai, including SEO, paid media, branding, web development, social media and AI automation.",
+    canonical: "https://www.shammarianas.com/services/",
     keywords: "Digital Marketing Services, Web Development Services, SEO Services, Social Media Marketing, Branding Services",
   },
   aiAutomation: {
@@ -28,8 +30,8 @@ export const SEO_CONFIG = {
     keywords: " exhibition booth Dubai, trade show design UAE, booth fabrication Dubai,3D booth visualization",
   },
   branding: {
-    title: "Branding Design Dubai | Sham Marianas F.Z.C.",
-    description: "Sham Marianas Expert branding design in Dubai.Logos, visual identity & guidelines for standout UAE brands.Build unstoppable business identity!",
+    title: "Brand Identity Design | Visual Identity Agency Dubai | Sham Marianas",
+    description: "Sham Marianas creates visual identity systems in Dubai, including brand identity design, typography, colour systems and guidelines for consistent branding.",
     keywords: " branding design Dubai, logo design UAE, brand identity Dubai,visual branding services",
   },
   content: {
