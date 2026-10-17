@@ -286,6 +286,20 @@ const filterData = {
         "Claude Ai Skills",
       ],
     },
+    interests: {
+      label: "Interests",
+      options: [
+        "Personal",
+        "Builders",
+        "Food",
+        "Car",
+        "Bikes",
+        "Place",
+        "Medical",
+        "Health",
+        "Technology",
+      ],
+    },
   },
 };
 

@@ -1,19 +1,16 @@
 import "react";
+import { useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 
 const Logout = () => {
   const navigate = useNavigate();
-  // Sign out the user
-  signOut(auth)
-    .then(() => {
-      // Sign-out successful.
-      navigate("/");
-    })
-    .catch((_error) => {
-      // An error happened.
+  useEffect(() => {
+    signOut(auth).finally(() => {
+      navigate("/templates", { replace: true });
     });
+  }, [navigate]);
 
   return <div></div>;
 };

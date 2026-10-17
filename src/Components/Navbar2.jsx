@@ -210,22 +210,22 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { path: "/category/videos", label: "Videos" },
-    { path: "/category/models", label: "3D Models" },
-    { path: "/category/video-templates", label: "Video Template" },
-    { path: "/category/images", label: "Images" },
-    { path: "/category/graphics", label: "Graphic Templates" },
-    { path: "/category/mockups", label: "Mockups" },
-    { path: "/category/fonts", label: "Fonts" },
-    { path: "/category/more", label: "More" },
+    { path: "/templates/videos", label: "Videos" },
+    { path: "/templates/models", label: "3D Models" },
+    { path: "/templates/video-templates", label: "Video Template" },
+    { path: "/templates/images", label: "Images" },
+    { path: "/templates/graphics", label: "Graphic Templates" },
+    { path: "/templates/mockups", label: "Mockups" },
+    { path: "/templates/fonts", label: "Fonts" },
+    { path: "/templates/more", label: "More" },
   ];
 
   const moreDropdownItems = [
-    { path: "/category/icons", label: "Icons" },
-    { path: "/category/textures", label: "Textures" },
-    { path: "/category/scripts", label: "Scripts" },
-    { path: "/category/hdris", label: "HDRIs" },
-    { path: "/category/prompts", label: "Prompts" },
+    { path: "/templates/icons", label: "Icons" },
+    { path: "/templates/textures", label: "Textures" },
+    { path: "/templates/scripts", label: "Scripts" },
+    { path: "/templates/hdris", label: "HDRIs" },
+    { path: "/templates/prompts", label: "Prompts" },
   ];
 
   // ✅ IF ON COMPANY PAGES (Home, About, Services, etc.) - Show company navbar
@@ -822,7 +822,7 @@ const Navbar = () => {
                                   aria-expanded="false"
                                 >
                                   <span
-                                    style={{ marginTop: "3px" }}
+                                    style={{ marginTop: "3px", textTransform: "none" }}
                                     className="rolling-text"
                                   >
                                     More

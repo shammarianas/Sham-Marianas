@@ -34,6 +34,7 @@ export const loginWithApple = (redirectTo = "/templates") => {
       );
 
       alert("Login with Apple successful!");
+      sessionStorage.removeItem("postLoginRedirect");
       window.location.href = redirectTo.startsWith("/") ? redirectTo : "/templates";
     })
     .catch((error) => {

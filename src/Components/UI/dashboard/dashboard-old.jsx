@@ -144,7 +144,10 @@ const formatNotificationTime = (timestamp) => {
 };
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState(1);
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = Number(window.localStorage.getItem("adminActiveTab"));
+    return savedTab >= 1 && savedTab <= 13 ? savedTab : 1;
+  });
   const [users, setUsers] = useState([]);
   const [, setSupportMessages] = useState([]);
   const [blogs, setBlogs] = useState([]);
@@ -429,6 +432,7 @@ const AdminDashboard = () => {
   // Handle tab click on mobile - close sidebar
   const handleTabClick = (tabNumber) => {
     setActiveTab(tabNumber);
+    window.localStorage.setItem("adminActiveTab", String(tabNumber));
     if (window.innerWidth <= 768) {
       setSidebarOpen(false);
     }
@@ -735,8 +739,10 @@ const AdminDashboard = () => {
 
     if (dashboard === "admin") {
       setActiveTab(1);
+      window.localStorage.setItem("adminActiveTab", "1");
     } else {
       setActiveTab(1);
+      window.localStorage.setItem("adminActiveTab", "1");
     }
   };
 
@@ -1493,6 +1499,7 @@ const AdminDashboard = () => {
                     style={{
                       borderRadius: "8px",
                       margin: "0 0.5rem",
+                      marginBottom: "1in",
                       color: "#b0b0b0",
                     }}
                   >

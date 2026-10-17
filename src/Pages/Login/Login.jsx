@@ -114,7 +114,12 @@ const Login = () => {
   const usernameTimeoutRef = useRef(null);
 
   const getRedirectPath = useCallback(() => {
-    const from = location.state?.from;
+    const queryRedirect = new URLSearchParams(location.search).get("redirect");
+    const storedRedirect =
+      typeof window !== "undefined"
+        ? window.sessionStorage.getItem("postLoginRedirect")
+        : null;
+    const from = queryRedirect || location.state?.from || storedRedirect;
 
     if (typeof from === "string" && from.startsWith("/")) {
       return from;
@@ -125,7 +130,13 @@ const Login = () => {
     }
 
     return "/templates";
-  }, [location.state]);
+  }, [location.search, location.state]);
+
+  const clearPostLoginRedirect = () => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem("postLoginRedirect");
+    }
+  };
 
   // ✅ FETCH COUNTRIES FROM API
   useEffect(() => {
@@ -715,7 +726,9 @@ const resendVerificationEmail = async () => {
         }
       );
 
-      setTimeout(() => navigate(getRedirectPath(), { replace: true }), 3000);
+      const redirectPath = getRedirectPath();
+      clearPostLoginRedirect();
+      setTimeout(() => navigate(redirectPath, { replace: true }), 3000);
     } catch (err) {
       setError("Login failed: " + err.message);
     }

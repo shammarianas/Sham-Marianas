@@ -5,6 +5,7 @@ export const FilterContext = createContext();
 export const FilterProvider = ({ children }) => {
   const [filters, setFilters] = useState({
     categories: [],
+    interests: [],
     aiGenerated: [],
     resolution: [],
     frameRate: [],
@@ -24,6 +25,7 @@ export const FilterProvider = ({ children }) => {
   const clearFilters = useCallback(() => {
     setFilters({
       categories: [],
+      interests: [],
       aiGenerated: [],
       resolution: [],
       frameRate: [],

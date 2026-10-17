@@ -25,6 +25,7 @@ export const loginWithGithub = (redirectTo = "/templates") => {
       ); // Use merge option to avoid overwriting existing fields
 
       alert("Login with GitHub successful!");
+      sessionStorage.removeItem("postLoginRedirect");
       window.location.href = redirectTo.startsWith("/") ? redirectTo : "/templates";
     })
     .catch((error) => {

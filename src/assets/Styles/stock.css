@@ -9,6 +9,8 @@
     width: 100px;
     display: flex;
     flex-wrap: nowrap;
+    white-space: nowrap;
+    flex-shrink: 0;
     align-self: center;
     text-decoration: none
 }

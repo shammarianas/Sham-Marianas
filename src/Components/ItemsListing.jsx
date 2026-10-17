@@ -72,6 +72,11 @@ const ItemsListing = (props) => {
       categoryFilterPassed = filters.categories.includes(item.category);
     }
 
+    let interestsFilterPassed = true;
+    if (filters && filters.interests && filters.interests.length !== 0) {
+      interestsFilterPassed = filters.interests.includes(item.interest);
+    }
+
     // Apply price filter
     let priceFilterPassed = true;
     if (filters && filters.price) {
@@ -86,6 +91,7 @@ const ItemsListing = (props) => {
 
     return (
       categoryFilterPassed &&
+      interestsFilterPassed &&
       priceFilterPassed &&
       discountFilterPassed
     );

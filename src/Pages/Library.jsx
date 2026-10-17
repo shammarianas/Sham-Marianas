@@ -5,6 +5,7 @@ import PageTitle from "../Components/UI/PageTitle";
 import { useUser } from "../Context/UserProvider";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { getAssetPath } from "../utils/assetPath";
 
 const Library = () => {
   const { currentUser } = useUser();
@@ -74,7 +75,7 @@ const Library = () => {
             </div>
           ) : (
             assets.map((asset, index) => (
-              <Link to={`/view/${asset.id}`} key={index}>
+              <Link to={getAssetPath(asset)} key={index}>
                 <div className="item_card">
                   <div className="card_image">
                     {asset.discount > 0 ? (

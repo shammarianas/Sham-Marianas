@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet-async";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { getAssetPath } from "../utils/assetPath";
 
 // Simple 3D Model Viewer Component
 const SimpleModelViewer = ({ modelUrl }) => {
@@ -157,20 +158,7 @@ const Favorites = () => {
   const getAssetLink = (asset) => {
     if (!asset) return "#";
     
-    // Priority: slug -> id -> title as slug
-    if (asset.slug) {
-      return `/view/${asset.slug}`;
-    } else if (asset.id) {
-      return `/view/${asset.id}`;
-    } else if (asset.title) {
-      // Create a slug from title
-      const slug = asset.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-      return `/view/${slug}`;
-    }
-    return "#";
+    return getAssetPath(asset);
   };
 
   return (

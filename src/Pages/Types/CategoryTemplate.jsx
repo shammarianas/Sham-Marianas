@@ -25,7 +25,16 @@ const CategoryTemplate = () => {
     "/category/scripts": "Scripts",
     "/category/hdris": "HDRIs",
     "/category/prompts": "Prompts",
-    "/category/hot": "Hot"
+    "/category/hot": "Hot",
+    "/templates/prompts": "Prompts",
+    "/templates/videos": "Videos",
+    "/templates/video-templates": "Video Templates",
+    "/templates/images": "Images",
+    "/templates/graphics": "Graphic Templates",
+    "/templates/mockups": "Mockups",
+    "/templates/models": "3D Models",
+    "/templates/fonts": "Fonts",
+    "/templates/icons": "Icons"
   };
 
   // Direct mapping - use the pathname to get the label
@@ -35,7 +44,7 @@ const CategoryTemplate = () => {
   // If not found in direct mapping, extract from URL
   if (!categoryTitle) {
     const pathParts = pathname.split('/');
-    const categoryIndex = pathParts.indexOf('category');
+    const categoryIndex = pathParts.findIndex((part) => part === 'category' || part === 'templates');
     
     if (categoryIndex !== -1 && pathParts.length > categoryIndex + 1) {
       category = pathParts[categoryIndex + 1];
@@ -45,7 +54,7 @@ const CategoryTemplate = () => {
   } else {
     // If found in mapping, extract category from pathname for ItemsListing
     const pathParts = pathname.split('/');
-    const categoryIndex = pathParts.indexOf('category');
+    const categoryIndex = pathParts.findIndex((part) => part === 'category' || part === 'templates');
     if (categoryIndex !== -1 && pathParts.length > categoryIndex + 1) {
       category = pathParts[categoryIndex + 1];
     }

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import { rankAssetsByRelevance } from "../../utils/assetSearch";
+import { getAssetPath } from "../../utils/assetPath";
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -125,7 +126,7 @@ const Search = () => {
           <div className="search-results">
             {results.map((result) => (
               <Link
-                to={`/view/${result.id}`}
+                to={getAssetPath(result)}
                 key={result.id}
                 onClick={() => {
                   setDisplayResults(false);

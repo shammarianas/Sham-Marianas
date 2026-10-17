@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AddToBookmark from "./AddToBookmark";
 import { useUser } from "../../Context/UserProvider";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SimpleModelViewer from "./SimpleModelViewer";
 import "firebase/functions";
 import useSaveToDownloads from "../../hooks/useSaveToDownloads";
@@ -10,6 +10,7 @@ import { doc, updateDoc, increment, serverTimestamp, getDoc } from "firebase/fir
 import { db } from "../../../firebase";
 import { getAuth } from "firebase/auth";
 import { getAssetDownloadFilename } from "../../utils/assetDownload";
+import { getAssetPath } from "../../utils/assetPath";
 
 const getAssetUrl = (value) => {
   if (typeof value === "string") return value;
@@ -24,6 +25,7 @@ const ListedItemCard = ({
 }) => {
   const { currentUser } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isContributor, setIsContributor] = useState(false);
   const profile = userProfile || currentUser;
   const { addToDownloads } = useSaveToDownloads(id, data);
@@ -467,7 +469,11 @@ const ListedItemCard = ({
     // ✅ login check
     if (!currentUser) {
       alert("Please login to download");
-      navigate("/login");
+      const redirectPath = `${location.pathname}${location.search}${location.hash}`;
+      sessionStorage.setItem("postLoginRedirect", redirectPath);
+      navigate(`/login?redirect=${encodeURIComponent(redirectPath)}`, {
+        state: { from: redirectPath },
+      });
       return;
     }
 
@@ -597,6 +603,7 @@ const ListedItemCard = ({
 
   const modelUrl = get3DModelUrl();
   const is3D = modelUrl !== null;
+  const assetPath = getAssetPath(data);
 
   return (
     <div className="">
@@ -614,7 +621,7 @@ const ListedItemCard = ({
               </span>
             </div>
           ) : null}
-          <Link className="card_image" to={`/view/${data.slug}`}>
+          <Link className="card_image" to={assetPath}>
             {(() => {
               const src = getAssetUrl(data.thumbnail);
 
@@ -695,7 +702,7 @@ const ListedItemCard = ({
         <div className="card_content">
           <div className="title">
             <Link
-              to={`/view/${data.slug}`}
+              to={assetPath}
               className="title-link"
               style={{ textDecoration: "none", color: "inherit" }}
             >

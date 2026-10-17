@@ -143,6 +143,7 @@ export const AppRoutes = () => (
     <Route path="/page-team" element={<PageTeam />} />
     <Route path="/services" element={<Services />} />
     <Route path="/templates" element={<StockPage />} />
+    <Route path="/templates/:category" element={<CategoryTemplate />} />
     <Route path="/category/:category" element={<CategoryTemplate />} />
     <Route path="/success" element={noIndex(<Success />)} />
     <Route path="/services/branding-design" element={<BrandingDesignPage />} />
@@ -183,6 +184,7 @@ export const AppRoutes = () => (
     <Route path="/subscription" element={noIndex(<Subscription />)} />
     {/* Dynamic routes with parameters - order matters! */}
     {/* Canonical asset URLs are lowercase; keep the legacy uppercase path working. */}
+    <Route path="/templates/:category/:slug" caseSensitive element={<View />} />
     <Route path="/view/:slug" caseSensitive element={<View />} />
     <Route
       path="/View/:slug"

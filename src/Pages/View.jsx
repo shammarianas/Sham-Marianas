@@ -26,6 +26,7 @@ import AssetFullScreen from "../Components/AssetFullScreen";
 import RelatedItems from "../Components/RelatedItems";
 import Cursor from "../common/cusor";
 import SEO from "../common/SEO";
+import { getAssetPath } from "../utils/assetPath";
 
 const ModelViewer = lazy(() => import("../Components/ModelViewer"));
 const MarkdownCodeBlock = lazy(() => import("../Components/MarkdownCodeBlock"));
@@ -111,7 +112,7 @@ const View = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const handleShareAsset = async () => {
-    const shareUrl = new URL(`/view/${encodeURIComponent(item.slug)}`, window.location.origin).toString();
+    const shareUrl = new URL(getAssetPath(item), window.location.origin).toString();
     const shareData = { title: item.title, url: shareUrl };
 
     try {
@@ -328,8 +329,8 @@ const View = () => {
             <Breadcrumbs
               links={[
                 { title: "Home", path: "/templates" },
-                { title: item.type, path: `/category/${item.type}` },
-                { title: item.title, path: `/view/${item.slug}` },
+                { title: item.type, path: `/templates/${item.type}` },
+                { title: item.title, path: getAssetPath(item) },
               ]}
             />
             <div className="content">

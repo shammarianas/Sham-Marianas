@@ -475,13 +475,15 @@ const DownloadButton = ({
     // Every download requires an authenticated account, including free assets.
     const currentUser = getAuth().currentUser;
     if (!currentUser) {
+      const redirectPath = `${location.pathname}${location.search}${location.hash}`;
+      sessionStorage.setItem("postLoginRedirect", redirectPath);
       setToastMessage("Please sign in to download this file.");
       setToastState("warning");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
-      navigate("/login", {
+      navigate(`/login?redirect=${encodeURIComponent(redirectPath)}`, {
         state: {
-          from: `${location.pathname}${location.search}${location.hash}`,
+          from: redirectPath,
         },
       });
       return;
@@ -629,7 +631,7 @@ const DownloadButton = ({
         return {
           text: "Sign in to Download",
           icon: "fas fa-sign-in-alt",
-          onClick: () => navigate("/login"),
+          onClick: handleDownload,
           enabled: true,
           className: "download_btn",
         };

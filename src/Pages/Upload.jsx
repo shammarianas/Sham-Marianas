@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { db, storage } from "../../firebase";
 import {
   collection,
@@ -515,6 +516,20 @@ const filterData = {
         "Claude Ai Skills",
       ],
     },
+    interests: {
+      label: "Interests",
+      options: [
+        "Personal",
+        "Builders",
+        "Food",
+        "Car",
+        "Bikes",
+        "Place",
+        "Medical",
+        "Health",
+        "Technology",
+      ],
+    },
   },
 };
 
@@ -557,7 +572,9 @@ const Upload = ({
   isUpdating = false
 }) => {
   const { currentUser } = useUser();
+  const navigate = useNavigate();
   const { converting } = useImageSizeConverter();
+  const handleUploadClose = onUploadClose || (() => navigate("/templates"));
 
   // State definitions
   const [userRole, setUserRole] = useState("contributor");
@@ -577,6 +594,7 @@ const Upload = ({
       })
       .replace(/ /g, ", "),
     category: "",
+    interest: "",
     type: "",
     model: null,
     images: [],
@@ -787,6 +805,7 @@ const Upload = ({
         description: assetToEdit.description || "",
         price: assetToEdit.price || "free",
         category: assetToEdit.category || "",
+        interest: assetToEdit.interest || "",
         type: String(assetToEdit.type || "").toLowerCase(),
         previewUrl: assetToEdit.previewUrl || "",
         is3d: assetToEdit.is3d || false,
@@ -1515,7 +1534,7 @@ const Upload = ({
     if (name === "title") {
       setFormData(prev => ({ ...prev, title: value, slug: generateSlug(value) }));
     } else if (name === "type") {
-      setFormData(prev => ({ ...prev, type: value, category: "" }));
+      setFormData(prev => ({ ...prev, type: value, category: "", interest: "" }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -1716,6 +1735,7 @@ const Upload = ({
         price: formData.price,
         tags,
         category: formData.category || "",
+        interest: formData.interest || "",
         licenseType: formData.licenseType || "",
         ...(formData.type?.toLowerCase() === "prompts"
           ? { previewUrl: formData.previewUrl.trim() }
@@ -2561,6 +2581,30 @@ const Upload = ({
                 </select>
               </div>
 
+              {formData.type === "prompts" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">
+                    Interests <span className="blog-form-required">*</span>
+                  </label>
+                  <select
+                    name="interest"
+                    value={formData.interest}
+                    onChange={handleChange}
+                    required
+                    className="blog-form-select"
+                  >
+                    <option value="" disabled>
+                      Select Interest
+                    </option>
+                    {getFilterOptions("interests").map((interest) => (
+                      <option key={interest} value={interest}>
+                        {interest}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="blog-form-group">
                 <label className="blog-form-label">
                   Price Type <span className="blog-form-required">*</span>
@@ -3028,16 +3072,14 @@ const Upload = ({
               )}
 
               <div className="modal-actions-row">
-                {onUploadClose && (
-                  <button
-                    type="button"
-                    onClick={onUploadClose}
-                    className="cancel-button"
-                    disabled={isSubmitting || isUpdating}
-                  >
-                    Cancel
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleUploadClose}
+                  className="cancel-button"
+                  disabled={isSubmitting || isUpdating}
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || isUpdating || converting}

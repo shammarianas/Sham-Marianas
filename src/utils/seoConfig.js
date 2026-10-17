@@ -283,7 +283,7 @@ export const SEO_CONFIG = {
       title: `${assetData.title} - ${priceType} ${assetType} | Shammarianas`,
       description: cleanDescription(),
       keywords: getKeywords(),
-      canonical: `https://www.shammarianas.com/view/${assetData.slug || assetData.id}`,
+      canonical: `https://www.shammarianas.com/templates/${assetData.type}/${assetData.slug || assetData.id}`,
       ogImage: getImage(),
       twitterImage: getImage(),
       ogType: "product",

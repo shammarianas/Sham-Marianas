@@ -26,7 +26,19 @@ export const loginWithGoogle = (redirectTo = "/templates") => {
       );
 
       alert("Login with Google successful!");
-      window.location.href = redirectTo.startsWith("/") ? redirectTo : "/templates";
+
+      // OAuth opens a new window and can lose the React Router location state.
+      // Prefer the redirect persisted by DownloadButton when it exists.
+      const storedRedirect = sessionStorage.getItem("postLoginRedirect");
+      const target =
+        typeof storedRedirect === "string" && storedRedirect.startsWith("/")
+          ? storedRedirect
+          : redirectTo.startsWith("/")
+            ? redirectTo
+            : "/templates";
+
+      sessionStorage.removeItem("postLoginRedirect");
+      window.location.href = target;
     })
     .catch((error) => {
       alert("Login with Google failed: " + error.message);
