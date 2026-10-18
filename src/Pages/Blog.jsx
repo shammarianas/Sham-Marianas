@@ -261,9 +261,9 @@ function Blogs() {
             <div className="row">
               <div className="col-12">
                 <div className="text-center">
-                  <h1 className="text-u ls1 fz-80">
+                  <h5 className="text-u ls1">
                     Blog <span className="fw-200"></span>
-                  </h1>
+                  </h5>
                   <p className="blog-hero-description fz-24 mx-auto mt-20">
                     Explore fresh perspectives on digital marketing, IT solutions, and branding. Discover practical insights, expert strategies, and industry trends from the Sham Marianas team, helping businesses innovate, grow, and succeed in the digital world.
                   </p>
