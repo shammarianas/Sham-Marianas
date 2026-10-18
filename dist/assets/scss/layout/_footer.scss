@@ -61,9 +61,10 @@ footer{
                 backdrop-filter: blur(100px);
                 position: absolute;
                 top: 0;
-                left: 40px;
-                bottom: 40px;
-                right: 40px;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                pointer-events: none;
             }
 
             .circle-blur{

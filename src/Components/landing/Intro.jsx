@@ -60,7 +60,7 @@ function Intro() {
                 <div className="col-md-6">
                   <div className="item bord-thin-top pt-30 d-flex align-items-end mt-20">
                     <div>
-                      <h3 className="fw-300 mb-10">6745</h3>
+                      <h3 className="fw-300 mb-10">2260</h3>
                       <h6 className="p-color sub-title">Projects Completed</h6>
                     </div>
                     <div className="ml-auto">

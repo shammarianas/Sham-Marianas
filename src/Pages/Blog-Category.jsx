@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
-import { useLocation, useParams, Link } from "react-router-dom";
+import { useLocation, useParams, Link, useNavigate } from "react-router-dom";
 import { SEO_CONFIG } from "../utils/seoConfig";
 import SEO from "../common/SEO";
+import SchemaMarkup from "../Components/SchemaMarkup";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
@@ -13,11 +14,25 @@ const VALID_CATEGORIES = [
   "ai",
   "marketing",
 ];
+const BLOG_AUTHOR = "Sham Marianas Editorial Team";
+
+const getDateValue = (value) => {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatBlogDate = (value) => {
+  const date = getDateValue(value);
+  return date ? date.toLocaleDateString() : "—";
+};
 
 /* --------------------------------------------------------------- */
 const BlogCategory = () => {
   const { category: paramCategory } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const q = new URLSearchParams(location.search);
   const queryCategory = q.get("category");
 
@@ -67,6 +82,7 @@ const BlogCategory = () => {
               d.featuredImageUrl ||
               "/assets/imgs/blog/c1.jpg",
             publishedAt: d.publishedAt || d.createdAt || null,
+            updatedAt: d.updatedAt || d.publishedAt || d.createdAt || null,
             category,
           };
         });
@@ -115,14 +131,20 @@ const BlogCategory = () => {
   }, [allBlogs, urlCategory, searchTerm, filter]);
 
   /* ----------------------------------------------------------- */
-  const handleFilterChange = (cat) => {
-    setFilter(cat);
-    setSearchTerm(""); // optional – clear search when changing category
-  };
-
   const getCategoryCount = (cat) => {
     if (cat === "*") return allBlogs.length;
     return allBlogs.filter((b) => b.category === cat).length;
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const params = new URLSearchParams(location.search);
+    const query = searchTerm.trim();
+    if (query) params.set("search", query);
+    else params.delete("search");
+    params.delete("page");
+    const search = params.toString();
+    navigate(search ? `${location.pathname}?${search}` : location.pathname);
   };
 
   /* ----------------------------------------------------------- */
@@ -147,6 +169,10 @@ const BlogCategory = () => {
 
     <section className="blog-main section-padding">
       <div className="container">
+        <SchemaMarkup
+          type="blogCategory"
+          data={{ category: urlCategory || "business", posts: displayedBlogs }}
+        />
         <h1 className="fz-30 fw-600 mb-40">{categoryTitle}</h1>
 
         <div className="row lg-marg justify-content-around">
@@ -158,12 +184,16 @@ const BlogCategory = () => {
                   No posts found in this category.
                 </p>
               ) : (
-                displayedBlogs.map((post) => (
+                displayedBlogs.map((post, index) => (
                   <div className="item mb-80 blog-card" key={post.id}>
                     {post.coverImage && (
                       <div className="img">
                         <Link to={`/blog/${post.slug}`}>
-                          <img  loading="lazy"
+                          <img
+                            loading={index === 0 ? "eager" : "lazy"}
+                            fetchPriority={index === 0 ? "high" : "auto"}
+                            width="1200"
+                            height="675"
                             className="gallery-image blog-cover-img"
                             src={post.coverImage}
                             alt={post.title}
@@ -174,11 +204,13 @@ const BlogCategory = () => {
                     <div className="content">
                       <div className="d-flex align-items-center mb-15">
                         <div className="post-date">
-                          {post.publishedAt
-                            ? new Date(
-                                post.publishedAt.toDate()
-                              ).toLocaleDateString()
-                            : ""}
+                          Published: {formatBlogDate(post.publishedAt)}
+                        </div>
+                        <div className="post-author ml-20">
+                          By {BLOG_AUTHOR}
+                        </div>
+                        <div className="post-updated ml-20">
+                          Updated: {formatBlogDate(post.updatedAt)}
                         </div>
                         <div className="commt opacity-7 fz-13">
                           <span className="ti-comment-alt mr-10"></span>0
@@ -213,15 +245,17 @@ const BlogCategory = () => {
               {/* SEARCH */}
               <div className="widget">
                 <h6 className="title-widget">Search Here</h6>
-                <div className="search-box">
+                <form className="search-box" role="search" onSubmit={handleSearchSubmit}>
                   <input
                     type="text"
+                    name="search"
+                    aria-label="Search blog posts"
                     placeholder="Search by title..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                  <span className="icon pe-7s-search"></span>
-                </div>
+                  <button type="submit" className="icon pe-7s-search" aria-label="Search blog posts" style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer" }} />
+                </form>
               </div>
 
               {/* CATEGORIES */}
@@ -238,13 +272,13 @@ const BlogCategory = () => {
                     { value: "marketing", label: "Marketing" },
                   ].map((cat) => (
                     <li key={cat.value}>
-                      <span
-                        onClick={() => handleFilterChange(cat.value)}
+                      <Link
+                        to={cat.value === "*" ? "/blog" : `/blog-category/${cat.value}`}
                         className={filter === cat.value ? "active" : ""}
-                        style={{ cursor: "pointer" }}
+                        aria-current={filter === cat.value ? "page" : undefined}
                       >
                         {cat.label}
-                      </span>
+                      </Link>
                       <span className="ml-auto">
                         {getCategoryCount(cat.value)}
                       </span>

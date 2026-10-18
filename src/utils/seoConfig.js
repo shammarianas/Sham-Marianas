@@ -85,45 +85,45 @@ export const SEO_CONFIG = {
   //   Blog Categories SEO
   // =========================================================
   blogHome: {
-    title: "Sham Marianas F.Z.C. Blog | Advertising Insights Dubai",
-    description: "Explore Sham Marianas F.Z.C. blog for expert insights on advertising, branding, AI automation, and UAE growth from Dubai's top agency.",
+    title: "Digital Marketing & IT Solutions Blog | Sham Marianas",
+    description: "Explore the Sham Marianas blog for expert insights on digital marketing, IT solutions, branding, web design, and business growth strategies in Dubai.",
     keywords: "marketing agency Dubai, business insights UAE, AI automation blog, business growth UAE, Dubai marketing blog, AI marketing trends",
   },
 
   blogCategories: {
     business: {
-      title: "Dubai Marketing & Business Insights",
+      title: "Dubai Business & Marketing Blog | Sham Marianas",
       description: "Explore expert business strategy, growth hacking, and entrepreneurial insights from Dubai's leading marketing agency.",
       keywords: "business strategy Dubai, business growth UAE, entrepreneurship tips, startup advice Dubai,business insights UAE",
     },
     technology: {
-      title: "Technology Trends & Digital Innovation",
+      title: "Technology & Digital Innovation Blog | Sham Marianas",
       description: "Stay updated with latest technology trends, digital innovation, and tech insights from UAE's top advertising experts.",
       keywords: "technology trends UAE, digital innovation Dubai, tech insights, digital transformation",
     },
     design: {
-      title: "Design Tips & Creative Strategies",
+      title: "Design & Branding Blog | Sham Marianas",
       description: "Discover creative design tips, branding strategies, and visual communication insights from Dubai's creative agency.",
       keywords: "design tips Dubai, creative strategy UAE, branding design, visual communication",
     },
     lifestyle: {
-      title: "Lifestyle & Creative Living Insights",
+      title: "Lifestyle & Creative Insights Blog | Sham Marianas",
       description: "Explore lifestyle insights, creative living tips, and personal development strategies from Dubai's creative community.",
       keywords: "lifestyle Dubai, creative living UAE, personal development, wellness tips,entrepreneur lifestyle",
     },
     ai: {
-      title: "AI & Automation Insights",
+      title: "AI & Automation Blog | Sham Marianas",
       description: "Learn about Artificial Intelligence, automation strategies, and AI tools for business growth from Dubai's tech experts.",
       keywords: "artificial intelligence Dubai, AI automation UAE, machine learning, AI tools for business",
     },
     marketing: {
-      title: "Marketing Strategies & Advertising Insights",
+      title: "Digital Marketing & Advertising Blog | Sham Marianas",
       description: "Get expert marketing strategies, advertising insights, and digital marketing tips from Dubai's top marketing agency.",
       keywords: "marketing strategies Dubai, advertising insights UAE, digital marketing tips, social media marketing",
     },
     // Default for any other category
     default: {
-      title: "Blog Category | Shammarianas Blog",
+      title: "Blog Category | Sham Marianas",
       description: "Explore insightful articles and expert advice from Dubai's leading marketing agency.",
       keywords: "blog articles, expert insights, Dubai marketing agency, UAE business tips",
     }
@@ -181,7 +181,7 @@ export const SEO_CONFIG = {
 
 
     return {
-      title: `${blogData.title} | Shammarianas Blog`,
+      title: `${blogData.title} | Sham Marianas Blog`,
       description: getDescription(),
       keywords: getKeywords(),
       ogImage: blogData.featuredImageUrl || blogData.featureImgUrl || blogData.coverImageUrl || "/assets/imgs/arrow-image.png",
@@ -189,7 +189,7 @@ export const SEO_CONFIG = {
       ogType: "article",
       twitterCard: "summary_large_image",
       publishedTime: blogData.publishedAt ? blogData.publishedAt.toDate().toISOString() : new Date().toISOString(),
-      author: blogData.author || "Shammarianas Team",
+      author: blogData.author || "Sham Marianas Editorial Team",
       section: blogData.category || "Digital Marketing"
     };
   },

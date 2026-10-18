@@ -4757,6 +4757,10 @@ div>button.add_to_wishlist_btn.favorited {
   z-index: 1;
 }
 
+.profile-page {
+  position: relative;
+}
+
 .profile_background::before {
   content: "";
   position: absolute;
@@ -9074,3 +9078,103 @@ h2.title{
   }
 }
 
+.blog-loading-state {
+  min-height: 900px;
+  display: flex;
+  justify-content: center;
+  padding: 120px 24px 160px;
+  background: #0b0b0b;
+}
+
+.blog-loading-content {
+  width: min(100%, 980px);
+  text-align: center;
+  color: #fff;
+}
+
+.blog-loading-content > p {
+  margin: 12px 0 36px;
+  color: #c8c8c8;
+  font-size: 18px;
+}
+
+.blog-loading-spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(85, 199, 207, 0.3);
+  border-top-color: #55c7cf;
+  border-radius: 50%;
+  animation: blog-loading-spin 0.9s linear infinite;
+}
+
+.blog-loading-skeletons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  text-align: left;
+}
+
+.blog-loading-skeleton {
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.blog-loading-skeleton-image,
+.blog-loading-skeleton-line {
+  background: linear-gradient(90deg, #171717 25%, #242424 50%, #171717 75%);
+  background-size: 200% 100%;
+  animation: blog-loading-shimmer 1.5s ease-in-out infinite;
+}
+
+.blog-loading-skeleton-image {
+  aspect-ratio: 16 / 9;
+  margin-bottom: 18px;
+  border-radius: 4px;
+}
+
+.blog-loading-skeleton-line {
+  width: 62%;
+  height: 14px;
+  margin-top: 12px;
+  border-radius: 3px;
+}
+
+.blog-loading-skeleton-line-wide {
+  width: 88%;
+}
+
+.blog-retry-button {
+  padding: 12px 24px;
+  border: 1px solid #55c7cf;
+  border-radius: 4px;
+  color: #0b0b0b;
+  background: #55c7cf;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+@keyframes blog-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes blog-loading-shimmer {
+  to { background-position: -200% 0; }
+}
+
+@media (max-width: 767px) {
+  .blog-loading-state {
+    min-height: 760px;
+    padding: 90px 16px 120px;
+  }
+
+  .blog-loading-skeletons {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-loading-skeleton:not(:first-child) {
+    display: none;
+  }
+}

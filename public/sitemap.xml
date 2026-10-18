@@ -216,6 +216,16 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.shammarianas.com/blog-category/lifestyle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.shammarianas.com/blog-category/ai</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.shammarianas.com/blog-category/marketing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

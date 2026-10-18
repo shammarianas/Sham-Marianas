@@ -26,7 +26,7 @@ const CLOUD_FUNCTIONS = {
 };
 const Profile = () => {
   const { username: urlUsername } = useParams();
-  const { currentUser } = useUser();
+  const { currentUser, userProfile } = useUser();
   const [user, setUser] = useState(null);
 
   console.log("Profile user state:", user);
@@ -69,6 +69,21 @@ const Profile = () => {
   const [pendingInvites, setPendingInvites] = useState([]);
 
   const isOwnProfile = currentUser?.uid && userId && currentUser.uid === userId;
+
+  useEffect(() => {
+    if (!urlUsername || !currentUser?.displayName || !userProfile?.username) {
+      return;
+    }
+
+    const decodedUsername = decodeURIComponent(urlUsername).trim();
+    const isOwnDisplayNameUrl =
+      decodedUsername.toLowerCase() === currentUser.displayName.trim().toLowerCase();
+    const canonicalPath = `/profile/${encodeURIComponent(userProfile.username.trim())}`;
+
+    if (isOwnDisplayNameUrl && window.location.pathname !== canonicalPath) {
+      navigate(canonicalPath, { replace: true });
+    }
+  }, [urlUsername, currentUser?.displayName, userProfile?.username, navigate]);
 
   // ✅ SEO Function - Optimized
   const getProfileSEO = (userData, userItems = []) => {
@@ -337,6 +352,21 @@ const Profile = () => {
         }
 
         if (foundUser) {
+          const canonicalUsername = (
+            currentUser?.uid === foundUserId && userProfile?.username
+              ? userProfile.username
+              : foundUser.username || foundUser.displayName || decodedUsername
+          ).trim();
+          const canonicalPath = `/profile/${encodeURIComponent(
+            canonicalUsername
+          )}`;
+
+          // Keep legacy display-name URLs working, but replace them with the
+          // profile's saved username as the canonical URL.
+          if (window.location.pathname !== canonicalPath) {
+            navigate(canonicalPath, { replace: true });
+          }
+
           setUserId(foundUserId);
           if (foundInCollection === "Contributors") {
             setUser({
@@ -364,7 +394,7 @@ const Profile = () => {
     };
 
     findUserByUsername();
-  }, [urlUsername]);
+  }, [urlUsername, currentUser?.uid, userProfile?.username, navigate]);
 
   const fetchTeamDetails = useCallback(async () => {
     if (!isOwnProfile || !userId) return;
@@ -1276,6 +1306,11 @@ const Profile = () => {
         await setDoc(profileRef, updates);
       }
 
+      const canonicalPath = `/profile/${encodeURIComponent(trimmedUsername)}`;
+      if (window.location.pathname !== canonicalPath) {
+        navigate(canonicalPath, { replace: true });
+      }
+
       setNewPassword("");
       setConfirmPassword("");
       alert("Changes saved successfully!");
@@ -1596,7 +1631,7 @@ const Profile = () => {
         </div>
       )}
 
-      <div className="page_content">
+      <div className="page_content profile-page">
         <div className="profile_background">
           <img
             src="https://img.freepik.com/free-vector/psychedelic-groovy-background-with-abstract-shapes_23-2148858139.jpg"

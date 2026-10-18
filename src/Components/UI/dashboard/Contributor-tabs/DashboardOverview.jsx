@@ -800,7 +800,7 @@ const DashboardOverview = ({
           <div className="pt-30 pb-30 mt-80 bord-thin-top">
             <div className="text-center">
               <p className="fz-14">
-                © 2025 All Rights Reserved By{" "}
+                © 2026 All Rights Reserved By{" "}
                 <span className="underline main-color">
                   <a href="/" target="_blank" rel="noreferrer" aria-label="Sham Marianas F.Z.C Home Page">
                     Sham Marianas F.Z.C

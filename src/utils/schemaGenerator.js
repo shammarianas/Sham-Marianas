@@ -592,27 +592,130 @@ export const getServiceSchema = (serviceData) => {
   return { "@context": "https://schema.org", "@graph": graph };
 };
 
-// Blog listing page
-export const getBlogListingSchema = () => ({
-  "@context": "https://schema.org",
-  "@graph": [
-    getSchema("blogListing"),
+const toIsoDate = (value) => {
+  if (!value) return undefined;
+  if (typeof value?.toDate === "function") return value.toDate().toISOString();
+  if (value instanceof Date) return value.toISOString();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+};
+
+const getListingPosts = (posts = []) => posts
+  .filter((post) => post?.slug || post?.id)
+  .map((post) => {
+    const slug = post.slug || post.id;
+    const url = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
+    const image = post.coverImageUrl || post.coverImage || post.featuredImageUrl || post.featureImgUrl;
+    const article = {
+      "@type": "BlogPosting",
+      "@id": `${url}#article`,
+      "url": url,
+      "headline": post.title || "Blog article",
+      "description": post.excerpt || "",
+      "mainEntityOfPage": { "@id": `${url}#webpage` },
+      "author": { "@type": "Organization", "@id": ORG_ID, "name": "Sham Marianas F.Z.C." },
+      "publisher": { "@id": ORG_ID },
+      ...(image ? { "image": image } : {}),
+      ...(toIsoDate(post.publishedAt || post.createdAt)
+        ? { "datePublished": toIsoDate(post.publishedAt || post.createdAt) }
+        : {})
+    };
+
+    return { url, article };
+  });
+
+const getBlogCollectionGraph = ({
+  url,
+  name,
+  description,
+  posts = [],
+  breadcrumbName = "Blog",
+  breadcrumbUrl = `${SITE_URL}/blog`
+}) => {
+  const listingPosts = getListingPosts(posts);
+  const blogId = `${url}#blog`;
+  const pageId = `${url}#webpage`;
+  const listId = `${url}#article-list`;
+
+  return [
+    organizationSchema,
+    websiteSchema,
+    {
+      ...getSchema("blogListing"),
+      "@id": blogId,
+      "url": url,
+      "name": name,
+      "blogPost": listingPosts.map(({ article }) => ({ "@id": article["@id"] }))
+    },
     {
       "@type": "CollectionPage",
-      "@id": `${SITE_URL}/blog#webpage`,
-      "url": `${SITE_URL}/blog`,
-      "name": "Digital Marketing, SEO, AI & Branding Blog",
+      "@id": pageId,
+      "url": url,
+      "name": name,
+      "description": description,
       "isPartOf": { "@id": WEBSITE_ID },
-      "about": { "@id": `${SITE_URL}/blog#blog` },
-      "breadcrumb": { "@id": `${SITE_URL}/blog#breadcrumb` },
+      "about": { "@id": blogId },
+      "mainEntity": { "@id": listId },
+      "breadcrumb": { "@id": `${url}#breadcrumb` },
       "inLanguage": "en"
     },
-    buildBreadcrumb(`${SITE_URL}/blog#breadcrumb`, [
+    {
+      "@type": "ItemList",
+      "@id": listId,
+      "name": `${name} articles`,
+      "numberOfItems": listingPosts.length,
+      "itemListElement": listingPosts.map(({ url: articleUrl }, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "url": articleUrl,
+        "item": { "@id": `${articleUrl}#article` }
+      }))
+    },
+    ...listingPosts.map(({ article }) => article),
+    buildBreadcrumb(`${url}#breadcrumb`, [
       homeCrumb,
-      { name: "Blog", url: `${SITE_URL}/blog` }
+      ...(breadcrumbName === "Blog" ? [] : [{ name: "Blog", url: `${SITE_URL}/blog` }]),
+      { name: breadcrumbName, url: breadcrumbUrl }
     ])
-  ]
-});
+  ];
+};
+
+// Blog listing page
+export const getBlogListingSchema = ({ posts = [], page = 1 } = {}) => {
+  const url = page > 1 ? `${SITE_URL}/blog?page=${page}` : `${SITE_URL}/blog`;
+  const name = "Digital Marketing, SEO, AI & Branding Blog";
+  return {
+    "@context": "https://schema.org",
+    "@graph": getBlogCollectionGraph({
+      url,
+      name,
+      description: "Explore the Sham Marianas blog for expert insights on digital marketing, IT solutions, branding, web design, and business growth strategies in Dubai.",
+      posts
+    })
+  };
+};
+
+// Blog category listing page
+export const getBlogCategorySchema = ({ category, posts = [] } = {}) => {
+  const normalizedCategory = (category || "business").toString().toLowerCase();
+  const categoryName = normalizedCategory === "ai"
+    ? "AI"
+    : normalizedCategory.charAt(0).toUpperCase() + normalizedCategory.slice(1);
+  const url = `${SITE_URL}/blog-category/${encodeURIComponent(normalizedCategory)}`;
+  const name = `${categoryName} Blog | Sham Marianas`;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": getBlogCollectionGraph({
+      url,
+      name,
+      description: `Explore ${categoryName} marketing, technology, branding, and business insights from Sham Marianas.`,
+      posts,
+      breadcrumbName: categoryName,
+      breadcrumbUrl: url
+    })
+  };
+};
 
 // Individual blog article page
 export const getBlogSchema = (blogData) => {

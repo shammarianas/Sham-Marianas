@@ -14,6 +14,13 @@ function Next() {
   const [error, setError] = useState(null);
 
   const getBlogPath = (blog) => `/blog/${encodeURIComponent(blog.slug || blog.id)}`;
+  const getBlogImage = (blog) =>
+    blog?.coverImageUrl ||
+    blog?.featuredImageUrl ||
+    blog?.featureImgUrl ||
+    blog?.imageUrl ||
+    blog?.image ||
+    "/assets/imgs/blog/blog4.jpg";
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -52,11 +59,11 @@ function Next() {
       const nextBox = document.querySelector('.col-md-6.rest:last-child .bg-img');
       
       if (prevBlog && prevBox) {
-        prevBox.setAttribute('data-background', prevBlog.imageUrl || "https://via.placeholder.com/600x400?text=No+Image");
+        prevBox.setAttribute('data-background', getBlogImage(prevBlog));
       }
       
       if (nextBlog && nextBox) {
-        nextBox.setAttribute('data-background', nextBlog.imageUrl || "https://via.placeholder.com/600x400?text=No+Image");
+        nextBox.setAttribute('data-background', getBlogImage(nextBlog));
       }
       
       loadBackgroudImages();
@@ -100,7 +107,7 @@ function Next() {
         <div className="row">
           <div className="col-md-6 rest">
             {prevBlog ? (
-              <div className="text-left box bg-img" data-background={prevBlog.imageUrl || "https://via.placeholder.com/600x400?text=No+Image"}>
+              <div className="text-left box bg-img" data-background={getBlogImage(prevBlog)}>
                 <div className="cont d-flex align-items-center">
                   <span className="mr-30 fz-30 ti-arrow-left cursor-pointer" onClick={handlePrevClick} style={{ cursor: "pointer" }} />
                   <div>
@@ -124,7 +131,7 @@ function Next() {
           </div>
           <div className="col-md-6 rest">
             {nextBlog ? (
-              <div className="text-right d-flex box bg-img" data-background={nextBlog.imageUrl || "https://via.placeholder.com/600x400?text=No+Image"}>
+              <div className="text-right d-flex box bg-img" data-background={getBlogImage(nextBlog)}>
                 <div className="ml-auto">
                   <div className="cont d-flex align-items-center">
                     <div>

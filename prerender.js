@@ -5,13 +5,14 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SITE_URL = 'https://www.shammarianas.com';
 const DIST_DIR = path.resolve(process.env.PRERENDER_DIST_DIR || path.join(__dirname, 'dist'));
 const PORT = Number.parseInt(process.env.PRERENDER_PORT || '4173', 10);
+const publishedBlogs = new Map();
 
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
   throw new Error(`Invalid PRERENDER_PORT: ${process.env.PRERENDER_PORT}`);
@@ -83,36 +84,202 @@ function startStaticServer(fallbackHtml) {
 // Some managed/macOS environments block Chromium's Mach rendezvous service.
 // Keep the production pipeline usable there by writing crawlable SPA shells
 // with route-specific metadata when a browser cannot be launched.
+const escapeHtml = (value = '') => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const plainText = (value = '') => String(value)
+  .replace(/<[^>]*>/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
 function buildFallbackHtml(baseHtml, route) {
+  const blog = publishedBlogs.get(route);
+  const isBlogListing = route === '/blog';
+  const isBlogDetail = Boolean(blog);
+  const categoryMatch = route.match(/^\/blog-category\/([^/]+)$/);
+  const blogCategory = categoryMatch
+    ? decodeURIComponent(categoryMatch[1]).toLowerCase()
+    : null;
+  const isBlogCategory = Boolean(blogCategory);
+  const categoryLabel = blogCategory === 'ai'
+    ? 'AI'
+    : blogCategory
+      ? blogCategory.charAt(0).toUpperCase() + blogCategory.slice(1)
+      : '';
+  const categoryPosts = isBlogCategory
+    ? [...publishedBlogs.values()].filter(
+      (post) => (post.category || 'business').toString().toLowerCase() === blogCategory
+    )
+    : [];
   const labels = {
     '/': 'Sham Marianas F.Z.C | Marketing Agency in Dubai, UAE',
     '/about': "About Sham Marianas F.Z.C | Dubai's Top Marketing Agency",
     '/services': 'Dubai Marketing Agency Services | Sham Marianas F.Z.C.',
     '/case-study': 'Sham Marianas F.Z.C Portfolio | Dubai Creative Projects',
-    '/blog': 'Sham Marianas F.Z.C. Blog | Advertising Insights Dubai',
+    '/blog': 'Digital Marketing & IT Solutions Blog | Sham Marianas',
     '/contact-us': 'Contact Sham Marianas F.Z.C | Dubai Agency',
     '/templates': 'Templates | Sham Marianas F.Z.C Dubai Designs',
   };
-  const title = labels[route] || `${route.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || 'Sham Marianas'} | Sham Marianas F.Z.C.`;
+  const categoryTitles = {
+    business: 'Dubai Business & Marketing Blog | Sham Marianas',
+    technology: 'Technology & Digital Innovation Blog | Sham Marianas',
+    design: 'Design & Branding Blog | Sham Marianas',
+    lifestyle: 'Lifestyle & Creative Insights Blog | Sham Marianas',
+    ai: 'AI & Automation Blog | Sham Marianas',
+    marketing: 'Digital Marketing & Advertising Blog | Sham Marianas',
+  };
+  const title = isBlogDetail
+    ? `${blog.title} | Sham Marianas Blog`
+    : isBlogCategory
+      ? categoryTitles[blogCategory] || `${categoryLabel} Blog | Sham Marianas`
+    : labels[route] || `${route.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || 'Sham Marianas'} | Sham Marianas F.Z.C.`;
   const canonical = `${SITE_URL}${route === '/' ? '/' : route}`;
-  const description = 'Sham Marianas F.Z.C. provides advertising, branding, digital marketing and creative services in Dubai, UAE.';
+  const description = isBlogListing
+    ? 'Explore the Sham Marianas blog for expert insights on digital marketing, IT solutions, branding, web design, and business growth strategies in Dubai.'
+    : isBlogCategory
+      ? `Explore ${categoryLabel} marketing, technology, branding, and business insights from Sham Marianas.`
+    : isBlogDetail
+      ? plainText(blog.excerpt || blog.content).slice(0, 160) || 'Read expert digital marketing and business growth insights from Sham Marianas.'
+      : 'Sham Marianas F.Z.C. provides advertising, branding, digital marketing and creative services in Dubai, UAE.';
+  const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
+  const safeCanonical = escapeHtml(canonical);
   const metadata = `
-    <title>${title}</title>
-    <meta name="description" content="${description}" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="${canonical}" />
-    <meta property="og:title" content="${title}" />
-    <meta property="og:description" content="${description}" />
-    <meta property="og:url" content="${canonical}" />
+    <link rel="canonical" href="${safeCanonical}" />
+    <meta property="og:title" content="${safeTitle}" />
+    <meta property="og:description" content="${safeDescription}" />
+    <meta property="og:url" content="${safeCanonical}" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="${SITE_URL}/assets/imgs/arrow-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${title}" />
-    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:title" content="${safeTitle}" />
+    <meta name="twitter:description" content="${safeDescription}" />
     <meta name="twitter:image" content="${SITE_URL}/assets/imgs/arrow-image.png" />`;
   // Keep the fallback shell crawlable even when Puppeteer cannot run. The
   // React homepage renders this heading after hydration, but crawlers that
   // only receive the static shell still need a real H1 to evaluate.
+  const blogListingContent = isBlogListing
+    ? `<main class="seo-fallback-content">
+        <h1>Blog</h1>
+        <p>${escapeHtml(description)}</p>
+        <nav aria-label="Blog categories">
+          ${['business', 'technology', 'design', 'lifestyle', 'ai', 'marketing'].map((category) => `<a href="/blog-category/${category}">${escapeHtml(category === 'ai' ? 'AI' : category.charAt(0).toUpperCase() + category.slice(1))}</a>`).join(' ')}
+        </nav>
+        <ul>${[...publishedBlogs.values()].map((post) => `<li><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title || 'Untitled blog')}</a>${post.excerpt ? `: ${escapeHtml(plainText(post.excerpt))}` : ''}</li>`).join('')}</ul>
+        <nav aria-label="Blog pagination">
+          ${Array.from({ length: Math.ceil(publishedBlogs.size / 10) }, (_, index) => {
+            const page = index + 1;
+            return `<a href="/blog${page > 1 ? `?page=${page}` : ''}"${page === 1 ? ' aria-current="page"' : ''}>${page}</a>`;
+          }).join(' ')}
+        </nav>
+      </main>`
+    : '';
+  const blogCategoryContent = isBlogCategory
+    ? `<main class="seo-fallback-content">
+        <h1>${escapeHtml(categoryLabel)} Blog</h1>
+        <p>${escapeHtml(description)}</p>
+        <nav aria-label="Blog categories">
+          ${['business', 'technology', 'design', 'lifestyle', 'ai', 'marketing'].map((category) => `<a href="/blog-category/${category}"${category === blogCategory ? ' aria-current="page"' : ''}>${escapeHtml(category === 'ai' ? 'AI' : category.charAt(0).toUpperCase() + category.slice(1))}</a>`).join(' ')}
+        </nav>
+        <ul>${categoryPosts.map((post) => `<li><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title || 'Untitled blog')}</a>${post.excerpt ? `: ${escapeHtml(plainText(post.excerpt))}` : ''}</li>`).join('')}</ul>
+      </main>`
+    : '';
+  const blogDetailContent = isBlogDetail
+    ? `<article class="seo-fallback-content">
+        <nav aria-label="Breadcrumb">
+          <a href="/">Home</a> /
+          <a href="/blog">Blog</a> /
+          <a href="/blog-category/${encodeURIComponent((blog.category || 'business').toString().toLowerCase())}">${escapeHtml(blog.category || 'Business')}</a> /
+          <span aria-current="page">${escapeHtml(blog.title || 'Blog article')}</span>
+        </nav>
+        <p><a href="/blog-category/${encodeURIComponent((blog.category || 'business').toString().toLowerCase())}">${escapeHtml(blog.category || 'Business')}</a></p>
+        <h1>${escapeHtml(blog.title || 'Blog article')}</h1>
+        ${blog.excerpt ? `<p>${escapeHtml(plainText(blog.excerpt))}</p>` : ''}
+        ${blog.content ? `<div><p>${escapeHtml(plainText(blog.content))}</p></div>` : ''}
+        <nav aria-label="Related blog posts">
+          ${[...publishedBlogs.values()]
+            .filter((post) => post.slug !== blog.slug && (post.category || 'business').toString().toLowerCase() === (blog.category || 'business').toString().toLowerCase())
+            .slice(0, 3)
+            .map((post) => `<a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title || 'Related blog post')}</a>`)
+            .join(' ')}
+        </nav>
+      </article>`
+    : '';
+  const schemaPosts = isBlogCategory
+    ? categoryPosts
+    : isBlogListing
+      ? [...publishedBlogs.values()]
+      : [];
+  const schemaUrl = isBlogCategory ? `${SITE_URL}${route}` : `${SITE_URL}/blog`;
+  const schemaName = isBlogCategory
+    ? `${categoryLabel} Blog | Sham Marianas`
+    : 'Digital Marketing, SEO, AI & Branding Blog';
+  const schemaArticleNodes = schemaPosts
+    .filter((post) => post.slug || post.id)
+    .map((post) => {
+      const articleUrl = `${SITE_URL}/blog/${encodeURIComponent(post.slug || post.id)}`;
+      return {
+        "@type": "BlogPosting",
+        "@id": `${articleUrl}#article`,
+        "url": articleUrl,
+        "headline": post.title || 'Blog article',
+        "description": plainText(post.excerpt || post.content || ''),
+        "author": { "@type": "Organization", "@id": `${SITE_URL}/#organization` },
+        "publisher": { "@id": `${SITE_URL}/#organization` }
+      };
+    });
+  const structuredData = (isBlogListing || isBlogCategory)
+    ? `<script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": `${SITE_URL}/#organization`,
+          "name": "Sham Marianas F.Z.C.",
+          "url": `${SITE_URL}/`
+        },
+        {
+          "@type": "WebSite",
+          "@id": `${SITE_URL}/#website`,
+          "url": `${SITE_URL}/`,
+          "name": "Sham Marianas F.Z.C.",
+          "publisher": { "@id": `${SITE_URL}/#organization` }
+        },
+        {
+          "@type": "Blog",
+          "@id": `${schemaUrl}#blog`,
+          "url": schemaUrl,
+          "name": schemaName,
+          "publisher": { "@id": `${SITE_URL}/#organization` },
+          "blogPost": schemaArticleNodes.map((post) => ({ "@id": post["@id"] }))
+        },
+        {
+          "@type": "CollectionPage",
+          "@id": `${schemaUrl}#webpage`,
+          "url": schemaUrl,
+          "name": schemaName,
+          "mainEntity": { "@id": `${schemaUrl}#article-list` },
+          "isPartOf": { "@id": `${SITE_URL}/#website` }
+        },
+        {
+          "@type": "ItemList",
+          "@id": `${schemaUrl}#article-list`,
+          "numberOfItems": schemaArticleNodes.length,
+          "itemListElement": schemaArticleNodes.map((post, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": { "@id": post["@id"] }
+          }))
+        },
+        ...schemaArticleNodes
+      ]
+    }).replace(/</g, '\\u003c')}</script>`
+    : '';
   const crawlableContent = route === '/'
     ? `<main class="seo-fallback-content">
         <h1>Let's Scale Your Business</h1>
@@ -125,7 +292,7 @@ function buildFallbackHtml(baseHtml, route) {
           <a href="/contact-us">Contact Sham Marianas</a>
         </nav>
       </main>`
-    : `<nav class="seo-fallback-navigation" aria-label="Site navigation">
+    : blogListingContent || blogCategoryContent || blogDetailContent || `<nav class="seo-fallback-navigation" aria-label="Site navigation">
         <a href="${SITE_URL}/">Sham Marianas F.Z.C. Home</a>
       </nav>`;
   const fallbackHtml = baseHtml.replace(
@@ -133,7 +300,22 @@ function buildFallbackHtml(baseHtml, route) {
     `<div id="root">${crawlableContent}`
   );
 
-  return fallbackHtml.replace('</head>', `${metadata}\n</head>`);
+  const cleanedHtml = fallbackHtml
+    .replace(/<title>[\s\S]*?<\/title>/gi, '')
+    .replace(/<meta\s+name=["']description["'][^>]*>/gi, '')
+    .replace(/<meta\s+name=["']robots["'][^>]*>/gi, '')
+    .replace(/<link\s+rel=["']canonical["'][^>]*>/gi, '')
+    .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, '')
+    .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, '');
+
+  return cleanedHtml.replace(
+    '</head>',
+    `<title>${safeTitle}</title>
+    <meta name="description" content="${safeDescription}" />
+    ${metadata}
+    ${structuredData}
+</head>`
+  );
 }
 
 function writeFallbackPages(baseHtml, routes) {
@@ -153,12 +335,16 @@ async function getDynamicRoutes() {
 
   // Blogs
   try {
-    const blogSnap = await getDocs(collection(db, 'blogs'));
+    const blogSnap = await getDocs(
+      query(collection(db, 'blogs'), where('status', '==', 'PUBLISHED'))
+    );
     blogSnap.forEach((doc) => {
       const data = doc.data();
       const slug = data.slug || doc.id;
       if (slug) {
-        dynamicRoutes.push(`/blog/${slug}`);
+        const route = `/blog/${slug}`;
+        publishedBlogs.set(route, { id: doc.id, ...data, slug });
+        dynamicRoutes.push(route);
       }
     });
     console.log(`✅ Loaded ${dynamicRoutes.length} blog routes from Firestore`);
@@ -259,6 +445,8 @@ async function prerender() {
     '/blog-category/business',
     '/blog-category/technology',
     '/blog-category/design',
+    '/blog-category/lifestyle',
+    '/blog-category/ai',
     '/blog-category/marketing',
   ];
 

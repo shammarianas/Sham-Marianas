@@ -66,6 +66,39 @@ const extractPureContent = (quillHtml) => {
   });
 };
 
+const optimizeBlogImage = (file, maxWidth, maxHeight) =>
+  new Promise((resolve, reject) => {
+    if (!file?.type?.startsWith("image/")) {
+      resolve(file);
+      return;
+    }
+
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    image.onload = () => {
+      const ratio = Math.min(1, maxWidth / image.width, maxHeight / image.height);
+      const width = Math.max(1, Math.round(image.width * ratio));
+      const height = Math.max(1, Math.round(image.height * ratio));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(objectUrl);
+        if (!blob) {
+          reject(new Error("Unable to optimize blog image"));
+          return;
+        }
+        resolve(new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), { type: "image/webp" }));
+      }, "image/webp", 0.82);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Unable to read blog image"));
+    };
+    image.src = objectUrl;
+  });
+
 function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
   const { quill, quillRef } = useQuill({ modules, formats });
   const [blogData, setBlogData] = useState({
@@ -353,8 +386,9 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
           .join(" ") || "Image";
 
         try {
-          const storageRef = ref(storage, `blogs/editor-images/${Date.now()}_${file.name}`);
-          await uploadBytes(storageRef, file);
+          const optimizedFile = await optimizeBlogImage(file, 1600, 1200);
+          const storageRef = ref(storage, `blogs/editor-images/${Date.now()}_${optimizedFile.name}`);
+          await uploadBytes(storageRef, optimizedFile, { contentType: "image/webp", cacheControl: "public,max-age=31536000,immutable" });
           const imageUrl = await getDownloadURL(storageRef);
           const range = quill.getSelection() || { index: 0 };
 
@@ -512,15 +546,17 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
 
       let featureImgUrl = blogData.featureImgUrl;
       if (blogData.featuredImage) {
-        const storageRef = ref(storage, `blogs/featured-images/${Date.now()}_${blogData.featuredImage.name}`);
-        await uploadBytes(storageRef, blogData.featuredImage);
+        const optimizedFile = await optimizeBlogImage(blogData.featuredImage, 1200, 630);
+        const storageRef = ref(storage, `blogs/featured-images/${Date.now()}_${optimizedFile.name}`);
+        await uploadBytes(storageRef, optimizedFile, { contentType: "image/webp", cacheControl: "public,max-age=31536000,immutable" });
         featureImgUrl = await getDownloadURL(storageRef);
       }
 
       let coverImageUrl = blogData.coverImageUrl;
       if (blogData.coverImage) {
-        const storageRef = ref(storage, `blogs/cover-images/${Date.now()}_${blogData.coverImage.name}`);
-        await uploadBytes(storageRef, blogData.coverImage);
+        const optimizedFile = await optimizeBlogImage(blogData.coverImage, 1600, 900);
+        const storageRef = ref(storage, `blogs/cover-images/${Date.now()}_${optimizedFile.name}`);
+        await uploadBytes(storageRef, optimizedFile, { contentType: "image/webp", cacheControl: "public,max-age=31536000,immutable" });
         coverImageUrl = await getDownloadURL(storageRef);
       }
 

@@ -142,39 +142,27 @@ function Blogs() {
                 <h6 className="title-widget">Categories</h6>
                 <ul className="rest">
                   <li>
-                    <span>
-                      <a href="/blog-grid-sidebar" aria-label="View All Blog Posts">All</a>
-                    </span>
+                    <Link to="/blog" aria-label="View All Blog Posts">All</Link>
                     <span className="ml-auto">{blogs.length}</span>
                   </li>
                   <li>
-                    <span>
-                      <a href="/blog-grid-sidebar" aria-label="View Business Blog Posts">Business</a>
-                    </span>
+                    <Link to="/blog-category/business" aria-label="View Business Blog Posts">Business</Link>
                     <span className="ml-auto">{blogs.length}</span>
                   </li>
                   <li>
-                    <span>
-                      <a href="/blog-grid-sidebar" aria-label="View Lifestyle Blog Posts">Lifestyle</a>
-                    </span>
+                    <Link to="/blog-category/lifestyle" aria-label="View Lifestyle Blog Posts">Lifestyle</Link>
                     <span className="ml-auto">05</span>
                   </li>
                   <li>
-                    <span>
-                      <a href="/blog-grid-sidebar" aria-label="View Creative Blog Posts">Creative</a>
-                    </span>
+                    <Link to="/blog-category/design" aria-label="View Design Blog Posts">Design</Link>
                     <span className="ml-auto">28</span>
                   </li>
                   <li>
-                    <span>
-                      <a href="/blog-grid-sidebar" aria-label="View WordPress Blog Posts">WordPress</a>
-                    </span>
+                    <Link to="/blog-category/technology" aria-label="View Technology Blog Posts">Technology</Link>
                     <span className="ml-auto">17</span>
                   </li>
                   <li>
-                    <span>
-                      <a href="/blog-grid-sidebar" aria-label="View Design Blog Posts">Design</a>
-                    </span>
+                    <Link to="/blog-category/marketing" aria-label="View Marketing Blog Posts">Marketing</Link>
                     <span className="ml-auto">45</span>
                   </li>
                 </ul>

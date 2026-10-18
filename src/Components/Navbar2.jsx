@@ -155,7 +155,7 @@ const Navbar = () => {
     if (!currentUser?.uid) return "/login";
 
     if (username && username !== "null" && username !== "undefined") {
-      return `/${username}`;
+      return `/profile/${encodeURIComponent(username)}`;
     }
 
     return `/profile/${currentUser.uid}`;
@@ -391,7 +391,7 @@ const Navbar = () => {
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    <span className="rolling-text">Blogs</span>
+                    <span className="rolling-text">Blog</span>
                   </Link>
                 </li>
                 <li className="nav-item">

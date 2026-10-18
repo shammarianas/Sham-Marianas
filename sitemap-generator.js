@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -76,7 +76,7 @@ const ROUTES_CONFIG = [
   { path: '/contributor-policies', dynamic: false, priority: '0.5', freq: 'monthly' },
 
   // Dynamic routes with samples (no collection)
-  { path: '/blog-category/:category', dynamic: true, samples: ['business', 'technology', 'design', 'marketing'] },
+  { path: '/blog-category/:category', dynamic: true, samples: ['business', 'technology', 'design', 'lifestyle', 'ai', 'marketing'] },
 
   // Dynamic routes fetched from Firebase Firestore
   { path: '/blog/:slug', dynamic: true, collection: 'blogs', field: 'slug' },
@@ -103,7 +103,10 @@ const generateUrlsFromRoutes = async () => {
       });
     } else if (route.collection) {
       try {
-        const querySnapshot = await getDocs(collection(db, route.collection));
+        const source = route.collection === 'blogs'
+          ? query(collection(db, route.collection), where('status', '==', 'PUBLISHED'))
+          : collection(db, route.collection);
+        const querySnapshot = await getDocs(source);
         const items = [];
         querySnapshot.forEach((doc) => {
           const data = doc.data();

@@ -28,6 +28,24 @@ const normalizeBlogContentLinks = (content) =>
   typeof content === "string"
     ? content.replace(/href\s*=\s*(["'])(.*?)\1/gi, (_match, quote, href) => `href=${quote}${href.trim()}${quote}`)
     : "";
+const BLOG_AUTHOR = "Sham Marianas Editorial Team";
+
+const getDateValue = (value) => {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatBlogDate = (value) => {
+  const date = getDateValue(value);
+  return date ? date.toDateString() : "—";
+};
+
+const getIsoDate = (value) => {
+  const date = getDateValue(value);
+  return date ? date.toISOString() : undefined;
+};
 
 function BlogDetails() {
   const { id } = useParams();
@@ -36,6 +54,8 @@ function BlogDetails() {
 
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [detailError, setDetailError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
   const [, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -58,18 +78,31 @@ function BlogDetails() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId;
+
     const fetchBlog = async () => {
+      setLoading(true);
+      setDetailError("");
+
       try {
         const docRef = doc(db, "blogs", id);
-        let docSnap = await getDoc(docRef);
-
-        if (!docSnap.exists()) {
-          const q = query(collection(db, "blogs"), where("slug", "==", id));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
-            docSnap = querySnapshot.docs[0];
-          }
-        }
+        let docSnap = await Promise.race([
+          (async () => {
+            let snapshot = await getDoc(docRef);
+            if (!snapshot.exists()) {
+              const slugQuery = query(collection(db, "blogs"), where("slug", "==", id));
+              const slugSnapshot = await getDocs(slugQuery);
+              if (!slugSnapshot.empty) snapshot = slugSnapshot.docs[0];
+            }
+            return snapshot;
+          })(),
+          new Promise((_, reject) => {
+            timeoutId = window.setTimeout(() => {
+              reject(new Error("BLOG_DETAIL_REQUEST_TIMEOUT"));
+            }, 10000);
+          }),
+        ]);
 
         if (docSnap.exists()) {
           const blogData = { id: docSnap.id, ...docSnap.data() };
@@ -108,23 +141,35 @@ function BlogDetails() {
             },
           });
 
-          setBlog(blogData);
-          setAllTags(Array.isArray(blogData.tags) ? blogData.tags : []);
+          if (isMounted) {
+            setBlog(blogData);
+            setAllTags(Array.isArray(blogData.tags) ? blogData.tags : []);
+          }
 
           const canonicalPath = `/blog/${encodeURIComponent(blogData.slug || blogData.id)}`;
           if (location.pathname !== canonicalPath) {
             navigate(canonicalPath, { replace: true });
           }
         } else {
-          setBlog(null);
-          setAllTags([]);
+          if (isMounted) {
+            setBlog(null);
+            setAllTags([]);
+          }
         }
       } catch (error) {
         console.error("Error fetching blog:", error);
-        setBlog(null);
-        setAllTags([]);
+        if (isMounted) {
+          setBlog(null);
+          setAllTags([]);
+          setDetailError(
+            error?.message === "BLOG_DETAIL_REQUEST_TIMEOUT"
+              ? "This blog is taking longer than expected to load. Please try again."
+              : "We couldn't load this blog right now. Please try again."
+          );
+        }
       } finally {
-        setLoading(false);
+        window.clearTimeout(timeoutId);
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -204,17 +249,18 @@ function BlogDetails() {
     fetchCategoryCounts();
     fetchLatestBlogs();
     loadBackgroudImages();
-  }, [id, location.pathname, navigate]);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [id, location.pathname, navigate, retryCount]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/blog?search=${encodeURIComponent(searchTerm)}`);
     }
-  };
-
-  const handleCategoryClick = (category) => {
-    navigate(`/blog?category=${encodeURIComponent(category)}`);
   };
 
   const handleCommentSubmit = async (e) => {
@@ -241,7 +287,19 @@ function BlogDetails() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">Loading blog...</div>;
+  if (loading) return <div className="blog-loading-state" role="status" aria-live="polite"><div className="blog-loading-content"><span className="blog-loading-spinner" aria-hidden="true"></span><p>Loading blog…</p></div></div>;
+  if (detailError) {
+    return (
+      <div className="blog-loading-state blog-error-state" role="alert">
+        <div className="blog-loading-content">
+          <p>{detailError}</p>
+          <button type="button" className="blog-retry-button" onClick={() => setRetryCount((count) => count + 1)}>
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
   if (!blog) return <ErrorPage />;
 
   return (
@@ -280,6 +338,7 @@ function BlogDetails() {
         .prose li {
           margin-bottom: 0.5em !important;
           padding-left: 0.25em !important;
+          line-height: 1.6 !important;
           list-style-position: outside !important;
         }
         .prose ol ol > li[data-list="bullet"] {
@@ -302,7 +361,7 @@ function BlogDetails() {
   {/* SEO Meta Tags */}
       {blog && (
         <SEO
-          title={`${blog.title} | Shammarianas Blog`}
+          title={`${blog.title} | Sham Marianas Blog`}
           description={blog.excerpt || "Blog description"}
           keywords={blog.tags?.join(', ') || blog.category}
           canonical={`https://www.shammarianas.com/blog/${encodeURIComponent(blog.slug || blog.id)}`}
@@ -319,8 +378,9 @@ function BlogDetails() {
         ...blog,
         slug: blog.slug || blog.id,
         url: `https://www.shammarianas.com/blog/${encodeURIComponent(blog.slug || blog.id)}`,
-        publishedTime: blog.publishedAt ? blog.publishedAt.toDate().toISOString() : new Date().toISOString(),
-        updatedTime: blog.updatedAt ? blog.updatedAt.toDate().toISOString() : blog.publishedAt?.toDate().toISOString(),
+        publishedTime: getIsoDate(blog.publishedAt || blog.createdAt) || new Date().toISOString(),
+        updatedTime: getIsoDate(blog.updatedAt || blog.publishedAt || blog.createdAt),
+        authorName: BLOG_AUTHOR,
         description: blog.excerpt || "Blog description",
         keywords: blog.tags?.join(', ') || blog.category,
         content: blog.content  // Yeh important – auto FAQ ke liye pass karo
@@ -330,6 +390,10 @@ function BlogDetails() {
       )}
       <Cursor />
       <ProgressScroll />
+
+      {blog.featuredImageUrl && (
+        <link rel="preload" as="image" href={blog.featuredImageUrl} fetchPriority="high" />
+      )}
 
       <header
         className="header-blog bg-img"
@@ -348,18 +412,26 @@ function BlogDetails() {
                 <h1 className="blog-inside-title">{blog.title}</h1>
                 <div className="info d-flex mt-40 align-items-center">
                   <div className="left-info">
-                    <div className="d-flex align-items-center">
-                      <div className="date">
-                        <div className="published-date" aria-label={`Published on ${blog.publishedAt ? new Date(blog.publishedAt.toDate()).toDateString() : "Unknown date"}`}>
-                          <span className="opacity-7">Published</span>
-                          <h6 className="fz-14">
-                            <time dateTime={blog.publishedAt ? blog.publishedAt.toDate().toISOString() : undefined}>
-                              {blog.publishedAt
-                                ? new Date(blog.publishedAt.toDate()).toDateString()
-                                : "—"}
-                            </time>
-                          </h6>
-                        </div>
+                    <div className="d-flex align-items-center flex-wrap">
+                      <div className="date mr-30 mb-10">
+                        <span className="opacity-7">Author</span>
+                        <h6 className="fz-14">{BLOG_AUTHOR}</h6>
+                      </div>
+                      <div className="date mr-30 mb-10">
+                        <span className="opacity-7">Published</span>
+                        <h6 className="fz-14">
+                          <time dateTime={getIsoDate(blog.publishedAt || blog.createdAt)}>
+                            {formatBlogDate(blog.publishedAt || blog.createdAt)}
+                          </time>
+                        </h6>
+                      </div>
+                      <div className="date mb-10">
+                        <span className="opacity-7">Last updated</span>
+                        <h6 className="fz-14">
+                          <time dateTime={getIsoDate(blog.updatedAt || blog.publishedAt || blog.createdAt)}>
+                            {formatBlogDate(blog.updatedAt || blog.publishedAt || blog.createdAt)}
+                          </time>
+                        </h6>
                       </div>
                     </div>
                   </div>
@@ -377,6 +449,20 @@ function BlogDetails() {
           </div>
         </div>
       </header>
+
+      <nav className="container mt-30" aria-label="Breadcrumb">
+        <Link to="/">Home</Link>
+        <span className="mx-10">/</span>
+        <Link to="/blog">Blog</Link>
+        <span className="mx-10">/</span>
+        <Link to={`/blog-category/${blog.category || "business"}`}>
+          {blog.category === "ai"
+            ? "AI"
+            : (blog.category || "business").charAt(0).toUpperCase() + (blog.category || "business").slice(1)}
+        </Link>
+        <span className="mx-10">/</span>
+        <span aria-current="page">{blog.title}</span>
+      </nav>
 
       <section className="blog section-padding">
         <div className="container">
@@ -454,14 +540,16 @@ function BlogDetails() {
               <div className="sidebar-bl blog-sidebar">
                 <div className="widget">
                   <h6 className="title-widget">Search Here</h6>
-                  <form onSubmit={handleSearch} className="search-box">
+                  <form onSubmit={handleSearch} className="search-box" role="search">
                     <input
                       type="text"
+                      name="search"
+                      aria-label="Search blog posts"
                       placeholder="Search"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <span className="icon pe-7s-search"></span>
+                    <button type="submit" className="icon pe-7s-search" aria-label="Search blog posts" />
                   </form>
                 </div>
 
@@ -472,12 +560,13 @@ function BlogDetails() {
                       .filter(([key]) => key !== "all")
                       .map(([key, value]) => (
                         <li key={key}>
-                          <span
-                            onClick={() => handleCategoryClick(key)}
-                            style={{ cursor: "pointer" }}
+                          <Link
+                            to={`/blog-category/${key}`}
+                            className={blog.category === key ? "active" : ""}
+                            aria-current={blog.category === key ? "page" : undefined}
                           >
                             {key === "ai" ? "AI" : key.charAt(0).toUpperCase() + key.slice(1)}
-                          </span>
+                          </Link>
                           <span className="ml-auto">{value}</span>
                         </li>
                       ))}
@@ -492,14 +581,11 @@ function BlogDetails() {
                         <div>
                           <div className="img">
                             <Link to={`/blog/${post.slug || post.id}`}>
-                              <img  loading="lazy"  src={post.coverImageUrl} alt={post.title} />
+                              <img loading="lazy" width="120" height="80" src={post.coverImageUrl} alt={post.title} />
                               {post.publishedAt && (
                                 <span className="date">
                                   <span>
-                                    {new Date(post.publishedAt.toDate()).toLocaleDateString("en-US", {
-                                      day: "2-digit",
-                                      month: "short",
-                                    })}
+                                    {formatBlogDate(post.publishedAt)}
                                   </span>
                                 </span>
                               )}
@@ -508,7 +594,7 @@ function BlogDetails() {
                         </div>
                         <div className="cont">
                           <span className="tag">
-                            <Link to={`/blog?category=${post.category}`}>
+                            <Link to={`/blog-category/${post.category}`}>
                               {post.category === "ai"
                                 ? "AI"
                                 : post.category.charAt(0).toUpperCase() + post.category.slice(1)}

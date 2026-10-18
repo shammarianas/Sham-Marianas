@@ -6,6 +6,7 @@ import {
   getServicesListingSchema,
   getServiceSchema,
   getBlogListingSchema,
+  getBlogCategorySchema,
   getBlogSchema,
   getPortfolioListingSchema,
   getPortfolioSchema,
@@ -46,7 +47,9 @@ const SchemaMarkup = ({
   } else if (type === "service" && data) {
       schemasToInject = [getServiceSchema(schemaData)];
   } else if (type === "blogListing") {
-      schemasToInject = [getBlogListingSchema()];
+      schemasToInject = [getBlogListingSchema(data)];
+  } else if (type === "blogCategory") {
+      schemasToInject = [getBlogCategorySchema(data)];
   } else if (type === "blog" && data) {
       schemasToInject = [getBlogSchema(data)];
   } else if (type === "portfolioListing") {

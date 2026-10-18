@@ -8,9 +8,10 @@ function Marq2() {
 
   return (
     <section className="call-marq section-padding o-hidden">
+      <h2 className="sr-only">Get in touch</h2>
       <div className="main-marq lrg sub-bg pt-20 pb-20">
         <div className="slide-har st1">
-          <div className="box">
+          <div className="box" aria-hidden="true">
             {AllMarquess.map((item, i) => (
               <div key={i} className="item">
                 <h4 className="d-flex align-items-center">
@@ -38,7 +39,7 @@ function Marq2() {
       </div>
       <div className="main-marq bord-item">
         <div className="slide-har st2">
-          <div className="box">
+          <div className="box" aria-hidden="true">
             {AllContact.map((item, i) => (
               <div key={i} className="item">
                 <h4 className="d-flex align-items-center">
@@ -47,7 +48,7 @@ function Marq2() {
               </div>
             ))}
           </div>
-          <div className="box">
+          <div className="box" aria-hidden="true">
             {AllContact.map((item, i) => (
               <div key={i} className="item">
                 <h4 className="d-flex align-items-center">

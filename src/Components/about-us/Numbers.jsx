@@ -16,7 +16,7 @@ function Numbers() {
           <div className="col-lg-4 col-md-6">
             <div className="item text-center md-mb50">
               <div className="o-hidden">
-                <h3 className="stroke">6745</h3>
+                <h3 className="stroke">2260</h3>
               </div>
               <h6 className="p-color sub-title">Projects Completed</h6>
             </div>
@@ -24,7 +24,7 @@ function Numbers() {
           <div className="col-lg-4 col-md-6">
             <div className="item text-center">
               <div className="o-hidden">
-                <h3 className="stroke">13 +</h3>
+                <h3 className="stroke">3</h3>
               </div>
               <h6 className="p-color sub-title">Awards Achievement</h6>
             </div>
