@@ -105,22 +105,22 @@
     "redirects": [
       {
         "source": "/services/demo",
-        "destination": "/services",
+        "destination": "/services/",
         "type": 301
       },
       {
         "source": "/services/brandingpage",
-        "destination": "/services/uiux-design",
+        "destination": "/services/uiux-design/",
         "type": 301
       },
       {
         "source": "/blogs",
-        "destination": "/blog",
+        "destination": "/blog/",
         "type": 301
       },
       {
         "source": "/blog-details/:id",
-        "destination": "/blog/:id",
+        "destination": "/blog/:id/",
         "type": 301
       }
     ],

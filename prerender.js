@@ -14,6 +14,13 @@ const DIST_DIR = path.resolve(process.env.PRERENDER_DIST_DIR || path.join(__dirn
 const PORT = Number.parseInt(process.env.PRERENDER_PORT || '4173', 10);
 const publishedBlogs = new Map();
 
+const toCanonicalPath = (routePath) => {
+  if (routePath === '/') return '/';
+  return `/${String(routePath).replace(/^\/+|\/+$/g, '')}/`;
+};
+
+const toCanonicalUrl = (routePath) => `${SITE_URL}${toCanonicalPath(routePath)}`;
+
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
   throw new Error(`Invalid PRERENDER_PORT: ${process.env.PRERENDER_PORT}`);
 }
@@ -121,7 +128,7 @@ function buildFallbackHtml(baseHtml, route) {
     '/services': 'Dubai Marketing Agency Services | Sham Marianas F.Z.C.',
     '/case-study': 'Sham Marianas F.Z.C Portfolio | Dubai Creative Projects',
     '/blog': 'Digital Marketing & IT Solutions Blog | Sham Marianas',
-    '/contact-us': 'Contact Sham Marianas F.Z.C | Dubai Agency',
+    '/contact-us': 'Contact Us | Your Marketing Partner in Dubai | Sham Marianas',
     '/templates': 'Templates | Sham Marianas F.Z.C Dubai Designs',
   };
   const categoryTitles = {
@@ -137,13 +144,15 @@ function buildFallbackHtml(baseHtml, route) {
     : isBlogCategory
       ? categoryTitles[blogCategory] || `${categoryLabel} Blog | Sham Marianas`
     : labels[route] || `${route.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || 'Sham Marianas'} | Sham Marianas F.Z.C.`;
-  const canonical = `${SITE_URL}${route === '/' ? '/' : route}`;
+  const canonical = toCanonicalUrl(route);
   const description = isBlogListing
     ? 'Explore the Sham Marianas blog for expert insights on digital marketing, IT solutions, branding, web design, and business growth strategies in Dubai.'
     : isBlogCategory
       ? `Explore ${categoryLabel} marketing, technology, branding, and business insights from Sham Marianas.`
     : isBlogDetail
       ? plainText(blog.excerpt || blog.content).slice(0, 160) || 'Read expert digital marketing and business growth insights from Sham Marianas.'
+      : route === '/contact-us'
+        ? 'Connect with Sham Marianas, your trusted digital marketing, IT solutions, and branding partner in Dubai. Our team is here to help bring your ideas to life.'
       : 'Sham Marianas F.Z.C. provides advertising, branding, digital marketing and creative services in Dubai, UAE.';
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
@@ -215,14 +224,14 @@ function buildFallbackHtml(baseHtml, route) {
     : isBlogListing
       ? [...publishedBlogs.values()]
       : [];
-  const schemaUrl = isBlogCategory ? `${SITE_URL}${route}` : `${SITE_URL}/blog`;
+  const schemaUrl = isBlogCategory ? toCanonicalUrl(route) : toCanonicalUrl('/blog');
   const schemaName = isBlogCategory
     ? `${categoryLabel} Blog | Sham Marianas`
     : 'Digital Marketing, SEO, AI & Branding Blog';
   const schemaArticleNodes = schemaPosts
     .filter((post) => post.slug || post.id)
     .map((post) => {
-      const articleUrl = `${SITE_URL}/blog/${encodeURIComponent(post.slug || post.id)}`;
+      const articleUrl = toCanonicalUrl(`/blog/${encodeURIComponent(post.slug || post.id)}`);
       return {
         "@type": "BlogPosting",
         "@id": `${articleUrl}#article`,

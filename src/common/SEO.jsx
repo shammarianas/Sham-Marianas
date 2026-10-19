@@ -19,14 +19,29 @@ const SEO = ({
   const location = useLocation(); // Get current URL path
   const siteUrl = "https://www.shammarianas.com";
 
+  const normalizeCanonicalUrl = (value) => {
+    try {
+      const url = new URL(value, siteUrl);
+      if (url.origin !== siteUrl) return value;
+      url.pathname = url.pathname === '/'
+        ? '/'
+        : `${url.pathname.replace(/\/+$/, '')}/`;
+      url.search = '';
+      url.hash = '';
+      return url.toString();
+    } catch (_error) {
+      return value;
+    }
+  };
+
   // ✅ DYNAMIC CANONICAL URL
   const getCanonicalUrl = () => {
     // If canonical prop provided from page, use it
-    if (canonical) return canonical;
+    if (canonical) return normalizeCanonicalUrl(canonical);
 
     // Otherwise, generate from current path
     const path = location.pathname;
-    return `${siteUrl}${path}`;
+    return normalizeCanonicalUrl(`${siteUrl}${path}`);
   };
 
 

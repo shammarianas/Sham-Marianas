@@ -4,7 +4,7 @@ export const SEO_CONFIG = {
   // =========================================================
   home: {
     title: "B2B Digital Marketing Agency in Dubai | 300+ UAE Happy Clients",
-    description: "Sham Marianas FZC is a Dubai marketing agency for digital marketing, branding, web development, social media, and creative production for UAE businesses.",
+    description: "Looking for reliable Digital Marketing Agency in UAE? Sham Marianas, founded in 2022, specializes in Digital Marketing, IT Solution & Branding from Dubai",
     keywords: " Digital marketing agency Dubai, marketing agency UAE, social media marketing Dubai, brand building UAE, ROI advertising Dubai",
   },
   about: {
@@ -454,8 +454,8 @@ export const SEO_CONFIG = {
 
 
   contact: {
-    title: "Contact Sham Marianas F.Z.C | Dubai Agency",
-    description: " Reach out to Sham Marianas F.Z.C for Dubai advertising and branding. Our team elevates UAE businesses—connect now!",
+    title: "Contact Us | Your Marketing Partner in Dubai | Sham Marianas",
+    description: "Connect with Sham Marianas, your trusted digital marketing, IT solutions, and branding partner in Dubai. Our team is here to help bring your ideas to life.",
     keywords: "contact Sham Marianas F.Z.C Dubai, marketing agency UAE, branding inquiry Dubai, AI services contact UAE",
   },
 

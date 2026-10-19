@@ -9,10 +9,18 @@
   RewriteRule ^ https://www.shammarianas.com%{REQUEST_URI} [R=301,L]
 
   # Retire only legacy URLs; public asset pages remain directly accessible.
-  RewriteRule ^services/demo/?$ /services [R=301,L,NC]
-  RewriteRule ^services/brandingpage/?$ /services/uiux-design [R=301,L,NC]
-  RewriteRule ^blogs/?$ /blog [R=301,L,NC]
-  RewriteRule ^blog-details/(.+)/?$ /blog/$1 [R=301,L,NE]
+  RewriteRule ^services/demo/?$ /services/ [R=301,L,NC]
+  RewriteRule ^services/brandingpage/?$ /services/uiux-design/ [R=301,L,NC]
+  RewriteRule ^blogs/?$ /blog/ [R=301,L,NC]
+  RewriteRule ^blog-details/(.+)/?$ /blog/$1/ [R=301,L,NE]
+
+  # The production build stores public routes as directories containing
+  # index.html. Redirect their slashless form once to the canonical URL.
+  # Keep this before the directory passthrough so Apache does not apply its
+  # own DirectorySlash redirect with a different rule.
+  RewriteCond %{REQUEST_URI} !/$
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^(.+)$ /$1/ [R=301,L,NE]
 
   # Allow existing files and directories to be served directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]

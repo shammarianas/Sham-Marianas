@@ -24,6 +24,13 @@ const db = getFirestore(app);
 const WEBSITE = 'https://www.shammarianas.com';
 const TODAY = new Date().toISOString().split('T')[0];
 
+// Public routes are deployed as folders containing index.html on cPanel.
+// Keep every non-root sitemap URL aligned with the server's final slash URL.
+const toCanonicalPath = (routePath) => {
+  if (routePath === '/') return '/';
+  return `/${String(routePath).replace(/^\/+|\/+$/g, '')}/`;
+};
+
 const escapeXml = (value) => String(value).replace(/[<>&'"]/g, (character) => ({
   '<': '&lt;',
   '>': '&gt;',
@@ -36,8 +43,8 @@ const escapeXml = (value) => String(value).replace(/[<>&'"]/g, (character) => ({
 const ROUTES_CONFIG = [
   // Primary Static Routes
   { path: '/', dynamic: false, priority: '1.0', freq: 'daily' },
-  { path: '/about/', dynamic: false, priority: '0.9', freq: 'weekly' },
-  { path: '/services/', dynamic: false, priority: '0.9', freq: 'weekly' },
+  { path: '/about', dynamic: false, priority: '0.9', freq: 'weekly' },
+  { path: '/services', dynamic: false, priority: '0.9', freq: 'weekly' },
   { path: '/case-study', dynamic: false, priority: '0.9', freq: 'weekly' },
   { path: '/blog', dynamic: false, priority: '0.9', freq: 'daily' },
   { path: '/contact-us', dynamic: false, priority: '0.8', freq: 'monthly' },
@@ -89,14 +96,14 @@ const generateUrlsFromRoutes = async () => {
   for (const route of ROUTES_CONFIG) {
     if (!route.dynamic) {
       urls.push({
-        url: route.path,
+        url: toCanonicalPath(route.path),
         priority: route.priority || '0.8',
         freq: route.freq || 'weekly'
       });
     } else if (route.samples) {
       route.samples.forEach(sample => {
         urls.push({
-          url: route.path.replace(/:(\w+)/, sample),
+          url: toCanonicalPath(route.path.replace(/:(\w+)/, sample)),
           priority: '0.7',
           freq: 'weekly'
         });
@@ -115,7 +122,7 @@ const generateUrlsFromRoutes = async () => {
         });
 
         items.forEach(item => {
-          const url = route.path.replace(/:(\w+)/, encodeURIComponent(item));
+          const url = toCanonicalPath(route.path.replace(/:(\w+)/, encodeURIComponent(item)));
           urls.push({
             url: url,
             priority: '0.75',

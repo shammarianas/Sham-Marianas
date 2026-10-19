@@ -32,6 +32,25 @@ const countryOptions = [
 const WEBHOOK_URL =
   "https://n8n.agentixsystem.com/webhook/Sham-Marianas-Inquires";
 
+const briefSelectStyle = {
+  width: "100%",
+  padding: "1rem 3.5rem 1rem 1rem",
+  border: "1px solid rgba(255, 255, 255, .1215686275)",
+  borderRadius: "8px",
+  backgroundColor: "#0f0f0f",
+  backgroundImage:
+    "linear-gradient(45deg, transparent 50%, rgba(245, 245, 245, 0.9) 50%), linear-gradient(135deg, rgba(245, 245, 245, 0.9) 50%, transparent 50%)",
+  backgroundPosition: "calc(100% - 1.35rem) 50%, calc(100% - 1rem) 50%",
+  backgroundSize: "0.4rem 0.4rem, 0.4rem 0.4rem",
+  backgroundRepeat: "no-repeat",
+  color: "rgb(245, 245, 245)",
+  fontSize: "14px",
+  opacity: 1,
+  appearance: "none",
+  WebkitAppearance: "none",
+  cursor: "pointer",
+};
+
 function FirstPage() {
   const [selectedCountryCode, setSelectedCountryCode] = useState("+971");
   useState("");
@@ -294,16 +313,7 @@ function FirstPage() {
                       value={service}
                       onChange={(e) => setService(e.target.value)}
                       disabled={isSubmitting}
-                      style={{
-                        width: "100%",
-                        padding: "1rem",
-                        border: "1px solid rgba(255, 255, 255, .1215686275)",
-                        borderRadius: "8px",
-                        backgroundColor: "#0f0f0f",
-                        color: "rgb(245, 245, 245)",
-                        fontSize: "14px",
-                        opacity: 1,
-                      }}
+                      style={briefSelectStyle}
                     >
                       <option value="" disabled>
                         Please choose an option
@@ -333,16 +343,7 @@ function FirstPage() {
                       value={budget}
                       onChange={(e) => setBudget(e.target.value)}
                       disabled={isSubmitting}
-                      style={{
-                        width: "100%",
-                        padding: "1rem",
-                        border: "1px solid rgba(255, 255, 255, .1215686275)",
-                        borderRadius: "8px",
-                        backgroundColor: "#0f0f0f",
-                        color: "rgb(245, 245, 245)",
-                        fontSize: "14px",
-                        opacity: 1,
-                      }}
+                      style={briefSelectStyle}
                     >
                       <option value="" disabled>
                         Please choose an option

@@ -261,7 +261,7 @@ function Blogs() {
             <div className="row">
               <div className="col-12">
                 <div className="text-center">
-                  <h5 className="text-u ls1">
+                  <h5 className="text-u ls1 fz-80">
                     Blog <span className="fw-200"></span>
                   </h5>
                   <p className="blog-hero-description fz-24 mx-auto mt-20">
@@ -470,7 +470,7 @@ function Blogs() {
 
               {/* Sidebar */}
               <div className="col-lg-4">
-                <div className="sidebar-bl blog-sidebar-outdise" style={{ width: "100%" }}>
+                <div className="sidebar-bl blog-sidebar-outdise" style={{ width: "100%", height: "auto" }}>
                   <div className="widget">
                     <h6 className="title-widget">Search Here</h6>
                     <form className="search-box" role="search" onSubmit={handleSearchSubmit}>

@@ -67,22 +67,22 @@
   "redirects": [
     {
       "source": "/services/demo",
-      "destination": "/services",
+        "destination": "/services/",
       "permanent": true
     },
     {
       "source": "/services/brandingpage",
-      "destination": "/services/uiux-design",
+        "destination": "/services/uiux-design/",
       "permanent": true
     },
     {
       "source": "/blogs",
-      "destination": "/blog",
+        "destination": "/blog/",
       "permanent": true
     },
     {
       "source": "/blog-details/:id",
-      "destination": "/blog/:id",
+        "destination": "/blog/:id/",
       "permanent": true
     },
     {

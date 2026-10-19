@@ -149,7 +149,16 @@ function Contact() {
                   <a href="tel:+971528036012" aria-label="Call us in Dubai">+971 52 803 6012</a>
                 </div>
                 <div className="morinfo mt-5 pb-30 bord-thin-bottom">
-                  <p>Dubai, United Arab Emirates</p>
+                  <p>
+                    <a
+                      href="https://maps.app.goo.gl/thRj1sBv5sg2mHwLA"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Open Sham Marianas Dubai location in Google Maps"
+                    >
+                      Dubai, United Arab Emirates
+                    </a>
+                  </p>
                 </div>
                 <div className="phone fz-22 mt-6 fw-600 main-color">
                   <a href="tel:+923116788423" aria-label="Call us in Pakistan">+92 311 678 8423</a>
@@ -378,8 +387,8 @@ function Contact() {
       <div className="google-map">
         <iframe
           id="gmap_canvas"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d462560.682833583!2d54.89781208970431!3d25.076280444810326!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43496ad9c645%3A0xbde66e5084295162!2sDubai%20-%20United%20Arab%20Emirates!5e0!3m2!1sen!2s!4v1768805337767!5m2!1sen!2s"
-          title="Multan Location"
+          src="https://www.google.com/maps?q=Sham+Marianas+-+Best+Advertising+Agency+in+Dubai&z=17&output=embed"
+          title="Dubai Location"
           loading="lazy"
         ></iframe>
       </div>
