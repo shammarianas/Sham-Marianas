@@ -10,6 +10,18 @@ const CategoryTemplate = () => {
   const location = useLocation();
   const pathname = location.pathname;
 
+  // The legacy Hot category page has been removed.
+  if (pathname === "/category/hot" || pathname === "/category/hot/") {
+    return (
+      <div className="page_content">
+        <div className="container text-center py-5">
+          <h1>Category Not Found</h1>
+          <p>Please check the URL or go back to homepage.</p>
+        </div>
+      </div>
+    );
+  }
+
   // Define your category mapping with custom labels
   const categoryMapping = {
     "/category/videos": "Videos",
@@ -25,14 +37,13 @@ const CategoryTemplate = () => {
     "/category/scripts": "Scripts",
     "/category/hdris": "HDRIs",
     "/category/prompts": "Prompts",
-    "/category/hot": "Hot",
     "/templates/prompts": "Prompts",
     "/templates/videos": "Videos",
     "/templates/video-templates": "Video Templates",
     "/templates/images": "Images",
     "/templates/graphics": "Graphic Templates",
     "/templates/mockups": "Mockups",
-    "/templates/models": "3D Models",
+    "/templates/3dmodels": "3D Models",
     "/templates/fonts": "Fonts",
     "/templates/icons": "Icons"
   };
@@ -88,11 +99,7 @@ const CategoryTemplate = () => {
         <PageTitle title={categoryTitle} />
         <div className="listing_section">
           <ListingSidebar />
-          {category === "hot" ? (
-            <ItemsListing />
-          ) : (
-            <ItemsListing category={category.toLowerCase()} />
-          )}
+          <ItemsListing category={category.toLowerCase()} />
         </div>
       </div>
     </>

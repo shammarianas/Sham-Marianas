@@ -20,6 +20,7 @@
     }
   ],
   "hosting": {
+    "site": "sham-marianas",
     "public": "dist",
     "ignore": [
       "firebase.json",

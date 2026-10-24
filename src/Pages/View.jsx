@@ -69,6 +69,17 @@ const normalizeAsset = (data, id) => {
       ? data.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
       : [];
 
+  const legacyModelUrl = [
+    data.downloadUrl,
+    data.downloadURL,
+    data.fileUrl,
+    data.fileURL,
+    data.url,
+    data.file,
+  ]
+    .map(getAssetString)
+    .find(Boolean) || "";
+
   return {
     ...data,
     id,
@@ -81,7 +92,10 @@ const normalizeAsset = (data, id) => {
     tags,
     thumbnail: getAssetString(data.thumbnail),
     thumbnailModel: getAssetString(data.thumbnailModel),
-    model: getAssetString(data.model),
+    // Older uploads may have saved the main file as downloadUrl instead of
+    // the model field. Keep both formats readable for existing assets.
+    model: getAssetString(data.model) || legacyModelUrl,
+    downloadUrl: getAssetString(data.downloadUrl) || legacyModelUrl,
     video: getAssetString(data.video),
     videoTemplateFile: getAssetString(data.videoTemplateFile),
     images: getAssetStringArray(data.images),
@@ -351,6 +365,7 @@ const View = () => {
                       <ModelViewer
                         thumbnailModel={item.thumbnailModel}
                         model={item.model}
+                        downloadUrl={item.downloadUrl}
                         type={item.type}
                         alt={item.title}
                         ar={item.vrArLowPoly}

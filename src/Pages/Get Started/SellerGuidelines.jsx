@@ -61,7 +61,7 @@ const SellerGuideline = () => {
                     <h5 className="fz-20 fw-400 mb-2">A. Technical Specifications:</h5>
                     <ul className="fotter-police-p p-color mb-4 list-disc p-0 ">
                         <li className="mb-2">Thumbnail size: 705x472px, 300 DPI, RGB color mode</li>
-                        <li className="mb-2">Upload file: file size maximum 10 mb</li>
+                        <li className="mb-2">Video upload: maximum 200 MB; other upload files: maximum 10 MB</li>
                     </ul>
 
                     <h5 className="fz-20 fw-400 mb-2">B. Content Quality Requirements:</h5>

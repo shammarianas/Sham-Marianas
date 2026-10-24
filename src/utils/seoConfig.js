@@ -54,6 +54,12 @@ export const SEO_CONFIG = {
     description: "Professional video production in Dubai. Corporate videos, promos & event coverage for impactful UAE brand storytelling!",
     keywords: "photography Dubai, video production UAE, product shoots Dubai,corporate video UAE,promotional video services Dubai, event videography agency ",
   },
+  videoProduction: {
+    title: "Video Production Services Dubai | Sham Marianas F.Z.C.",
+    description: "Professional video production in Dubai. Corporate videos, promos & event coverage for impactful UAE brand storytelling!",
+    keywords: "video production Dubai, corporate video UAE, promotional video services Dubai, event videography Dubai, product video production UAE",
+    canonical: "https://www.shammarianas.com/services/video-production/",
+  },
   printMediaSolutions: {
     title: "Print Media Solutions Dubai | Sham Marianas F.Z.C.",
     description: "Sham Marianas F.Z.C. Premium print solutions in Dubai. Business cards, posters, brochures & more for powerful UAE brand impact!",
@@ -310,6 +316,12 @@ export const SEO_CONFIG = {
         ogImage: "/assets/imgs/arrow-image.png"
       },
       "models": {
+        title: "3D Models | Shammarianas - 3D Assets & CGI Models",
+        description: "High-quality 3D models for animation, gaming, and design. Ready-to-use assets for Blender, Maya, 3ds Max.",
+        keywords: "3D Models, 3D Assets, CGI Models, Animation Models, Game Assets, Blender Models",
+        ogImage: "/assets/imgs/arrow-image.png"
+      },
+      "3dmodels": {
         title: "3D Models | Shammarianas - 3D Assets & CGI Models",
         description: "High-quality 3D models for animation, gaming, and design. Ready-to-use assets for Blender, Maya, 3ds Max.",
         keywords: "3D Models, 3D Assets, CGI Models, Animation Models, Game Assets, Blender Models",

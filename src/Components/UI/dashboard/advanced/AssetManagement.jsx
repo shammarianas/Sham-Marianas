@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { FiBox, FiTrendingUp, FiDownload, FiUsers, FiDollarSign, FiSearch, FiFilter, FiEye, FiEdit, FiUpload, FiTrash2, FiPlus, FiStar, FiTag, FiUser, FiImage, FiX, FiRefreshCw } from "react-icons/fi";
-import { collection, query, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
-import { db } from "../../../../../firebase";
+import { collection, query, getDocs, doc, updateDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { db, functions } from "../../../../../firebase";
+import { httpsCallable } from "firebase/functions";
 import Upload from "../../../../Pages/Upload";
 import { useUser } from "../../../../Context/UserProvider";
 import SimpleModelViewer from "../../../UI/SimpleModelViewer"; // Adjust path as needed
@@ -32,6 +33,8 @@ const AssetManagement = () => {
     "Scripts",
     "Mockups",
     "Audio",
+    "Prompts",
+    "Video Templates",
     "Templates",
   ];
 
@@ -273,13 +276,14 @@ const AssetManagement = () => {
   };
 
   const handleDeleteAsset = async (assetId) => {
-    if (window.confirm("Are you sure you want to delete this asset?")) {
+    if (window.confirm("Are you sure you want to delete this asset and all linked files?")) {
       try {
-        await deleteDoc(doc(db, "Assets", assetId));
-        console.log("✅ Asset deleted");
+        const deleteAssetWithFiles = httpsCallable(functions, "deleteAssetWithFiles");
+        const result = await deleteAssetWithFiles({ assetId });
+        console.log("✅ Asset and linked storage files deleted", result.data);
         setShowAssetDialog(false);
       } catch (error) {
-        console.error("❌ Failed to delete asset:", error);
+        console.error("❌ Failed to delete asset and linked files:", error);
         setError(`Failed to delete asset: ${error.message}`);
       }
     }
@@ -299,11 +303,32 @@ const AssetManagement = () => {
       (asset.description || "")
         .toLowerCase()
         .includes(assetSearchTerm.toLowerCase());
+    // The dropdown contains asset types (Images, Videos, 3D Models, etc.),
+    // while `category` is the content subject (People, Business & Office,
+    // ...). Checking category first caused every image with a subject to be
+    // excluded from the Images view.
+    const typeAliases = {
+      "3d models": "models",
+      textures: "textures",
+      hdris: "hdris",
+      videos: "videos",
+      images: "images",
+      graphics: "graphics",
+      icons: "icons",
+      fonts: "fonts",
+      scripts: "scripts",
+      mockups: "mockups",
+      audio: "audio",
+      prompts: "prompts",
+      "video templates": "video-templates",
+      templates: "templates",
+    };
+    const selectedType = typeAliases[String(selectedCategory).trim().toLowerCase()];
+    const assetType = String(asset.type || "").trim().toLowerCase();
     const matchesCategory =
       selectedCategory === "all" || !selectedCategory
         ? true
-        : (asset.category || asset.type || "").toLowerCase() ===
-          selectedCategory.toLowerCase();
+        : assetType === selectedType;
 
     return matchesText && matchesCategory;
   });
@@ -560,7 +585,7 @@ const AssetManagement = () => {
                               style={{
                                 width: "100%",
                                 height: "100%",
-                                objectFit: "cover",
+                                objectFit: "contain",
                               }}
                             />
                           </div>

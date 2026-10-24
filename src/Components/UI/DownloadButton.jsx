@@ -23,7 +23,6 @@ const DownloadButton = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [isContributor, setIsContributor] = useState(false);
-
   useEffect(() => {
     const checkContributorStatus = async () => {
       if (!userProfile?.uid) {
@@ -469,7 +468,7 @@ const DownloadButton = ({
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (selectedUrl = null) => {
     console.log("🚀 Starting download process...");
 
     // Every download requires an authenticated account, including free assets.
@@ -501,7 +500,7 @@ const DownloadButton = ({
     // ✅ FIXED: Check if item is free or paid
     if (isFree()) {
       console.log("🆓 Free asset - downloading immediately");
-      const urls = getAssetUrls();
+      const urls = selectedUrl ? [selectedUrl] : getAssetUrls();
 
       if (urls.length === 0) {
         console.error("❌ No downloadable files found for this asset");

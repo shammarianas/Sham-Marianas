@@ -16,7 +16,7 @@ const ItemsListing = (props) => {
   const [loading, setLoading] = useState(true);
   const { searchTerm } = useSearchStore(); // Get the search term from Zustand store
 
-  let asset_type = props.category ? props.category : "models";
+  let asset_type = props.category === "3dmodels" ? "models" : (props.category || "models");
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -66,16 +66,65 @@ const ItemsListing = (props) => {
     const discount = Number(item.discount ?? 0) || 0;
     const afterDiscountPrice = Math.max(0, price - (price * discount) / 100);
 
-    // Apply category filter
-    let categoryFilterPassed = true;
-    if (filters && filters.categories && filters.categories.length !== 0) {
-      categoryFilterPassed = filters.categories.includes(item.category);
-    }
+    const valueMatches = (itemValue, selectedValues) => {
+      if (!selectedValues?.length) return true;
+      const values = Array.isArray(itemValue) ? itemValue : [itemValue];
+      return selectedValues.some((selectedValue) =>
+        values.some(
+          (value) =>
+            String(value ?? "").trim().toLowerCase() ===
+            String(selectedValue).trim().toLowerCase()
+        )
+      );
+    };
 
-    let interestsFilterPassed = true;
-    if (filters && filters.interests && filters.interests.length !== 0) {
-      interestsFilterPassed = filters.interests.includes(item.interest);
-    }
+    // Apply every filter field exposed by the sidebar. Previously only
+    // categories/interests were checked, so image filters such as orientation,
+    // AI-generated and license type had no effect.
+    const fieldFilters = [
+      ["categories", "category"],
+      ["interests", "interest"],
+      ["orientation", "orientation"],
+      ["licenseType", "licenseType"],
+      ["resolution", "resolution"],
+      ["frameRate", "frameRate"],
+      ["properties", "properties"],
+      ["applicationsSupported", "applicationsSupported"],
+      ["surfaceMaterial", "surfaceMaterial"],
+      ["style", "style"],
+      ["environmentType", "environmentType"],
+      ["lightingCondition", "lightingCondition"],
+      ["scriptType", "scriptType"],
+      ["programmingLanguage", "programmingLanguage"],
+      ["framework", "framework"],
+      ["integrationReady", "integrationReady"],
+      ["colorSpace", "colorSpace"],
+      ["objectType", "objectType"],
+      ["fileFormat", "fileFormat"],
+    ];
+
+    const standardFiltersPassed = fieldFilters.every(([filterKey, itemKey]) =>
+      valueMatches(item[itemKey], filters?.[filterKey])
+    );
+
+    const aiFilters = filters?.aiGenerated || [];
+    const isAiGenerated = [item.aiGenerated, item.isAiGenerated].some((value) => {
+      if (typeof value === "boolean") return value;
+      const normalized = String(value ?? "").trim().toLowerCase();
+      return [
+        "true",
+        "yes",
+        "1",
+        "ai",
+        "ai-generated",
+        "only ai-generated",
+      ].includes(normalized);
+    });
+    const aiFilterPassed =
+      !aiFilters.length ||
+      aiFilters.every((filter) =>
+        filter === "Only AI-Generated" ? isAiGenerated : !isAiGenerated
+      );
 
     // Apply price filter
     let priceFilterPassed = true;
@@ -89,12 +138,7 @@ const ItemsListing = (props) => {
       discountFilterPassed = item.discount >= filters.discounts[0];
     }
 
-    return (
-      categoryFilterPassed &&
-      interestsFilterPassed &&
-      priceFilterPassed &&
-      discountFilterPassed
-    );
+    return standardFiltersPassed && aiFilterPassed && priceFilterPassed && discountFilterPassed;
   });
   const searchFilteredItems = searchTerm
     ? rankAssetsByRelevance(filteredItems, searchTerm)

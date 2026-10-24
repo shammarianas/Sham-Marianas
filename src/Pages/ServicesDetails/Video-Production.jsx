@@ -49,8 +49,8 @@ const VideoProductionPage = () => {
 
   return (
     <>
-      <SchemaMarkup type="service" data={SEO_CONFIG.photography} />
-      <SEO {...SEO_CONFIG.photography} />
+      <SchemaMarkup type="service" data={SEO_CONFIG.videoProduction} />
+      <SEO {...SEO_CONFIG.videoProduction} />
       <HeaderSection
         title="Photography & Video Production"
         backgroundImage="/assets/imgs/background/bg.jpg"

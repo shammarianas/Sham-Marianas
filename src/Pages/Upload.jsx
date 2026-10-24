@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { db, storage } from "../../firebase";
+import { db, functions, storage } from "../../firebase";
 import {
   collection,
   addDoc,
@@ -8,12 +8,22 @@ import {
   doc,
   serverTimestamp,
   getDoc,
+  deleteField,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { httpsCallable } from "firebase/functions";
 import { useUser } from "../Context/UserProvider";
 import { Helmet } from "react-helmet-async";
 import { FiUpload, FiX, FiImage, FiVideo, FiFile, FiCode, FiBox, FiChevronDown, FiPlay, FiPause, FiFileText } from "react-icons/fi";
 import useImageSizeConverter from "../hooks/ImageSizeConverter";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 
 const filterData = {
   Videos: {
@@ -45,6 +55,7 @@ const filterData = {
         "Technology",
         "Time Lapse",
         "Vehicles",
+        "VFX",
         "Weather",
       ],
     },
@@ -533,6 +544,25 @@ const filterData = {
   },
 };
 
+const getStoredFileUrl = (value) => {
+  if (typeof value === "string") return value;
+  return value?.url || value?.downloadUrl || value?.path || "";
+};
+
+const getStoredFileName = (value, fallback = "Current file") => {
+  const fileUrl = getStoredFileUrl(value);
+  if (!fileUrl) return fallback;
+
+  try {
+    const pathname = new URL(fileUrl).pathname;
+    const encodedName = pathname.split("/").filter(Boolean).pop();
+    return encodedName ? decodeURIComponent(encodedName) : fallback;
+  } catch {
+    const encodedName = fileUrl.split("?")[0].split("/").filter(Boolean).pop();
+    return encodedName ? decodeURIComponent(encodedName) : fallback;
+  }
+};
+
 const assetTypeToFilterData = {
   videos: "Videos",
   "video-templates": "VideoTemplates",
@@ -578,6 +608,10 @@ const Upload = ({
 
   // State definitions
   const [userRole, setUserRole] = useState("contributor");
+  const [deletedStoredFiles, setDeletedStoredFiles] = useState({
+    preview: false,
+    model: false,
+  });
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -603,6 +637,7 @@ const Upload = ({
     script: null,
     promptFile: null,
     previewUrl: "",
+    previewModel: null,
     hdri: null,
     graphicsTemplate: null,
     mockupFile: null,
@@ -798,6 +833,7 @@ const Upload = ({
   // Initialize form data with existing asset data when in edit mode
   useEffect(() => {
     if (editMode && assetToEdit) {
+      setDeletedStoredFiles({ preview: false, model: false });
       setFormData((prev) => ({
         ...prev,
         title: assetToEdit.title || "",
@@ -807,6 +843,7 @@ const Upload = ({
         category: assetToEdit.category || "",
         interest: assetToEdit.interest || "",
         type: String(assetToEdit.type || "").toLowerCase(),
+        previewModel: null,
         previewUrl: assetToEdit.previewUrl || "",
         is3d: assetToEdit.is3d || false,
         aiGenerated: assetToEdit.aiGenerated || "",
@@ -825,7 +862,7 @@ const Upload = ({
         framework: assetToEdit.framework || "",
         integrationReady: assetToEdit.integrationReady || [],
         colorSpace: assetToEdit.colorSpace || "",
-        objectType: assetToEdit.objectType || "",
+        objectType: assetToEdit.objectType || assetToEdit.category || "",
         fileFormat: assetToEdit.fileFormat || "",
       }));
 
@@ -911,6 +948,14 @@ const Upload = ({
     const file = event.target.files[0];
 
     if (file) {
+      // 3D Model thumbnails are image previews only. The actual model file
+      // is uploaded through the dedicated model field below.
+      if (formData.type === "models" && !file.type.startsWith("image/")) {
+        alert("3D Model thumbnail must be a JPG, PNG, or WebP image.");
+        event.target.value = "";
+        return;
+      }
+
       // Check if it's a 3D model file
       const is3DFile = file.name
         .toLowerCase()
@@ -969,14 +1014,38 @@ const Upload = ({
     setFormData((prev) => ({ ...prev, tags: value }));
   };
 
+  const addTagsFromText = (text) => {
+    const incomingTags = String(text || "")
+      .split(/[,;\n]+/)
+      .map((tag) => tag.trim().replace(/^#+/, ""))
+      .filter(Boolean);
+
+    if (!incomingTags.length) return;
+
+    setTags((currentTags) => {
+      const mergedTags = [...currentTags];
+      incomingTags.forEach((tag) => {
+        if (mergedTags.length < 10 && !mergedTags.includes(tag)) {
+          mergedTags.push(tag);
+        }
+      });
+      return mergedTags;
+    });
+    setFormData((prev) => ({ ...prev, tags: "" }));
+  };
+
+  const handleTagPaste = (e) => {
+    const pastedText = e.clipboardData?.getData("text") || "";
+    if (pastedText.includes(",") || pastedText.includes(";") || pastedText.includes("\n")) {
+      e.preventDefault();
+      addTagsFromText(pastedText);
+    }
+  };
+
   const handleTagKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const value = e.target.value.trim();
-      if (value && !tags.includes(value) && tags.length < 10) {
-        setTags([...tags, value]);
-        setFormData((prev) => ({ ...prev, tags: "" }));
-      }
+      addTagsFromText(e.target.value);
     } else if (
       e.key === "Backspace" &&
       formData.tags === "" &&
@@ -990,6 +1059,218 @@ const Upload = ({
     setTags(tags.filter((t) => t !== tag));
   };
 
+  const handleDeleteStoredFile = async (fileKind) => {
+    if (!editMode || !assetToEdit?.id) return;
+
+    const isPreview = fileKind === "preview";
+    const storedValue = isPreview
+      ? assetToEdit.thumbnailModel
+      : assetToEdit.model || assetToEdit.downloadUrl;
+    const storedPath = getStoredFileUrl(storedValue);
+    if (!storedPath) return;
+
+    const label = isPreview ? "3D preview file" : "3D model download file";
+    if (!window.confirm(`Delete this ${label} permanently from Firebase?`)) {
+      return;
+    }
+
+    try {
+      setLoadingState(`Deleting ${label}...`);
+      try {
+        await deleteObject(ref(storage, storedPath));
+      } catch (storageError) {
+        // If the object is already missing, still remove its stale database reference.
+        if (storageError?.code !== "storage/object-not-found") throw storageError;
+      }
+
+      const fieldsToRemove = isPreview
+        ? { thumbnailModel: deleteField(), updatedAt: serverTimestamp() }
+        : {
+            model: deleteField(),
+            downloadUrl: deleteField(),
+            fileName: deleteField(),
+            updatedAt: serverTimestamp(),
+          };
+      await updateDoc(doc(db, "Assets", assetToEdit.id), fieldsToRemove);
+      setDeletedStoredFiles((current) => ({ ...current, [fileKind]: true }));
+      setLoadingState(false);
+      alert(`${label} deleted successfully.`);
+    } catch (error) {
+      console.error(`Failed to delete ${label}:`, error);
+      setLoadingState(false);
+      alert(`Failed to delete ${label}: ${error.message || "Unknown error"}`);
+    }
+  };
+
+  const PREVIEW_MODEL_MAX_BYTES = 100 * 1024 * 1024;
+
+  // Preview models are re-exported as a smaller self-contained GLB before upload.
+  // The original model file remains untouched and is still used for downloads.
+  const optimizePreviewGlb = async (file) => {
+    if (file.size <= PREVIEW_MODEL_MAX_BYTES) return file;
+
+    setLoadingState("Optimizing 3D preview... 0%");
+    let bestOptimizedSize = file.size;
+    const formatMegabytes = (bytes) => `${(bytes / (1024 * 1024)).toFixed(2)}MB`;
+
+    const sourceBuffer = await file.arrayBuffer();
+    const loader = new GLTFLoader();
+    const gltf = await new Promise((resolve, reject) => {
+      loader.parse(sourceBuffer, "", resolve, reject);
+    });
+
+    const textures = new Set();
+    gltf.scene.traverse((node) => {
+      const materials = Array.isArray(node.material)
+        ? node.material
+        : node.material
+          ? [node.material]
+          : [];
+
+      materials.forEach((material) => {
+        Object.values(material).forEach((value) => {
+          if (value?.isTexture && value.image) textures.add(value);
+        });
+      });
+    });
+
+    const resizeTextures = async (maxTextureSize) => {
+      await Promise.all(
+        Array.from(textures).map(async (texture) => {
+          const image = texture.image;
+          const width = image.width || image.videoWidth;
+          const height = image.height || image.videoHeight;
+          if (!width || !height) return;
+
+          const scale = Math.min(1, maxTextureSize / Math.max(width, height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(width * scale));
+          canvas.height = Math.max(1, Math.round(height * scale));
+          const context = canvas.getContext("2d");
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          texture.image = canvas;
+          texture.needsUpdate = true;
+        })
+      );
+    };
+
+    const reducePreviewMaterials = (scene, keepBaseColor) => {
+      const secondaryTextureProperties = [
+        "roughnessMap",
+        "metalnessMap",
+        "aoMap",
+        "emissiveMap",
+        "alphaMap",
+        "lightMap",
+        "bumpMap",
+        "displacementMap",
+        "clearcoatMap",
+        "clearcoatNormalMap",
+        "clearcoatRoughnessMap",
+        "sheenColorMap",
+        "sheenRoughnessMap",
+        "specularColorMap",
+        "specularIntensityMap",
+        "iridescenceMap",
+        "iridescenceThicknessMap",
+        "transmissionMap",
+        "thicknessMap",
+      ];
+
+      scene.traverse((node) => {
+        if (!node.isMesh) return;
+
+        const materials = Array.isArray(node.material)
+          ? node.material
+          : node.material
+            ? [node.material]
+            : [];
+        const lightweightMaterials = materials.map((material) => {
+          const clone = material.clone();
+          secondaryTextureProperties.forEach((property) => {
+            if (property in clone) clone[property] = null;
+          });
+          if (!keepBaseColor && "map" in clone) clone.map = null;
+          clone.needsUpdate = true;
+          return clone;
+        });
+        node.material = Array.isArray(node.material)
+          ? lightweightMaterials
+          : lightweightMaterials[0];
+      });
+    };
+
+    const exportGlb = (scene, animations) =>
+      new Promise((resolve, reject) => {
+        const exporter = new GLTFExporter();
+        exporter.parse(
+          scene,
+          (result) => resolve(result),
+          reject,
+          {
+            binary: true,
+            onlyVisible: true,
+            maxTextureSize: 72,
+            animations,
+          }
+        );
+      });
+
+    // Keep geometry exactly as uploaded. Only resize textures and remove
+    // secondary material maps; the original downloadable model is untouched.
+    for (const textureSize of [72]) {
+      await resizeTextures(textureSize);
+      const previewScene = gltf.scene.clone(true);
+      reducePreviewMaterials(previewScene, true);
+      const exported = await exportGlb(previewScene, gltf.animations || []);
+      const optimizedBlob = new Blob([exported], { type: "model/gltf-binary" });
+      bestOptimizedSize = Math.min(bestOptimizedSize, optimizedBlob.size);
+
+      if (optimizedBlob.size <= PREVIEW_MODEL_MAX_BYTES) {
+        const optimizedName = file.name.replace(/\.glb$/i, "-preview.glb");
+        const reduction = Math.round((1 - optimizedBlob.size / file.size) * 100);
+        setLoadingState(`3D preview optimized: ${reduction}% smaller`);
+        return new File([optimizedBlob], optimizedName, {
+          type: "model/gltf-binary",
+          lastModified: Date.now(),
+        });
+      }
+
+      setLoadingState(
+        `Optimizing 3D preview... ${textureSize}px textures, mesh unchanged`
+      );
+    }
+
+    // Last-resort preview: preserve the complete mesh and remove all material
+    // texture payloads. The model shape and geometry remain unchanged.
+    const lightweightScene = gltf.scene.clone(true);
+    reducePreviewMaterials(lightweightScene, false);
+    const lightweightExport = await exportGlb(lightweightScene, []);
+    const lightweightBlob = new Blob([lightweightExport], {
+      type: "model/gltf-binary",
+    });
+    bestOptimizedSize = Math.min(bestOptimizedSize, lightweightBlob.size);
+    if (lightweightBlob.size <= PREVIEW_MODEL_MAX_BYTES) {
+      const optimizedName = file.name.replace(/\.glb$/i, "-preview.glb");
+      const reduction = Math.round(
+        (1 - lightweightBlob.size / file.size) * 100
+      );
+      setLoadingState(`3D preview optimized: ${reduction}% smaller`);
+      return new File([lightweightBlob], optimizedName, {
+        type: "model/gltf-binary",
+        lastModified: Date.now(),
+      });
+    }
+
+    throw new Error(
+      `3D preview could not be reduced below 100MB. Original: ${formatMegabytes(
+        file.size
+      )}; best result: ${formatMegabytes(
+        bestOptimizedSize
+      )}. Please upload a lighter GLB file.`
+    );
+  };
+
   // File upload functions
   const uploadFile = async (file, fileType, userId) => {
     try {
@@ -999,6 +1280,10 @@ const Upload = ({
       if (file.type.startsWith("image/") && fileType !== "thumbnails") {
         // WebP conversion for images
         optimizedFile = await convertImageToWebP(file);
+      }
+
+      if (fileType === "model-previews") {
+        optimizedFile = await optimizePreviewGlb(file);
       }
 
       // ✅ STEP 2: Create unique filename with timestamp
@@ -1037,11 +1322,25 @@ const Upload = ({
         storage,
         `assets/${fileType}/${userId}/${fileName}`
       );
-      const uploadSnapshot = await uploadBytes(
-        storageRef,
-        optimizedFile,
-        metadata
-      );
+      const uploadSnapshot = await new Promise((resolve, reject) => {
+        const uploadTask = uploadBytesResumable(
+          storageRef,
+          optimizedFile,
+          metadata
+        );
+
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = Math.round(
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            );
+            setLoadingState(`Uploading ${fileType}... ${progress}%`);
+          },
+          reject,
+          () => resolve(uploadTask.snapshot)
+        );
+      });
       const downloadURL = await getDownloadURL(uploadSnapshot.ref);
 
       console.log(`✅ Uploaded ${fileType}: ${downloadURL}`);
@@ -1133,17 +1432,7 @@ const Upload = ({
 
       setLoadingState(`Uploading thumbnail...`);
 
-      // ✅ STEP 1: File validation
-      const MAX_SIZE = 5 * 1024 * 1024; // 5MB limit
-      if (file.size > MAX_SIZE) {
-        throw new Error(
-          `Thumbnail size ${(file.size / 1024 / 1024).toFixed(
-            2
-          )}MB exceeds 5MB limit. Please compress the image.`
-        );
-      }
-
-      // ✅ STEP 2: File type validation
+      // ✅ STEP 1: File type validation
       const allowedTypes = [
         "image/jpeg",
         "image/png",
@@ -1159,14 +1448,32 @@ const Upload = ({
         );
       }
 
-      // ✅ STEP 3: Create optimized filename
+      // ✅ STEP 2: Create optimized filename
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(2, 8);
       let fileExtension = "";
       let optimizedFile = file;
 
-      // Auto-convert images to WebP for better compression
-      if (file.type.startsWith("image/")) {
+      // Auto-convert images to WebP for better compression.
+      // Video thumbnails are re-encoded by the server-side FFmpeg function.
+      if (file.type.startsWith("video/")) {
+        setLoadingState("Converting video thumbnail on the server...");
+        const safeName = file.name.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80);
+        const storagePath = `thumbnail-temp/${currentUser.uid}/${Date.now()}_${safeName}`;
+        await uploadBytes(ref(storage, storagePath), file, {
+          contentType: file.type || "video/quicktime",
+        });
+
+        const convertVideoThumbnail = httpsCallable(
+          functions,
+          "convertVideoThumbnail"
+        );
+        const result = await convertVideoThumbnail({
+          storagePath,
+          fileName: file.name,
+        });
+        return result.data.downloadURL;
+      } else if (file.type.startsWith("image/")) {
         try {
           // Convert to WebP with 80% quality
           optimizedFile = await convertToWebP(file);
@@ -1187,7 +1494,7 @@ const Upload = ({
 
       const fileName = `thumb_${safeFileName}_${timestamp}_${randomId}${fileExtension}`;
 
-      // ✅ STEP 4: Determine storage path based on user role
+      // ✅ STEP 3: Determine storage path based on user role
       let storagePath = "";
 
       if (userRole === "admin") {
@@ -1503,8 +1810,17 @@ const Upload = ({
         return;
       }
 
-      // 10MB limit for all main files
+      // Videos and 3D models allow up to 200MB source files; preview GLBs are
+      // automatically optimized to a maximum of 100MB before upload.
       const file = files[0];
+      const largeAsset = name === "video" || name === "model" || name === "previewModel";
+      const maxSize = largeAsset ? 200 * 1024 * 1024 : 10 * 1024 * 1024;
+      const maxSizeLabel = largeAsset ? "200MB" : "10MB";
+      if (name === "previewModel" && !/\.glb$/i.test(file.name)) {
+        alert("3D Preview File must be a .glb file.");
+        e.target.value = "";
+        return;
+      }
       if (
         name === "promptFile" &&
         !/\.(pdf|docx|txt)$/i.test(file.name)
@@ -1513,8 +1829,8 @@ const Upload = ({
         e.target.value = "";
         return;
       }
-      if (file && file.size > 10 * 1024 * 1024) {
-        alert(`${name} file size must be under 10MB!`);
+      if (file && file.size > maxSize) {
+        alert(`${name} file size must be under ${maxSizeLabel}!`);
         e.target.value = "";
         return;
       }
@@ -1734,9 +2050,31 @@ const Upload = ({
         type: formData.type,
         price: formData.price,
         tags,
-        category: formData.category || "",
+        category:
+          formData.type === "models"
+            ? formData.objectType || ""
+            : formData.category || "",
         interest: formData.interest || "",
+        // Keep filter metadata on the asset so public listing filters can
+        // match the values selected during upload.
+        aiGenerated: formData.aiGenerated || "",
+        resolution: formData.resolution || "",
+        frameRate: formData.frameRate || "",
+        properties: formData.properties || [],
+        applicationsSupported: formData.applicationsSupported || [],
+        orientation: formData.orientation || "",
         licenseType: formData.licenseType || "",
+        surfaceMaterial: formData.surfaceMaterial || "",
+        style: formData.style || "",
+        environmentType: formData.environmentType || "",
+        lightingCondition: formData.lightingCondition || "",
+        scriptType: formData.scriptType || "",
+        programmingLanguage: formData.programmingLanguage || "",
+        framework: formData.framework || "",
+        integrationReady: formData.integrationReady || [],
+        colorSpace: formData.colorSpace || "",
+        objectType: formData.objectType || "",
+        fileFormat: formData.fileFormat || "",
         ...(formData.type?.toLowerCase() === "prompts"
           ? { previewUrl: formData.previewUrl.trim() }
           : {}),
@@ -1750,24 +2088,37 @@ const Upload = ({
 
       // 1. Upload Thumbnail
       if (formData.thumbnail instanceof File) {
-        const is3D = /\.(gltf|glb|obj|stl|fbx|blend)$/i.test(formData.thumbnail.name);
-        if (is3D && formData.type === "models") {
-          const uploaded = await uploadFile(formData.thumbnail, "models", currentUser.uid);
-          docData.thumbnailModel = uploaded?.url;
-          docData.thumbnail = "/default-model-thumbnail.jpg";
-        } else {
-          docData.thumbnail = await uploadThumbnail(formData.thumbnail);
-        }
+        docData.thumbnail = await uploadThumbnail(formData.thumbnail);
       } else if (editMode && assetToEdit?.thumbnail) {
         docData.thumbnail = assetToEdit.thumbnail;
       }
 
-      // 2. Upload Main Asset File(s)
+      // 2. Upload the dedicated GLB preview file separately from the original
+      // download file. The public 3D viewer uses thumbnailModel, while model
+      // remains the original file offered for download.
+      if (formData.previewModel instanceof File) {
+        const previewUpload = await uploadFile(
+          formData.previewModel,
+          "model-previews",
+          currentUser.uid
+        );
+        docData.thumbnailModel = previewUpload?.url;
+      } else if (editMode && deletedStoredFiles.preview) {
+        docData.thumbnailModel = deleteField();
+      } else if (editMode && assetToEdit?.thumbnailModel) {
+        docData.thumbnailModel = assetToEdit.thumbnailModel;
+      }
+
+      // 3. Upload Main Asset File(s)
       const uploadResult = await uploadMainAsset(formData.type, formData, currentUser.uid);
       if (uploadResult) {
         Object.assign(docData, uploadResult.docFields);
         docData.downloadUrl = uploadResult.downloadUrl;
         docData.fileName = uploadResult.fileName;
+      } else if (editMode && deletedStoredFiles.model) {
+        docData.model = deleteField();
+        docData.downloadUrl = deleteField();
+        docData.fileName = deleteField();
       }
 
       console.log("Final document to save:", docData);
@@ -2175,6 +2526,24 @@ const Upload = ({
             margin-top: 0.5rem; background: #ecfdf5; padding: 0.5rem 0.75rem;
             border-radius: 0.5rem; border-left: 4px solid #10b981;
           }
+          .current-file-note {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem;
+            text-align: left; margin-top: 0.5rem; padding: 0.65rem 0.75rem;
+            color: #065f46; background: #ecfdf5; border-left: 4px solid #10b981;
+            border-radius: 0.5rem; font-size: 0.875rem;
+          }
+          .current-file-note span { flex: 1 1 100%; overflow-wrap: anywhere; font-weight: 600; }
+          .current-file-note small { color: #047857; font-style: italic; }
+          .delete-current-file-button {
+            border: 1px solid #dc2626; border-radius: 0.4rem; padding: 0.35rem 0.65rem;
+            color: #b91c1c; background: #fff; font-weight: 600; cursor: pointer;
+          }
+          .delete-current-file-button:hover { color: #fff; background: #dc2626; }
+          .deleted-file-note {
+            margin-top: 0.5rem; padding: 0.65rem 0.75rem; color: #991b1b;
+            background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 0.5rem;
+            text-align: left; font-size: 0.875rem;
+          }
           .not-logged-in-message {
             text-align: center; padding: 3rem 2rem;
           }
@@ -2327,6 +2696,88 @@ const Upload = ({
             <form onSubmit={handleSubmit}>
               <div className="blog-form-group">
                 <label className="blog-form-label">
+                  Asset Type <span className="blog-form-required">*</span>
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  required
+                  className="blog-form-select"
+                  disabled={editMode && userRole !== "admin"}
+                >
+                  <option value="" disabled>
+                    Select Asset Type
+                  </option>
+                  {userRole === "admin" ? (
+                    <>
+                      <option value="models">3D Model</option>
+                      <option value="textures">Texture</option>
+                      <option value="scripts">Script</option>
+                      <option value="images">Image</option>
+                      <option value="graphics">Graphics Templates</option>
+                      <option value="mockups">Mockups</option>
+                      <option value="fonts">Fonts</option>
+                      <option value="videos">Videos</option>
+                      <option value="video-templates">Video Templates</option>
+                      <option value="icons">Icons</option>
+                      <option value="hdris">HDRIs</option>
+                      <option value="prompts">Prompts</option>
+                      <option value="other">Other</option>
+                    </>
+                  ) : (
+                    (() => {
+                      const allowedTypes =
+                        specializationToAssetTypes[specialization] || [];
+                      const typeLabels = {
+                        models: "3D Model",
+                        textures: "Texture",
+                        scripts: "Script",
+                        images: "Image",
+                        graphics: "Graphics Templates",
+                        mockups: "Mockups",
+                        fonts: "Fonts",
+                        videos: "Videos",
+                        "video-templates": "Video Templates",
+                        icons: "Icons",
+                        hdris: "HDRIs",
+                        prompts: "Prompts",
+                      };
+
+                      if (allowedTypes.length === 0) {
+                        return (
+                          <option value="" disabled>
+                            No asset types available for your specialization
+                          </option>
+                        );
+                      }
+
+                      const isCurrentTypeAllowed = allowedTypes.includes(
+                        formData.type
+                      );
+
+                      return (
+                        <>
+                          {!isCurrentTypeAllowed && formData.type && (
+                            <option value={formData.type} disabled>
+                              {formData.type} (Not allowed for your
+                              specialization)
+                            </option>
+                          )}
+                          {allowedTypes.map((type) => (
+                            <option key={type} value={type}>
+                              {typeLabels[type] || type}
+                            </option>
+                          ))}
+                        </>
+                      );
+                    })()
+                  )}
+                </select>
+              </div>
+
+              <div className="blog-form-group">
+                <label className="blog-form-label">
                   Title <span className="blog-form-required">*</span>
                 </label>
                 <input
@@ -2366,52 +2817,53 @@ const Upload = ({
                 )}
               </div>
 
-              <div className="blog-form-group">
-                <label className="blog-form-label">
-                  Thumbnail <span className="blog-form-required">*</span>
-                </label>
-                <input
-                  type="file"
-                  name="thumbnail"
-                  onChange={handleThumbnailChange}
-                  accept="image/*, video/*, .glb"
-                  className="blog-form-file"
-                />
-                <p className="blog-form-hint">
-                  JPG, PNG, MP4, (.glb for 3d model) • Max 500KB • 705x472px
-                  recommended
-                </p>
-
-                {thumbnailPreview && thumbnailType === "image" && (
-                  <img
-                    src={thumbnailPreview}
-                    alt="Preview"
-                    className="blog-image-preview"
+              {formData.type !== "models" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">
+                    Thumbnail <span className="blog-form-required">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    name="thumbnail"
+                    onChange={handleThumbnailChange}
+                    accept="image/*, video/*"
+                    required={!editMode}
+                    className="blog-form-file"
                   />
-                )}
+                  <p className="blog-form-hint">
+                    .MP4, .MOV • Max 2MB after auto-compression • 705x472px recommended
+                  </p>
 
-                {thumbnailPreview && thumbnailType === "video" && (
-                  <div
-                    className="video-preview-container"
-                    onClick={handleVideoPlay}
-                  >
-                    <video
-                      ref={videoRef}
+                  {thumbnailPreview && thumbnailType === "image" && (
+                    <img
                       src={thumbnailPreview}
-                      className="blog-video-preview"
-                      preload="metadata"
-                      onLoadedData={handleVideoLoaded}
-                      onPlay={() => setIsVideoPlaying(true)}
-                      onPause={handleVideoPause}
-                      onEnded={handleVideoEnded}
-                      onError={handleVideoError}
-                      playsInline
-                      muted
-                    >
-                      Your browser does not support the video tag.
-                    </video>
+                      alt="Preview"
+                      className="blog-image-preview"
+                    />
+                  )}
 
-                    {!isVideoPlaying && (
+                  {thumbnailPreview && thumbnailType === "video" && (
+                    <div
+                      className="video-preview-container"
+                      onClick={handleVideoPlay}
+                    >
+                      <video
+                        ref={videoRef}
+                        src={thumbnailPreview}
+                        className="blog-video-preview"
+                        preload="metadata"
+                        onLoadedData={handleVideoLoaded}
+                        onPlay={() => setIsVideoPlaying(true)}
+                        onPause={handleVideoPause}
+                        onEnded={handleVideoEnded}
+                        onError={handleVideoError}
+                        playsInline
+                        muted
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+
+                      {!isVideoPlaying && (
                       <button
                         type="button"
                         className="video-play-button"
@@ -2424,7 +2876,7 @@ const Upload = ({
                       </button>
                     )}
 
-                    {isVideoPlaying && (
+                      {isVideoPlaying && (
                       <button
                         type="button"
                         className="video-play-button"
@@ -2436,15 +2888,16 @@ const Upload = ({
                         <FiPause />
                       </button>
                     )}
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {editMode && assetToEdit?.thumbnail && !thumbnailPreview && (
+                  {editMode && assetToEdit?.thumbnail && !thumbnailPreview && (
                   <p className="current-image-note">
                     Current thumbnail will be kept if no new file is selected
                   </p>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               <div className="blog-form-group">
                 <label className="blog-form-label">
@@ -2472,114 +2925,29 @@ const Upload = ({
                 </div>
               </div>
 
-              <div className="blog-form-group">
-                <label className="blog-form-label">
-                  Asset Type <span className="blog-form-required">*</span>
-                </label>
-                <select
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  required
-                  className="blog-form-select"
-                  disabled={editMode && userRole !== "admin"}
-                >
-                  <option value="" disabled>
-                    Select Asset Type
-                  </option>
-
-                  {/* Condition: Admin - show all types */}
-                  {userRole === "admin" ? (
-                    <>
-                      <option value="models">3D Model</option>
-                      <option value="textures">Texture</option>
-                      <option value="scripts">Script</option>
-                      <option value="images">Image</option>
-                      <option value="graphics">Graphics Templates</option>
-                      <option value="mockups">Mockups</option>
-                      <option value="fonts">Fonts</option>
-                      <option value="videos">Video</option>
-                      <option value="video-templates">Video Templates</option>
-                      <option value="icons">Icons</option>
-                      <option value="hdris">HDRIs</option>
-                      <option value="prompts">Prompts</option>
-                      <option value="other">Other</option>
-                    </>
-                  ) : (
-                    // Condition: Contributor - show only specialization types
-                    (() => {
-                      const allowedTypes =
-                        specializationToAssetTypes[specialization] || [];
-                      const typeLabels = {
-                        models: "3D Model",
-                        textures: "Texture",
-                        scripts: "Script",
-                        images: "Image",
-                        graphics: "Graphics Templates",
-                        mockups: "Mockups",
-                        fonts: "Fonts",
-                        videos: "Video",
-                        "video-templates": "Video Templates",
-                        icons: "Icons",
-                        hdris: "HDRIs",
-                        prompts: "Prompts",
-                      };
-
-                      if (allowedTypes.length === 0) {
-                        return (
-                          <option value="" disabled>
-                            No asset types available for your specialization
-                          </option>
-                        );
-                      }
-
-                      // Check if current type is allowed, otherwise show disabled
-                      const isCurrentTypeAllowed = allowedTypes.includes(
-                        formData.type
-                      );
-
-                      return (
-                        <>
-                          {!isCurrentTypeAllowed && formData.type && (
-                            <option value={formData.type} disabled>
-                              {formData.type} (Not allowed for your
-                              specialization)
-                            </option>
-                          )}
-
-                          {allowedTypes.map((type) => (
-                            <option key={type} value={type}>
-                              {typeLabels[type] || type}
-                            </option>
-                          ))}
-                        </>
-                      );
-                    })()
-                  )}
-                </select>
-              </div>
-
-              <div className="blog-form-group">
-                <label className="blog-form-label">
-                  Category <span className="blog-form-required">*</span>
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-                  className="blog-form-select"
-                >
-                  <option value="" disabled>
-                    Select Category
-                  </option>
-                  {getCategoryOptions().map((category) => (
-                    <option key={category} value={category}>
-                      {category}
+              {formData.type !== "models" && (
+                <div className="blog-form-group">
+                  <label className="blog-form-label">
+                    Category <span className="blog-form-required">*</span>
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    required
+                    className="blog-form-select"
+                  >
+                    <option value="" disabled>
+                      Select Category
                     </option>
-                  ))}
-                </select>
-              </div>
+                    {getCategoryOptions().map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {formData.type === "prompts" && (
                 <div className="blog-form-group">
@@ -2644,6 +3012,7 @@ const Upload = ({
                     className="blog-tag-input"
                     value={formData.tags}
                     onChange={handleTagInputChange}
+                    onPaste={handleTagPaste}
                     onKeyDown={handleTagKeyDown}
                     placeholder={
                       tags.length === 0
@@ -2714,25 +3083,73 @@ const Upload = ({
                 <>
                   <div className="blog-form-group">
                     <label className="blog-form-label">
-                      3D Model File (Optional)
+                      3D Preview File <span className="blog-form-required">*</span>
+                    </label>
+                    <input
+                      type="file"
+                      name="previewModel"
+                      onChange={handleChange}
+                      accept=".glb,model/gltf-binary"
+                      required={!editMode && !assetToEdit?.thumbnailModel}
+                      className="blog-form-file"
+                    />
+                    <p className="blog-form-hint">
+                      Supported format: .glb only • Source max 200MB • Textures/materials optimized to max 100MB • Mesh unchanged
+                    </p>
+                    {editMode && assetToEdit?.thumbnailModel && !deletedStoredFiles.preview && (
+                      <div className="current-file-note">
+                        <span>
+                          Current preview: {getStoredFileName(assetToEdit.thumbnailModel)}
+                        </span>
+                        <button
+                          type="button"
+                          className="delete-current-file-button"
+                          onClick={() => handleDeleteStoredFile("preview")}
+                        >
+                          Delete current preview
+                        </button>
+                        <small>It will be kept if no new file is selected.</small>
+                      </div>
+                    )}
+                    {deletedStoredFiles.preview && (
+                      <p className="deleted-file-note">Current preview deleted from Firebase. Select a new .glb file before saving if a preview is required.</p>
+                    )}
+                  </div>
+
+                  <div className="blog-form-group">
+                    <label className="blog-form-label">
+                      3D Model File <span className="blog-form-required">*</span>
                     </label>
                     <input
                       type="file"
                       name="model"
                       onChange={handleChange}
                       accept=".glb,.gltf,.stl,.obj,.fbx,.blend,.zip"
+                      required={!editMode}
                       className="blog-form-file"
                     />
                     <p className="blog-form-hint">
                       Supported formats: .glb, .gltf, .stl, .obj, .fbx, .blend,
-                      .zip
+                      .zip • Max 200MB • Used for download
                     </p>
                     {renderFilePreview("model", "3D Model")}
-                    {editMode && assetToEdit.model && (
-                      <p className="current-image-note">
-                        Current model file will be kept if no new file is
-                        selected
-                      </p>
+                    {editMode && getStoredFileUrl(assetToEdit.model || assetToEdit.downloadUrl) && !deletedStoredFiles.model && (
+                      <div className="current-file-note">
+                        <span>
+                          Current model: {getStoredFileName(assetToEdit.model || assetToEdit.downloadUrl)}
+                        </span>
+                        <button
+                          type="button"
+                          className="delete-current-file-button"
+                          onClick={() => handleDeleteStoredFile("model")}
+                        >
+                          Delete current model
+                        </button>
+                        <small>It will be kept if no new file is selected.</small>
+                      </div>
+                    )}
+                    {deletedStoredFiles.model && (
+                      <p className="deleted-file-note">Current model deleted from Firebase. Select a new model file before saving if a download file is required.</p>
                     )}
                   </div>
                 </>
@@ -2778,7 +3195,7 @@ const Upload = ({
                     required={!editMode}
                   />
                   <p className="blog-form-hint">
-                    Supported video formats .mov, & .zip
+                    Supported video formats .MOV, .MP4 & .ZIP
                   </p>
                   {renderFilePreview("video", "Video")}
                   {editMode && assetToEdit.video && (

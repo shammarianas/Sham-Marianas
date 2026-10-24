@@ -86,7 +86,7 @@ const VideoViewer = ({
               ref={videoRef}
               controls
               width="100%"
-              style={{ width: '100%', height: '-webkit-fill-available' }}
+              style={{ width: "100%" }}
             >
               <source src={previewUrl} type="video/mp4" />
               <source src={previewUrl} type="video/quicktime" />

@@ -31,11 +31,16 @@ const ItemInfoTable = (props) => {
   // Agar asset object pass hua hai toh automatically generate karo
   if (props.asset) {
     const asset = props.asset;
+    const isModelAsset = asset.type === "models" || asset.type === "3dmodels";
+    const displayAssetType = isModelAsset ? "3D Models" : asset.type;
 
     // Common attributes for all asset types
     const commonAttributes = [
-      { label: "Asset Type", value: asset.type },
-      { label: "Category", value: asset.category },
+      { label: "Asset Type", value: displayAssetType },
+      // 3D models already display their taxonomy as Object Type. Their
+      // legacy category field contains the same value, so avoid showing it
+      // twice while keeping the field intact for filtering/backward support.
+      ...(!isModelAsset ? [{ label: "Category", value: asset.category }] : []),
       { label: "Price Type", value: asset.price === "free" ? "Free" : "Paid" },
       { label: "License Type", value: asset.licenseType },
       { label: "AI Generated", value: asset.aiGenerated },

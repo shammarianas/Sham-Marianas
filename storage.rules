@@ -1,0 +1,84 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email in [
+        'admin@shammarianas.com',
+        'shammarianas@gmail.com',
+        'sahrishanfal@gmail.com'
+      ];
+    }
+
+    function isOwnerOrAdmin(uid) {
+      return isAuthenticated() && (request.auth.uid == uid || isAdmin());
+    }
+
+    match /assets/videos/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isOwnerOrAdmin(uid)
+        && request.resource.size <= 200 * 1024 * 1024;
+      allow delete: if isOwnerOrAdmin(uid);
+    }
+
+    match /assets/models/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isOwnerOrAdmin(uid)
+        && request.resource.size <= 200 * 1024 * 1024;
+      allow delete: if isOwnerOrAdmin(uid);
+    }
+
+    match /assets/model-previews/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isOwnerOrAdmin(uid)
+        && request.resource.size <= 200 * 1024 * 1024;
+      allow delete: if isOwnerOrAdmin(uid);
+    }
+
+    match /assets/{assetType}/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isOwnerOrAdmin(uid)
+        && request.resource.size <= 10 * 1024 * 1024;
+      allow delete: if isOwnerOrAdmin(uid);
+    }
+
+    match /thumbnails/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isOwnerOrAdmin(uid)
+        && request.resource.size <= 10 * 1024 * 1024;
+      allow delete: if isOwnerOrAdmin(uid);
+    }
+
+    match /thumbnails/public/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if isAuthenticated()
+        && request.resource.size <= 10 * 1024 * 1024;
+      allow delete: if isAdmin();
+    }
+
+    match /thumbnail-temp/{uid}/{allPaths=**} {
+      allow create, update: if isOwnerOrAdmin(uid)
+        && request.resource.size <= 200 * 1024 * 1024;
+      allow read, delete: if isOwnerOrAdmin(uid);
+    }
+
+    match /projects/{allPaths=**} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /blogs/{allPaths=**} {
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    match /profiles/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow create, update, delete: if isOwnerOrAdmin(uid);
+    }
+  }
+}

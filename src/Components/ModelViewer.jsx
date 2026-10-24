@@ -45,6 +45,7 @@ const ModelViewer = (props) => {
     console.log("🔍 ModelViewer checking all model sources:", {
       thumbnailModel: props.thumbnailModel, // 👈 THUMBNAIL SE 3D MODEL
       model: props.model,                   // 👈 MODEL FIELD SE DOWNLOAD FILE
+      downloadUrl: props.downloadUrl,       // 👈 LEGACY UPLOAD FIELD
       type: props.type
     });
 
@@ -58,6 +59,12 @@ const ModelViewer = (props) => {
     if (props.model && isSupported3DFormat(props.model)) {
       console.log("✅ Using model field for 3D preview:", props.model);
       return props.model;
+    }
+
+    // Compatibility for older assets whose model URL was saved as downloadUrl.
+    if (props.downloadUrl && isSupported3DFormat(props.downloadUrl)) {
+      console.log("✅ Using legacy downloadUrl for 3D preview:", props.downloadUrl);
+      return props.downloadUrl;
     }
 
     console.log("❌ No supported 3D model found");
@@ -189,9 +196,11 @@ const ModelViewer = (props) => {
     // Load Model Function - GLB OPTIMIZED
     const loadModel = async (path) => {
       try {
-        const storage = getStorage(app);
-        const modelRef = ref(storage, path);
-        const url = await getDownloadURL(modelRef);
+        // Firestore may contain either a Firebase Storage path or an already
+        // resolved download URL. Do not pass a full URL back to ref().
+        const url = /^https?:\/\//i.test(path) || path.startsWith("blob:")
+          ? path
+          : await getDownloadURL(ref(getStorage(app), path));
 
         let extension = url.split('.').pop().toLowerCase().split('?')[0];
 

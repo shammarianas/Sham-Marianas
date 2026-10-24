@@ -426,7 +426,6 @@ async function prerender() {
     '/category/textures',
     '/category/scripts',
     '/category/hdris',
-    '/category/hot',
 
     // High commercial intent service pages
     '/services/branding-design',

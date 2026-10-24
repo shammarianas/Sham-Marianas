@@ -211,7 +211,7 @@ const Navbar = () => {
 
   const navItems = [
     { path: "/templates/videos", label: "Videos" },
-    { path: "/templates/models", label: "3D Models" },
+    { path: "/templates/3dmodels", label: "3D Models" },
     { path: "/templates/video-templates", label: "Video Template" },
     { path: "/templates/images", label: "Images" },
     { path: "/templates/graphics", label: "Graphic Templates" },

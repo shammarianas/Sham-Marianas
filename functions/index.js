@@ -2,15 +2,114 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { onRequest } = require("firebase-functions/v2/https");
-const { onCall } = require("firebase-functions/v2/https");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { logger } = require("firebase-functions/v2");
 const { setGlobalOptions } = require("firebase-functions/v2");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const crypto = require("crypto");
+const { spawn } = require("child_process");
+const ffmpegPath = require("ffmpeg-static");
 admin.initializeApp();
 
 require("dotenv").config(); // load .env file
 
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const Stripe = require("stripe");
+let stripeClient;
+
+function getStripeClient() {
+  if (!stripeClient) {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error("Stripe is not configured: STRIPE_SECRET_KEY is missing.");
+    }
+    stripeClient = new Stripe(secretKey);
+  }
+  return stripeClient;
+}
 const cors = require("cors")({ origin: true });
+
+const MAX_VIDEO_THUMBNAIL_BYTES = 2 * 1024 * 1024;
+
+const ADMIN_EMAILS = new Set([
+  "admin@shammarianas.com",
+  "shammarianas@gmail.com",
+  "sahrishanfal@gmail.com",
+]);
+
+function decodeStoragePath(value) {
+  if (typeof value !== "string" || !value) return null;
+
+  const pathValue = value.trim();
+  const bucketName = admin.storage().bucket().name;
+
+  if (pathValue.startsWith("gs://")) {
+    const withoutScheme = pathValue.slice(5);
+    const separatorIndex = withoutScheme.indexOf("/");
+    if (separatorIndex < 0) return null;
+    const bucket = withoutScheme.slice(0, separatorIndex);
+    if (bucket !== bucketName) return null;
+    return withoutScheme.slice(separatorIndex + 1);
+  }
+
+  try {
+    const parsed = new URL(pathValue);
+    let encodedObjectPath = null;
+
+    if (parsed.hostname === "firebasestorage.googleapis.com") {
+      const match = parsed.pathname.match(/^\/v0\/b\/([^/]+)\/o\/(.*)$/);
+      if (!match || decodeURIComponent(match[1]) !== bucketName) return null;
+      encodedObjectPath = match[2];
+    } else if (parsed.hostname === "storage.googleapis.com") {
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      if (parts.length < 2 || decodeURIComponent(parts[0]) !== bucketName) {
+        return null;
+      }
+      encodedObjectPath = parts.slice(1).join("/");
+    } else {
+      return null;
+    }
+
+    return decodeURIComponent(encodedObjectPath);
+  } catch {
+    return null;
+  }
+}
+
+function collectStoragePaths(value, paths = new Set()) {
+  if (typeof value === "string") {
+    const storagePath = decodeStoragePath(value);
+    if (storagePath) paths.add(storagePath);
+    return paths;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectStoragePaths(item, paths));
+    return paths;
+  }
+
+  if (value && typeof value === "object") {
+    Object.values(value).forEach((item) => collectStoragePaths(item, paths));
+  }
+
+  return paths;
+}
+
+function runFfmpeg(args) {
+  return new Promise((resolve, reject) => {
+    const process = spawn(ffmpegPath, args);
+    let stderr = "";
+    process.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    process.on("error", reject);
+    process.on("close", (code) => {
+      if (code === 0) return resolve();
+      reject(new Error(`FFmpeg exited with code ${code}: ${stderr.slice(-2000)}`));
+    });
+  });
+}
 
 if (process.env.FUNCTIONS_EMULATOR === "true") {
   // This bypasses App Check validation in emulator
@@ -84,6 +183,116 @@ async function ensureContributorExists(db, ownerId) {
     throw error;
   }
 }
+
+// Convert video thumbnails server-side so unsupported .mov codecs do not
+// need to be decoded by the browser. The final file is capped at 2MB.
+exports.convertVideoThumbnail = onCall(
+  {timeoutSeconds: 540, memory: "2GiB"},
+  async (request) => {
+    const uid = request.auth?.uid;
+    const {storagePath, fileName} = request.data || {};
+
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "You must be logged in.");
+    }
+    if (
+      typeof storagePath !== "string" ||
+      !storagePath.startsWith(`thumbnail-temp/${uid}/`)
+    ) {
+      throw new HttpsError("invalid-argument", "Invalid thumbnail path.");
+    }
+
+    const bucket = admin.storage().bucket();
+    const sourceFile = bucket.file(storagePath);
+    const [exists] = await sourceFile.exists();
+    if (!exists) {
+      throw new HttpsError("not-found", "Temporary video was not found.");
+    }
+
+    const tempId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const inputPath = path.join(os.tmpdir(), `thumbnail-${tempId}-input`);
+    const outputPath = path.join(os.tmpdir(), `thumbnail-${tempId}.webm`);
+    const outputPathLow = path.join(os.tmpdir(), `thumbnail-${tempId}-low.webm`);
+    const safeName = path
+      .basename(typeof fileName === "string" ? fileName : "video")
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 80);
+    const destinationPath = `thumbnails/${uid}/thumb_${tempId}_${safeName}.webm`;
+
+    try {
+      await sourceFile.download({destination: inputPath});
+
+      const baseArgs = [
+        "-y",
+        "-i", inputPath,
+        "-an",
+        "-vf", "scale=min(1280\\,iw):-2,fps=15",
+        "-c:v", "libvpx-vp9",
+        "-deadline", "realtime",
+        "-b:v", "120k",
+        "-maxrate", "120k",
+        "-bufsize", "240k",
+        outputPath,
+      ];
+      await runFfmpeg(baseArgs);
+
+      let finalPath = outputPath;
+      let stats = await fs.promises.stat(outputPath);
+      if (stats.size > MAX_VIDEO_THUMBNAIL_BYTES) {
+        await runFfmpeg([
+          "-y",
+          "-i", inputPath,
+          "-an",
+          "-vf", "scale=min(640\\,iw):-2,fps=12",
+          "-c:v", "libvpx-vp9",
+          "-deadline", "realtime",
+          "-b:v", "60k",
+          "-maxrate", "60k",
+          "-bufsize", "120k",
+          outputPathLow,
+        ]);
+        finalPath = outputPathLow;
+        stats = await fs.promises.stat(finalPath);
+      }
+
+      if (stats.size > MAX_VIDEO_THUMBNAIL_BYTES) {
+        throw new Error("Video thumbnail could not be compressed below 2MB.");
+      }
+
+      const downloadToken = crypto.randomUUID();
+      await bucket.upload(finalPath, {
+        destination: destinationPath,
+        metadata: {
+          contentType: "video/webm",
+          cacheControl: "public,max-age=31536000",
+          metadata: {
+            firebaseStorageDownloadTokens: downloadToken,
+            originalName: fileName || "video",
+            originalSize: String((await sourceFile.getMetadata())[0].size || ""),
+            optimizedSize: String(stats.size),
+            userId: uid,
+          },
+        },
+      });
+
+      const downloadURL =
+        `https://firebasestorage.googleapis.com/v0/b/${encodeURIComponent(
+          bucket.name
+        )}/o/${encodeURIComponent(destinationPath)}?alt=media&token=${downloadToken}`;
+      return {downloadURL, size: stats.size};
+    } catch (error) {
+      logger.error("Video thumbnail conversion failed", {error: error.message, uid});
+      throw new HttpsError("internal", error.message);
+    } finally {
+      await Promise.allSettled([
+        sourceFile.delete().catch(() => null),
+        fs.promises.rm(inputPath, {force: true}),
+        fs.promises.rm(outputPath, {force: true}),
+        fs.promises.rm(outputPathLow, {force: true}),
+      ]);
+    }
+  }
+);
 // ============================
 // CREATE PAYMENT INTENT
 // =============================
@@ -95,6 +304,7 @@ exports.createPaymentIntent = functions.https.onRequest((req, res) => {
 
     try {
       const { amount, metadata } = req.body;
+      const stripe = getStripeClient();
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100),
@@ -206,6 +416,7 @@ exports.stripeWebhook = functions.https.onRequest(
     let event;
 
     try {
+      const stripe = getStripeClient();
       event = stripe.webhooks.constructEvent(
         req.rawBody,
         sig,
@@ -1395,6 +1606,7 @@ exports.sendContributorSupportComplaintEmail =
 // =============================
 // GENERATE DOWNLOAD URL (ENHANCED)
 // =============================
+
 
 exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
   // ✅ CORS headers
@@ -3461,6 +3673,58 @@ exports.resetDownloadsMonthly = onSchedule(
     }
   }
 );
+// =============================
+// DELETE ASSET AND ALL FIREBASE STORAGE FILES
+// =============================
+exports.deleteAssetWithFiles = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Login required");
+  }
+
+  const email = (context.auth.token.email || "").toLowerCase();
+  if (!ADMIN_EMAILS.has(email)) {
+    throw new functions.https.HttpsError("permission-denied", "Admin access required");
+  }
+
+  const assetId = typeof data?.assetId === "string" ? data.assetId.trim() : "";
+  if (!assetId) {
+    throw new functions.https.HttpsError("invalid-argument", "Asset ID is required");
+  }
+
+  const assetRef = admin.firestore().collection("Assets").doc(assetId);
+  const assetSnapshot = await assetRef.get();
+  if (!assetSnapshot.exists) {
+    throw new functions.https.HttpsError("not-found", "Asset not found");
+  }
+
+  const storagePaths = Array.from(collectStoragePaths(assetSnapshot.data()));
+  const bucket = admin.storage().bucket();
+
+  try {
+    await Promise.all(
+      storagePaths.map((storagePath) =>
+        bucket.file(storagePath).delete({ ignoreNotFound: true })
+      )
+    );
+    await assetRef.delete();
+
+    logger.info("Asset and linked storage files deleted", {
+      assetId,
+      storageFileCount: storagePaths.length,
+    });
+
+    return { assetId, deletedStorageFiles: storagePaths.length };
+  } catch (error) {
+    logger.error("Asset deletion failed; Firestore document was preserved", {
+      assetId,
+      error: error.message,
+    });
+    throw new functions.https.HttpsError(
+      "internal",
+      "Could not delete the asset and its files safely"
+    );
+  }
+});
 // =============================
 // NEW: GET USER DASHBOARD
 // =============================
