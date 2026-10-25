@@ -407,7 +407,7 @@ const SellerAccountVerify = () => {
           <select className="filter-select" defaultValue="">
             <option value="">All Categories</option>
             <option value="3d">3D Models</option>
-            <option value="graphics">Graphics</option>
+            <option value="website-templates">Website Templates</option>
             <option value="templates">Templates</option>
           </select>
 

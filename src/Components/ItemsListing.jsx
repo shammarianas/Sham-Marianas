@@ -17,6 +17,10 @@ const ItemsListing = (props) => {
   const { searchTerm } = useSearchStore(); // Get the search term from Zustand store
 
   let asset_type = props.category === "3dmodels" ? "models" : (props.category || "models");
+  if (asset_type === "mockups") asset_type = "tools";
+  if (asset_type === "website-templates") {
+    asset_type = "website-templates";
+  }
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -24,7 +28,13 @@ const ItemsListing = (props) => {
         let itemsQuery;
 
         const baseQuery = [
-          where("type", "==", asset_type),
+          where(
+            "type",
+            ["website-templates", "tools"].includes(asset_type) ? "in" : "==",
+            ["website-templates", "tools"].includes(asset_type)
+              ? asset_type === "tools" ? ["tools", "mockups"] : ["website-templates"]
+              : asset_type
+          ),
           where("status", "==", "approved"),
         ];
 

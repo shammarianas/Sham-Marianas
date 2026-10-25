@@ -52,7 +52,7 @@ const ROUTES_CONFIG = [
   { path: '/templates', dynamic: false, priority: '0.8', freq: 'weekly' },
 
   // Public asset category landing pages
-  ...['videos', 'models', 'video-templates', 'images', 'graphics', 'mockups', 'fonts', 'more', 'icons', 'textures', 'scripts', 'hdris', 'hot']
+  ...['videos', 'models', 'video-templates', 'images', 'graphics', 'tools', 'more', 'scripts', 'hdris', 'hot']
     .map((category) => ({
       path: `/category/${category}`,
       dynamic: false,

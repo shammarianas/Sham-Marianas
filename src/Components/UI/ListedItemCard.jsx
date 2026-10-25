@@ -103,9 +103,10 @@ const ListedItemCard = ({
       case "videos":
         if (data.video) urls.push(data.video);
         break;
-      case "graphics":
+      case "website-templates":
         if (data.graphicsTemplate) urls.push(data.graphicsTemplate);
         break;
+      case "tools":
       case "mockups":
         if (data.mockupFile) urls.push(data.mockupFile);
         break;

@@ -1787,11 +1787,10 @@ const ContributorLogin = () => {
                             Video Templates
                           </option>
                           <option value="images">Images</option>
-                          <option value="mockups">Mockups</option>
+                          <option value="tools">Tools</option>
                           <option value="graphic-templates">
-                            Graphic Templates
+                            Website Templates
                           </option>
-                          <option value="fonts">Fonts</option>
                           <option value="icons">Icons</option>
                           <option value="scripts">Scripts</option>
                           <option value="hdris">HDRIs</option>

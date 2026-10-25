@@ -88,6 +88,11 @@ const LegacyAssetRedirect = () => {
   return <Navigate to={`/view/${encodeURIComponent(slug || "")}`} replace />;
 };
 
+const LegacyToolsRedirect = () => {
+  const { slug } = useParams();
+  return <Navigate to={slug ? `/templates/tools/${encodeURIComponent(slug)}` : "/templates/tools"} replace />;
+};
+
 const ScrollToTop = () => {
   const location = useLocation();
 
@@ -143,6 +148,19 @@ export const AppRoutes = () => (
     <Route path="/page-team" element={<PageTeam />} />
     <Route path="/services" element={<Services />} />
     <Route path="/templates" element={<StockPage />} />
+    <Route path="/templates/mockups/:slug" element={<LegacyToolsRedirect />} />
+    <Route path="/templates/mockups" element={<LegacyToolsRedirect />} />
+    <Route path="/category/mockups" element={<Navigate to="/category/tools" replace />} />
+    <Route path="/templates/fonts" element={<Navigate to="/templates" replace />} />
+    <Route path="/category/fonts" element={<Navigate to="/templates" replace />} />
+    <Route path="/templates/icons/:slug" element={<Navigate to="/templates" replace />} />
+    <Route path="/templates/icons" element={<Navigate to="/templates" replace />} />
+    <Route path="/category/icons/:slug" element={<Navigate to="/templates" replace />} />
+    <Route path="/category/icons" element={<Navigate to="/templates" replace />} />
+    <Route path="/templates/textures/:slug" element={<Navigate to="/templates" replace />} />
+    <Route path="/templates/textures" element={<Navigate to="/templates" replace />} />
+    <Route path="/category/textures/:slug" element={<Navigate to="/templates" replace />} />
+    <Route path="/category/textures" element={<Navigate to="/templates" replace />} />
     <Route path="/templates/:category" element={<CategoryTemplate />} />
     <Route path="/category/:category" element={<CategoryTemplate />} />
     <Route path="/success" element={noIndex(<Success />)} />

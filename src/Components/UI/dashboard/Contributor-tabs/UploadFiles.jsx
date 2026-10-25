@@ -27,11 +27,10 @@ const UploadFiles = () => {
     "HDRIs",
     "Videos",
     "Images",
-    "Graphics",
+    "Website Templates",
     "Icons",
-    "Fonts",
     "Scripts",
-    "Mockups",
+    "Tools",
     "Audio",
     "Templates",
   ];

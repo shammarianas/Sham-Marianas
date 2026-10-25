@@ -216,11 +216,9 @@ const HeroSection = () => {
               { title: "Videos", category: "videos" },
               { title: "Video Templates", category: "video-templates" },
               { title: "Images", category: "images" },
-              { title: "Graphic Templates", category: "graphics" },
-              { title: "Mockups", category: "mockups" },
+              { title: "Website Templates", category: "website-templates" },
+              { title: "Tools", category: "tools" },
               { title: "3D Models", category: "models" },
-              { title: "Fonts", category: "fonts" },
-              { title: "Icons", category: "icons" },
             ].map(({ title, category }) => (
               <div className="page_content" key={category}>
                 <div className="section-header-row">

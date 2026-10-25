@@ -66,27 +66,12 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.shammarianas.com/category/mockups/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.shammarianas.com/category/fonts/</loc>
+    <loc>https://www.shammarianas.com/category/tools/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.shammarianas.com/category/more/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.shammarianas.com/category/icons/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.shammarianas.com/category/textures/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

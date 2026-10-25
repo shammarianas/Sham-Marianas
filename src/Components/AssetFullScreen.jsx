@@ -30,7 +30,7 @@ const AssetFullScreen = ({
         return asset.script;
       case "hdris":
         return asset.hdri;
-      case "graphics":
+      case "website-templates":
         return asset.template;
       case "video-templates":
         return asset.videoTemplate;
@@ -67,7 +67,7 @@ const AssetFullScreen = ({
            assetType === "images" ||
            assetType === "textures" ||
            assetType === "icons" ||
-           assetType === "graphics";
+           assetType === "website-templates";
   };
 
   const is3DModel = () => {

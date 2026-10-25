@@ -293,13 +293,13 @@ const AssetRequestsDashboard = () => {
       "videos": { label: "Video" },
       "image": { label: "Image" },
       "images": { label: "Image" },
-      "graphics": { label: "Graphics" },
+      "website-templates": { label: "Website Templates" },
       "script": { label: "Script" },
       "scripts": { label: "Script" },
       "hdris": { label: "HDRI" },
       "icons": { label: "Icons" },
-      "mockups": { label: "Mockup" },
-      "fonts": { label: "Font" },
+      "tools": { label: "Tool" },
+      "mockups": { label: "Tool" },
       "video-templates": { label: "Video Template" },
       "prompts": { label: "Prompts" },
       "other": { label: "Other" }
@@ -472,7 +472,7 @@ const AssetRequestsDashboard = () => {
             <option value="audio">Audio</option>
             <option value="videos">Videos</option>
             <option value="images">Images</option>
-            <option value="graphics">Graphics</option>
+            <option value="website-templates">Website Templates</option>
             <option value="prompts">Prompts</option>
             <option value="scripts">Scripts</option>
             <option value="hdris">HDRIs</option>

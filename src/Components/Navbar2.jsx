@@ -214,15 +214,12 @@ const Navbar = () => {
     { path: "/templates/3dmodels", label: "3D Models" },
     { path: "/templates/video-templates", label: "Video Template" },
     { path: "/templates/images", label: "Images" },
-    { path: "/templates/graphics", label: "Graphic Templates" },
-    { path: "/templates/mockups", label: "Mockups" },
-    { path: "/templates/fonts", label: "Fonts" },
+    { path: "/templates/website-templates", label: "Website Templates" },
+    { path: "/templates/tools", label: "Tools" },
     { path: "/templates/more", label: "More" },
   ];
 
   const moreDropdownItems = [
-    { path: "/templates/icons", label: "Icons" },
-    { path: "/templates/textures", label: "Textures" },
     { path: "/templates/scripts", label: "Scripts" },
     { path: "/templates/hdris", label: "HDRIs" },
     { path: "/templates/prompts", label: "Prompts" },

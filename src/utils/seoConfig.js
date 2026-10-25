@@ -217,11 +217,9 @@ export const SEO_CONFIG = {
       "models": "3D Model",
       "video-templates": "Video Template",
       "images": "Stock Image",
-      "graphics": "Graphic Template",
-      "mockups": "Mockup",
-      "fonts": "Font",
-      "icons": "Icon Set",
-      "textures": "Texture",
+      "website-templates": "Website Template",
+      "tools": "Tool",
+      "mockups": "Tool",
       "scripts": "Script",
       "hdris": "HDRI",
       "printables": "Printable",
@@ -339,34 +337,16 @@ export const SEO_CONFIG = {
         keywords: "Stock Photos, Royalty-Free Images, High-Resolution Photos, Background Images, Commercial Photos",
         ogImage: "/assets/imgs/arrow-image.png"
       },
-      "graphics": {
-        title: "Graphic Templates | Shammarianas - Design Assets",
+      "website-templates": {
+        title: "Website Templates | Shammarianas - Design Assets",
         description: "Creative graphic templates for Photoshop, Illustrator. Social media posts, banners, flyers, and business cards.",
-        keywords: "Graphic Templates, Photoshop Templates, Illustrator Templates, Social Media Templates, Design Templates",
+        keywords: "Website Templates, web design templates, landing page templates, website design assets",
         ogImage: "/assets/imgs/arrow-image.png"
       },
-      "mockups": {
-        title: "Mockups | Shammarianas - Product Presentation",
-        description: "Realistic product mockups for branding and presentation. App mockups, packaging, stationery, and device mockups.",
-        keywords: "Product Mockups, App Mockups, Packaging Mockups, Device Mockups, Branding Mockups",
-        ogImage: "/assets/imgs/arrow-image.png"
-      },
-      "fonts": {
-        title: "Fonts | Shammarianas - Typography & Typefaces",
-        description: "Beautiful typography and font collections for web and print. Modern, classic, and decorative fonts.",
-        keywords: "Fonts, Typography, Web Fonts, Google Fonts, Display Fonts, Script Fonts",
-        ogImage: "/assets/imgs/arrow-image.png"
-      },
-      "icons": {
-        title: "Icons | Shammarianas - Icon Sets & UI Assets",
-        description: "Icon sets for UI/UX design and applications. Vector icons, app icons, and web icons in multiple formats.",
-        keywords: "Icons, UI Icons, App Icons, Vector Icons, Icon Sets, Web Icons",
-        ogImage: "/assets/imgs/arrow-image.png"
-      },
-      "textures": {
-        title: "Textures | Shammarianas - Seamless Textures",
-        description: "High-resolution textures for 3D modeling and design. Seamless textures, materials, and patterns.",
-        keywords: "Textures, Seamless Textures, 3D Textures, Materials, Patterns, Background Textures",
+      "tools": {
+        title: "Tools | Shammarianas - Product Presentation",
+        description: "Useful creative tools for branding and presentation, including app, packaging, stationery, and device resources.",
+        keywords: "Creative Tools, App Tools, Packaging Tools, Device Tools, Branding Tools",
         ogImage: "/assets/imgs/arrow-image.png"
       },
       "scripts": {

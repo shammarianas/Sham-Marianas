@@ -194,9 +194,10 @@ const DownloadButton = ({
       case "videos":
         pushUrl(item.video);
         break;
-      case "graphics":
+      case "website-templates":
         pushUrl(item.graphicsTemplate);
         break;
+      case "tools":
       case "mockups":
         pushUrl(item.mockupFile);
         break;

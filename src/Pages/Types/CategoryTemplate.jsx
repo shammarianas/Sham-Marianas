@@ -28,12 +28,10 @@ const CategoryTemplate = () => {
     "/category/models": "3D Models", 
     "/category/video-templates": "Video Templates",
     "/category/images": "Images",
-    "/category/graphics": "Graphic Templates",
-    "/category/mockups": "Mockups",
-    "/category/fonts": "Fonts",
+    "/category/website-templates": "Website Templates",
+    "/category/tools": "Tools",
+    "/category/mockups": "Tools",
     "/category/more": "More",
-    "/category/icons": "Icons",
-    "/category/textures": "Textures",
     "/category/scripts": "Scripts",
     "/category/hdris": "HDRIs",
     "/category/prompts": "Prompts",
@@ -41,11 +39,10 @@ const CategoryTemplate = () => {
     "/templates/videos": "Videos",
     "/templates/video-templates": "Video Templates",
     "/templates/images": "Images",
-    "/templates/graphics": "Graphic Templates",
-    "/templates/mockups": "Mockups",
+    "/templates/website-templates": "Website Templates",
+    "/templates/tools": "Tools",
+    "/templates/mockups": "Tools",
     "/templates/3dmodels": "3D Models",
-    "/templates/fonts": "Fonts",
-    "/templates/icons": "Icons"
   };
 
   // Direct mapping - use the pathname to get the label

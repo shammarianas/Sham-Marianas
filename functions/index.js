@@ -1804,12 +1804,13 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
 
       // Asset type based extraction
       const urlFields = {
+        tools: "mockupFile",
         mockups: "mockupFile",
         models: "model",
         printables: "model",
         videos: "video",
         scripts: "script",
-        graphics: "graphicsTemplate",
+        "website-templates": "graphicsTemplate",
         fonts: "fontFile",
         "video-templates": "videoTemplateFile",
         hdris: "hdri",
@@ -2282,8 +2283,9 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
                 return ".glb";
               case "fonts":
                 return ".ttf";
-              case "graphics":
+              case "website-templates":
                 return ".psd";
+              case "tools":
               case "mockups":
                 return ".zip";
               case "hdris":
@@ -2372,8 +2374,9 @@ exports.generateDownloadUrl = functions.https.onRequest(async (req, res) => {
           return filename.endsWith(".glb") ? filename : filename + ".glb";
         case "fonts":
           return filename.endsWith(".ttf") ? filename : filename + ".ttf";
-        case "graphics":
+        case "website-templates":
           return filename.endsWith(".psd") ? filename : filename + ".psd";
+        case "tools":
         case "mockups":
           return filename.endsWith(".zip") ? filename : filename + ".zip";
         default:

@@ -397,16 +397,15 @@ const Rejections = () => {
       textures: { name: "Textures", count: 0, color: "excellent", icon: <FiLayers /> },
       hdris: { name: "HDRIs", count: 0, color: "good", icon: <FiImage /> },
       icons: { name: "Icons", count: 0, color: "average", icon: <FiLayers /> },
-      graphics: { name: "Graphics Templates", count: 0, color: "poor", icon: <FiFile /> },
-      mockups: { name: "Mockups", count: 0, color: "excellent", icon: <FiBox /> },
-      fonts: { name: "Fonts", count: 0, color: "good", icon: <FiType /> },
+      "website-templates": { name: "Website Templates", count: 0, color: "poor", icon: <FiFile /> },
+      tools: { name: "Tools", count: 0, color: "excellent", icon: <FiBox /> },
       "video-templates": { name: "Video Templates", count: 0, color: "average", icon: <FiVideo /> },
       prompts: { name: "Prompts", count: 0, color: "poor", icon: <FiFile /> },
       other: { name: "Other", count: 0, color: "poor", icon: <FiFile /> },
     };
 
     allAssets.forEach((a) => {
-      const category = a.type || "other";
+      const category = a.type === "mockups" ? "tools" : a.type || "other";
       if (categories[category]) {
         categories[category].count++;
       } else {
@@ -466,12 +465,10 @@ const Rejections = () => {
         return "HDRIs";
       case "icons":
         return "Icons";
-      case "graphics":
-        return "Graphics Templates";
-      case "mockups":
-        return "Mockups";
-      case "fonts":
-        return "Fonts";
+      case "website-templates":
+        return "Website Templates";
+      case "tools":
+        return "Tools";
       case "video-templates":
         return "Video Templates";
       case "prompts":
@@ -787,9 +784,8 @@ const Rejections = () => {
                 <option value="textures">Textures</option>
                 <option value="hdris">HDRIs</option>
                 <option value="icons">Icons</option>
-                <option value="graphics">Graphics Templates</option>
-                <option value="mockups">Mockups</option>
-                <option value="fonts">Fonts</option>
+              <option value="website-templates">Website Templates</option>
+                <option value="tools">Tools</option>
                 <option value="video-templates">Video Templates</option>
                 <option value="prompts">Prompts</option>
                 <option value="other">Other</option>

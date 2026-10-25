@@ -419,11 +419,8 @@ async function prerender() {
     '/category/video-templates',
     '/category/images',
     '/category/graphics',
-    '/category/mockups',
-    '/category/fonts',
+    '/category/tools',
     '/category/more',
-    '/category/icons',
-    '/category/textures',
     '/category/scripts',
     '/category/hdris',
 

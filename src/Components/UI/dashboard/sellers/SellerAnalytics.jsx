@@ -135,7 +135,7 @@ const SellerAnalytics = () => {
 
         // If we don't have enough categories, add placeholder ones
         while (top5Categories.length < 5) {
-          const placeholderCategories = ["3D Models", "Graphics", "Templates", "Fonts", "Others"];
+          const placeholderCategories = ["3D Models", "Website Templates", "Templates", "Others"];
           const existingNames = top5Categories.map(c => c.name);
           const newCategory = placeholderCategories.find(name => !existingNames.includes(name));
           if (newCategory) {

@@ -356,16 +356,15 @@ const Statistics = () => {
       textures: 0,
       hdris: 0,
       icons: 0,
-      graphics: 0,
-      mockups: 0,
-      fonts: 0,
+      "website-templates": 0,
+      tools: 0,
       "video-templates": 0,
       prompts: 0,
       other: 0,
     };
 
     filteredAssets.forEach((a) => {
-      const category = a.type || "other";
+      const category = a.type === "mockups" ? "tools" : a.type || "other";
       if (categories[category] !== undefined) {
         categories[category]++;
       } else {
@@ -422,9 +421,7 @@ const Statistics = () => {
       textures: "#8b5cf6",
       hdris: "#06b6d4",
       icons: "#84cc16",
-      graphics: "#f97316",
-      mockups: "#ec4899",
-      fonts: "#14b8a6",
+      "website-templates": "#f97316",
       "video-templates": "#a855f7",
       prompts: "#f97316",
       other: "#6b7280",
@@ -464,12 +461,10 @@ const Statistics = () => {
         return "HDRIs";
       case "icons":
         return "Icons";
-      case "graphics":
-        return "Graphics Templates";
-      case "mockups":
-        return "Mockups";
-      case "fonts":
-        return "Fonts";
+      case "website-templates":
+        return "Website Templates";
+      case "tools":
+        return "Tools";
       case "video-templates":
         return "Video Templates";
       case "prompts":
@@ -498,12 +493,10 @@ const Statistics = () => {
         return <FiImage />;
       case "icons":
         return <FiLayers />;
-      case "graphics":
+      case "website-templates":
         return <FiFile />;
-      case "mockups":
+      case "tools":
         return <FiBox />;
-      case "fonts":
-        return <FiType />;
       case "video-templates":
         return <FiVideo />;
       default:

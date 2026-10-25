@@ -190,7 +190,7 @@ const filterData = {
       options: ["Free for Personal Use", "Free for Commercial Use"],
     },
   },
-  Mockups: {
+  Tools: {
     categories: {
       label: "Categories",
       options: [
@@ -215,20 +215,6 @@ const filterData = {
         "Extended License",
         "Personal Use Only",
       ],
-    },
-  },
-  Fonts: {
-    properties: {
-      label: "Properties",
-      options: ["Any Type"],
-    },
-    licenseType: {
-      label: "License Type",
-      options: ["Free for Personal Use", "Free for Commercial Use"],
-    },
-    categories: {
-      label: "Categories",
-      options: ["Any Type"],
     },
   },
   "3DModels": {
@@ -287,80 +273,6 @@ const filterData = {
         "Medical / Anatomy",
         "Industrial / Mechanical",
         "Props / Miscellaneous",
-      ],
-    },
-    licenseType: {
-      label: "License Type",
-      options: ["Free for Personal Use", "Free for Commercial Use"],
-    },
-  },
-  Icons: {
-    categories: {
-      label: "Categories",
-      options: [
-        "Static Icons",
-        "Interface Icons",
-        "Animated Icons",
-        "Stickers",
-      ],
-    },
-    licenseType: {
-      label: "License Type",
-      options: ["Free for Personal Use", "Free for Commercial Use"],
-    },
-  },
-  Textures: {
-    surfaceMaterial: {
-      label: "Surface Material",
-      options: [
-        "Wood",
-        "Metal",
-        "Concrete",
-        "Brick",
-        "Fabric / Cloth",
-        "Leather",
-        "Stone / Rock",
-        "Plastic",
-        "Glass",
-        "Water",
-        "Sand / Soil",
-        "Paper / Cardboard",
-        "Asphalt / Road",
-      ],
-    },
-    resolution: {
-      label: "Resolution",
-      options: ["512x512", "1K (1024x1024)", "2K", "4K", "8K"],
-    },
-    style: {
-      label: "Style / Look",
-      options: [
-        "Realistic",
-        "Cartoon / Stylized",
-        "Minimal",
-        "Abstract",
-        "Vintage",
-        "Futuristic",
-        "Sci-fi",
-        "Fantasy",
-      ],
-    },
-    categories: {
-      label: "Surface Material",
-      options: [
-        "Wood",
-        "Metal",
-        "Concrete",
-        "Brick",
-        "Fabric / Cloth",
-        "Leather",
-        "Stone / Rock",
-        "Plastic",
-        "Glass",
-        "Water",
-        "Sand / Soil",
-        "Paper / Cardboard",
-        "Asphalt / Road",
       ],
     },
     licenseType: {
@@ -563,16 +475,27 @@ const getStoredFileName = (value, fallback = "Current file") => {
   }
 };
 
+const deleteStoredFile = async (value) => {
+  const storedPath = getStoredFileUrl(value);
+  if (!storedPath) return;
+
+  try {
+    await deleteObject(ref(storage, storedPath));
+  } catch (error) {
+    // A missing object is already in the desired state. Preserve the
+    // Firestore update instead of failing the whole asset operation.
+    if (error?.code !== "storage/object-not-found") throw error;
+  }
+};
+
 const assetTypeToFilterData = {
   videos: "Videos",
   "video-templates": "VideoTemplates",
   images: "Images",
-  graphics: "GraphicTemplates",
-  mockups: "Mockups",
-  fonts: "Fonts",
+  "website-templates": "GraphicTemplates",
+  tools: "Tools",
+  mockups: "Tools",
   models: "3DModels",
-  icons: "Icons",
-  textures: "Textures",
   hdris: "HDRIs",
   scripts: "Scripts",
   prompts: "Prompts",
@@ -584,14 +507,12 @@ const specializationToAssetTypes = {
   "3d-models": ["models"],
   "video-templates": ["video-templates"],
   images: ["images"],
-  mockups: ["mockups"],
-  "graphic-templates": ["graphics"],
-  fonts: ["fonts"],
-  icons: ["icons"],
+  tools: ["tools"],
+  mockups: ["tools", "mockups"],
+  "graphic-templates": ["website-templates"],
   scripts: ["scripts"],
   prompts: ["prompts"],
   hdris: ["hdris"],
-  textures: ["textures"],
 };
 
 const Upload = ({
@@ -633,7 +554,6 @@ const Upload = ({
     model: null,
     images: [],
     video: null,
-    icons: [],
     script: null,
     promptFile: null,
     previewUrl: "",
@@ -641,7 +561,6 @@ const Upload = ({
     hdri: null,
     graphicsTemplate: null,
     mockupFile: null,
-    fontFile: null,
     videoTemplateFile: null,
     other: null,
     otherSize: "",
@@ -657,7 +576,6 @@ const Upload = ({
     physicalSize: "",
     lods: "",
     vertices: "",
-    textures: [],
     materials: "",
     uvMapping: false,
     rigged: false,
@@ -699,12 +617,9 @@ const Upload = ({
     hdri: null,
     graphicsTemplate: null,
     mockupFile: null,
-    fontFile: null,
     videoTemplateFile: null,
     other: null,
     images: [],
-    icons: [],
-    textures: [],
   });
 
   const [filePreviewTypes, setFilePreviewTypes] = useState({
@@ -715,7 +630,6 @@ const Upload = ({
     hdri: null,
     graphicsTemplate: null,
     mockupFile: null,
-    fontFile: null,
     videoTemplateFile: null,
     other: null,
   });
@@ -842,7 +756,7 @@ const Upload = ({
         price: assetToEdit.price || "free",
         category: assetToEdit.category || "",
         interest: assetToEdit.interest || "",
-        type: String(assetToEdit.type || "").toLowerCase(),
+        type: String(assetToEdit.type || "").toLowerCase() === "mockups" ? "tools" : String(assetToEdit.type || "").toLowerCase(),
         previewModel: null,
         previewUrl: assetToEdit.previewUrl || "",
         is3d: assetToEdit.is3d || false,
@@ -1077,7 +991,7 @@ const Upload = ({
     try {
       setLoadingState(`Deleting ${label}...`);
       try {
-        await deleteObject(ref(storage, storedPath));
+        await deleteStoredFile(storedPath);
       } catch (storageError) {
         // If the object is already missing, still remove its stale database reference.
         if (storageError?.code !== "storage/object-not-found") throw storageError;
@@ -2036,6 +1950,13 @@ const Upload = ({
 
     setIsSubmitting(true);
 
+    const oldPreviewFile = editMode ? assetToEdit?.thumbnailModel : null;
+    const oldModelFile = editMode
+      ? assetToEdit?.model || assetToEdit?.downloadUrl
+      : null;
+    const newlyUploadedModelFiles = [];
+    let firestoreSaved = false;
+
     try {
       const userProfile = await getUserProfileData();
       const userName = userProfile?.displayName || userProfile?.name || currentUser?.displayName || "Unknown";
@@ -2103,6 +2024,7 @@ const Upload = ({
           currentUser.uid
         );
         docData.thumbnailModel = previewUpload?.url;
+        if (previewUpload?.url) newlyUploadedModelFiles.push(previewUpload.url);
       } else if (editMode && deletedStoredFiles.preview) {
         docData.thumbnailModel = deleteField();
       } else if (editMode && assetToEdit?.thumbnailModel) {
@@ -2115,6 +2037,9 @@ const Upload = ({
         Object.assign(docData, uploadResult.docFields);
         docData.downloadUrl = uploadResult.downloadUrl;
         docData.fileName = uploadResult.fileName;
+        if (formData.type === "models" && uploadResult.downloadUrl) {
+          newlyUploadedModelFiles.push(uploadResult.downloadUrl);
+        }
       } else if (editMode && deletedStoredFiles.model) {
         docData.model = deleteField();
         docData.downloadUrl = deleteField();
@@ -2125,8 +2050,30 @@ const Upload = ({
 
       if (editMode && assetToEdit?.id) {
         await updateDoc(doc(db, "Assets", assetToEdit.id), docData);
+        firestoreSaved = true;
+
+        // Replace old 3D files only after Firestore points to the new files.
+        // This prevents a failed upload/update from breaking the existing asset.
+        if (formData.type === "models") {
+          const oldFilesToDelete = [];
+          if (formData.previewModel instanceof File && oldPreviewFile) {
+            oldFilesToDelete.push(oldPreviewFile);
+          }
+          if (formData.model instanceof File && oldModelFile) {
+            oldFilesToDelete.push(oldModelFile);
+          }
+          const cleanupResults = await Promise.allSettled(
+            oldFilesToDelete.map((file) => deleteStoredFile(file))
+          );
+          cleanupResults.forEach((result) => {
+            if (result.status === "rejected") {
+              console.warn("Old 3D file could not be removed after replacement:", result.reason);
+            }
+          });
+        }
       } else {
         const newAssetRef = await addDoc(collection(db, "Assets"), docData);
+        firestoreSaved = true;
 
         if (isContrib) {
           await createAdminAssetNotification(newAssetRef.id, formData.title, userName, currentUser.uid);
@@ -2138,6 +2085,14 @@ const Upload = ({
       onUploadSuccess?.();
     } catch (err) {
       console.error("UPLOAD FAILED:", err);
+
+      // If the Firestore save failed after a new 3D file was uploaded, remove
+      // those new files so a retry does not leave storage duplicates behind.
+      if (!firestoreSaved) {
+        await Promise.allSettled(
+          newlyUploadedModelFiles.map((file) => deleteStoredFile(file))
+        );
+      }
       alert("Failed to upload: " + (err.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
@@ -2148,15 +2103,12 @@ const Upload = ({
   const uploadMainAsset = async (type, formData, uid) => {
     const config = {
       images: { field: "images", multiple: true, folder: "images" },
-      icons: { field: "icons", multiple: true, folder: "icons" },
-      textures: { field: "textures", multiple: true, folder: "textures" },
       videos: { field: "video", multiple: false, folder: "videos" },
       models: { field: "model", multiple: false, folder: "models" },
       scripts: { field: "script", multiple: false, folder: "scripts" },
       hdris: { field: "hdri", multiple: false, folder: "hdris" },
-      graphics: { field: "graphicsTemplate", multiple: false, folder: "graphics" },
-      mockups: { field: "mockupFile", multiple: false, folder: "mockups" },
-      fonts: { field: "fontFile", multiple: false, folder: "fonts" },
+      "website-templates": { field: "graphicsTemplate", multiple: false, folder: "graphics" },
+      tools: { field: "mockupFile", multiple: false, folder: "tools" },
       "video-templates": { field: "videoTemplateFile", multiple: false, folder: "video-templates" },
       prompts: { field: "promptFile", multiple: false, folder: "prompts" },
       other: { field: "other", multiple: false, folder: "other" },
@@ -2712,15 +2664,12 @@ const Upload = ({
                   {userRole === "admin" ? (
                     <>
                       <option value="models">3D Model</option>
-                      <option value="textures">Texture</option>
                       <option value="scripts">Script</option>
                       <option value="images">Image</option>
-                      <option value="graphics">Graphics Templates</option>
-                      <option value="mockups">Mockups</option>
-                      <option value="fonts">Fonts</option>
+                      <option value="website-templates">Website Templates</option>
+                      <option value="tools">Tools</option>
                       <option value="videos">Videos</option>
                       <option value="video-templates">Video Templates</option>
-                      <option value="icons">Icons</option>
                       <option value="hdris">HDRIs</option>
                       <option value="prompts">Prompts</option>
                       <option value="other">Other</option>
@@ -2731,15 +2680,12 @@ const Upload = ({
                         specializationToAssetTypes[specialization] || [];
                       const typeLabels = {
                         models: "3D Model",
-                        textures: "Texture",
                         scripts: "Script",
                         images: "Image",
-                        graphics: "Graphics Templates",
-                        mockups: "Mockups",
-                        fonts: "Fonts",
+                        "website-templates": "Website Templates",
+                        tools: "Tools",
                         videos: "Videos",
                         "video-templates": "Video Templates",
-                        icons: "Icons",
                         hdris: "HDRIs",
                         prompts: "Prompts",
                       };
@@ -3234,34 +3180,6 @@ const Upload = ({
                 </div>
               )}
 
-              {formData.type === "textures" && (
-                <div className="blog-form-group">
-                  <label className="blog-form-label">
-                    Texture Files{" "}
-                    {!editMode && <span className="blog-form-required">*</span>}
-                  </label>
-                  <input
-                    type="file"
-                    name="textures"
-                    onChange={handleChange}
-                    accept="image/*, .png, .jpg, .jpeg, .psd"
-                    multiple
-                    className="blog-form-file"
-                    required={!editMode}
-                  />
-                  <p className="blog-form-hint">
-                    Select multiple texture image files & .psd, .zip
-                  </p>
-                  {renderMultipleFilesPreview("textures", "Texture")}
-                  {editMode && assetToEdit.textures && (
-                    <p className="current-image-note">
-                      Current texture files will be kept if no new files are
-                      selected
-                    </p>
-                  )}
-                </div>
-              )}
-
               {formData.type === "hdris" && (
                 <div className="blog-form-group">
                   <label className="blog-form-label">
@@ -3288,38 +3206,10 @@ const Upload = ({
                 </div>
               )}
 
-              {formData.type === "icons" && (
+              {formData.type === "website-templates" && (
                 <div className="blog-form-group">
                   <label className="blog-form-label">
-                    Icon Files{" "}
-                    {!editMode && <span className="blog-form-required">*</span>}
-                  </label>
-                  <input
-                    type="file"
-                    name="icons"
-                    onChange={handleChange}
-                    accept="image/*,.svg,.png,.ico"
-                    multiple
-                    className="blog-form-file"
-                    required={!editMode}
-                  />
-                  <p className="blog-form-hint">
-                    Select multiple icon files PNG, SVG, ICO
-                  </p>
-                  {renderMultipleFilesPreview("icons", "Icon")}
-                  {editMode && assetToEdit.icons && (
-                    <p className="current-image-note">
-                      Current icon files will be kept if no new files are
-                      selected
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {formData.type === "graphics" && (
-                <div className="blog-form-group">
-                  <label className="blog-form-label">
-                    Graphics Template File{" "}
+                    Website Template File{" "}
                     {!editMode && <span className="blog-form-required">*</span>}
                   </label>
                   <input
@@ -3333,20 +3223,20 @@ const Upload = ({
                   <p className="blog-form-hint">
                     Supported formats: PSD, AI, EPS, PDF
                   </p>
-                  {renderFilePreview("graphicsTemplate", "Graphics Template")}
+                  {renderFilePreview("graphicsTemplate", "Website Template")}
                   {editMode && assetToEdit.graphicsTemplate && (
                     <p className="current-image-note">
-                      Current graphics template file will be kept if no new file
+                      Current website template file will be kept if no new file
                       is selected
                     </p>
                   )}
                 </div>
               )}
 
-              {formData.type === "mockups" && (
+              {formData.type === "tools" && (
                 <div className="blog-form-group">
                   <label className="blog-form-label">
-                    Mockup File{" "}
+                    Tool File{" "}
                     {!editMode && <span className="blog-form-required">*</span>}
                   </label>
                   <input
@@ -3358,37 +3248,11 @@ const Upload = ({
                     required={!editMode}
                   />
                   <p className="blog-form-hint">Supported formats: PSD, .zip</p>
-                  {renderFilePreview("mockupFile", "Mockup")}
+                  {renderFilePreview("mockupFile", "Tool")}
                   {editMode && assetToEdit.mockupFile && (
                     <p className="current-image-note">
                       Current mockup file will be kept if no new file is
                       selected
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {formData.type === "fonts" && (
-                <div className="blog-form-group">
-                  <label className="blog-form-label">
-                    Font File{" "}
-                    {!editMode && <span className="blog-form-required">*</span>}
-                  </label>
-                  <input
-                    type="file"
-                    name="fontFile"
-                    onChange={handleChange}
-                    accept=".eps,.ttf,.otf,.woff,.woff2,.zip"
-                    className="blog-form-file"
-                    required={!editMode}
-                  />
-                  <p className="blog-form-hint">
-                    Supported formats: TTF, OTF, WOFF, WOFF2, .zip
-                  </p>
-                  {renderFilePreview("fontFile", "Font")}
-                  {editMode && assetToEdit.fontFile && (
-                    <p className="current-image-note">
-                      Current font file will be kept if no new file is selected
                     </p>
                   )}
                 </div>

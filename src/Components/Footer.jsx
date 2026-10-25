@@ -62,12 +62,11 @@ function Footer() {
     path === "/coming-soon" ||
     path.startsWith("/profile") ||
     path.startsWith("/error") ||
-    path.startsWith("/category/fonts") ||
     path.startsWith("/category/video-templates") ||
-    path.startsWith("/category/icons") ||
     path.startsWith("/category/models") ||
+    path.startsWith("/category/tools") ||
     path.startsWith("/category/mockups") ||
-    path.startsWith("/category/graphics") ||
+    path.startsWith("/category/website-templates") ||
     path.startsWith("/category/videos") ||
     path.startsWith("/category/images") ||
     path.startsWith("/category/scripts") ||

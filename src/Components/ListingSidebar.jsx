@@ -124,7 +124,7 @@ const filterData = {
       options: ["Vector", "Layered"],
     },
   },
-  Mockups: {
+  Tools: {
     categories: {
       label: "Categories",
       options: ["Products", "Advertising", "Social Media", "Stationary", "Places", "Vehicles", "Website / UI Display"],
@@ -136,16 +136,6 @@ const filterData = {
     licenseType: {
       label: "License Type",
       options: ["Free Use", "Commercial Use", "Extended License", "Personal Use Only"],
-    },
-  },
-  Fonts: {
-    properties: {
-      label: "Properties",
-      options: ["Any Type"],
-    },
-    licenseType: {
-      label: "License Type",
-      options: ["Free for Personal Use", "Free for Commercial Use", "Paid / Premium License", "Extended / Unlimited Use", "Desktop License", "Webfont License", "App / eBook License"],
     },
   },
   "3DModels": {
@@ -176,26 +166,6 @@ const filterData = {
     properties: {
       label: "Properties",
       options: ["Rigged", "Animated", "Game Ready", "Textured"],
-    },
-  },
-  Icons: {
-    categories: {
-      label: "Categories",
-      options: ["Static Icons", "Interface Icons", "Animated Icons", "Stickers"],
-    },
-  },
-  Textures: {
-    surfaceMaterial: {
-      label: "Surface Material",
-      options: ["Wood", "Metal", "Concrete", "Brick", "Fabric / Cloth", "Leather", "Stone / Rock", "Plastic", "Glass", "Water", "Sand / Soil", "Paper / Cardboard", "Asphalt / Road"],
-    },
-    resolution: {
-      label: "Resolution",
-      options: ["512x512", "1K (1024x1024)", "2K", "4K", "8K"],
-    },
-    style: {
-      label: "Style / Look",
-      options: ["Realistic", "Cartoon / Stylized", "Minimal", "Abstract", "Vintage", "Futuristic", "Sci-fi", "Fantasy"],
     },
   },
   HDRIs: {
@@ -309,13 +279,11 @@ const categoryMapping = {
   Videos: "Videos",
   "video-templates": "VideoTemplates",
   Images: "Images",
-  graphics: "GraphicTemplates",
-  Mockups: "Mockups",
-  Fonts: "Fonts",
+  "website-templates": "GraphicTemplates",
+  tools: "Tools",
+  mockups: "Tools",
   models: "3DModels",
   "3dmodels": "3DModels",
-  Icons: "Icons",
-  Textures: "Textures",
   HDRIs: "HDRIs",
   Scripts: "Scripts",
   prompts: "Prompts",

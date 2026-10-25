@@ -94,8 +94,8 @@ const ItemInfoTable = (props) => {
       );
     }
 
-    // Graphics Templates
-    else if (asset.type === "graphics" || asset.type === "GraphicTemplates") {
+    // Website Templates
+    else if (asset.type === "website-templates") {
       typeSpecificAttributes.push(
         { label: "Color Space", value: asset.colorSpace },
         { label: "Orientation", value: asset.orientation },
@@ -131,16 +131,8 @@ const ItemInfoTable = (props) => {
       );
     }
 
-    // Fonts
-    else if (asset.type === "fonts") {
-      typeSpecificAttributes.push(
-        { label: "Properties", value: Array.isArray(asset.properties) ? asset.properties.join(", ") : asset.properties },
-        { label: "License Type", value: asset.licenseType }
-      );
-    }
-
-    // Mockups
-    else if (asset.type === "mockups") {
+    // Tools
+    else if (asset.type === "tools" || asset.type === "mockups") {
       typeSpecificAttributes.push(
         { label: "File Format", value: asset.fileFormat },
         { label: "License Type", value: asset.licenseType }
