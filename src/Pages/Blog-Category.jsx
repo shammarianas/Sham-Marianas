@@ -209,10 +209,7 @@ const BlogCategory = () => {
                         <div className="post-author ml-20">
                           By {BLOG_AUTHOR}
                         </div>
-                        <div className="post-updated ml-20">
-                          Updated: {formatBlogDate(post.updatedAt)}
-                        </div>
-                        <div className="commt opacity-7 fz-13">
+                        <div className="commt opacity-7 fz-13 ml-30">
                           <span className="ti-comment-alt mr-10"></span>0
                           Comments
                         </div>

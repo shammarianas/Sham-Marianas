@@ -23,6 +23,7 @@ import "../utils/seoConfig";
 import SchemaMarkup from "../Components/SchemaMarkup";
 import SEO from "../common/SEO";
 import ErrorPage from "./Error";
+import { getBlogMetaDescription } from "../utils/seoConfig";
 
 const normalizeBlogContentLinks = (content) =>
   typeof content === "string"
@@ -362,9 +363,10 @@ function BlogDetails() {
       {blog && (
         <SEO
           title={`${blog.title} | Sham Marianas Blog`}
-          description={blog.excerpt || "Blog description"}
+          description={getBlogMetaDescription(blog)}
           keywords={blog.tags?.join(', ') || blog.category}
           canonical={`https://www.shammarianas.com/blog/${encodeURIComponent(blog.slug || blog.id)}`}
+          preserveCanonicalPath
         />
       )}
 
@@ -381,7 +383,7 @@ function BlogDetails() {
         publishedTime: getIsoDate(blog.publishedAt || blog.createdAt) || new Date().toISOString(),
         updatedTime: getIsoDate(blog.updatedAt || blog.publishedAt || blog.createdAt),
         authorName: BLOG_AUTHOR,
-        description: blog.excerpt || "Blog description",
+        description: getBlogMetaDescription(blog),
         keywords: blog.tags?.join(', ') || blog.category,
         content: blog.content  // Yeh important – auto FAQ ke liye pass karo
       }}
@@ -422,14 +424,6 @@ function BlogDetails() {
                         <h6 className="fz-14">
                           <time dateTime={getIsoDate(blog.publishedAt || blog.createdAt)}>
                             {formatBlogDate(blog.publishedAt || blog.createdAt)}
-                          </time>
-                        </h6>
-                      </div>
-                      <div className="date mb-10">
-                        <span className="opacity-7">Last updated</span>
-                        <h6 className="fz-14">
-                          <time dateTime={getIsoDate(blog.updatedAt || blog.publishedAt || blog.createdAt)}>
-                            {formatBlogDate(blog.updatedAt || blog.publishedAt || blog.createdAt)}
                           </time>
                         </h6>
                       </div>

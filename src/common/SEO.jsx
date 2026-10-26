@@ -14,7 +14,8 @@ const SEO = ({
   ogType = "website",
   twitterCard = "summary_large_image",
   robots = "index, follow",
-  noCanonical = false
+  noCanonical = false,
+  preserveCanonicalPath = false
 }) => {
   const location = useLocation(); // Get current URL path
   const siteUrl = "https://www.shammarianas.com";
@@ -23,9 +24,11 @@ const SEO = ({
     try {
       const url = new URL(value, siteUrl);
       if (url.origin !== siteUrl) return value;
+      // Keep canonical URLs identical to the app's route format. The root
+      // stays `/`; every other route uses no trailing slash.
       url.pathname = url.pathname === '/'
         ? '/'
-        : `${url.pathname.replace(/\/+$/, '')}/`;
+        : url.pathname.replace(/\/+$/, '');
       url.search = '';
       url.hash = '';
       return url.toString();

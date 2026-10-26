@@ -90,7 +90,16 @@ function Blogs() {
           };
         });
 
-        if (isMounted) setBlogs(blogsData);
+        // Firestore does not guarantee document order without an orderBy
+        // query. Sort locally so the newest published blog always appears
+        // first, including older records that may only have createdAt.
+        const newestFirst = [...blogsData].sort((a, b) => {
+          const dateA = getDateValue(a.publishedAt || a.createdAt || a.updatedAt)?.getTime() || 0;
+          const dateB = getDateValue(b.publishedAt || b.createdAt || b.updatedAt)?.getTime() || 0;
+          return dateB - dateA;
+        });
+
+        if (isMounted) setBlogs(newestFirst);
       } catch (error) {
         console.error("Error fetching published blogs:", error);
         if (isMounted) {
@@ -304,12 +313,7 @@ function Blogs() {
                             <div className="post-author ml-20">
                               By {BLOG_AUTHOR}
                             </div>
-                            <div className="post-updated ml-20">
-                              Updated: {formatBlogDate(
-                                blog.updatedAt || blog.publishedAt || blog.createdAt
-                              )}
-                            </div>
-                            <div className="commt opacity-7 fz-13">
+                            <div className="commt opacity-7 fz-13 ml-30">
                               <span className="ti-comment-alt mr-10"></span>
                               {blog.commentsCount || 0} Comments
                             </div>
@@ -502,17 +506,30 @@ function Blogs() {
                         "marketing",
                       ].map((cat) => (
                         <li key={cat}>
-                          <Link
-                            to={cat === "*" ? "/blog" : `/blog-category/${cat}`}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFilter(cat);
+                              setCurrentPage(1);
+                            }}
                             className={filter === cat ? "active" : ""}
-                            aria-current={filter === cat ? "page" : undefined}
+                            aria-pressed={filter === cat}
+                            style={{
+                              border: 0,
+                              padding: 0,
+                              background: "transparent",
+                              color: "inherit",
+                              font: "inherit",
+                              textAlign: "left",
+                              cursor: "pointer",
+                            }}
                           >
                             {cat === "*"
                               ? "All"
                               : cat === "ai"
                               ? "AI"
                               : cat.charAt(0).toUpperCase() + cat.slice(1)}
-                          </Link>
+                          </button>
                           <span className="ml-auto">
                             {cat === "*"
                               ? blogs.length

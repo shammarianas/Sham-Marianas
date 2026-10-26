@@ -1,3 +1,34 @@
+const stripHtml = (value = "") =>
+  value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+
+// Keep every individual blog's SEO description useful and within the
+// recommended search-result length, even when an older excerpt is too long.
+export const getBlogMetaDescription = (blogData, maxLength = 160) => {
+  if (!blogData) return "Read this informative article from Sham Marianas.";
+
+  // Prefer the article body so an old/manual excerpt cannot make the SEO
+  // description unrelated to the current blog topic.
+  const source = stripHtml(blogData.content || blogData.excerpt || "");
+  if (!source) return "Read this informative article from Sham Marianas.";
+  if (source.length <= maxLength) return source;
+
+  const suffix = "...";
+  const availableLength = maxLength - suffix.length;
+  const shortened = source
+    .slice(0, availableLength)
+    .replace(/\s+\S*$/, "")
+    .trim();
+
+  return `${shortened || source.slice(0, availableLength).trim()}${suffix}`;
+};
+
 export const SEO_CONFIG = {
   // =========================================================
   //   Main Pages SEO
@@ -142,20 +173,7 @@ export const SEO_CONFIG = {
 
 
     const getDescription = () => {
-      if (blogData.excerpt && blogData.excerpt.trim()) {
-        return blogData.excerpt;
-      }
-
-
-      if (blogData.content) {
-        const plainText = blogData.content.replace(/<[^>]*>/g, "").trim();
-        return plainText.length > 160
-          ? plainText.substring(0, 160) + "..."
-          : plainText;
-      }
-
-
-      return "Read this informative article on digital marketing, SEO, and business growth strategies.";
+      return getBlogMetaDescription(blogData);
     };
 
 

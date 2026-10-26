@@ -564,7 +564,7 @@ function BlogEditorModal({ isOpen, onClose, blogToEdit }) {
         title: blogData.title.trim(),
         slug, // SAVED
         category: blogData.category,
-        excerpt: blogData.excerpt || content.replace(/<[^>]*>/g, "").substring(0, 200) + "...",
+        excerpt: blogData.excerpt || content.replace(/<[^>]*>/g, "").trim().substring(0, 157).replace(/\s+\S*$/, "") + "...",
         tags: blogData.tags,
         content,
         featureImgUrl,
