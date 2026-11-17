@@ -15,7 +15,7 @@ const AiAutomationPage = () => {
     paragraphs: [
       <>
         True automation is more than replacing manual work. It is about designing smart systems that adapt, learn, and improve over time. At{" "}
-        <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, we build automation solutions that save hours, reduce errors, and keep your business running 24/7 without missing a beat.
+        <span className="text-bold underline main-color">Sham Marianas</span>, we build automation solutions that save hours, reduce errors, and keep your business running 24/7 without missing a beat.
       </>,
       "Every algorithm and process is tailored for maximum efficiency and seamless integration with your existing systems. We ensure every solution is user-friendly, scalable, and capable of handling real-world challenges. Whether it is an AI that instantly responds to customers, an automated system that manages your sales pipeline, or a process that analyzes thousands of data points in seconds, we make it happen.",
       "We merge innovation with intelligence to create automation solutions that do not just perform but excel.",
@@ -27,12 +27,12 @@ const AiAutomationPage = () => {
     title: "Automation That Transforms Workflows Into Growth Engines",
     paragraphs: [
       <>
-        At <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>
+        At <span className="text-bold underline main-color">Sham Marianas</span>
         , we believe automation should be both powerful and practical. Our goal is to give you tools that boost productivity, cut costs, and increase accuracy while freeing your team to focus on what truly matters, which is growth.
       </>,
       "From the first consultation to final deployment, we focus on business impact, user experience, and measurable ROI. Every automation solution is built with your industry needs in mind, ensuring that it is not only a fit for today but also a foundation for future growth.",
       <>
-        With <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>, AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
+        With <span className="text-bold underline main-color">Sham Marianas</span>, AI Automation Services, your workflows will not just run. They will take your company to the next level quite quickly.
       </>,
     ],
     image: "/assets/imgs/AiAutomation/AI2.png",
@@ -62,7 +62,7 @@ const AiAutomationPage = () => {
       question: "How do I get started?",
       answer:
         <>
-          Make a consultation appointment by visiting our website at  <span className="text-bold underline main-color">Sham Marianas F.Z.C</span>. We will identify automation opportunities and start building a system that will save time, cut costs, and boost productivity.
+          Make a consultation appointment by visiting our website at  <span className="text-bold underline main-color">Sham Marianas</span>. We will identify automation opportunities and start building a system that will save time, cut costs, and boost productivity.
         </>
     },
   ];
@@ -72,40 +72,60 @@ const AiAutomationPage = () => {
       <SchemaMarkup type="service" data={SEO_CONFIG.aiAutomation} />
       <SEO {...SEO_CONFIG.aiAutomation} />
       <HeaderSection
-        title="AI "
-        highlightedText="Automation"
+        title={<>AI Automation Services<br /></>}
+        highlightedText="in Dubai"
         backgroundImage="/assets/imgs/background/bg1.jpg"
         overlayDark="8"
       />
       <IntroSection
         title="Creating the Unreal, "
         highlightedWords={["Shaping Ideas Into AI Powered Solutions That Work for You"]}
-        customClass="intro-webdev-section" // 👈 Custom class added here
+        customClass="intro-ai-section"
         paragraphs={[
           <>
-            At{" "}
-            <span className="text-bold text-left underline main-color">
-              Sham Marianas F.Z.C
-            </span>, we do more than just automate tasks. We build AI-powered systems that think, adapt, and deliver results. Whether it is streamlining your business operations or creating intelligent workflows, we transform your processes into smart, efficient, and scalable solutions that work flawlessly.
-
+            <span className="text-bold text-left underline">
+              Sham Marianas
+            </span>{" "}
+            introduces{" "}
+            <a
+              className="text-bold main-color"
+              href="https://agentixsystem.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Agentix System
+            </a>, a Dubai-based AI solution specializing in custom AI automation and agentic AI systems. We help businesses automate workflows, connect their tools, and build intelligent systems that work with minimal human intervention.
           </>,
-          "From concept to execution, our automation solutions are crafted with precision, performance, and people in mind. We blend advanced artificial intelligence with practical business logic to create systems that save time and elevate your customer experience.",
-          "With us, your business does not just work. It works smarter."
+          "The outcome is simple: fewer errors, faster customer replies, and a business that keeps moving, even after office hours."
         ]}
         listItems={[
           "Business Process Automation (BPA)",
           "Workflow Automation Solutions",
-          "AI Chatbots and Virtual Assistants",
+          <>
+            AI Chatbots and{" "}
+            <a
+              className="main-color"
+              href="https://agentixsystem.com/assistant"
+              target="_blank"
+              rel="noreferrer"
+            >
+              AI Avatar Assistants
+            </a>
+          </>,
           "Data Processing and Predictive Analytics",
           "Marketing Automation Systems",
           "CRM and Sales Pipeline Automation",
-          "Finance & Invoice Processing Automation",
+          "Finance and Invoice Processing Automation",
           "Industry-Specific Automation Solutions",
         ]}
         imageSrc="/assets/imgs/AiAutomation/AI.png"
         imageAlt="Intro branding"
       />
-      <BrandingContentSection sectionOne={sectionOne} sectionTwo={sectionTwo} />
+      <BrandingContentSection
+        sectionOne={sectionOne}
+        sectionTwo={sectionTwo}
+        customClass="ai-automation-content"
+      />
       <div className="bord-bottom-grd pb-40 pt-40 ontop"></div>
       <FAQAccordion
         title="Frequently Asked Questions"

@@ -7,10 +7,15 @@ import '../utils/seoConfig';
 const SEO = ({
   title = "Sham Marianas F.Z.C",
   description = "Sham Marianas FZC is a top marketing agency that helps businesses grow with digital marketing, IT Solution, brand building, and ROI-focused advertising. We employ tried-and-true marketing techniques to increase our internet presence, draw in new clients, and provide tangible outcomes. Let's grow your company to new heights!",
-  keywords = "Web development, Digital Marketing, SEO, Social Media Marketing, Branding, Marketing Agency",
   canonical,
   ogImage = "https://www.shammarianas.com/assets/imgs/arrow-image.png",
   twitterImage,
+  ogImageAlt = "Sham Marianas F.Z.C. — Dubai digital marketing and creative agency",
+  ogImageWidth = 1200,
+  ogImageHeight = 630,
+  twitterImageWidth = ogImageWidth,
+  twitterImageHeight = ogImageHeight,
+  ogLocale = "en_AE",
   ogType = "website",
   twitterCard = "summary_large_image",
   robots = "index, follow",
@@ -19,6 +24,13 @@ const SEO = ({
 }) => {
   const location = useLocation(); // Get current URL path
   const siteUrl = "https://www.shammarianas.com";
+  const resolveImageUrl = (value) => {
+    try {
+      return new URL(value, siteUrl).toString();
+    } catch (_error) {
+      return value;
+    }
+  };
 
   const normalizeCanonicalUrl = (value) => {
     try {
@@ -51,13 +63,14 @@ const SEO = ({
   const canonicalUrl = getCanonicalUrl();
   const siteTitle = "Sham Marianas F.Z.C.";
   const fullTitle = title || siteTitle;
+  const ogImageUrl = resolveImageUrl(ogImage);
+  const twitterImageUrl = resolveImageUrl(twitterImage || ogImage);
 
   return (
     <Helmet>
       {/* Basic Meta Tags */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
       {!noCanonical && <meta name="twitter:url" content={canonicalUrl} />}
 
       {/* ✅ DYNAMIC CANONICAL LINK */}
@@ -68,14 +81,21 @@ const SEO = ({
       <meta property="og:description" content={description} />
       {!noCanonical && <meta property="og:url" content={canonicalUrl} />}
       <meta property="og:type" content={ogType} />
-      <meta property="og:image" content={ogImage} />
+      <meta property="og:locale" content={ogLocale} />
+      <meta property="og:image" content={ogImageUrl} />
+      <meta property="og:image:alt" content={ogImageAlt} />
+      <meta property="og:image:width" content={String(ogImageWidth)} />
+      <meta property="og:image:height" content={String(ogImageHeight)} />
       <meta property="og:site_name" content={siteTitle} />
 
       {/* Twitter Card Tags */}
       <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={twitterImage || ogImage} />
+      <meta name="twitter:image" content={twitterImageUrl} />
+      <meta name="twitter:image:alt" content={ogImageAlt} />
+      <meta name="twitter:image:width" content={String(twitterImageWidth)} />
+      <meta name="twitter:image:height" content={String(twitterImageHeight)} />
 
       {/* Additional Tags */}
       <meta name="robots" content={robots} />

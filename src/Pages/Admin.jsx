@@ -1,4 +1,5 @@
 // import Tab from '../Components/UI/Tabs'
+import "../assets/Styles/Tab.css";
 import AdminDashboard from "../Components/UI/dashboard/AdminDashboard";
 
 const Admin = () => {

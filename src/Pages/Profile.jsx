@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import "../assets/Styles/profile-edit.css";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, setDoc, updateDoc, onSnapshot, query, collection, getDocs, deleteDoc, where, Timestamp } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";

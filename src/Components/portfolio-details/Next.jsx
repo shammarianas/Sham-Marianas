@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { db } from "../../../firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { useParams, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import loadBackgroudImages from "../../common/loadBackgroudImages";
+import { getPublishedProjects } from "../../utils/portfolioProjectsCache.js";
 
 function Next() {
   const { id } = useParams();
@@ -16,12 +16,11 @@ function Next() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const projectsQuery = query(collection(db, "projects"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(projectsQuery);
-        const projectsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const projectsData = (await getPublishedProjects()).sort((a, b) => {
+          const dateA = a.createdAt?.toDate?.() || new Date(0);
+          const dateB = b.createdAt?.toDate?.() || new Date(0);
+          return dateB - dateA;
+        });
 
         setProjects(projectsData);
 
@@ -105,9 +104,9 @@ function Next() {
                   </div>
                   <div>
                     <h6 className="sub-title fz-16 mb-5">Prev Project</h6>
-                    <a  href={`/project-details/${prevProject.id}`} className="fz-40 fw-600 stroke next-pre-title" aria-label={`View previous project: ${prevProject.title}`}>
+                    <Link to={`/project-details/${prevProject.id}`} className="fz-40 fw-600 stroke next-pre-title" aria-label={`View previous project: ${prevProject.title}`}>
                       {prevProject.title}
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -129,9 +128,9 @@ function Next() {
                   <div className="cont d-flex align-items-center">
                     <div>
                       <h6 className="sub-title fz-16 mb-5">Next Project</h6>
-                      <a href={`/project-details/${nextProject.id}`} className="fz-40 fw-600 stroke next-pre-title" aria-label={`View next project: ${nextProject.title}`}>
+                      <Link to={`/project-details/${nextProject.id}`} className="fz-40 fw-600 stroke next-pre-title" aria-label={`View next project: ${nextProject.title}`}>
                         {nextProject.title}
-                      </a>
+                      </Link>
                     </div>
                     <div>
                       <span className="ml-30 fz-30 ti-arrow-right cursor-pointer" onClick={handleNextClick} style={{ cursor: nextProject ? "pointer" : "default" }}></span>
@@ -155,10 +154,10 @@ function Next() {
         </div>
       </div>
       <div>
-        <a href="/case-study" className="all-works-butn text-center" aria-label="View all projects">
+        <Link to="/case-study" className="all-works-butn text-center" aria-label="View all projects">
           <span className="ti-view-grid fz-24 mb-10"></span>
           <span className="d-block fz-12 text-u ls1">All Projects</span>
-        </a>
+        </Link>
       </div>
     </section>
   );

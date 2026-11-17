@@ -112,7 +112,9 @@ const generateUrlsFromRoutes = async () => {
       try {
         const source = route.collection === 'blogs'
           ? query(collection(db, route.collection), where('status', '==', 'PUBLISHED'))
-          : collection(db, route.collection);
+          : route.collection === 'projects'
+            ? query(collection(db, route.collection), where('status', '==', 'published'))
+            : collection(db, route.collection);
         const querySnapshot = await getDocs(source);
         const items = [];
         querySnapshot.forEach((doc) => {

@@ -95,7 +95,7 @@ function Services() {
     },
     {
       num: "11",
-      slug: "https://agentixsystem.com/",
+      slug: "ai-automation",
       category: "AI & Automation",
       title: "Smart workflows",
       description:

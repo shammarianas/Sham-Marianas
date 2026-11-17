@@ -51,7 +51,7 @@ export const SEO_CONFIG = {
     keywords: "Digital Marketing Services, Web Development Services, SEO Services, Social Media Marketing, Branding Services",
   },
   aiAutomation: {
-    title: "AI Automation Services Dubai | Sham Marianas F.Z.C.",
+    title: "AI Automation Services Dubai | Sham Marianas",
     description: "Sham Marianas offers AI automation in Dubai BPA, workflow optimization & intelligent systems for growth. Enhance performance, boost UAE efficiency!",
     keywords: "AI automation Dubai, business automation UAE, chatbots Dubai, workflow automation UAE, CRM automation Dubai,AI services marketing agency",
   },
@@ -407,6 +407,11 @@ export const SEO_CONFIG = {
     title: "Sham Marianas F.Z.C Portfolio | Dubai Creative Projects ",
     description: "Explore Shammarianas portfolio of successful projects including web design, development, digital marketing, and branding solutions.",
     keywords: "Portfolio, Projects, Case Studies, Web Design, Development, Digital Marketing, Branding",
+    ogImage: "/assets/imgs/works/grid/3.jpg",
+    twitterImage: "/assets/imgs/works/grid/3.jpg",
+    ogImageAlt: "Sham Marianas creative portfolio projects in Dubai",
+    ogImageWidth: 2560,
+    ogImageHeight: 1440,
   },
 
 
@@ -443,6 +448,9 @@ export const SEO_CONFIG = {
       keywords: keywords,
       ogImage: projectData.featureImgUrl || projectData.coverImgUrl || "/assets/imgs/arrow-image.png",
       twitterImage: projectData.featureImgUrl || projectData.coverImgUrl || "/assets/imgs/arrow-image.png",
+      ogImageAlt: `${projectData.title} case study by Sham Marianas`,
+      ogImageWidth: 1200,
+      ogImageHeight: 630,
       ogType: "article",
       twitterCard: "summary_large_image"
     };

@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import "../assets/Styles/video-viewer.css";
 
 const VideoViewer = ({
   videoUrl,

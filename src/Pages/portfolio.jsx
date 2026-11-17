@@ -1,15 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db, auth } from "../../firebase";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  doc,
-  getDoc,
-} from "firebase/firestore";
 import ProgressScroll from "../common/ProgressScroll";
 import { Link } from "react-router-dom";
 import loadBackgroundImages from "../common/loadBackgroudImages";
@@ -17,14 +8,21 @@ import Marq2 from "../Components/marq2";
 import SEO from "../common/SEO.jsx";
 import { SEO_CONFIG } from "../utils/seoConfig.js";
 import SchemaMarkup from "../Components/SchemaMarkup.jsx";
+import { getPublishedProjects } from "../utils/portfolioProjectsCache.js";
 
-const SingleImage = ({ coverImgUrl, title }) => {
+const SingleImage = ({ coverImgUrl, title, isPriority = false }) => {
   return (
     <div className="img-gallery relative">
       <img
         src={coverImgUrl || "/assets/imgs/works/2/1.jpg"}
         alt={title}
         className="gallery-image w-full h-[200px] object-cover rounded-lg"
+        width="797"
+        height="863"
+        loading={isPriority ? "eager" : "lazy"}
+        fetchPriority={isPriority ? "high" : "auto"}
+        decoding="async"
+        sizes="(max-width: 767px) 100vw, (max-width: 991px) 50vw, 33vw"
       />
     </div>
   );
@@ -32,7 +30,6 @@ const SingleImage = ({ coverImgUrl, title }) => {
 
 function Header() {
   const [projects, setProjects] = useState([]);
-  const [, setIsAdmin] = useState(false);
   const [filter, setFilter] = useState("*");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -40,16 +37,7 @@ function Header() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const projectQuery = query(
-          collection(db, "projects"),
-          where("status", "==", "published")
-        );
-
-        const querySnapshot = await getDocs(projectQuery);
-        const projectsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const projectsData = await getPublishedProjects();
 
         // Sort: Featured first, then by date (newest first)
         const sortedProjects = projectsData.sort((a, b) => {
@@ -69,24 +57,7 @@ function Header() {
       }
     };
 
-    const checkAdminStatus = async () => {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        try {
-          const userProfileRef = doc(db, "Profiles", currentUser.uid);
-          const userDoc = await getDoc(userProfileRef);
-          setIsAdmin(userDoc.exists() && userDoc.data().role === "admin");
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-          setIsAdmin(false);
-        }
-      } else {
-        setIsAdmin(false);
-      }
-    };
-
     fetchProjects();
-    checkAdminStatus();
     loadBackgroundImages();
   }, []);
 
@@ -314,7 +285,7 @@ function Header() {
         <div className="container">
           <div className="gallery row md-marg">
             {filteredProjects.length > 0 ? (
-              filteredProjects.map((project) => (
+              filteredProjects.map((project, index) => (
                 <div
                   key={project.id}
                   className={`col-lg-4 col-md-6 items ${project.category}`}
@@ -323,6 +294,7 @@ function Header() {
                     <SingleImage
                       coverImgUrl={project.coverImgUrl}
                       title={project.title}
+                      isPriority={index < 3}
                     />
                     <div className="cont row p-3">
                       <div className="col-8">
@@ -387,6 +359,16 @@ function Header() {
         .filter span:hover {
           color: #52b0b4;
         }
+        .card-pro .cont {
+          margin: 0;
+          padding: 1.25rem 1rem 1.35rem;
+        }
+
+    .card-pro h6 {
+      padding-right: 0;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
         @media (max-width: 767px) {
           .work-grid .filter {
             padding-right: 45px;

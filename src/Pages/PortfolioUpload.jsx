@@ -3,6 +3,46 @@ import { db, storage } from "../../firebase";
 import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
+const PROJECT_IMAGE_CACHE_CONTROL = "public,max-age=31536000,immutable";
+
+const optimizeProjectImage = (file, maxWidth, maxHeight) =>
+  new Promise((resolve, reject) => {
+    if (!file?.type?.startsWith("image/")) {
+      resolve(file);
+      return;
+    }
+
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      const ratio = Math.min(1, maxWidth / image.width, maxHeight / image.height);
+      const width = Math.max(1, Math.round(image.width * ratio));
+      const height = Math.max(1, Math.round(image.height * ratio));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(objectUrl);
+        if (!blob) {
+          reject(new Error("Unable to optimize project image"));
+          return;
+        }
+        resolve(new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), {
+          type: "image/webp",
+        }));
+      }, "image/webp", 0.82);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Unable to read project image"));
+    };
+    image.src = objectUrl;
+  });
+
 const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
   const [projectData, setProjectData] = useState({
     title: "",
@@ -202,9 +242,16 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
 
       // New description images upload karo
       if (projectData.descriptionImages.length > 0) {
-        const uploadPromises = projectData.descriptionImages.map(async (image) => {
-          const storageRef = ref(storage, `projects/${image.file.name}-${Date.now()}`);
-          await uploadBytes(storageRef, image.file);
+        const uploadPromises = projectData.descriptionImages.map(async (image, index) => {
+          const optimizedFile = await optimizeProjectImage(image.file, 1600, 1200);
+          const storageRef = ref(
+            storage,
+            `projects/optimized/${Date.now()}_${index}_${optimizedFile.name}`
+          );
+          await uploadBytes(storageRef, optimizedFile, {
+            contentType: "image/webp",
+            cacheControl: PROJECT_IMAGE_CACHE_CONTROL,
+          });
           return await getDownloadURL(storageRef);
         });
         const newUrls = await Promise.all(uploadPromises);
@@ -223,8 +270,15 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
             console.log("Old cover image delete nahi hui:", error);
           }
         }
-        const storageRef = ref(storage, `projects/${projectData.coverImage.name}-${Date.now()}`);
-        await uploadBytes(storageRef, projectData.coverImage);
+        const optimizedFile = await optimizeProjectImage(projectData.coverImage, 1200, 900);
+        const storageRef = ref(
+          storage,
+          `projects/optimized/${Date.now()}_cover_${optimizedFile.name}`
+        );
+        await uploadBytes(storageRef, optimizedFile, {
+          contentType: "image/webp",
+          cacheControl: PROJECT_IMAGE_CACHE_CONTROL,
+        });
         coverImgUrl = await getDownloadURL(storageRef);
       }
 
@@ -240,8 +294,15 @@ const ProjectModal = ({ isOpen, onClose, projectToEdit }) => {
             console.log("Old feature image delete nahi hui:", error);
           }
         }
-        const storageRef = ref(storage, `projects/${projectData.featureImage.name}-${Date.now()}`);
-        await uploadBytes(storageRef, projectData.featureImage);
+        const optimizedFile = await optimizeProjectImage(projectData.featureImage, 1600, 1000);
+        const storageRef = ref(
+          storage,
+          `projects/optimized/${Date.now()}_feature_${optimizedFile.name}`
+        );
+        await uploadBytes(storageRef, optimizedFile, {
+          contentType: "image/webp",
+          cacheControl: PROJECT_IMAGE_CACHE_CONTROL,
+        });
         featureImgUrl = await getDownloadURL(storageRef);
       }
 

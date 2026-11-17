@@ -18,7 +18,6 @@ import Marq2 from "../Components/marq2";
 import Cursor from "../common/cusor";
 import ProgressScroll from "../common/ProgressScroll";
 import WhatsAppButton from "../Components/whatsappButton";
-import ChatWidget from "../Components/ChatWidget";
 import SchemaMarkup from '../Components/SchemaMarkup.jsx';
 
 const Home = () => {
@@ -56,7 +55,6 @@ const Home = () => {
           </div>
         </div>
         <WhatsAppButton />
-        <ChatWidget />
       </Suspense>
     </>
   );

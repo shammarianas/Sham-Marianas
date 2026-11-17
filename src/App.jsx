@@ -10,7 +10,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "
 import Home from "./Pages/Home";
 import Footer from "./Components/Footer";
 import { FilterProvider } from "./Context/FilterContext";
-import ChatWidget from "./Components/ChatWidget";
+const ChatWidget = lazy(() => import("./Components/ChatWidget"));
 
 const View = lazy(() => import("./Pages/View"));
 const Upload = lazy(() => import("./Pages/Upload"));

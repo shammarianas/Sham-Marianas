@@ -1,9 +1,9 @@
 import "react";
 
-const ContentSection = ({ sectionOne, sectionTwo }) => {
+const ContentSection = ({ sectionOne, sectionTwo, customClass = "" }) => {
   return (
     <>
-      <section className="container section-padding">
+      <section className={`container section-padding ${customClass}`}>
         <div className="container ontop">
           <div className="row xlg-marg">
             <div className="col-md-6 text-left">
@@ -31,7 +31,7 @@ const ContentSection = ({ sectionOne, sectionTwo }) => {
         </div>
       </section>
 
-      <section className="intro-accord">
+      <section className={`intro-accord ${customClass}`}>
         <div className="container ontop">
           <div className="row xlg-marg">
             <div className="col-lg-6">

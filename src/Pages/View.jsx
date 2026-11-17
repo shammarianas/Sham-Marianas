@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import "../assets/Styles/stock.css";
 import ItemInfoTable from "../Components/ItemInfoTable";
 import Keywords from "../Components/Keywords";
 import Breadcrumbs from "../Components/Breadcrumbs";

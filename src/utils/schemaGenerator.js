@@ -87,6 +87,27 @@ const organizationSchema = {
   ]
 };
 
+const localBusinessSchema = {
+  "@type": "LocalBusiness",
+  "@id": `${SITE_URL}/#local-business`,
+  "name": "Sham Marianas F.Z.C.",
+  "url": `${SITE_URL}/`,
+  "image": `${SITE_URL}/assets/imgs/logo.png`,
+  "logo": { "@id": `${SITE_URL}/#logo` },
+  "telephone": "+971528036012",
+  "priceRange": "$$",
+  "parentOrganization": { "@id": ORG_ID },
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Dubai",
+    "addressCountry": "AE"
+  },
+  "areaServed": [
+    { "@type": "City", "name": "Dubai" },
+    { "@type": "Country", "name": "United Arab Emirates" }
+  ]
+};
+
 // =========================================================
 //   WEBSITE SCHEMA (Global - reference ke tor par reuse hoga)
 // =========================================================
@@ -175,7 +196,7 @@ const servicesListingData = [
   {
     name: "AI & Automation",
     description: "We build practical AI workflows, system integrations and business-process automations that reduce repetitive work and help teams operate more efficiently.",
-    url: "https://agentixsystem.com/"
+    url: `${SITE_URL}/services/ai-automation`
   },
   {
     name: "Exhibition Booth Design",
@@ -348,17 +369,45 @@ export const getSchema = (type, data = {}) => {
     // -----------------------------------------------------
     case "portfolio": {
       const url = data.url || "";
+      const imageUrls = [
+        data.image,
+        ...(Array.isArray(data.images) ? data.images : [])
+      ].filter(Boolean);
+      const imageObjects = imageUrls.map((imageUrl, index) => ({
+        "@type": "ImageObject",
+        "@id": `${url}#image-${index + 1}`,
+        "url": imageUrl,
+        "contentUrl": imageUrl,
+        "caption": `${data.title || "Project"} image ${index + 1}`
+      }));
+
       return {
-        "@type": "CreativeWork",
+        "@type": ["CreativeWork", "Article", "Project"],
         "@id": `${url}#project`,
         "url": url,
         "name": data.title || "",
         "description": data.description || "",
+        "headline": data.title || "",
+        "mainEntityOfPage": { "@id": `${url}#webpage` },
         "creator": { "@id": ORG_ID },
         "publisher": { "@id": ORG_ID },
-        "image": [data.image || `${SITE_URL}/assets/imgs/arrow-image.png`],
-        "datePublished": data.datePublished || "",
-        "keywords": data.keywords || "",
+        "author": { "@id": ORG_ID },
+        "image": imageObjects.length
+          ? imageObjects.map((image) => ({ "@id": image["@id"] }))
+          : [{ "@id": `${SITE_URL}/#logo` }],
+        ...(imageObjects.length ? { "associatedMedia": imageObjects } : {}),
+        ...(toIsoDate(data.datePublished)
+          ? { "datePublished": toIsoDate(data.datePublished) }
+          : {}),
+        ...(data.dateModified && toIsoDate(data.dateModified)
+          ? { "dateModified": toIsoDate(data.dateModified) }
+          : {}),
+        ...(data.category ? { "genre": data.category } : {}),
+        ...(data.client
+          ? { "locationCreated": { "@type": "Place", "name": data.client } }
+          : {}),
+        ...(data.designer ? { "contributor": { "@type": "Person", "name": data.designer } } : {}),
+        ...(data.keywords ? { "keywords": data.keywords } : {}),
         "inLanguage": "en"
       };
     }
@@ -765,6 +814,8 @@ export const getPortfolioSchema = (projectData) => {
   return {
     "@context": "https://schema.org",
     "@graph": [
+      organizationSchema,
+      localBusinessSchema,
       getSchema("portfolio", projectData),
       {
         "@type": "WebPage",

@@ -72,6 +72,23 @@ main {
   /* height: auto; */
 }
 
+.intro-ai-section .custom-intro-img {
+  width: min(380px, 86%);
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 723 / 1092;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  image-rendering: auto;
+  backface-visibility: hidden;
+}
+
+.ai-automation-content .services-images img {
+  width: 68%;
+  max-width: 380px;
+}
+
 /* Only applies to BrandingContentSection inside this specific wrapper */
 .branding-page-section img {
   width: 500px;

@@ -1,7 +1,5 @@
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { db } from "../../firebase";
-import { getDoc, doc, collection, getDocs, query, where } from "firebase/firestore";
 import ProgressScroll from "../common/ProgressScroll";
 import Cursor from "../common/cusor";
 import Marq2 from "../Components/marq2";
@@ -9,35 +7,21 @@ import Next from "../Components/portfolio-details/Next";
 import "react-helmet-async";
 import SEO from "../common/SEO.jsx";
 import { SEO_CONFIG } from "../utils/seoConfig.js";
+import SchemaMarkup from "../Components/SchemaMarkup.jsx";
+import { getPublishedProject } from "../utils/portfolioProjectsCache.js";
 
 export default function ProjectDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-   useLocation(); // ✅ Import useLocation
 
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
-        const docRef = doc(db, "projects", id);
-        let docSnap = await getDoc(docRef);
+        const projectData = await getPublishedProject(id);
 
-        // Sitemap URLs use project slugs. Fall back to a slug lookup when the
-        // URL value is not the Firestore document ID.
-        if (!docSnap.exists()) {
-          const slugQuery = query(
-            collection(db, "projects"),
-            where("slug", "==", id)
-          );
-          const slugSnapshot = await getDocs(slugQuery);
-          if (!slugSnapshot.empty) {
-            docSnap = slugSnapshot.docs[0];
-          }
-        }
-
-        if (docSnap.exists()) {
-          const projectData = { id: docSnap.id, ...docSnap.data() };
+        if (projectData) {
           setProject(projectData);
 
           const canonicalId = projectData.slug || projectData.id;
@@ -93,10 +77,23 @@ export default function ProjectDetails() {
 
   // ✅ Project milne par dynamic SEO
   const projectSEO = SEO_CONFIG.getProjectSEO(project);
+  const projectSlug = project.slug || project.id;
+  const projectUrl = `https://www.shammarianas.com/project-details/${encodeURIComponent(projectSlug)}`;
+  const projectSchemaData = {
+    ...project,
+    url: projectUrl,
+    image: project.featureImgUrl || project.coverImgUrl,
+    images: project.descriptionImgUrls || [],
+    description: project.challengeDescription || project.description || "",
+    datePublished: project.createdAt,
+    client: project.client,
+    category: project.category,
+  };
 
   return (
     <>
  {projectSEO && <SEO {...projectSEO} />}
+      <SchemaMarkup type="portfolio" data={projectSchemaData} />
 
       <style>{`
         .header-project {
@@ -170,7 +167,8 @@ export default function ProjectDetails() {
           align-items: center; /* Center images vertically */
         }
         .image-gallery img {
-          width: 80rem;
+          width: 100%;
+          height: auto;
           object-fit: contain;
           max-width: 100%; /* Ensure images don't overflow */
           margin: 0; /* Remove any margin from images */
@@ -216,8 +214,8 @@ export default function ProjectDetails() {
             align-items: center;
           }
           .image-gallery img {
-            width: 20rem; /* Reduce image size on mobile */
-            height: 20rem;
+            width: 100%;
+            height: auto;
             max-width: 100%;
             margin: 0; /* Remove any margin from images */
           }
@@ -226,7 +224,14 @@ export default function ProjectDetails() {
 
       <Cursor />
       <ProgressScroll />
-      <header className="header-project bg-img d-flex align-items-end" data-background={project.featureImgUrl || "/assets/imgs/background/bg4.webp"} data-overlay-dark="9">
+      <header
+        className="header-project bg-img d-flex align-items-end"
+        data-background={project.featureImgUrl || project.coverImgUrl || "/assets/imgs/background/bg4.webp"}
+        style={{
+          backgroundImage: `url("${project.featureImgUrl || project.coverImgUrl || "/assets/imgs/background/bg4.webp"}")`,
+        }}
+        data-overlay-dark="9"
+      >
         <div className="container">
           <div className="row">
             <div className="col-12">
@@ -282,6 +287,8 @@ export default function ProjectDetails() {
                     key={index}
                     src={url}
                     alt={`${project.title} image ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className=""
                     onError={(e) => {
                       e.target.src = "/assets/imgs/works/2/1.jpg";
@@ -290,7 +297,7 @@ export default function ProjectDetails() {
                   />
                 ))
               ) : (
-                <img  loading="lazy"  src="/assets/imgs/works/2/1.jpg" alt={`${project.title} fallback`} className=" fallback" />
+                <img loading="lazy" decoding="async" src="/assets/imgs/works/2/1.jpg" alt={`${project.title} fallback`} className=" fallback" />
               )}
             </div>
           </div>
